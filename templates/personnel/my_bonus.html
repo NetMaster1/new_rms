@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<div class="container mt-5 mb-5 pt-5">
+        <!-- Alerts ========================== -->
+        {% include 'partials/_alerts.html' %}
+        <!-- ========================================== -->
+        <div class="row">
+            {{request.user.first_name}}
+        </div>
+        <div class="row">
+            <div class="col">Аксы продажи</div>
+            <div class="col">Смартфоны продажи</div>
+            <div class="col">Трубки продажи</div>
+            <div class="col">Сим карты продажи</div>
+        </div>
+        <div class="row">
+            <div class="col">
+            {{accessories_sum}}
+            </div>
+            <div class="col">
+            {{smarts_sum}}
+            </div>
+            <div class="col">
+            {{phones_sum}}
+            </div>
+            <div class="col">
+                {{sims_sum}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">{{bonus_accs}}</div>
+        </div>
+
+
+</div>
+
+
+{% endblock %}

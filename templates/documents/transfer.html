@@ -1,20 +1,28 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="hide">
 <div class="container">
+    <div class="page_location">
     <div class="row m-2">
         <div class="col">
-            <h3>Перемещение ТМЦ</h3>
+            <h3>Пeремещение ТМЦ</h3>
         </div>
     </div>
 
     <div class="row m-2">
-        <form action="{% url 'check_transfer' document.id %}">
+        <form action="{% url 'check_transfer' identifier.id %}">
             {% csrf_token %}
             <div class="row m-1">
                 <div class="col-2">
-                    <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required>
+                    <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required placeholder='IMEI'>
                 </div>
-
+                <div class="col-2">
+                <select name="shop" id="shop" class='form-control' required>
+                    {% for shop in shops %}
+                    <option value="{{shop.id}}">{{shop.name}}</option>
+                    {% endfor %}
+                </select>
+                </div>
                 <div class="col-2">
                     <input type="submit" value="Проверить" class="btn btn-sm btn-block btn-outline-dark">
                 </div>
@@ -23,9 +31,9 @@
     </div>
 
     <div class="row m-2">
-        <div class="col-8 border rounded p-3">
+        <div class="col-12 border rounded p-3">
 
-            <form action="{% url 'transfer' document.id %}" method="POST">
+            <form action="{% url 'transfer_input' identifier.id %}" method='POST'>
                 {% csrf_token %}
 
                 <div class="form-row">
@@ -33,17 +41,16 @@
                         <label for="date">Дата</label>
                     </div>
                     <div class="col">
-                        <input type="datetime-local" class='form-control' id="date" name="date" value='today'
-                            required><br>
+                        <input type="datetime-local" class='form-control' id="date" name="date" value='today'><br>
                     </div>
                 </div>
 
                 <div class="form-row">
-                    <div class="col-4">
-                        <label for="sender_shop">Фирма отправитель</label>
+                    <div class="col-3">
+                        <label for="shop">Фирма отправитель</label>
                     </div>
                     <div class="col">
-                        <select name="sender_shop" id="sender_shop" class='form-control' required>
+                        <select name="shop_sender" id="shop_sender" class='form-control'>
                             {% for shop in shops %}
                             <option value="{{shop.id}}">{{shop.name}}</option>
                             {% endfor %}
@@ -52,11 +59,11 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="col-4">
-                        <label for="receiver_shop">Фирма получатель</label>
+                    <div class="col-3">
+                        <label for="shop_receiver">Фирма получатель</label>
                     </div>
                     <div class="col">
-                        <select name="receiver_shop" id="receiver_shop" class='form-control' required>
+                        <select name="shop_receiver" id="shop_receiver" class='form-control'>
                             {% for shop in shops %}
                             <option value="{{shop.id}}">{{shop.name}}</option>
                             {% endfor %}
@@ -65,9 +72,9 @@
                 </div>
 
                 <div class='form-inline'>
-                    <div class="row">
-                        <div class="col-2"><label for="title">IMEI</label></div>
-                        <div class="col-2"><label for="title">Наименование</label></div>
+                    <div class="row m-2">
+                        <div class="col-2"><label for="imei">IMEI</label></div>
+                        <div class="col-2"><label for="name">Наименование</label></div>
                         <div class="col-2"><label for="quantity">Кол-во</label></div>
                         <div class="col-2"><label for="price">Цена</label></div>
                         <div class="col-2"><label for="sum">Сумма</label></div>
@@ -75,65 +82,50 @@
                 </div>
 
 
-                {% if product %}
+                {% for register in registers %}
 
-                <div class="row">
+                <div class="row m-2">
                     <div class="col-2">
-                        <input type="text" class='form-control' id="imei" name="imei" value='{{product.imei}}'>
-                    </div>
-                    <div class="col-2">
-                        <input type="text" class='form-control' id="name" name="name" value='{{product.name}}'>
+                        <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}'>
                     </div>
                     <div class="col-2">
-                        <input type="number" class='form-control' id="quantity" name="quantity" value='1'
-                            required>
+                        <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'>
                     </div>
                     <div class="col-2">
-                        <input type="number" class='form-control' id="price" name="price" maxlength='50' required>
+                        <input type="text" class='form-control' id="quantity" name="quantity" value={{register.quantity}} required>
                     </div>
                     <div class="col-2">
-                        <input type="number" class='form-control' id="sum" name="sum" maxlength='50'>
+                        <input type="number" class='form-control' id="price" name="price"required>
                     </div>
-
-
-
-                    {% else %}
-
-                    <div class="row">
-                        <div class="col-2">
-                            <input type="text" class='form-control' id="imei" name="imei" maxlength='50'
-                                placeholder='Введите IMEI' required>
-                        </div>
-                        <div class="col-2">
-                            <input type="text" class='form-control' id="name" name="name" maxlength='50' required
-                                placeholder="Введите наименование">
-                        </div>
-                        <div class="col-2">
-                            <input type="number" class='form-control' id="quantity" name="quantity" value='1'
-                                required>
-                        </div>
-                        <div class="col-2">
-                            <input type="number" class='form-control' id="price" name="price" maxlength='50' required>
-                        </div>
-                        <div class="col-2">
-                            <input type="number" class='form-control' id="sum" name="sum" maxlength='50'>
-                        </div>
-
-                        {% endif %}
-
-                        <div class="col">
-                            <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
-                        </div>
+                    <div class="col-2">
+                        <input type="number" class='form-control' id="sum" name="sum">
                     </div>
+                    <div class="col">
+                        <a href="{% url 'delete_line_transfer' register.product.imei identifier.id %}">
+                            <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+
+
+                <div class="row m-auto">
+                    <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                </div>
             </form>
+                <div class="row m-auto mt-2">
+                    <a href="{% url 'close_without_save' identifier.id %}">
+                        <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                    </a>
+                </div>
+                <div class="row m-auto mt-2">
+                    <a href="{% url 'clear_transfer' identifier.id %}">
+                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark">
+                    </a>
+                </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-8">
-            {% for item in products %}
-            {{item.document.id}} {{item.imei}} {{item.name}} <br>
-            {% endfor %}
-        </div>
-    </div>
+</div>
+</div>
 </div>
 {%endblock%}

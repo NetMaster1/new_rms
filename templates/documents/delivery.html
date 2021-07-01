@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="hide">
+    
 <div class="container">
+    <div class="page_location">
     <div class="row m-2">
         <div class="col">
             <h3>Поступление ТМЦ</h3>
@@ -8,24 +11,78 @@
     </div>
 
 <div class="row m-2">
-    <form action="{% url 'check_delivery' document.id %}">
+    <div class="col-6 border rounded p-3">
+        <form action="{% url 'check_delivery' identifier.id %}" method="POST">
         {% csrf_token %}
         <div class="row m-1">
-        <div class="col-2">
+        <div class="col-6">
             <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required>
         </div>
     
-        <div class="col-2">
-            <input type="submit" value="Проверить" class="btn btn-sm btn-block btn-outline-dark">
+        <div class="col-6">
+            <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark">
         </div> 
         </div>
     </form>
+    </div>
+ 
+    <!-- ==============================Modal Trigger================== -->
+<div class="col-6 border rounded p-3">
+<button type="button" class="btn btn-sm btn-outline-dark btn_modal">
+    Внести новое наименование в базу данных
+</button>
+</div>
+    <!-- ============================End of Modal Trigger========================= -->
+
+        <!-- ===========================Modal Body================================= -->
+<div class="enterDeliveryModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Введите новое наименование</h5>
+                <!-- <button type="button" class="btn_close"></button> -->
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'enter_new_product' identifier.id %}" method="POST">
+                    {% csrf_token %}
+
+                        <div class="form-row">
+                            <div class="col-3">
+                                <label for="category">Вид ТМЦ</label>
+                            </div>
+                            <div class="col">
+                                <select name="category" id="category" class='form-control' required>
+                                    {% for category in categories %}
+                                    <option value="{{category.id}}">{{category.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    <div class="form-group">
+                        <label for="name">Наименование:</label>
+                        <input class='form-control' type="text" id="name" name="name" maxlength='100' required>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">IMEI:</label>
+                        <input class='form-control' type="text" id="imei" name="imei" maxlength='100' required>
+                    </div>
+                    </div>
+                      
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn_close" data-bs-dismiss="modal">Закрыть без сохранения</button>
+                <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
+            </div>
+            </form>
+        </div>   
+    </div>
+</div>
+    <!-- =================================End of Modal Body======================================== -->
 </div>     
 
 <div class="row m-2">
-    <div class="col-8 border rounded p-3">
+    <div class="col-12 border rounded p-3">
 
-        <form action="{% url 'delivery' document.id %}" method="POST">
+        <form action="{% url 'delivery_input' identifier.id %}" method="POST">
             {% csrf_token %}
 
             <div class="form-row">
@@ -63,6 +120,7 @@
                 </div>
             </div>
 
+        
             <div class="form-row">
                 <div class="col-3">
                     <label for="category">Вид ТМЦ</label>
@@ -76,73 +134,85 @@
                 </div>
             </div>
 
-
+            
             <div class='form-inline'>
                 <div class="row">
                     <div class="col-2"><label for="title">IMEI</label></div>
                     <div class="col-2"><label for="title">Наименование</label></div>
-                    <div class="col-2"><label for="quantity_plus">Кол-во</label></div>
+                    <div class="col-2"><label for="quantity">Кол-во</label></div>
                     <div class="col-2"><label for="price">Цена</label></div>
                     <div class="col-2"><label for="sum">Сумма</label></div>
                 </div>
             </div>
 
-
-            {% if product %}
-
-            <div class="row">
+        
+            {% for register in registers %}
+            <div class="row m-1">
                 <div class="col-2">
-                    <input type="text" class='form-control' id="imei" name="imei" value='{{product.imei}}' >
+                    <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}' >
                 </div>
                 <div class="col-2">
-                    <input type="text" class='form-control' id="name" name="name" value='{{product.name}}' >
+                    <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}' >
                 </div>
                 <div class="col-2">
-                    <input type="number" class='form-control' id="quantity_plus" name="quantity_plus" value='1' required>
-                </div>
-                <div class="col-2">
-                    <input type="number" class='form-control' id="price" name="price" maxlength='50' required>
-                </div>
-                <div class="col-2">
-                    <input type="number" class='form-control' id="sum" name="sum" maxlength='50'>
-                </div>
-            
-            
-
-            {% else %}
-
-            <div class="row">
-                <div class="col-2">
-                    <input type="text" class='form-control' id="imei" name="imei" maxlength='50' placeholder='Введите IMEI' required>
-                </div>
-                <div class="col-2">
-                    <input type="text" class='form-control' id="name" name="name" maxlength='50' required placeholder="Введите наименование">
-                </div>
-                <div class="col-2">
-                    <input type="number" class='form-control' id="quantity_plus" name="quantity_plus" value='1' required>
+                    <input type="number" class='form-control' id="quantity" name="quantity" value='{{register.quantity}}' required>
                 </div>
                 <div class="col-2">
                     <input type="number" class='form-control' id="price" name="price" maxlength='50' required>
                 </div>
                 <div class="col-2">
-                    <input type="number" class='form-control' id="sum" name="sum" maxlength='50'>
+                    <input type="number" class='form-control' id="sub_total" name="sub_total" maxlength='50'>
                 </div>
-            
-            {% endif %}
-   
                 <div class="col">
-                    <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                    <a href="{% url 'delete_line_delivery' register.product.imei identifier.id %}">
+                        <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
+                    </a>
                 </div>
             </div>
+            {% endfor %}
+       
+            <div class="row m-auto mt-2">
+                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+            </div>
+          
         </form>
+            <div class="row m-auto mt-2"  >
+                <div class="row m-auto mt-2">
+                    <a href="{% url 'clear_delivery' identifier.id %}">
+                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark">
+                    </a>
+                </div>
+                <a href="{% url 'close_without_save' identifier.id %}">
+                    <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                </a>
+            </div>
+    </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-8">
-        {% for item in products %}
-           {{item.document.id}} {{item.imei}} {{item.name}} <br>
-        {% endfor %}
-    </div>
 </div>
 </div>
-{%endblock%}
+<script>
+    console.log('Script works');
+
+    const btn_modal =document.querySelector('.btn_modal')
+    const enterDeliveryModal =document.querySelector('.enterDeliveryModal')
+    const btn_close =document.querySelector('.btn_close')
+   
+   
+   
+
+    btn_modal.addEventListener('click', openModal)
+    btn_close.addEventListener('click', closeModal)
+
+    function openModal (){
+        enterDeliveryModal.classList.add('openModal')
+         
+    }
+
+    function closeModal() {
+            enterDeliveryModal.classList.remove('openModal')
+           
+        }
+
+</script>
+{% endblock %}

@@ -17,61 +17,74 @@ class Document (models.Model):
     # datetime = models.DateTimeField(default=timezone.now(), blank=True)
     # datetime = models.DateField(default=date.today())
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    sum = models.IntegerField(null=True)
     
+    def __int__(self):
+        return self.id
 
+class Identifier(models.Model):
     def __int__(self):
         return self.id
 
 
 class Delivery (models.Model):
     # date = models.DateTimeField(default=datetime.now(), blank=True)
-    # date = models.DateTimeField(default=timezone.now(), blank=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
+    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+    supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)
     price = models.IntegerField(default=0)#counter
-    quantity_plus = models.IntegerField(default=0)
-    # quantity_minus = models.IntegerField(default=0) 
-    # quantity_remainder = models.IntegerField(default=0)
+    quantity = models.IntegerField(default=0)
+    sub_total = models.IntegerField(default=0)
 
     class Meta:
         # ordering = ('created',)  # sorting by date
         verbose_name = 'delivery'
         verbose_name_plural = 'deliveries'
 
+    def sub_total(self):
+        return self.price * self.quantity
+
     def __int__(self):
         return self.id
 
 class Sale (models.Model):
     # date = models.DateTimeField(default=datetime.now(), blank=True)
-    # date = models.DateTimeField(default=timezone.now(), blank=True)
-    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
+    category = models.ForeignKey(ProductCategory, null=True, on_delete=models.DO_NOTHING)
+    date = models.DateTimeField(default=timezone.now, blank=True)
+    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+    supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
+    document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)
-    price = models.IntegerField(default=0)#counter
-    # quantity_plus = models.IntegerField(default=0)
-    quantity_minus = models.IntegerField(default=0) 
-    # quantity_remainder = models.IntegerField(default=0)
-
+    price = models.IntegerField(default=0)
+    quantity = models.IntegerField(default=0)
+    sub_total = models.IntegerField(default=0)
+    user = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
+    
 
     class Meta:
         # ordering = ('created',)  # sorting by date
         verbose_name = 'sale'
         verbose_name_plural = 'sales'
 
+    # def sub_total(self):
+    #     return int(self.price) * int(self.quantity)
+
     def __int__(self):
         return self.id
 
 
 class Transfer (models.Model):
-    # date = models.DateTimeField(default=datetime.now(), blank=True)
+    # date = models.DateTimeField(default=datetime.now, blank=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=250)
-    sender_shop = models.ForeignKey(Shop, related_name='sender_shop', on_delete=models.DO_NOTHING)
-    receiver_shop = models.ForeignKey(Shop, related_name='receiver_shop', on_delete=models.DO_NOTHING)
+    shop_sender = models.ForeignKey(Shop, related_name='sender_shop', on_delete=models.DO_NOTHING)
+    shop_receiver = models.ForeignKey(Shop, related_name='receiver_shop', on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)
     price = models.IntegerField(default=0)#counter
     quantity = models.IntegerField(default=0) 
@@ -94,11 +107,10 @@ class Remainder (models.Model):
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)
-    # price = models.IntegerField(default=0)
-    # quantity_plus = models.IntegerField(default=0)
-    # quantity_minus = models.IntegerField(default=0) 
+    sub_total = models.IntegerField(default=0)
+    av_price = models.IntegerField(default=0)
     quantity_remainder = models.IntegerField(default=0)
-
+    retail_price = models.IntegerField(default=0)
 
     class Meta:
         # ordering = ('created',)  # sorting by date
@@ -108,4 +120,14 @@ class Remainder (models.Model):
     def __int__(self):
         return self.id
 
-        
+class Register (models.Model):
+    shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)#serves to pass the shop in payment
+    product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
+    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+    quantity = models.IntegerField(default=1)
+    price = models.IntegerField(default=0)
+    sub_total = models.IntegerField(default=0)
+   
+    def __int__(self):
+        return self.id
+
