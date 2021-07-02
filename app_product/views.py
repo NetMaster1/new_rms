@@ -1,4 +1,5 @@
 from app_clients.models import Client
+from app_personnel.models import BonusAccount
 from django.shortcuts import render, redirect, get_object_or_404
 from . models import Document, Delivery, Sale, Transfer, Remainder, Register, Identifier
 import datetime
@@ -525,12 +526,15 @@ def payment (request, identifier_id, client_id):
                             price=register.price,
                             sub_total=register.sub_total,
                             shop=register.shop,
-                            user=request.user
+                            user=request.user,
+                            staff_bonus=register.sub_total*register.product.category.bonus_percent
+
                         )
                         cash_in+=register.sub_total#total sum of the sale document
                         client.accum_cashback+=register.sub_total*register.product.category.cashback_percent/100
                         client.save()
                         register.delete()
+                        
                 identifier.delete()
                 sales=Sale.objects.filter(document=document)
                 current_cash_remainder=CashRemainder.objects.get(shop=sales[0].shop.id)

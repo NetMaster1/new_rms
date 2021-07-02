@@ -1,3 +1,7 @@
 from django.contrib import admin
+from . models import BonusAccount
 
-# Register your models here.
+class BonusAccountAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'smarts', 'phones', 'acces', 'sims', 'modems', 'insurance', 'esset', 'wink', 'service', 'other')
+
+admin.site.register(BonusAccount, BonusAccountAdmin)

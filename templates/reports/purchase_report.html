@@ -86,7 +86,7 @@
         </div>
         {% for document in documents %}
         <div class="row m-auto">
-            <div class="col-2">Дата</div>
+            <div class="col-2">{{document.created}}</div>
             <div class="col-2">{{document.title}}</div>
             <div class="col-1">{{document.datetime}}</div>
             <div class="col-2">{{document.user}}</div>

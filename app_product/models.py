@@ -12,8 +12,7 @@ from django.utils import timezone
 
 class Document (models.Model):
     title = models.CharField(max_length=50)
-    # datetime = models.DateTimeField(default=datetime.today())
-    datetime = models.DateTimeField(default=timezone.now, blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True)
     # datetime = models.DateTimeField(default=timezone.now(), blank=True)
     # datetime = models.DateField(default=date.today())
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
@@ -28,7 +27,7 @@ class Identifier(models.Model):
 
 
 class Delivery (models.Model):
-    # date = models.DateTimeField(default=datetime.now(), blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
@@ -52,11 +51,11 @@ class Delivery (models.Model):
         return self.id
 
 class Sale (models.Model):
-    # date = models.DateTimeField(default=datetime.now(), blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True)
     category = models.ForeignKey(ProductCategory, null=True, on_delete=models.DO_NOTHING)
     date = models.DateTimeField(default=timezone.now, blank=True)
-    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
-    supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
+    identifier = models.ForeignKey(Identifier, null=True, blank=True,on_delete=models.DO_NOTHING)
+    supplier = models.ForeignKey(Supplier, null=True, blank=True, on_delete=models.DO_NOTHING)
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
@@ -64,6 +63,7 @@ class Sale (models.Model):
     price = models.IntegerField(default=0)
     quantity = models.IntegerField(default=0)
     sub_total = models.IntegerField(default=0)
+    staff_bonus= models.IntegerField(default=0)
     user = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
     
 
@@ -80,7 +80,7 @@ class Sale (models.Model):
 
 
 class Transfer (models.Model):
-    # date = models.DateTimeField(default=datetime.now, blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=250)
     shop_sender = models.ForeignKey(Shop, related_name='sender_shop', on_delete=models.DO_NOTHING)
@@ -100,9 +100,7 @@ class Transfer (models.Model):
         return self.id
 
 class Remainder (models.Model):
-    # date = models.DateTimeField(default=datetime.now(), blank=True)
-    # date = models.DateTimeField(default=timezone.now(), blank=True)
-    # document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
+    created = models.DateTimeField(auto_now_add=True, null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)

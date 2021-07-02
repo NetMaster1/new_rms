@@ -1,8 +1,11 @@
-from app_reference.models import ProductCategory, Shop, Supplier
+from app_personnel.models import BonusAccount
+from django.db.models import query
+from app_reference.models import ProductCategory, Shop, Supplier, Product
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
-from app_product.models import Product, Remainder, Sale, Delivery, Document
+from app_product.models import Product, Remainder, Sale, Transfer, Delivery, Document
 from app_clients.models import Client
+from . models import ProductHistory
 from django.contrib import messages
 import pandas as pd
 
@@ -147,14 +150,93 @@ def remainder_report(request):
 
 
 def item_report(request):
-    if request.method="POST":
-        pass
-    else:
+    if request.method=="POST":
+        imei=request.POST['imei']
+        product=Product.objects.get(imei=imei)
+        deliveries=Delivery.objects.filter(imei=imei)
+        for delivery in deliveries:
+            product_history=ProductHistory.objects.create(
+                document=delivery.document.title,
+                document_id=delivery.document.id,
+                category=product.category,
+                supplier=delivery.supplier,
+                name=product.name,
+                imei=imei,
+                quantity_in=delivery.quantity,
+            )
+        transfers=Transfer.objects.filter(imei=imei)
+        for transfer in transfers:
+             product_history=ProductHistory.objects.create(
+                document=transfer.document,
+                name=product.name,
+                imei=product.imei,
+                shop=transfer.shop_receiver,
+                quantity_in=transfer.quantity
+            )
+        sales=Sale.objects.filter(imei=imei)
+        for sale in sales:
+            product_history=ProductHistory.objects.create(
+                document=sale.document,
+                category=product.category,
+                supplier=delivery.supplier,
+                name=product.name,
+                imei=product.imei,
+                quantity_out=sale.quantity
         
-    return render (request, 'reports/item_report.html', context)
+            )
+        queryset_list=ProductHistory.objects.filter(imei=imei)
+        return redirect ('item_report')
+       
+        
+    else:
+        return render (request, 'reports/item_report.html')
 
 def bonus_report(request):
-    pass
+    users=User.objects.all()
+    sales=Sale.objects.all()
+    for user in users:
+        sales=sales.filter(user=user)
+        bonus_account=BonusAccount.objects.get(user=user)
+        bonus_account.smarts=0
+        bonus_account.phones=0
+        bonus_account.acces=0
+        bonus_account.sims=0
+        bonus_account.modems=0
+        bonus_account.insurance=0
+        bonus_account.esset=0
+        bonus_account.wink=0
+        bonus_account.service=0
+        bonus_account.other=0
+        for sale in sales:
+            if sale.category.name=='Смартфоны':
+                bonus_account.smarts+=sale.staff_bonus
+            elif sale.category.name=='Трубки':
+                bonus_account.phones+=sale.staff_bonus
+            elif sale.category.name=='Аксы':
+                bonus_account.acces+=sale.staff_bonus
+            elif sale.category.name=='Сим_карты':
+                bonus_account.sims+=sale.staff_bonus
+            elif sale.category.name=='Модемы':
+                bonus_account.modems+=sale.staff_bonus
+            elif sale.category.name=='Страховки':
+                bonus_account.insurance+=sale.staff_bonus
+            elif sale.category.name=='Esset':
+                bonus_account.esset+=sale.staff_bonus
+            elif sale.category.name=='Подписки':
+                bonus_account.wink+=sale.staff_bonus
+            elif sale.category.name=='Услуги':
+                bonus_account.service+=sale.staff_bonus
+            else:
+                bonus_account.other+=sale.staff_bonus
+        bonus_account.save()
+    bonus_accounts=BonusAccount.objects.all()
+    context={
+        'users': users,
+        'bonus_accounts': bonus_accounts
+    }
+  
+    return render (request, 'reports/bonus_report.html', context)
+    
 
 def cash_report(request):
     pass

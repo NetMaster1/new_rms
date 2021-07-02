@@ -5,7 +5,7 @@ class DeliveryAdmin(admin.ModelAdmin):
     list_display = ('id', 'category','name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
 
 class SaleAdmin(admin.ModelAdmin):
-    list_display = ('id', 'category', 'name', 'imei', 'shop', 'quantity', 'price', 'sub_total', 'user' )
+    list_display = ('id', 'category', 'name', 'imei', 'shop', 'quantity', 'price', 'sub_total', 'user', 'staff_bonus' )
 
 class TransferAdmin(admin.ModelAdmin):
     list_display = ('id', 'document', 'name', 'imei', 'shop_sender', 'shop_receiver', 'quantity', 'price' )

@@ -106,7 +106,7 @@
     </div>
     {% for item in queryset_list %}
     <div class="row m-auto">  
-        <div class="col-2">Дата</div>
+        <div class="col-2">{{item.created}}</div>
         <div class="col-2">{{item.name}}</div>
         <div class="col-1">{{item.quantity}}</div>
         <div class="col-2">{{item.price}}</div>
