@@ -2,7 +2,7 @@ from django.contrib import admin
 from . models import Cash, CashRemainder
 
 class CashAdmin(admin.ModelAdmin):
-    list_display = ('id', 'shop', 'cash_in', 'cash_out', 'cash_remainder', 'user')
+    list_display = ('id', 'created', 'shop', 'pre_remainder', 'cash_in', 'cash_out', 'current_remainder', 'user')
 
 class CashRemainderAdmin(admin.ModelAdmin):
     list_display = ('id', 'shop', 'remainder')

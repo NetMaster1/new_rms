@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+            <div class="row m-2">
+                <h3>Отчет движению наличных денежных средств</h3>
+            </div>
+
+
+
+            <form action="{% url 'cash_report' %}" method="POST">
+                {% csrf_token %}
+
+                <div class="row form-row bg-light m-auto">
+
+                    <div class="col-2">
+                        <select name="shop" id="shop" class='form-inline'>
+                            <option value="">Выберите торговую точку</option>
+                            {% for shop in shops %}
+                            <option value="{{shop.id}}">{{shop.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="row form-row bg-light mt-3">
+                    <div class="col-2">
+                        <input type="date" id='start_date' name="start_date">
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='end_date' name="end_date">
+                    </div>
+
+
+                    <div class="col-2">
+                        <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'close_report' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'save_in_excel' %}">
+                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                                Сохранить в Excel
+                            </button>
+                        </a>
+                    </div>
+
+
+            </form>
+        </div>
+      
+
+
+        <div class="row">
+            <div class="col-2">Дата</div>
+            <div class="col-2">Начальный остаток</div>
+            <div class="col-1">Приход</div>
+            <div class="col-2">Расход</div>
+            <div class="col-2">Документ</div>
+            <div class="col-2">Конечный остаток</div>
+
+        </div>
+        {% for item in queryset_list %}
+        <div class="row m-auto">
+            <div class="col-2">{{item.created}}</div>
+            <div class="col-2">{{item.pre_remainder}}</div>
+            <div class="col-1">{{item.cash_in}}</div>
+            <div class="col-2">{{item.cash_out}}</div>
+            <div class="col-2">{{item.document.title}}</div>
+            <div class="col-2">{{item.current_remainder}}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</div>
+
+{%endblock%}

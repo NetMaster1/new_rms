@@ -1,6 +1,7 @@
 from app_personnel.models import BonusAccount
 from django.db.models import query
 from app_reference.models import ProductCategory, Shop, Supplier, Product
+from app_cash.models import Cash
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from app_product.models import Product, Remainder, Sale, Transfer, Delivery, Document
@@ -239,7 +240,14 @@ def bonus_report(request):
     
 
 def cash_report(request):
-    pass
+    shops=Shop.objects.all()
+    queryset_list=Cash.objects.all()
+    context={
+        'queryset_list': queryset_list,
+        'shops': shops
+    }
+
+    return render(request, 'reports/cash_report.html', context)
 
 def card_report(request):
     pass

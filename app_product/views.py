@@ -622,16 +622,18 @@ def cashback_off (request, identifier_id, client_id):
             identifier.delete()
             sales=Sale.objects.filter(document=document)
             current_cash_remainder=CashRemainder.objects.get(shop=sales[0].shop.id)
-            #adding total sum of the sale document to cash remainder minus cashback
-            current_cash_remainder.remainder+=(cash_in-cashback_off)
-            current_cash_remainder.save()
             cash=Cash.objects.create(
                 document=document,
                 shop=sales[0].shop,
-                cash_in=cash_in-cashback_off,
+                pre_remainder=current_cash_remainder.remainder,
+                cash_in=(cash_in-cashback_off),
+                cash_out=0,
+                current_remainder=current_cash_remainder.remainder+(cash_in-cashback_off),
                 user=request.user,
-                cash_remainder=current_cash_remainder
-                )   
+            )
+            #updating cash remainder value
+            current_cash_remainder.remainder+=(cash_in-cashback_off)
+            current_cash_remainder.save()
             return redirect ('index')
     return redirect ('index')
 

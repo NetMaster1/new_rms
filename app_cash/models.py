@@ -10,9 +10,10 @@ class Cash (models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
+    pre_remainder= models.IntegerField(default=0)
     cash_in= models.IntegerField(default=0)
     cash_out= models.IntegerField(default=0)
-    cash_remainder= models.IntegerField(default=0)
+    current_remainder= models.IntegerField(default=0)
 
     def __int__(self):
         return self.id
