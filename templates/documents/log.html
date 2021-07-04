@@ -3,14 +3,11 @@
 <div class="container">
 
     <div class="row">
-        <div class="col-1">
-            <h4>Id</h4>
-        </div>
-        <div class="col-3">
-            <h4>Наименование</h4>
-        </div>
         <div class="col-2">
             <h4>Дата</h4>
+        </div>
+        <div class="col-2">
+            <h4>Документ</h4>
         </div>
         <div class="col-2">
             <h4>Автор</h4>
@@ -19,8 +16,84 @@
 
     {% for document in documents %}
     <div class="row">
-        <div class="col-1">{{document.id}}</div>
-        <div class="col-2"><a href="{% url 'open_document' document.id %}" target="_blank">{{document.title}}</a></div>
+        <!-- <div class="col-1">{{document.id}}</div>
+        <div class="col-2"><a href="{% url 'open_document' document.id %}" target="_blank">{{document.title}}</a></div> -->
+
+        <!-- Button trigger modal -->
+        <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal_{{document.id}}">
+            {{document.title}}  {{document.id}}
+        </button> -->
+        <div class="col-2">{{document.created}}</div>
+        <div class="col-2">
+        <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{document.id}}">
+            {{document.title}} №{{document.id}}
+        </a>
+        </div>
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="modal_{{document.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Документ {{document.title}} #{{document.id}} от {{document.created}}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% if document.title == 'Поступление ТМЦ' %}
+                            <!-- {{document.delivery.all}} -->
+    <!-- =========================================================
+        из строки родительской таблицы делаем запрос в дочернюю таблицу. Т.е. из "Document"
+        запрашиваем строки из таблицы "Deliveries", которые ассоциируются с данным документом (по id Документа).
+        Запрос выдает Queryset, сотоящий из нескольких строк(объектов), так как в одному документу
+        могут соответсвтовать несколько строк из таблицs "Delivery". Затем делаем цикл по всем полученным объектам дочерней таблицы.
+        В данном случае изпользует delivery вместо delivery_set, так как в соответствующем поле таблицы "Delivery"
+        вставлен аттрибут "related_name".
+        ====================================================================== -->
+                            {% for item in document.delivery.all %}
+                            <div class="row">
+                                <div class="col-5">{{item.name}}</div>
+                                <div class="col-1">{{item.quantity}}</div>
+                                <div class="col-3">{{item.price}} руб.</div>
+                                <div class="col-3">{{item.sub_total}} руб.</div>
+                            </div>
+                            {% endfor %}
+
+                        {% elif document.title == 'Перемещение ТМЦ' %}
+                            <!-- {{document.transfer_set.all}} -->
+                            {% for item in document.transfer_set.all %}
+                            <div class="row">
+                                <div class="col-5">{{item.name}}</div>
+                                <div class="col-1">{{item.quantity}}</div>
+                                <div class="col-3">{{item.price}} руб.</div>
+                                <div class="col-3">{{item.sub_total}} руб.</div>
+                            </div>
+                            {% endfor %}
+                        {% elif document.title == 'Продажа ТМЦ' %}
+                            <!-- {{document.sale_set.all}} -->
+                            {% for item in document.sale_set.all %}
+                                <div class="row">
+                                    <div class="col-5">{{item.name}}</div>
+                                    <div class="col-1">{{item.quantity}}</div>
+                                    <div class="col-3">{{item.price}} руб.</div>
+                                    <div class="col-3">{{item.sub_total}} руб.</div>
+                                </div>
+                            {% endfor %}
+                           
+                        {% endif %}
+                        ...
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End of modal -->
+
+
+
         <div class="col-2">{{document.user}}</div>
     </div>
 

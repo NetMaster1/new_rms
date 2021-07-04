@@ -104,3 +104,17 @@
   
 }
 /* ====================== End of Cashback_off Modal for Cash ==================================== */
+
+/* ====================== Modal for Delivery ==================================== */
+.ModalDeliveryHide{
+    display: none;
+}
+.ModalDeliveryHide.openModal {
+    /* display: block;
+    position: absolute;
+    margin-top: 20rem;
+    background-color: whitesmoke; */
+    display: block;
+    position: fixed;
+}
+/* ====================== End of Cashback_off Modal for Cash ==================================== */

@@ -1,7 +1,7 @@
 from app_clients.models import Client
 from app_personnel.models import BonusAccount
 from django.shortcuts import render, redirect, get_object_or_404
-from . models import Document, Delivery, Sale, Transfer, Remainder, Register, Identifier
+from . models import Document, Delivery, Sale, Transfer, RemainderHistory, Register, Identifier, RemainderCurrent
 import datetime
 from datetime import datetime, date
 from app_reference.models import Shop, Supplier, Product, ProductCategory
@@ -68,9 +68,9 @@ def check_sale(request, identifier_id):
         quantity=int(quantity)
         shop=Shop.objects.get(id=shop)
         if Product.objects.filter(imei=imei).exists():
-            if Remainder.objects.filter(imei=imei, shop=shop).exists():
-                remainder=Remainder.objects.get(imei=imei, shop=shop)
-                if remainder.quantity_remainder < quantity:
+            if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                if remainder_current.current_remainder < quantity:
                     messages.error(request, 'Количество, необходимое для продажи отсутствует на данном складе')
                     return redirect ('sale', identifier.id)
                 else:
@@ -88,8 +88,8 @@ def check_sale(request, identifier_id):
                             quantity=quantity,
                             identifier=identifier,
                             product=product,
-                            price=remainder.retail_price,
-                            sub_total=quantity*remainder.retail_price
+                            price=remainder_current.retail_price,
+                            sub_total=quantity*remainder_current.retail_price
                         )
                         return redirect ('sale', identifier.id)
             else:
@@ -222,9 +222,19 @@ def delivery_input(request, identifier_id):
                 title= 'Поступление ТМЦ',
                 user= request.user
             )
-            n=len(names) 
+            n=len(names)
+            document_sum=0
             for i in range(n):
                 imei=imeis[i]
+                if RemainderCurrent.objects.filter(shop=shop, imei=imei).exists():
+                    remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imei)
+                else:
+                    RemainderCurrent.objects.create(
+                        shop=shop,
+                        imei=imei,
+                        current_remainder=0
+                    )
+                    remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imei)
                 delivery_item=Delivery.objects.create(
                     document=document,
                     category=category,
@@ -234,24 +244,27 @@ def delivery_input(request, identifier_id):
                     imei=imeis[i],
                     price=prices[i],
                     quantity=quantities[i],
+                    sub_total=int(quantities[i]) * int(prices[i])
                 )
-                if Remainder.objects.filter(imei=imei, shop=shop).exists():
-                    remainder=Remainder.objects.get(imei=imei, shop=shop)
-                    remainder.quantity_remainder += int(quantities[i])
-                    remainder.sub_total += int(quantities[i])*int(prices[i])
-                    remainder.save()
-                    remainder.av_price= remainder.sub_total/remainder.quantity_remainder
-                    remainder.save()
-                else:
-                    remainder=Remainder.objects.create(
-                        category=category,
-                        shop=shop,
-                        name=names[i],
-                        imei=imeis[i],
-                        quantity_remainder=quantities[i],
-                        sub_total=int(quantities[i]) * int(prices[i]),
-                        av_price=prices[i]
-                    )
+                document_sum+=delivery_item.sub_total
+
+                remainder_history=RemainderHistory.objects.create(
+                    document=document,
+                    shop=shop,
+                    category=category,
+                    imei=imei,
+                    pre_remainder=remainder_current.current_remainder,
+                    incoming_quantity=quantities[i],
+                    outgoing_quantity=0,
+                    current_remainder=remainder_current.current_remainder+int(quantities[i]),
+                    av_price=prices[i],
+                    sub_total=int(quantities[i]) * int(prices[i])
+                )
+                remainder_current.current_remainder=remainder_history.current_remainder
+                remainder_current.save()
+            document.sum=document_sum
+            document.save()
+                  
             for register in registers:
                 register.delete()
             identifier.delete()
@@ -271,71 +284,20 @@ def identifier_transfer (request):
 def transfer (request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     shops=Shop.objects.all()
-    if request.method == 'POST':
-        # imeis= request.POST.getlist ('imei', None)
-        sender_shop = request.POST['sender_shop']
-        receiver_shop = request.POST['receiver_shop']
-        imei = request.POST['imei']
-        name = request.POST['name']
-        quantity = request.POST['quantity']
-        quantity=int(quantity)
-        price = request.POST['price']
-        if Remainder.objects.filter(imei=imei, shop=sender_shop).exists():
-            remainder=Remainder.objects.get(imei=imei, shop=sender_shop)
-            if remainder.quantity_remainder >= quantity:
-                receiver_shop=Shop.objects.get(id=receiver_shop)
-                sender_shop=Shop.objects.get(id=sender_shop)
-                document=Document.objects.create(
-                    title='Перемещение ТМЦ',
-                    user=request.user
-                )
-                transfer=Transfer.objects.create(
-                    document=document,
-                    sender_shop=sender_shop,
-                    receiver_shop = receiver_shop,
-                    imei=imei,
-                    name=name,
-                    quantity=quantity,
-                    price=price
-                )
-                remainder.quantity_remainder -= quantity
-                remainder.save()
-                if Remainder.objects.filter(imei=imei, shop=receiver_shop).exists():
-                    remainder=Remainder.objects.get(imei=imei, shop=receiver_shop)
-                    remainder.quantity_remainder += quantity
-                    remainder.save()
-                    return redirect ('transfer', document.id)
-                else:
-                    product=Product.objects.get(imei=imei)
-                    remainder=Remainder.objects.create(
-                        shop=receiver_shop,
-                        category=product.category,
-                        name=name,
-                        imei=imei,
-                        quantity_remainder=quantity,
-                    )
-                    return redirect ('delivery', identifier.id)
-            else:
-                messages.error(request, 'Документ не проведен. Количество, необходимое для перемещения отсутствует на данном складе')
-                return redirect ('transfer', identifier.id)
-        else:
-            messages.error(request, 'Документ не проведен. Количество, необходимое для перемещения отсутствует на данном складе')
-            return redirect ('transfer', identifier.id)
+    if Register.objects.filter(identifier=identifier).exists():
+        registers=Register.objects.filter(identifier=identifier)
+        context = {
+        'identifier': identifier,
+        'shops': shops,
+        'registers': registers
+        }
+        return render (request, 'documents/transfer.html', context)
     else:
-        if Register.objects.filter(identifier=identifier).exists():
-            registers=Register.objects.filter(identifier=identifier)
-            context = {
-            'identifier': identifier,
-            'shops': shops,
-            'registers': registers
-            }
-            return render (request, 'documents/transfer.html', context)
-        else:
-            context = {
-            'identifier': identifier,
-            'shops': shops
-            }
-            return render (request, 'documents/transfer.html', context)
+        context = {
+        'identifier': identifier,
+        'shops': shops
+        }
+        return render (request, 'documents/transfer.html', context)
 
 def check_transfer (request, identifier_id):
     shops = Shop.objects.all()
@@ -345,7 +307,7 @@ def check_transfer (request, identifier_id):
         shop = request.GET['shop']
         shop=Shop.objects.get(id=shop)
         if Product.objects.filter(imei=imei).exists():
-            if Remainder.objects.filter(imei=imei, shop=shop).exists():
+            if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
                 product=Product.objects.get(imei=imei)
                 if Register.objects.filter(identifier=identifier, product=product).exists():
                     register=Register.objects.get(identifier=identifier, product=product)
@@ -397,12 +359,13 @@ def transfer_input(request, identifier_id):
             messages.error(request, 'Документ не проведен. Выберите фирму получателя отличную от отправителя')
             return redirect ('transfer', identifier.id)
         else:
+
             check_point = []
             n=len(names)
             for i in range(n):
-                if Remainder.objects.filter(imei=imeis[i], shop=shop_sender).exists():
-                    remainder_sender=Remainder.objects.get(imei=imeis[i], shop=shop_sender)
-                    if remainder_sender.quantity_remainder<int(quantities[i]):
+                if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
+                    remainder_current_sender=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
+                    if remainder_current_sender.current_remainder<int(quantities[i]):
                         check_point.append(False)
                     else:
                         check_point.append(True)
@@ -417,45 +380,57 @@ def transfer_input(request, identifier_id):
                         user=request.user
                     )
                 for i in range(n):
+                    remainder_current_sender=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
                     transfer=Transfer.objects.create(
-                        document=document,
-                        shop_sender=shop_sender,
-                        shop_receiver=shop_receiver,
-                        name=names[i],
-                        imei=imeis[i],
-                        price=prices[i],
-                        quantity=int(quantities[i]),
+                    document=document,
+                    shop_sender=shop_sender,
+                    shop_receiver=shop_receiver,
+                    name=names[i],
+                    imei=imeis[i],
+                    price=prices[i],
+                    quantity=int(quantities[i]),
                     )
-                transfers=Transfer.objects.filter(document=document)
-                for transfer in transfers:
-                    remainder_sender=Remainder.objects.get(imei=transfer.imei, shop=transfer.shop_sender)
-                    remainder_sender.quantity_remainder -= transfer.quantity
-                    remainder_sender.sub_total -= transfer.quantity*remainder_sender.av_price
-                    remainder_sender.save()
-                    if remainder_sender.quantity_remainder == 0:
-                        remainder_sender.delete()
+
+                    remainder_history=RemainderHistory.objects.create(
+                        document=document,
+                        shop=shop_sender,
+                        # category=category,
+                        imei=imeis[i],
+                        name=names[i],
+                        retail_price=prices[i],
+                        pre_remainder=remainder_current_sender.current_remainder,
+                        incoming_quantity=0,
+                        outgoing_quantity=quantities[i],
+                        current_remainder=remainder_current_sender.current_remainder-int(quantities[i]),
+                        #av_price
+                        sub_total=int(quantities[i]) * int(prices[i])
+                    )
+                    remainder_current_sender.current_remainder=remainder_history.current_remainder
+                    remainder_current_sender.save()
+
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
+                        remainder_current_reciever=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_receiver)
                     else:
-                        remainder_sender.av_price=remainder_sender.sub_total/remainder_sender.quantity_remainder
-                        remainder_sender.save()
-                    if Remainder.objects.filter(imei=transfer.imei, shop=transfer.shop_receiver).exists():
-                        remainder_receiver=Remainder.objects.get(imei=transfer.imei, shop=transfer.shop_receiver)
-                        remainder_receiver.quantity_remainder += transfer.quantity
-                        remainder_receiver.retail_price=transfer.price
-                        remainder_receiver.sub_total += transfer.quantity*remainder_sender.av_price
-                        remainder_receiver.save()
-                        remainder_receiver.av_price=remainder_receiver.sub_total/remainder_receiver.quantity_remainder
-                        remainder_receiver.save()
-                    else:
-                        remainder_new = Remainder.objects.create(
-                            category=remainder_sender.category,
-                            shop=transfer.shop_receiver,
-                            name=transfer.name,
-                            imei=transfer.imei,
-                            quantity_remainder=transfer.quantity,
-                            retail_price=transfer.price,
-                            av_price=remainder_sender.av_price,
-                            sub_total=transfer.quantity*remainder_sender.av_price
+                        remainder_current_receiver=RemainderCurrent.objects.create(
+                            imei=imeis[i],
+                            shop=shop_receiver,
+                            current_remainder=0
                         )
+                    remainder_history=RemainderHistory.objects.create(
+                        document=document,
+                        shop=shop_receiver,
+                        # category=category,
+                        imei=imeis[i],
+                        pre_remainder=remainder_current_receiver.current_remainder,
+                        incoming_quantity=quantities[i],
+                        outgoing_quantity=0,
+                        current_remainder=remainder_current_receiver.current_remainder+int(quantities[i]),
+                        # sub_total=int(quantities[i]) * int(prices[i])
+                    )
+                    remainder_current_receiver.current_remainder=remainder_history.current_remainder
+                    remainder_current_receiver.save()
+
+
                 for register in registers:
                     register.delete()
                 identifier.delete()      
@@ -494,8 +469,8 @@ def payment (request, identifier_id, client_id):
                 check_point = []
                 cash_in=0
                 for register in registers:
-                    remainder = Remainder.objects.get(imei=register.product.imei, shop=register.shop)
-                    if remainder.quantity_remainder < register.quantity:
+                    remainder_current = RemainderCurrent.objects.get(imei=register.product.imei, shop=register.shop)
+                    if remainder_current.current_remainder < register.quantity:
                         check_point.append(False)
                     else:
                         check_point.append(True)
@@ -503,19 +478,32 @@ def payment (request, identifier_id, client_id):
                         messages.error(request, 'Количество, необходимое для продажи отсутствует на данном складе')
                         return redirect ('sale', identifier.id)
                     else:
-                        remainder.quantity_remainder -= register.quantity
-                        remainder.sub_total -= register.quantity*remainder.av_price
-                        remainder.save()
-                        if remainder.quantity_remainder == 0:
-                            remainder.delete()
-                        else:
-                            remainder.av_price= remainder.sub_total/remainder.quantity_remainder
-                            remainder.save()
-
                         document=Document.objects.create(
                             title= 'Продажа ТМЦ',
                             user= request.user
                         )
+                        remainder_history=RemainderHistory.objects.create(
+                            document=document,
+                            shop=register.shop,
+                            category=register.product.category,
+                            imei=register.product.imei,
+                            pre_remainder=remainder_current.current_remainder,
+                            incoming_quantity=0,
+                            outgoing_quantity =register.quantity,
+                            current_remainder=remainder_current.current_remainder-register.quantity,
+                            # av_price=prices[i],
+                            # sub_total=int(quantities[i]) * int(prices[i])
+                        )
+                        remainder_current.current_remainder=remainder_history.current_remainder
+                        remainder_current.save()
+
+                        # remainder.sub_total -= register.quantity*remainder.av_price
+                        # remainder.save()
+                        # if remainder.quantity_remainder == 0:
+                        #     remainder.delete()
+                        # else:
+                        #     remainder.av_price= remainder.sub_total/remainder.quantity_remainder
+                        #     remainder.save()
 
                         sale=Sale.objects.create(
                             document=document,
@@ -545,7 +533,7 @@ def payment (request, identifier_id, client_id):
                     shop=sales[0].shop,
                     cash_in=cash_in,
                     user=request.user,
-                    cash_remainder=current_cash_remainder
+                    current_remainder=current_cash_remainder
                     )   
                 return redirect ('index')
             else:
@@ -653,7 +641,7 @@ def open_document(request, document_id):
         sales=sales.filter(document=document)
         documents=sales
     elif document.title=="Поступление ТМЦ":
-        deliveries=document.delivery_set.all()
+        deliveries=document.delivery.all()
         deliveries=deliveries.filter(document=document)
         documents=deliveries
     else:
@@ -665,3 +653,6 @@ def open_document(request, document_id):
         'documents':documents
     }
     return render(request, 'documents/open_document.html', context)
+
+
+ 

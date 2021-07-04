@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.shortcuts import render
 from . models import Product
-from app_product.models import Remainder
+from app_product.models import RemainderHistory
 from app_clients.models import Client
 from django.contrib import messages
 

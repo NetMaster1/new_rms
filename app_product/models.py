@@ -28,7 +28,8 @@ class Identifier(models.Model):
 
 class Delivery (models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
-    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
+    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name='delivery')
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
@@ -44,8 +45,8 @@ class Delivery (models.Model):
         verbose_name = 'delivery'
         verbose_name_plural = 'deliveries'
 
-    def sub_total(self):
-        return self.price * self.quantity
+    # def sub_total(self):
+    #     return self.price * self.quantity
 
     def __int__(self):
         return self.id
@@ -99,21 +100,35 @@ class Transfer (models.Model):
     def __int__(self):
         return self.id
 
-class Remainder (models.Model):
+class RemainderHistory (models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
-    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
+    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)
+    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)
     sub_total = models.IntegerField(default=0)
-    av_price = models.IntegerField(default=0)
-    quantity_remainder = models.IntegerField(default=0)
+    av_price = models.IntegerField(default=0, null=True)
+    pre_remainder=models.IntegerField(default=0)
+    incoming_quantity=models.IntegerField(default=0)
+    outgoing_quantity=models.IntegerField(default=0)
+    current_remainder = models.IntegerField(default=0)
     retail_price = models.IntegerField(default=0)
 
-    class Meta:
-        # ordering = ('created',)  # sorting by date
-        verbose_name = 'remainder'
-        verbose_name_plural = 'remainders'
+    # class Meta:
+    #     # ordering = ('created',)  # sorting by date
+    #     verbose_name = 'RemainderHistory'
+    #     verbose_name_plural = 'remainders'
+
+    def __int__(self):
+        return self.id
+
+class RemainderCurrent (models.Model):
+    updated = models.DateTimeField(auto_now=True)
+    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
+    imei = models.CharField(max_length=250)
+    current_remainder = models.IntegerField(default=0)
+    retail_price = models.IntegerField(default=0, null=True)
 
     def __int__(self):
         return self.id

@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+            <div class="row m-2">
+                <h3>Отчет по закупкам</h3>
+            </div>
+
+            <form action="{% url 'delivery_report' %}" method="POST">
+                {% csrf_token %}
+
+                <div class="row form-row bg-light m-auto">
+                    <!-- <div class="col">
+                        <input type="text" name="imei" placeholder="IMEI">
+                    </div> -->
+
+                    <div class="col-2">
+                        <select name="category" class='form-inline'>
+                            <option value="">Выберите вид ТМЦ</option>
+                            {% for category in categories %}
+                            <option value="{{category.id}}">{{category.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-2">
+                        <select name="supplier" id="supplier" class='form-inline'>
+                            <option value="">Выберите поставщика</option>
+                            {% for supplier in suppliers %}
+                            <option value="{{supplier.id}}">{{supplier.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-2">
+                        <select name="user" id="user" class='form-inline'>
+                            <option value="">Выберите автора документа</option>
+                            {% for user in users %}
+                            <option value="{{user.id}}">{{user.first_name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="row form-row bg-light mt-3">
+                    <div class="col-2">
+                        <input type="date" id='start_date' name="start_date">
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='end_date' name="end_date">
+                    </div>
+
+
+                    <div class="col-2">
+                        <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'close_report' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'save_in_excel' %}">
+                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                                Сохранить в Excel
+                            </button>
+                        </a>
+                    </div>
+
+
+            </form>
+        </div>
+        <div class="row m-auto">
+            <div class="col">Всего закуплено на сумму:</div>
+            <div class="col">{{sum}}</div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-2">Дата</div>
+            <div class="col-2">Наименование</div>
+            <div class="col-2">Сумма</div>
+          
+
+        </div>
+        {% for item in queryset_list %}
+        <div class="row m-auto  ">
+            <div class="col-2">{{item.created}}</div>
+
+<!-- ==============================Trigger for Modal Delivery====================================== -->
+
+        <div class="col-2 rounded ">
+            <button type="button" class="btn btn-sm btn-outline-dark enterModalDelivery">
+                {{item.title}}
+            </button>
+        </div>
+
+<!-- ==============================End of Trigger for Modal Delivery====================================== -->
+
+
+<!-- ==============================Modal Body For Delivery====================================== -->
+                <div class="ModalDeliveryHide">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Документ</h5>
+                                <!-- <button type="button" class="btn_close"></button> -->
+                            </div>
+                            <div class="modal-body">
+                                    <div class='form-inline'>
+                                        <div class="row m-2">
+                                            <div class="col-2"><label for="imei">IMEI</label></div>
+                                            <div class="col-3"><label for="name">Наименование</label></div>
+                                            <div class="col-2"><label for="quantity">Кол-во</label></div>
+                                            <div class="col-2"><label for="price">Цена</label></div>
+                                            <div class="col-2"><label for="sum">Сумма</label></div>
+                                        </div>
+                                    </div>
+                                 
+                
+                
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary btn_close_delivery"
+                                            data-bs-dismiss="modal">Закрыть</button>
+                                    </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+<!-- ==============================End of Modal Body For Delivery====================================== -->
+
+
+
+            <div class="col-2">{{item.sum}} руб.</div>
+    <!-- =========================================================
+    из строки родительской таблицы делаем запрос в дочернюю таблицу. Т.е. из "Document"
+    запрашиваем строки из таблицы "Deliveries", которые ассоциируются с данным документом (по id Документа).
+    Запрос выдает Queryset, сотоящий из нескольких строк(объектов), так как в одному документу
+    могут соответсвтовать несколько строк из таблицs "Delivery". Выделяем любую строку(объект). В данном случае
+    с помощью метода "last" и берем из него нужное поле. В данном случае 'supplier'
+    В данном случае изпользует delivery вместо delivery_set, так как в соответствующем поле таблицы "Delivery"
+    вставлен аттрибут "related_name".
+    ====================================================================== -->
+            <div class="col-2">{{item.delivery.last.supplier}}</div>
+            
+            <div class="col-2">{{supplier}}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</div>
+
+
+<script>
+    console.log('Script works')
+
+    const enterModalDelivery = document.querySelector('.enterModalDelivery')
+    const btn_close_delivery = document.querySelector('.btn_close_delivery')
+    const ModalDeliveryHide = document.querySelector('.ModalDeliveryHide')
+    enterModalDelivery.addEventListener('click', openModalDelivery)
+    btn_close_delivery.addEventListener('click', closeModalDelivery)
+    function openModalDelivery() {
+        ModalDeliveryHide.classList.add('openModal')
+    }
+    function closeModalDelivery() {
+        ModalDeliveryHide.classList.remove('openModal')
+    }
+
+</script>
+
+{%endblock%}
