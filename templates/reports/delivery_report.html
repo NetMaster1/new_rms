@@ -1,16 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="hide">
-    <div class="container">
-        <div class="page_location">
-            <div class="row m-2">
+<!-- <div class="hide"> -->
+<div class="container">
+<div class="page_location">
+
+    <div class="menu">
+            <div class="row">
                 <h3>Отчет по закупкам</h3>
             </div>
-
+    </div>
+    <div class="menu">
             <form action="{% url 'delivery_report' %}" method="POST">
                 {% csrf_token %}
 
-                <div class="row form-row bg-light m-auto">
+                <div class="row form-row m-auto">
                     <!-- <div class="col">
                         <input type="text" name="imei" placeholder="IMEI">
                     </div> -->
@@ -44,7 +47,7 @@
 
                 </div>
 
-                <div class="row form-row bg-light mt-3">
+                <div class="row form-row mt-3">
                     <div class="col-2">
                         <input type="date" id='start_date' name="start_date">
                     </div>
@@ -72,10 +75,11 @@
                             </button>
                         </a>
                     </div>
-
-
             </form>
         </div>
+        </div>
+
+    <div class="log">
         <div class="row m-auto">
             <div class="col">Всего закуплено на сумму:</div>
             <div class="col">{{sum}}</div>
@@ -83,33 +87,34 @@
 
 
         <div class="row">
-            <div class="col-2">Дата</div>
-            <div class="col-2">Наименование</div>
-            <div class="col-2">Сумма</div>
+            <div class="col-2"><h5>Дата</h5></div>
+            <div class="col-2"><h5>Наименование</h5></div>
+            <div class="col-2"><h5>Сумма</h5></div>
           
 
         </div>
         {% for item in queryset_list %}
-        <div class="row m-auto  ">
+    <div class="row mt-1">
             <div class="col-2">{{item.created}}</div>
 
-<!-- ==============================Trigger for Modal Delivery====================================== -->
+<!-- ==============================Trigger for Modal Delivery====================================== -->       
 
-        <div class="col-2 rounded ">
-            <button type="button" class="btn btn-sm btn-outline-dark enterModalDelivery">
-                {{item.title}}
-            </button>
+        <div class="col-2">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#modalDelivery_{{item.id}}">
+                {{item.title}} №{{item.id}}
+            </a>
         </div>
+
 
 <!-- ==============================End of Trigger for Modal Delivery====================================== -->
 
 
 <!-- ==============================Modal Body For Delivery====================================== -->
-                <div class="ModalDeliveryHide">
+<div class="modal fade" id="modalDelivery_{{item.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">Документ</h5>
+                                <h5 class="modal-title" id="exampleModalLabel">{{item.title}} #{{item.id}}</h5>
                                 <!-- <button type="button" class="btn_close"></button> -->
                             </div>
                             <div class="modal-body">
@@ -150,18 +155,24 @@
     ====================================================================== -->
             <div class="col-2">{{item.delivery.last.supplier}}</div>
             
-            <div class="col-2">{{supplier}}</div>
         </div>
         {% endfor %}
     </div>
+
+    </div>
+
 </div>
 </div>
+<!-- </div> -->
 
+<!-- <script>
+    console.log('Script works');
+    console.log({item.id});
 
-<script>
-    console.log('Script works')
-
-    const enterModalDelivery = document.querySelector('.enterModalDelivery')
+    //const enterModalDelivery = document.querySelector('.enterModalDelivery')
+    //const enterModalDelivery = document.querySelector('.`${item.id}`')
+    const enterModalDelivery = document.getElementById("`${item.id}`")
+    
     const btn_close_delivery = document.querySelector('.btn_close_delivery')
     const ModalDeliveryHide = document.querySelector('.ModalDeliveryHide')
     enterModalDelivery.addEventListener('click', openModalDelivery)
@@ -173,6 +184,6 @@
         ModalDeliveryHide.classList.remove('openModal')
     }
 
-</script>
+</script> -->
 
-{%endblock%}
+{% endblock %}

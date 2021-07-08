@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from . models import Document, Delivery, Sale, Transfer, RemainderHistory, Register, Identifier, RemainderCurrent
 import datetime
 from datetime import datetime, date
-from app_reference.models import Shop, Supplier, Product, ProductCategory
+from app_reference.models import Shop, Supplier, Product, ProductCategory, DocumentType
 from app_cash.models import Cash, CashRemainder, Credit, Card
 from app_clients.models import Client
 from django.contrib.auth.models import User
@@ -206,6 +206,7 @@ def enter_new_product (request, identifier_id):
 def delivery_input(request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     registers=Register.objects.filter(identifier=identifier)
+    doc_type=DocumentType.objects.get(name="Поступление ТМЦ")
     if request.method == 'POST':
         shop=request.POST['shop']
         supplier=request.POST['supplier']
@@ -219,8 +220,8 @@ def delivery_input(request, identifier_id):
         supplier=Supplier.objects.get(id=supplier)
         if imeis:
             document=Document.objects.create(
-                title= 'Поступление ТМЦ',
-                user= request.user
+                title= doc_type,
+                user= request.user,
             )
             n=len(names)
             document_sum=0
@@ -340,6 +341,7 @@ def delete_line_transfer(request, imei, identifier_id):
 def transfer_input(request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     registers=Register.objects.filter(identifier=identifier)
+    doc_type=DocumentType.objects.get(name='Перемещение ТМЦ')
     if request.method == "POST":
         # imeis=request.GET.getlist('imei', None )
         # names=request.GET.getlist('name', None )
@@ -376,7 +378,7 @@ def transfer_input(request, identifier_id):
                 return redirect ('transfer', identifier.id)
             else:
                 document=Document.objects.create(
-                        title='Перемещение ТМЦ',
+                        title=doc_type,
                         user=request.user
                     )
                 for i in range(n):
@@ -454,6 +456,7 @@ def payment (request, identifier_id, client_id):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
         registers=Register.objects.filter(identifier=identifier)
+        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
         sum=0
         for register in registers:
             sum+=register.sub_total
@@ -479,7 +482,7 @@ def payment (request, identifier_id, client_id):
                         return redirect ('sale', identifier.id)
                     else:
                         document=Document.objects.create(
-                            title= 'Продажа ТМЦ',
+                            title= doc_type,
                             user= request.user
                         )
                         remainder_history=RemainderHistory.objects.create(
@@ -554,6 +557,7 @@ def payment (request, identifier_id, client_id):
 def cashback_off (request, identifier_id, client_id):
     identifier=Identifier.objects.get(id=identifier_id)
     registers=Register.objects.filter(identifier=identifier)
+    doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
     sum=0
     for register in registers:
         sum+=register.sub_total
@@ -593,7 +597,7 @@ def cashback_off (request, identifier_id, client_id):
                             remainder.av_price= remainder.sub_total/remainder.quantity_remainder
                             remainder.save()
                         document=Document.objects.create(
-                                title= 'Продажа ТМЦ',
+                                title= doc_type,
                                 user= request.user
                             )
                         sale=Sale.objects.create(
@@ -627,11 +631,60 @@ def cashback_off (request, identifier_id, client_id):
 
 
 def log(request):
-    documents=Document.objects.all()
-    context={
-        'documents': documents
-    }
-    return render (request, 'documents/log.html', context)
+    queryset_list=Document.objects.all()
+    doc_types=DocumentType.objects.all()
+    users=User.objects.all()
+    suppliers=Supplier.objects.all()
+    shops=Shop.objects.all()
+    if request.method=="POST":
+        # shop = request.POST['shop']
+        # supplier = request.POST['supplier']
+        start_date = request.POST['start_date']
+        end_date = request.POST['end_date']
+        user = request.POST['user']
+        supplier = request.POST['supplier']
+        doc_type = request.POST['doc_type']
+        # if shop:
+        #     queryset_list = queryset_list.filter(shop=shop)
+        if start_date:
+            queryset_list = queryset_list.filter(created__gte=start_date)
+        if end_date:
+            queryset_list = queryset_list.filter(created__lte=end_date)
+        if doc_type:
+            doc_type=DocumentType.objects.get(id=doc_type)
+            queryset_list = queryset_list.filter(title=doc_type)
+        if user:
+            queryset_list = queryset_list.filter(user=user)
+        if supplier:
+            doc_type=DocumentType.objects.get(name='Поступление ТМЦ')
+            queryset_list=queryset_list.filter(title=doc_type)
+            supplier=Supplier.objects.get(id=supplier)
+            new_list=[]
+            for item in queryset_list:
+                if item.delivery.first().supplier == supplier:
+                    new_list.append(item)
+            queryset_list=new_list
+            print(queryset_list)
+        # if Q(start_date) | Q(end_date):
+        #     queryset_list = queryset_list.filter(created__range=(start_date, end_date))
+        context={
+            'queryset_list': queryset_list,
+            'doc_types': doc_types,
+            'users': users,
+            'suppliers': suppliers,
+            'shops': shops
+        }
+        return render (request, 'documents/log.html', context)
+
+    else:
+        context={
+            'queryset_list': queryset_list,
+            'doc_types': doc_types,
+            'users': users,
+            'suppliers': suppliers,
+            'shops': shops
+        }
+        return render (request, 'documents/log.html', context)
 
 
 def open_document(request, document_id):

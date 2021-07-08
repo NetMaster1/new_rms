@@ -1,22 +1,29 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="hide">
+<!-- <div class="hide"> -->
 <div class="container">
 <div class="page_location">
-        <div class="row m-2">
+
+    <div class="menu">
+        <div class="row">
                 <h3>Отчет по продажам</h3>
         </div>
+    </div>
 
-       
-           
-                <form action="{% url 'sale_report' %}" method="POST">
+    <div class="menu">      
+    <form action="{% url 'sale_report' %}" method="POST">
                     {% csrf_token %}
         
-        <div class="row form-row bg-light m-auto">
-            <div class="-2">
+        <div class="row form-row m-auto">
+            <!-- <div class="-2">
                 <input type="text" name="imei" placeholder="IMEI">
-            </div>
-
+            </div> -->
+                <div class="col-2">
+                    <input type="date" id='start_date' name="start_date">
+                </div>
+                <div class="col-2">
+                    <input type="date" id='end_date' name="end_date">
+                </div>
                 <div class="col-2">
                     <select name="category" class='form-inline'>
                         <option value="">Выберите вид ТМЦ</option>
@@ -29,21 +36,13 @@
 
                 <div class="col-2">
                     <select name="shop" id="shop" class='form-inline'>
-                        <option value="">Выберите торговую точку</option>
+                        <option value="">Выберите магазин</option>
                         {% for shop in shops %}
                         <option value="{{shop.id}}">{{shop.name}}</option>
                         {% endfor %}
                     </select>
                 </div>
                
-                <!-- <div class="col-2">
-                    <select name="supplier" id="supplier" class='form-inline'>
-                        <option value="">Выберите поставщика</option>
-                        {% for supplier in suppliers %}
-                        <option value="{{supplier.id}}">{{supplier.name}}</option>
-                        {% endfor %}
-                    </select>
-                </div> -->
 
                 <div class="col-2">
                     <select name="user" id="user" class='form-inline'>
@@ -55,15 +54,7 @@
                 </div>
         </div>
 
-        <div class="row form-row bg-light mt-3">
-                <div class="col-2">
-                    <input type="date" id='start_date' name="start_date">
-                </div>
-                <div class="col-2">
-                    <input type="date" id='end_date' name="end_date">
-                </div>
-   
-        
+        <div class="row form-row mt-3">
                 <div class="col-2">
                     <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
                 </div>
@@ -82,10 +73,11 @@
                             </button>
                         </a>
                 </div>
-                   
-
                 </form>
         </div>
+    </div>
+
+    <div class="log">
         <div class="row m-auto">
         <div class="col">Всего продано на сумму:</div>
         <div class="col">{{sum}}</div>
@@ -94,11 +86,11 @@
         
     <div class="row">
 
-        <div class="col-2">Наименование</div>
-        <div class="col-1">Количество</div>
-        <div class="col-2">Цена</div>
-        <div class="col-2">Сумма</div>
-        <div class="col-2">Продавец</div>
+        <div class="col-2"><h5>Наименование</h5></div>
+        <div class="col-2"><h5>Количество</h5></div>
+        <div class="col-2"><h5>Цена</h5></div>
+        <div class="col-2"><h5>Сумма</h5></div>
+        <div class="col-2"><h5>Продавец</h5></div>
 
     </div>
     {% for item in queryset_list %}
@@ -110,8 +102,9 @@
         <div class="col-2">{{item.user}}</div>
     </div>
     {% endfor %}
+    </div>
 </div>
 </div>
-</div>
+<!-- </div> -->
 
     {%endblock%}

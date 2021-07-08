@@ -1,8 +1,86 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
 
-    <div class="row">
+<div class="container">
+    <div class="page-location">
+
+        <div class="menu">
+            <div class="row">
+                <h3>Журнал документов</h3>
+            </div>
+        </div>
+    
+            <form action="{% url 'log' %}" method="POST">
+                {% csrf_token %}
+        <div class="menu">
+            <div class="row form-row mt-3">
+              
+                    <div class="col-2">
+                        <input type="date" id='start_date' name="start_date">
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='end_date' name="end_date">
+                    </div>
+            
+
+
+                <div class="col-2">
+                    <select name="doc_type" id="doc_type" class='form-inline'>
+                        <option value="">Выберите тип документ</option>
+                        {% for doc_type in doc_types %}
+                        <option value="{{doc_type.id}}">{{doc_type.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+        
+                <div class="col-2">
+                    <select name="supplier" id="supplier" class='form-inline'>
+                        <option value="">Выберите поставщика</option>
+                        {% for supplier in suppliers %}
+                        <option value="{{supplier.id}}">{{supplier.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-2">
+                    <select name="shop" id="shop" class='form-inline'>
+                        <option value="">Выберите торговую точку</option>
+                        {% for shop in shops %}
+                        <option value="{{shop.id}}">{{shop.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+        
+                <div class="col-2">
+                    <select name="user" id="user" class='form-inline'>
+                        <option value="">Выберите автора</option>
+                        {% for user in users %}
+                        <option value="{{user.id}}">{{user.first_name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        
+           
+        
+            <div class="row form-row mt-3">
+                        <div class="col-2">
+                            <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                        <div class="col-2">
+                            <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                        <div class="col-2">
+                            <a href="{% url 'close_report' %}">
+                                <input type="button" value="Закрыть журнал" class="btn btn-sm btn-block btn-outline-dark">
+                            </a>
+                        </div>
+                </form>
+            </div>
+        </div>
+
+    <div class="log">
+    <div class="row mt-3">
         <div class="col-2">
             <h4>Дата</h4>
         </div>
@@ -10,37 +88,50 @@
             <h4>Документ</h4>
         </div>
         <div class="col-2">
+            <h4>Сумма</h4>
+        </div>
+        <div class="col-4">
+            <h4>Дополнительная информация</h4>
+        </div>
+        <div class="col-2">
             <h4>Автор</h4>
         </div>
     </div>
+    
 
-    {% for document in documents %}
-    <div class="row">
-        <!-- <div class="col-1">{{document.id}}</div>
-        <div class="col-2"><a href="{% url 'open_document' document.id %}" target="_blank">{{document.title}}</a></div> -->
+    {% for document in queryset_list %}
 
-        <!-- Button trigger modal -->
-        <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal_{{document.id}}">
-            {{document.title}}  {{document.id}}
-        </button> -->
+    <div class="row mt-1">
         <div class="col-2">{{document.created}}</div>
+        <!-- ===================Document Modal Triger========================= -->
+
         <div class="col-2">
-        <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{document.id}}">
-            {{document.title}} №{{document.id}}
-        </a>
+            <a href="#" data-bs-toggle="modal" data-bs-target="#modalLog_{{document.id}}">
+                {{document.title}} №{{document.id}}
+            </a>
         </div>
 
+        <!-- <div class="col-2">
+            <div class="enterModalLog">
+                <a href="#">
+                    {{document.title}} №{{document.id}}
+                </a>
+            </div>
+        </div> -->
 
-        <!-- Modal -->
-        <div class="modal fade" id="modal_{{document.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <!-- ==================End of Document Modal Triger========================= -->
+
+       <!-- =======================Document Bootstrap Modal================================= -->
+        <div class="modal fade" id="modalLog_{{document.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"class="ModalLogHide" >
+            <!-- <div class="ModalLogHide"> -->
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Документ {{document.title}} #{{document.id}} от {{document.created}}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="exampleModalLabel">Документ {{document.title}} #{{document.id}} от {{document.created}}</h5>
+                    <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        {% if document.title == 'Поступление ТМЦ' %}
+                        {% if document.title.name == 'Поступление ТМЦ' %}
                             <!-- {{document.delivery.all}} -->
     <!-- =========================================================
         из строки родительской таблицы делаем запрос в дочернюю таблицу. Т.е. из "Document"
@@ -59,7 +150,7 @@
                             </div>
                             {% endfor %}
 
-                        {% elif document.title == 'Перемещение ТМЦ' %}
+                        {% elif document.title.name == 'Перемещение ТМЦ' %}
                             <!-- {{document.transfer_set.all}} -->
                             {% for item in document.transfer_set.all %}
                             <div class="row">
@@ -69,7 +160,7 @@
                                 <div class="col-3">{{item.sub_total}} руб.</div>
                             </div>
                             {% endfor %}
-                        {% elif document.title == 'Продажа ТМЦ' %}
+                        {% elif document.title.name == 'Продажа ТМЦ' %}
                             <!-- {{document.sale_set.all}} -->
                             {% for item in document.sale_set.all %}
                                 <div class="row">
@@ -84,22 +175,35 @@
                         ...
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="button" class="btn btn-primary">Печать</button>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- End of modal -->
+       <!-- ============================End of Document Bootstrap Modal======================================= -->
 
 
 
-        <div class="col-2">{{document.user}}</div>
+        <div class="col-2">{{document.sum}} руб.</div>
+
+        {% if document.title.name == 'Поступление ТМЦ' %}
+         <div class="col-4">{{document.delivery.first.supplier}}</div>
+        {% elif document.title.name == 'Перемещение ТМЦ' %}
+        <div class="col-4">С {{document.transfer_set.first.shop_sender}} на {{document.transfer_set.first.shop_receiver}}</div>
+        {% elif document.title.name == 'Продажа ТМЦ' %}
+        <div class="col-4">{{document.sale_set.first.shop}} </div>
+        {% endif %}
+
+        <div class="col-2">{{document.user.first_name}}</div>
     </div>
 
     {% endfor %}
-
+    </div>
 
 </div>
 </div>
-{%endblock%}
+
+
+
+{% endblock %}

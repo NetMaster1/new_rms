@@ -24,6 +24,12 @@ class ProductCategory (models.Model):
     def __str__(self):
         return self.name
 
+class DocumentType (models.Model):
+    name = models.CharField(max_length=250)
+
+    def __str__(self):
+        return self.name
+
 class Product (models.Model):
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=50)

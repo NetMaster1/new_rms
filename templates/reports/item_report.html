@@ -1,23 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="hide">
+<!-- <div class="hide"> -->
     <div class="container">
         <div class="page_location">
-            <div class="row m-2">
-                <h3>Отчет по движению ТМЦ</h3>
-            </div>
+          
+        <div class="menu">
+            <h3>Отчет по движению ТМЦ</h3>
+        </div>
 
 
-
+        <div class="menu">
             <form action="{% url 'item_report' %}" method="POST">
                 {% csrf_token %}
 
-                <div class="row form-row bg-light m-auto">
-                    <div class="-2">
-                        <input type="text" name="imei" placeholder="IMEI">
-                    </div>
-
-                <div class="row form-row bg-light mt-3">
+                <div class="row form-row m-auto">
                     <div class="col-2">
                         <input type="date" id='start_date' name="start_date">
                     </div>
@@ -25,7 +21,12 @@
                         <input type="date" id='end_date' name="end_date">
                     </div>
 
+                    <div class="col-2">
+                        <input type="text" name="imei" placeholder="IMEI">
+                    </div>
+                </div>
 
+                <div class="row form-row mt-3">
                     <div class="col-2">
                         <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
                     </div>
@@ -45,22 +46,23 @@
                             </button>
                         </a>
                     </div>
-
-
-            </form>
-        </div>
-        <div class="row m-auto">
-            Наименование: {{product.name}} IMEI: {{product.imei}}
-        </div>
-
-
+                </form>
+                </div>
+                </div>
+            </div>
+    <div class="log">
         <div class="row">
-            <div class="col-2">Документ</div>
-            <div class="col-2">Фирма</div>
-            <div class="col-2">Начальный остаток</div>
-            <div class="col-2">Кол-во приход</div>
-            <div class="col-2">Кол-во расход</div>
-            <div class="col-2">Конечный остаток</div>
+            <h5>Наименование: {{product.name}} IMEI: {{product.imei}} </h5>
+        </div>
+
+      
+        <div class="row">
+            <div class="col-2"><h5>Документ</h5></div>
+            <div class="col-2"><h5>Фирма</h5></div>
+            <div class="col-2"><h5>Начальный остаток</h5></div>
+            <div class="col-2"><h5>Кол-во приход</h5></div>
+            <div class="col-2"><h5>Кол-во расход</h5></div>
+            <div class="col-2"><h5>Конечный остаток</h5></div>
             
 
         </div>
@@ -75,8 +77,9 @@
            
         </div>
         {% endfor %}
+        </div>
     </div>
 </div>
-</div>
+<!-- </div> -->
 
-{%endblock%}
+{% endblock %}

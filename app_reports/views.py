@@ -1,6 +1,6 @@
 from app_personnel.models import BonusAccount
 from django.db.models import query
-from app_reference.models import ProductCategory, Shop, Supplier, Product
+from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product
 from app_cash.models import Cash
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
@@ -34,14 +34,14 @@ def sale_report(request):
             sum+=item.sub_total
         if request.method=="POST":
             category = request.POST['category']
-            imei = request.POST['imei']
+            # imei = request.POST['imei']
             shop = request.POST['shop']
             # supplier = request.POST['supplier']
             user = request.POST['user']
             start_date = request.POST['start_date']
             end_date = request.POST['end_date']
-            if imei:
-                queryset_list = queryset_list.filter(imei__icontains=imei)
+            # if imei:
+            #     queryset_list = queryset_list.filter(imei__icontains=imei)
             if category:
                 queryset_list = queryset_list.filter(category=category)
             if shop:
@@ -89,8 +89,9 @@ def delivery_report(request):
     categories=ProductCategory.objects.all()
     suppliers=Supplier.objects.all()
     deliveries=Delivery.objects.all()
+    doc_type=DocumentType.objects.get(name= 'Поступление ТМЦ')
     users=User.objects.all()
-    queryset_list=Document.objects.filter(title='Поступление ТМЦ')
+    queryset_list=Document.objects.filter(title=doc_type)
     if request.method=="POST":
         category = request.POST['category']
         supplier = request.POST['supplier']

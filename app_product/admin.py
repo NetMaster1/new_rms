@@ -17,7 +17,7 @@ class RemainderCurrentAdmin(admin.ModelAdmin):
     list_display = ('updated', 'shop', 'imei', 'current_remainder')  
 
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title')
+    list_display = ('id', 'title', 'created', 'user', 'sum')
 
 class RegisterAdmin(admin.ModelAdmin):
     list_display = ('id', 'product', 'identifier')

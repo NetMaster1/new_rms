@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from app_reference.models import Shop, Supplier, Product, ProductCategory
+from app_reference.models import Shop, Supplier, Product, ProductCategory, DocumentType
 
 # import datetime
 from datetime import datetime, date
@@ -11,7 +11,7 @@ from django.utils import timezone
 # Create your models here. 
 
 class Document (models.Model):
-    title = models.CharField(max_length=50)
+    title = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
     # datetime = models.DateTimeField(default=timezone.now(), blank=True)
     # datetime = models.DateField(default=date.today())

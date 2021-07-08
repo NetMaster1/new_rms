@@ -14,17 +14,20 @@
            
 //     document.querySelector('ul.ul_id').appendChild(li);
 
-    const btn_modal =document.querySelector('.btn_modal')
-    const enterModal =document.querySelector('.enterModal')
-    const btn_close =document.querySelector('.btn_close')
 
-    btn_modal.addEventListener('click', openModal)
-    btn_close.addEventListener('click', closeModal)
 
-    function openModal (){
-        enterModal.classList.add('openModal')
-    }
 
-    function closeModal() {
-            enterModal.classList.remove('openModal')
-        }
+    // const btn_modal =document.querySelector('.btn_modal')
+    // const enterModal =document.querySelector('.enterModal')
+    // const btn_close =document.querySelector('.btn_close')
+
+    // btn_modal.addEventListener('click', openModal)
+    // btn_close.addEventListener('click', closeModal)
+
+    // function openModal (){
+    //     enterModal.classList.add('openModal')
+    // }
+
+    // function closeModal() {
+    //         enterModal.classList.remove('openModal')
+    //     }

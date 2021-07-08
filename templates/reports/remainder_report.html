@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="hide">
+<!-- <div class="hide"> -->
     <div class="container">
         <div class="page_location">
-            <div class="row m-2">
+        
+            <div class="menu">
                 <h3>Отчет по остаткам</h3>
             </div>
 
 
-
+            <div class="menu">
             <form action="{% url 'remainder_report' %}" method="POST">
                 {% csrf_token %}
 
-                <div class="row form-row bg-light m-auto">
+                <div class="row form-row m-auto">
                     <div class="col-2">
                         <input type="text" name="imei" placeholder="IMEI">
                     </div>
@@ -36,7 +37,7 @@
                     </div>
                 </div>
 
-                <div class="row form-row bg-light mt-3">
+                <div class="row form-row mt-3">
                     <div class="col-2">
                         <input type="date" id='date' name="date">
                     </div>
@@ -61,23 +62,24 @@
                             </button>
                         </a>
                     </div>
-
-
             </form>
+            </div>
         </div>
+
+    <div class="log">
         <div class="row m-auto">
-            <div class="col">Всего остаткоа на сумму:</div>
+            <div class="col">Всего остатков на сумму:</div>
             <div class="col">{{sum}}</div>
         </div>
 
 
         <div class="row">
-            <div class="col-2">Категория</div>
-            <div class="col-2">Наименование</div>
-            <div class="col-2">Торговая точка</div>
-            <div class="col-1">Количество</div>
-            <div class="col-2">Цена</div>
-            <div class="col-2">Сумма</div>
+            <div class="col-2"><h5>Категория</h5></div>
+            <div class="col-2"><h5>Наименование</h5></div>
+            <div class="col-2"><h5>Торговая точка</h5></div>
+            <div class="col-2"><h5>Количество</h5></div>
+            <div class="col-2"><h5>Цена</h5></div>
+            <div class="col-2"><h5>Сумма</h5></div>
 
 
         </div>
@@ -92,7 +94,9 @@
         </div>
         {% endfor %}
     </div>
+
 </div>
 </div>
+<!-- </div> -->
 
 {%endblock%}
