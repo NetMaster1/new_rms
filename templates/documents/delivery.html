@@ -4,7 +4,7 @@
     
 <div class="container">
     <div class="page_location">
-    <div class="row m-2">
+    <div class="row m-2 pt-2">
         <div class="col">
             <h3>Поступление ТМЦ</h3>
         </div>
@@ -16,7 +16,7 @@
         {% csrf_token %}
         <div class="row m-1">
         <div class="col-6">
-            <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required>
+            <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required placeholder="Введите IMEI">
         </div>
     
         <div class="col-6">
@@ -79,27 +79,28 @@
     <!-- =================================End of Modal Body======================================== -->
 </div>     
 
-<div class="row m-2">
+<div class="row m-2 pb-2">
     <div class="col-12 border rounded p-3">
 
         <form action="{% url 'delivery_input' identifier.id %}" method="POST">
             {% csrf_token %}
 
-            <div class="form-row">
+            <!-- <div class="form-row">
                 <div class="col-2">
                     <label for="date">Дата</label>
                 </div>
                 <div class="col">
                     <input type="datetime-local" class='form-control' id="date" name="date" value='today' required><br>
                 </div>
-            </div>
+            </div> -->
 
             <div class="form-row">
                 <div class="col-2">
-                    <label for="supplier">Поставщик</label>
+                    <label for="supplier"><h5>Поставщик</h5></label>
                 </div>
                 <div class="col">
                     <select name="supplier" id="supplier" class='form-control' required>
+                        <option value="Выберите фирму-отправителя">Выберите поставщика</option>
                         {% for supplier in suppliers %}
                         <option value="{{supplier.id}}">{{supplier.name}}</option>
                         {% endfor %}
@@ -109,7 +110,7 @@
 
             <div class="form-row">
                 <div class="col-3">
-                    <label for="shop">Фирма</label>
+                    <label for="shop"><h5>Фирма получатель</h5></label>
                 </div>
                 <div class="col">
                     <select name="shop" id="shop" class='form-control' required>
@@ -123,10 +124,11 @@
         
             <div class="form-row">
                 <div class="col-3">
-                    <label for="category">Вид ТМЦ</label>
+                    <label for="category"><h5>Вид ТМЦ</h5></label>
                 </div>
                 <div class="col">
                     <select name="category" id="shop" class='form-control' required>
+                        <option value="#">Выберите вид ТМЦ</option>
                         {% for category in categories %}
                         <option value="{{category.id}}">{{category.name}}</option>
                         {% endfor %}
@@ -134,20 +136,19 @@
                 </div>
             </div>
 
-            
+ 
             <div class='form-inline'>
-                <div class="row">
-                    <div class="col-2"><label for="title">IMEI</label></div>
-                    <div class="col-2"><label for="title">Наименование</label></div>
-                    <div class="col-2"><label for="quantity">Кол-во</label></div>
-                    <div class="col-2"><label for="price">Цена</label></div>
-                    <div class="col-2"><label for="sum">Сумма</label></div>
+                <div class="row m-1">
+                    <div class="col-2"><label for="title"><h5>IMEI</h5></label></div>
+                    <div class="col-2"><label for="title"><h5>Наименование</h5></label></div>
+                    <div class="col-2"><label for="quantity"><h5>Кол-во</h5></label></div>
+                    <div class="col-2"><label for="price"><h5>Цена</h5></label></div>
                 </div>
             </div>
 
         
             {% for register in registers %}
-            <div class="row m-1">
+            <div class="row m-auto mb-1">
                 <div class="col-2">
                     <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}' >
                 </div>
@@ -170,22 +171,25 @@
                 </div>
             </div>
             {% endfor %}
-       
-            <div class="row m-auto mt-2">
+         
+
+        <div class="row m-auto mt-3 ">
+            <div class="col-2">
                 <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
             </div>
-          
         </form>
-            <div class="row m-auto mt-2"  >
-                <div class="row m-auto mt-2">
+            
+            <div class="col-2">
                     <a href="{% url 'clear_delivery' identifier.id %}">
                         <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark">
                     </a>
-                </div>
+            </div>
+            <div class="col-2">
                 <a href="{% url 'close_without_save' identifier.id %}">
                     <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
                 </a>
             </div>
+        </div>
     </div>
     </div>
 </div>

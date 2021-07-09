@@ -33,5 +33,9 @@ urlpatterns = [
     path ('cashback/<int:identifier_id>', views.cashback, name='cashback'),
     path ('payment/<int:identifier_id>/<int:client_id>', views.payment, name='payment'),
     path ('cashback_off/<int:identifier_id>/<int:client_id>', views.cashback_off, name='cashback_off'),
-  
+
+
+    path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),
+    path ('clear_recognition/<int:identifier_id>', views.clear_recognition, name='clear_recognition'),
+    path ('recognition/<int:identifier_id>', views.recognition, name='recognition'),
 ]

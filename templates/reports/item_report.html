@@ -57,23 +57,25 @@
 
       
         <div class="row">
+            <div class="col-2"><h5>Дата</h5></div>
             <div class="col-2"><h5>Документ</h5></div>
             <div class="col-2"><h5>Фирма</h5></div>
-            <div class="col-2"><h5>Начальный остаток</h5></div>
-            <div class="col-2"><h5>Кол-во приход</h5></div>
-            <div class="col-2"><h5>Кол-во расход</h5></div>
-            <div class="col-2"><h5>Конечный остаток</h5></div>
+            <div class="col-1"><h5>Начальный остаток</h5></div>
+            <div class="col-1"><h5>Кол-во приход</h5></div>
+            <div class="col-1"><h5>Кол-во расход</h5></div>
+            <div class="col-1"><h5>Конечный остаток</h5></div>
             
 
         </div>
         {% for item in queryset_list %}
         <div class="row m-auto">
-            <div class="col-2">{{item.document.title}} {{item.document.id}}</div>
+            <div class="col-2">{{item.document.created}}</div>
+            <div class="col-2">{{item.document.title}} # {{item.document.id}}</div>
             <div class="col-2">{{item.shop}}</div>
-            <div class="col-2">{{item.pre_remainder}}</div>
-            <div class="col-2">{{item.incoming_quantity}}</div>
-            <div class="col-2">{{item.outgoing_quantity}}</div>
-            <div class="col-2">{{item.current_remainder}}</div>
+            <div class="col-1">{{item.pre_remainder}}</div>
+            <div class="col-1">{{item.incoming_quantity}}</div>
+            <div class="col-1">{{item.outgoing_quantity}}</div>
+            <div class="col-1">{{item.current_remainder}}</div>
            
         </div>
         {% endfor %}

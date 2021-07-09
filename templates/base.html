@@ -12,7 +12,18 @@
 
     <link rel="stylesheet" href="{% static 'style.css' %}">
 
+
+<script type="text/javascript">
+    window.history.forward();
+    function prevent() {
+        window.history.forward();
+    }
+</script>
+
 </head>
+
+<body onload="prevent();" onpageshow="if (event.persisted) prevent();" onunload="">
+
 <body>
     {% include 'partials/_navbar.html' %}
     <div class="container">

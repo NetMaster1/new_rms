@@ -3,22 +3,21 @@
 <div class="hide">
 <div class="container">
     <div class="page_location">
-<div class="row m-2">
+
+<div class="row m-2 pt-2">
     <div class="col">
         <h3>Продажа ТМЦ</h3>
-        <h3>{{request.user.first_name}}</h3>
     </div>
 </div>
 <!-- ============================Check availability================================== -->
 <div class="row m-2">
+    <div class="col-12 border rounded p-3">
     <form action="{% url 'check_sale' identifier.id %}" method="POST">
         {% csrf_token %}
         <div class="row m-1">
-            <div class="col-1">
-                <label for="imei">IMEI</label>
-            </div>
+    
             <div class="col-2">
-                <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required>
+                <input type="text" class='form-control' id="imei" name="imei" maxlength='50' placeholder="Введите IMEI" required>
             </div>
             <div class="col-1">
                 <label for="quantity">Кол-во</label>
@@ -26,13 +25,16 @@
             <div class="col-1">
                 <input type="number" class='form-control' id="quantity" name="quantity" value=1 required>
             </div>
-                <div class="col-1">
-                    <label for="shop">Фирма</label>
-                </div>
-                <div class="col-2">
+                <div class="col-4">
                     <select name="shop" id="shop" class='form-control'>
+                        <option selected="true" disabled="disabled">Выберите ТТ, с которой продается ТМЦ</option>
                         {% for shop in shops %}
-                        <option value="{{shop.id}}">{{shop.name}}</option>
+                        
+                        <option value="{{shop.id}}"
+                        {% if shop.id == register.shop.id %}
+                        selected
+                        {% endif %} >
+                        {{shop.name}}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -41,6 +43,7 @@
             </div>
         </div>
     </form>
+</div>
 </div>
 <!-- ===========================End of Check of Availability====================================== -->
 
@@ -74,10 +77,10 @@
 
             <!-- <div class='form-inline'> -->
                 <div class="row m-2">
-                    <div class="col-3"><label for="imei">Наименование</label></div>
-                    <div class="col-2"><label for="name">IMEI</label></div>
-                    <div class="col-2"><label for="quantity">Кол-во</label></div>
-                    <div class="col-2"><label for="price">Цена</label></div>
+                    <div class="col-2"><label for="imei"><h5>IMEI</h5></label></div>
+                    <div class="col-3"><label for="name"><h5>Наименование</h5></label></div>
+                    <div class="col-2"><label for="quantity"><h5>Кол-во</h5></label></div>
+                    <div class="col-2"><label for="price"><h5>Цена</h5></label></div>
                     <div class="col-2"><label for="sum">Сумма</label></div>
                 </div>
             <!-- </div> -->
@@ -85,12 +88,12 @@
     
            {% for register in registers %}
             <div class="row m-2">
-                <div class="col-3">
-                    {{register.product.name}}
-                    <!-- <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'> -->
-                </div>
                 <div class="col-2">
                     {{register.product.imei}}
+                    <!-- <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'> -->
+                </div>
+                <div class="col-3">
+                    {{register.product.name}}
                     <!-- <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}'> -->
                 </div>
                 <div class="col-2">
@@ -117,29 +120,28 @@
                     <div class="col">Сумма чека:</div>
                     <div class="col">{{sum}} руб. </div>
                 </div>
-                <div class="row mt-2">
-                    <div class="col-6 border rounded p-3">
+                <div class="row border rounded p-3">
+                 <div class="col-2">
                     <a href="{% url 'clear_sale' identifier.id %}">
                         <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark">
                     </a>
                     </div>
-                    <div class="col-6 border rounded p-3">
+                    <div class="col-2">
                     <a href="{% url 'close_without_save' identifier.id %}">
                         <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
                     </a>
                     </div>
-                </div>
-        <!-- </form> -->
+              
 
-
-        <div class="row mt-2">
             
 <!-- ===========================Enter client's phone for cashback modal trigger============================ -->
-                <div class="col-4 border rounded p-3">
-                    <button type="button" class="btn btn-sm btn-outline-dark btn_modal_cashback">
-                        Внести данные для кэшбэка
-                    </button>
-                </div>
+       
+            <div class="col-2">
+            <button type="button" class="btn btn-sm btn-outline-dark btn_modal_cashback">
+                Продажа с кэшбэком
+            </button>
+            </div>
+      
 <!-- ===========================End of client's phone for cashback modal trigger============================= -->
 
 <!-- ===========================Client's Phone for cashback modal======================= -->
@@ -172,9 +174,9 @@
     <!-- ==============================End of Client's phone for cashback modal======================== -->
     
 <!-- ==============================New Cashback Client Modal Trigger================== -->
-            <div class="col-4 border rounded p-3">
+            <div class="col-2">
                 <button type="button" class="btn btn-sm btn-outline-dark btn_modal_cashback_new_client">
-                    Зарегистрировать нового кэшбэк клиента
+                    Новый клиент кэшбэк
                 </button>
             </div>
 <!-- ============================End of New Cashback Client Modal Trigger========================= -->
@@ -220,7 +222,7 @@
 <!-- ==============================End of Modal Body====================================== -->
 
             </div>
-            <div class="col-4 border rounded p-3">
+            <div class="col-2">
                 <!-- 4 is a service number assigned to Sergei -->
                     <a href="{% url 'payment' identifier.id 4%}"> 
                         <input type="button" value="Продолжить без кэшбэка" class="btn btn-sm btn-outline-dark btn_modal">
@@ -257,11 +259,18 @@
     function openModalCashbackNewClient() {
             enterModalCashbackNewClient.classList.add('openModal')
         }
+
         function closeModalCashbackNewClient() {
             enterModalCashbackNewClient.classList.remove('openModal')
         }
-    
 
+        //window.onbeforeunload = function () {
+          //      return false;
+            //};
+    
+        //window.onbeforeunload = function () {
+        //        return "Есть несохранённые изменения. Всё равно уходим?";
+        //    };
 
 </script>
 

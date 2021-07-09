@@ -1,40 +1,43 @@
 {% extends 'base.html' %}
-
 {% block content %}
-
-
-<div class="container mt-5 mb-5 pt-5">
+<div class="container">
+    <div class="page_location">
         <!-- Alerts ========================== -->
         {% include 'partials/_alerts.html' %}
         <!-- ========================================== -->
-        <div class="row">
-            {{request.user.first_name}}
-        </div>
-        <div class="row">
-            <div class="col">Аксы продажи</div>
-            <div class="col">Смартфоны продажи</div>
-            <div class="col">Трубки продажи</div>
-            <div class="col">Сим карты продажи</div>
-        </div>
-        <div class="row">
+        <div class="menu">
+            <div class="row">
             <div class="col">
-            {{accessories_sum}}
+           <h5>Мой бонус за текущий месяц</h5>
             </div>
             <div class="col">
-            {{smarts_sum}}
-            </div>
-            <div class="col">
-            {{phones_sum}}
-            </div>
-            <div class="col">
-                {{sims_sum}}
+                <h5> руб.</h5>
             </div>
         </div>
+        </div>
+    <div class="log">
+            <div class="row">
+                <div class="col"><h5>Товарная группа</h5></div>
+                <div class="col"><h5>Выручка</h5></div>
+                <div class="col"><h5>Мой бонус</h5></div>
+            </div>
         <div class="row">
-            <div class="col">{{bonus_accs}}</div>
+            <div class="col">
+                <div class="row m-auto">Телефоны 10%</div>
+                <div class="row m-auto">Телефоны 5%</div>
+                <div class="row m-auto">Оборудование РТК</div>
+                <div class="row m-auto">Аксы</div>
+                <div class="row m-auto">Модемы</div>
+                <div class="row m-auto">Тарифы</div>
+                <div class="row m-auto">Страховки</div>
+                <div class="row m-auto">Esset</div>
+                <div class="row m-auto">Подписки</div>
+                <div class="row m-auto">Услуги</div>
+            </div>
         </div>
-
-
+ 
+    </div>
+</div>
 </div>
 
 

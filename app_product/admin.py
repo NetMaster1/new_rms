@@ -14,7 +14,7 @@ class RemainderHistoryAdmin(admin.ModelAdmin):
     list_display = ('created', 'category', 'shop', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'av_price', 'sub_total', 'retail_price')   
 
 class RemainderCurrentAdmin(admin.ModelAdmin):
-    list_display = ('updated', 'shop', 'imei', 'current_remainder')  
+    list_display = ('updated', 'shop', 'name', 'imei', 'current_remainder', 'retail_price')  
 
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'created', 'user', 'sum')

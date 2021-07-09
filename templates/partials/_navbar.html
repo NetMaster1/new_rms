@@ -1,15 +1,17 @@
 <nav class=" navbar navbar-expand-lg navbar-dark bg-primary">
-    <!-- <div class="container-fluid"> -->
+<!-- <nav class=" navbar navbar-dark bg-primary"> -->
+    <div class="container-fluid">
         <a class="navbar-brand" href="#">ООО Ритейл</a>
 
+{% for group in request.user.groups.all %}
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
             aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
+{% if group.name == 'admin' %}
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav">
-                
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
@@ -19,6 +21,8 @@
                             <li><a class="dropdown-item" href="{% url 'log' %}">Документы</a></li>
                         </ul>
                     </li>
+
+    
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false">
@@ -69,18 +73,47 @@
                         Документы
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                        <li><a class="dropdown-item" href="{% url 'identifier_delivery' %}" >Поступление ТМЦ</a></li>
-                        <li><a class="dropdown-item" href="#">Оприходование ТМЦ</a></li>
-                        <li><a class="dropdown-item" href="{% url 'identifier_sale' %}">Продажа ТМЦ</a></li>
-                        <li><a class="dropdown-item" href="{% url 'identifier_transfer' %}">Перемещение ТМЦ</a></li>
-                        <li><a class="dropdown-item" href="#">Списание ТМЦ</a></li>
-                        <li><a class="dropdown-item" href="#">Возврат ТМЦ</a></li>
-                        <li><a class="dropdown-item" href="#">Переоценка ТМЦ</a></li>
+                    <li><a class="dropdown-item" href="{% url 'identifier_delivery' %}" >Поступление ТМЦ</a></li>
+                    <li><a class="dropdown-item" href="{% url 'identifier_recognition' %}">Оприходование ТМЦ</a></li>
+                        
+                    <li><a class="dropdown-item" href="{% url 'identifier_transfer' %}">Перемещение ТМЦ</a></li>
+                    <li><a class="dropdown-item" href="#">Списание ТМЦ</a></li>
+                    <li><a class="dropdown-item" href="#">Переоценка ТМЦ</a></li>
+
+                    <li><a class="dropdown-item" href="{% url 'identifier_sale' %}">Продажа ТМЦ</a></li>
+                    <li><a class="dropdown-item" href="#">Возврат ТМЦ</a></li>
+                        
                     </ul>
                 </li>
             </ul>
+{% elif group.name == 'sales' %}
+    <div class="collapse navbar-collapse">
+            <ul class="navbar-nav">
+                <a class="nav-link text-light" href="{% url 'my_bonus' %}">Мой бонус</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Документы
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <li><a class="dropdown-item" href="{% url 'identifier_sale' %}">Продажа ТМЦ</a></li>
+                        <li><a class="dropdown-item" href="#">Возврат ТМЦ</a></li>
+                
+                    </ul>
+                </li>       
+            </ul>
+{% elif group.name == 'manager' %}
+
+{% endif %}
+{% endfor %}
+        <div class="li navbar-brand">
+                <h5>Добро пожаловать {{request.user.first_name}}</h5>
+            </div>
         </div>
-    <!-- </div> -->
+
+        <a class="navbar-brand" href="{% url 'logout' %}">Выйти</a>
+    </div>
+    </div>
 </nav>
 
 <div class="container">

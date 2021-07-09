@@ -1,23 +1,27 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="hide">
-<div class="container">
-    <div class="page_location">
-    <div class="row m-2">
+
+    <div class="container">
+        <div class="page_location">
+
+    <div class="row m-2 pt-2">
         <div class="col">
             <h3>Пeремещение ТМЦ</h3>
         </div>
     </div>
 
-    <div class="row m-2">
+    <div class="row m-2 ">
+        <div class="col-12 border rounded p-3 ">
         <form action="{% url 'check_transfer' identifier.id %}">
             {% csrf_token %}
             <div class="row m-1">
                 <div class="col-2">
-                    <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required placeholder='IMEI'>
+                    <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required placeholder='Введите IMEI'>
                 </div>
-                <div class="col-2">
+                <div class="col-4">
                 <select name="shop" id="shop" class='form-control' required>
+                    <option value="#">Введите ТТ, с которой перемещается ТМЦ</option>
                     {% for shop in shops %}
                     <option value="{{shop.id}}">{{shop.name}}</option>
                     {% endfor %}
@@ -29,28 +33,30 @@
             </div>
         </form>
     </div>
+    </div>
 
-    <div class="row m-2">
+    <div class="row m-2 pb-2">
         <div class="col-12 border rounded p-3">
 
             <form action="{% url 'transfer_input' identifier.id %}" method='POST'>
                 {% csrf_token %}
 
-                <div class="form-row">
+                <!-- <div class="form-row">
                     <div class="col-2">
                         <label for="date">Дата</label>
                     </div>
                     <div class="col">
                         <input type="datetime-local" class='form-control' id="date" name="date" value='today'><br>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="form-row">
                     <div class="col-3">
-                        <label for="shop">Фирма отправитель</label>
+                        <label for="shop"><h5>Фирма отправитель</h5></label>
                     </div>
                     <div class="col">
                         <select name="shop_sender" id="shop_sender" class='form-control'>
+                            <option value="#">Выберите фирму-отправителя</option>
                             {% for shop in shops %}
                             <option value="{{shop.id}}">{{shop.name}}</option>
                             {% endfor %}
@@ -60,10 +66,11 @@
 
                 <div class="form-row">
                     <div class="col-3">
-                        <label for="shop_receiver">Фирма получатель</label>
+                        <label for="shop_receiver"><h5>Фирма получатель</h5></label>
                     </div>
                     <div class="col">
                         <select name="shop_receiver" id="shop_receiver" class='form-control'>
+                            <option value="#">Выберите фирму-получателя</option>
                             {% for shop in shops %}
                             <option value="{{shop.id}}">{{shop.name}}</option>
                             {% endfor %}
@@ -73,11 +80,12 @@
 
                 <div class='form-inline'>
                     <div class="row m-2">
-                        <div class="col-2"><label for="imei">IMEI</label></div>
-                        <div class="col-2"><label for="name">Наименование</label></div>
-                        <div class="col-2"><label for="quantity">Кол-во</label></div>
-                        <div class="col-2"><label for="price">Цена</label></div>
-                        <div class="col-2"><label for="sum">Сумма</label></div>
+                        <div class="col-2"><label for="imei"><h5>IMEI</h5></label></div>
+                        <div class="col-2"><label for="imei"><h5>Наименование</h5></label></div>
+                        <div class="col-2"><label for="imei"><h5>Кол-во</h5></label></div>
+                        <div class="col-2"><label for="imei"><h5>Розничная цена</h5></label></div>
+                        <div class="col-2"><label for="imei"><h5></h5></label></div>
+                        
                     </div>
                 </div>
 
@@ -92,14 +100,14 @@
                         <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'>
                     </div>
                     <div class="col-2">
-                        <input type="text" class='form-control' id="quantity" name="quantity" value={{register.quantity}} required>
+                        <input type="text" class='form-control' id="quantity" name="quantity" value=1 required>
                     </div>
                     <div class="col-2">
-                        <input type="number" class='form-control' id="price" name="price"required>
+                        <input type="number" class='form-control' id="price" name="price" required>
                     </div>
-                    <div class="col-2">
+                    <!-- <div class="col-2">
                         <input type="number" class='form-control' id="sum" name="sum">
-                    </div>
+                    </div> -->
                     <div class="col">
                         <a href="{% url 'delete_line_transfer' register.product.imei identifier.id %}">
                             <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
@@ -110,19 +118,21 @@
 
 
                 <div class="row m-auto">
+                    <div class="col-2">
                     <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
                 </div>
             </form>
-                <div class="row m-auto mt-2">
+               <div class="col-2">
                     <a href="{% url 'close_without_save' identifier.id %}">
                         <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
                     </a>
                 </div>
-                <div class="row m-auto mt-2">
+              <div class="col-2">
                     <a href="{% url 'clear_transfer' identifier.id %}">
                         <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark">
                     </a>
                 </div>
+            </div>
         </div>
     </div>
 </div>

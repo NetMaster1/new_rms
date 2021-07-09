@@ -8,6 +8,7 @@ from app_reference.models import Shop, Supplier, Product, ProductCategory, Docum
 from app_cash.models import Cash, CashRemainder, Credit, Card
 from app_clients.models import Client
 from django.contrib.auth.models import User
+from django.contrib import messages, auth
 from django.utils import timezone
 from django.contrib import messages
 
@@ -16,7 +17,11 @@ from django.contrib import messages
 
 
 def index (request):
-    return render(request, 'index.html')
+    if request.user.is_authenticated:
+        return render(request, 'index.html')
+    else:
+        # auth.logout(request)
+        return redirect ('login')
 
 def close_without_save(request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
@@ -51,6 +56,13 @@ def clear_sale(request, identifier_id):
         register.delete()
     return redirect ('sale', identifier.id)
 
+def clear_recognition(request, identifier_id):
+    identifier=Identifier.objects.get(id=identifier_id)
+    registers=Register.objects.filter(identifier=identifier)
+    for register in registers:
+        register.delete()
+    return redirect ('recognition', identifier.id)
+
 def identifier_sale (request):
     if request.user.is_authenticated:
         identifier=Identifier.objects.create()
@@ -61,8 +73,15 @@ def identifier_sale (request):
 def check_sale(request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     shops=Shop.objects.all()
+    # if imei in request.GET:
+    #     imei=request.GET['imei']
+    #     if imei:
     if request.method == 'POST':
-        shop=request.POST['shop']
+        try:
+            shop=request.POST['shop']
+        except:
+            messages.error(request, 'Введите ТТ, откуда осуществляется продажа')            
+            return redirect ('sale', identifier.id)
         imei=request.POST['imei']
         quantity=request.POST['quantity']
         quantity=int(quantity)
@@ -98,23 +117,31 @@ def check_sale(request, identifier_id):
         else:
             messages.error(request, 'Данное наименование для продажи отсутствует в базе данных')            
             return redirect ('sale', identifier.id)
-      
+     
+            
+
 def sale(request, identifier_id):
     if request.user.is_authenticated:
-        
         identifier=Identifier.objects.get(id=identifier_id)
         shops=Shop.objects.all()
         sum=0
         registers= Register.objects.filter(identifier=identifier)
         for register in registers:
             sum += register.sub_total
-
+        register=Register.objects.last()
         context={
             'identifier': identifier,
             'registers': registers,
             'shops': shops,
-            'sum': sum
+            'sum': sum,
+            'register': register
         }
+        # if request.session.expires():
+        #     identifier.delete()
+        #     for register in registers:
+        #         register.delete()
+        #     return redirect ('login')
+        # else:
         return render(request, 'documents/sale.html', context)
     else:
         return redirect ('login')
@@ -226,16 +253,17 @@ def delivery_input(request, identifier_id):
             n=len(names)
             document_sum=0
             for i in range(n):
-                imei=imeis[i]
-                if RemainderCurrent.objects.filter(shop=shop, imei=imei).exists():
-                    remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imei)
+                # imei=imeis[i]
+                if RemainderCurrent.objects.filter(shop=shop, imei=imeis[i]).exists():
+                    remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
                 else:
                     RemainderCurrent.objects.create(
                         shop=shop,
-                        imei=imei,
-                        current_remainder=0
+                        imei=imeis[i],
+                        current_remainder=0,
+                        name=names[i]
                     )
-                    remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imei)
+                    remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
                 delivery_item=Delivery.objects.create(
                     document=document,
                     category=category,
@@ -253,7 +281,8 @@ def delivery_input(request, identifier_id):
                     document=document,
                     shop=shop,
                     category=category,
-                    imei=imei,
+                    imei=imeis[i],
+                    name=names[i],
                     pre_remainder=remainder_current.current_remainder,
                     incoming_quantity=quantities[i],
                     outgoing_quantity=0,
@@ -283,22 +312,25 @@ def identifier_transfer (request):
     return redirect ('transfer', identifier.id)
 
 def transfer (request, identifier_id):
-    identifier=Identifier.objects.get(id=identifier_id)
-    shops=Shop.objects.all()
-    if Register.objects.filter(identifier=identifier).exists():
-        registers=Register.objects.filter(identifier=identifier)
-        context = {
-        'identifier': identifier,
-        'shops': shops,
-        'registers': registers
-        }
-        return render (request, 'documents/transfer.html', context)
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
+        shops=Shop.objects.all()
+        if Register.objects.filter(identifier=identifier).exists():
+            registers=Register.objects.filter(identifier=identifier)
+            context = {
+            'identifier': identifier,
+            'shops': shops,
+            'registers': registers
+            }
+            return render (request, 'documents/transfer.html', context)
+        else:
+            context = {
+            'identifier': identifier,
+            'shops': shops
+            }
+            return render (request, 'documents/transfer.html', context)
     else:
-        context = {
-        'identifier': identifier,
-        'shops': shops
-        }
-        return render (request, 'documents/transfer.html', context)
+        return redirect ('login')
 
 def check_transfer (request, identifier_id):
     shops = Shop.objects.all()
@@ -339,105 +371,114 @@ def delete_line_transfer(request, imei, identifier_id):
     return redirect ('transfer', identifier.id)
 
 def transfer_input(request, identifier_id):
-    identifier=Identifier.objects.get(id=identifier_id)
-    registers=Register.objects.filter(identifier=identifier)
-    doc_type=DocumentType.objects.get(name='Перемещение ТМЦ')
-    if request.method == "POST":
-        # imeis=request.GET.getlist('imei', None )
-        # names=request.GET.getlist('name', None )
-        # prices=request.GET.getlist('price', None )
-        # quantities=request.GET.getlist('quantity', None )
-        imeis=request.POST.getlist('imei', None )
-        names=request.POST.getlist('name', None )
-        prices=request.POST.getlist('price', None )
-        quantities=request.POST.getlist('quantity', None )
-        shop_sender=request.POST['shop_sender']
-        shop_receiver=request.POST['shop_receiver']
-        date=request.POST['date']
-        shop_sender=Shop.objects.get(id=shop_sender)
-        shop_receiver=Shop.objects.get(id=shop_receiver)
-        
-        if shop_sender==shop_receiver:
-            messages.error(request, 'Документ не проведен. Выберите фирму получателя отличную от отправителя')
-            return redirect ('transfer', identifier.id)
-        else:
-
-            check_point = []
-            n=len(names)
-            for i in range(n):
-                if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
-                    remainder_current_sender=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
-                    if remainder_current_sender.current_remainder<int(quantities[i]):
-                        check_point.append(False)
-                    else:
-                        check_point.append(True)
-                else:
-                    check_point.append(False)
-            if False in check_point:
-                messages.error(request, 'Документ не проведен. Одно или несколько наименование отсутствуют на балансе данной фирмы.')
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
+        registers=Register.objects.filter(identifier=identifier)
+        doc_type=DocumentType.objects.get(name='Перемещение ТМЦ')
+        if request.method == "POST":
+            # imeis=request.GET.getlist('imei', None )
+            # names=request.GET.getlist('name', None )
+            # prices=request.GET.getlist('price', None )
+            # quantities=request.GET.getlist('quantity', None )
+            imeis=request.POST.getlist('imei', None )
+            names=request.POST.getlist('name', None )
+            prices=request.POST.getlist('price', None )
+            quantities=request.POST.getlist('quantity', None )
+            shop_sender=request.POST['shop_sender']
+            shop_receiver=request.POST['shop_receiver']
+            date=request.POST['date']
+            shop_sender=Shop.objects.get(id=shop_sender)
+            shop_receiver=Shop.objects.get(id=shop_receiver)
+            
+            if shop_sender==shop_receiver:
+                messages.error(request, 'Документ не проведен. Выберите фирму получателя отличную от отправителя')
                 return redirect ('transfer', identifier.id)
             else:
-                document=Document.objects.create(
-                        title=doc_type,
-                        user=request.user
-                    )
+
+                check_point = []
+                n=len(names)
                 for i in range(n):
-                    remainder_current_sender=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
-                    transfer=Transfer.objects.create(
-                    document=document,
-                    shop_sender=shop_sender,
-                    shop_receiver=shop_receiver,
-                    name=names[i],
-                    imei=imeis[i],
-                    price=prices[i],
-                    quantity=int(quantities[i]),
-                    )
-
-                    remainder_history=RemainderHistory.objects.create(
-                        document=document,
-                        shop=shop_sender,
-                        # category=category,
-                        imei=imeis[i],
-                        name=names[i],
-                        retail_price=prices[i],
-                        pre_remainder=remainder_current_sender.current_remainder,
-                        incoming_quantity=0,
-                        outgoing_quantity=quantities[i],
-                        current_remainder=remainder_current_sender.current_remainder-int(quantities[i]),
-                        #av_price
-                        sub_total=int(quantities[i]) * int(prices[i])
-                    )
-                    remainder_current_sender.current_remainder=remainder_history.current_remainder
-                    remainder_current_sender.save()
-
-                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
-                        remainder_current_reciever=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_receiver)
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
+                        remainder_current_sender=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
+                        if remainder_current_sender.current_remainder<int(quantities[i]):
+                            check_point.append(False)
+                        else:
+                            check_point.append(True)
                     else:
-                        remainder_current_receiver=RemainderCurrent.objects.create(
-                            imei=imeis[i],
-                            shop=shop_receiver,
-                            current_remainder=0
+                        check_point.append(False)
+                if False in check_point:
+                    messages.error(request, 'Документ не проведен. Одно или несколько наименование отсутствуют на балансе данной фирмы.')
+                    return redirect ('transfer', identifier.id)
+                else:
+                    document=Document.objects.create(
+                            title=doc_type,
+                            user=request.user
                         )
-                    remainder_history=RemainderHistory.objects.create(
-                        document=document,
-                        shop=shop_receiver,
-                        # category=category,
-                        imei=imeis[i],
-                        pre_remainder=remainder_current_receiver.current_remainder,
-                        incoming_quantity=quantities[i],
-                        outgoing_quantity=0,
-                        current_remainder=remainder_current_receiver.current_remainder+int(quantities[i]),
-                        # sub_total=int(quantities[i]) * int(prices[i])
-                    )
-                    remainder_current_receiver.current_remainder=remainder_history.current_remainder
-                    remainder_current_receiver.save()
+                    for i in range(n):
+                        remainder_current_sender=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
+                        transfer=Transfer.objects.create(
+                            document=document,
+                            shop_sender=shop_sender,
+                            shop_receiver=shop_receiver,
+                            imei=imeis[i],
+                            price=prices[i],
+                            name=names[i],
+                            quantity=int(quantities[i]),
+                        )
+
+                        remainder_history=RemainderHistory.objects.create(
+                            document=document,
+                            shop=shop_sender,
+                            # category=category,
+                            imei=imeis[i],
+                            name=names[i],
+                            retail_price=prices[i],
+                            pre_remainder=remainder_current_sender.current_remainder,
+                            incoming_quantity=0,
+                            outgoing_quantity=quantities[i],
+                            current_remainder=remainder_current_sender.current_remainder-int(quantities[i]),
+                            #av_price
+                            sub_total=int(quantities[i]) * int(prices[i])
+                        )
+                        remainder_current_sender.current_remainder=remainder_history.current_remainder
+                        remainder_current_sender.save()
+
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
+                            remainder_current_receiver=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_receiver)
+                        else:
+                            remainder_current_receiver=RemainderCurrent.objects.create(
+                                imei=imeis[i],
+                                name=names[i],
+                                shop=shop_receiver,
+                                current_remainder=0
+                            )
+                        remainder_history=RemainderHistory.objects.create(
+                            document=document,
+                            shop=shop_receiver,
+                            # category=category,
+                            imei=imeis[i],
+                            name=names[i],
+                            retail_price=prices[i],
+                            pre_remainder=remainder_current_receiver.current_remainder,
+                            incoming_quantity=quantities[i],
+                            outgoing_quantity=0,
+                            current_remainder=remainder_current_receiver.current_remainder+int(quantities[i]),
+                            sub_total=int(quantities[i]) * int(prices[i])
+                        )
+                        remainder_current_receiver.current_remainder=remainder_history.current_remainder
+                        remainder_current_receiver.retail_price=remainder_history.retail_price
+                        remainder_current_receiver.save()
 
 
-                for register in registers:
-                    register.delete()
-                identifier.delete()      
-                return redirect ('index')      
-    return redirect('transfer', identifier.id)    
+                    for register in registers:
+                        register.delete()
+                    identifier.delete()      
+                    return redirect ('index')   
+        else:
+            return redirect('transfer', identifier.id)
+    else:
+        auth.logout(request)
+        return redirect('login')  
 
 def cashback (request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
@@ -628,6 +669,29 @@ def cashback_off (request, identifier_id, client_id):
             current_cash_remainder.save()
             return redirect ('index')
     return redirect ('index')
+
+def identifier_recognition (request):
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.create()
+        return redirect ('recognition', identifier.id)
+    else:
+        return redirect ('login')
+
+def recognition(request, identifier_id):
+    identifier=Identifier.objects.get(id=identifier_id)
+    categories=ProductCategory.objects.all()
+    shops=Shop.objects.all()
+    registers = Register.objects.filter(identifier=identifier)
+    context={
+        'identifier': identifier,
+        'categories': categories,
+        'shops': shops,
+        'registers': registers
+    }
+    return render(request, 'documents/recognition.html', context)
+
+
+
 
 
 def log(request):
