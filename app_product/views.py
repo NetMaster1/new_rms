@@ -35,6 +35,9 @@ def close_without_save(request, identifier_id):
         identifier.delete()
         return redirect('index')
 
+def close_edited_document(request):
+    return redirect ('log')
+
 def clear_transfer(request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     registers=Register.objects.filter(identifier=identifier)
@@ -303,6 +306,80 @@ def delivery_input(request, identifier_id):
             messages.error(request, 'Вы не ввели ни одного наименования.')
             return redirect('delivery', identifier.id)
 
+def change_delivery(request, document_id):
+    document=Document.objects.get(id=document_id)
+    suppliers=Supplier.objects.all()
+    shops=Shop.objects.all()
+    categories=ProductCategory.objects.all()
+    rem_hist_objs=RemainderHistory.objects.filter(document=document)
+    if request.method=="POST":
+        shop=request.POST['shop']
+        supplier=request.POST['supplier']
+        supplier=Supplier.objects.get(id=supplier)
+        category=request.POST['category']
+        category=ProductCategory.objects.get(id=category)
+        imeis=request.POST.getlist('imei', None )
+        names=request.POST.getlist('name', None )
+        quantities=request.POST.getlist('quantity', None)
+        prices=request.POST.getlist('price', None)
+        shop=Shop.objects.get(id=shop)
+        deliveries=Delivery.objects.filter(document=document)
+        sum=0
+        n=len(names)
+        # for i in range(n)
+        for delivery, i , rho in zip (deliveries, range(n), rem_hist_objs):
+            delivery.shop=shop
+            delivery.supplier=supplier
+            delivery.quantity=quantities[i]
+            delivery.price=prices[i]
+            delivery.sub_total=int(quantities[i])*int(prices[i])
+            delivery.save()
+            sum+=delivery.sub_total
+            rho.shop=shop
+            # rho.category=category,
+            rho.imei=imeis[i]
+            rho.name=names[i]
+            rho.incoming_quantity=int(quantities[i])
+            rho.av_price=int(prices[i])
+            rho.sub_total=int(quantities[i]) * int(prices[i])
+            pre_remainder=rho.pre_remainder
+            rho.current_remainder=pre_remainder+int(quantities[i])
+            rho.update_check=True
+            rho.save()
+
+            if rho.update_check == True:
+                sequence_rhos=RemainderHistory.objects.filter(imei=imeis[i], shop=shop)
+                sequence_rhos=sequence_rhos.filter(created__gt=rho.created)
+                remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                remainder_current.current_remainder=rho.current_remainder
+                remainder_current.save()
+                for obj in sequence_rhos:
+                    obj.pre_remainder=remainder_current.current_remainder
+                    obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                    obj.save()
+                    remainder_current.current_remainder=obj.current_remainder
+                    remainder_current.save()  
+            else:
+                return redirect ('index')
+                        
+            
+        document.sum=sum
+        document.save()
+        return redirect ('log')
+         
+    else:
+        deliveries=Delivery.objects.filter(document=document)
+        context={
+            'deliveries': deliveries,
+            'document': document,
+            'shops': shops,
+            'suppliers': suppliers,
+            'categories': categories,
+        }
+        return render (request, 'documents/change_delivery.html', context)
+ 
+
+
 
 def file_uploading(request):
     pass
@@ -386,7 +463,7 @@ def transfer_input(request, identifier_id):
             quantities=request.POST.getlist('quantity', None )
             shop_sender=request.POST['shop_sender']
             shop_receiver=request.POST['shop_receiver']
-            date=request.POST['date']
+            # date=request.POST['date']
             shop_sender=Shop.objects.get(id=shop_sender)
             shop_receiver=Shop.objects.get(id=shop_receiver)
             
@@ -746,7 +823,7 @@ def log(request):
             'doc_types': doc_types,
             'users': users,
             'suppliers': suppliers,
-            'shops': shops
+            'shops': shops,
         }
         return render (request, 'documents/log.html', context)
 

@@ -21,6 +21,11 @@ class Document (models.Model):
     def __int__(self):
         return self.id
 
+    # class Meta:
+    #     ordering = ('created',)  # sorting by date
+    #     verbose_name = self.title
+    
+
 class Identifier(models.Model):
     def __int__(self):
         return self.id
@@ -114,6 +119,7 @@ class RemainderHistory (models.Model):
     outgoing_quantity=models.IntegerField(null=True)
     current_remainder = models.IntegerField(default=0)
     retail_price = models.IntegerField(default=0)
+    update_check = models.BooleanField(default=False)
 
     # class Meta:
     #     # ordering = ('created',)  # sorting by date
