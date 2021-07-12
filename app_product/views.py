@@ -162,7 +162,7 @@ def identifier_delivery (request):
 
 def check_delivery(request, identifier_id):
     suppliers = Supplier.objects.all()
-    shops = Shop.objects.all()
+    # shops = Shop.objects.all()
     categories = ProductCategory.objects.all()
     identifier=Identifier.objects.get(id=identifier_id) 
     registers=Register.objects.filter(identifier=identifier)
@@ -184,25 +184,26 @@ def check_delivery(request, identifier_id):
                 return redirect('delivery', identifier.id)
         else:
             messages.error(request, 'Данное наименование отсутствует в БД. Введите его.')
+            return redirect ('delivery', identifier.id)
             
-            context= {
-                'suppliers': suppliers,
-                'shops': shops,
-                'categories': categories,
-                'identifier': identifier,
-                'registers': registers
-            }
-            return render (request, 'documents/delivery.html', context)
+            # context= {
+            #     'suppliers': suppliers,
+            #     # 'shops': shops,
+            #     'categories': categories,
+            #     'identifier': identifier,
+            #     'registers': registers
+            # }
+            # return render (request, 'documents/delivery.html', context)
 
 def delivery(request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
-    categories=ProductCategory.objects.all()
+    # categories=ProductCategory.objects.all()
     suppliers=Supplier.objects.all()
     shops=Shop.objects.all()
     registers = Register.objects.filter(identifier=identifier)
     context={
         'identifier': identifier,
-        'categories': categories,
+        # 'categories': categories,
         'suppliers': suppliers,
         'shops': shops,
         'registers': registers
@@ -239,20 +240,33 @@ def delivery_input(request, identifier_id):
     doc_type=DocumentType.objects.get(name="Поступление ТМЦ")
     if request.method == 'POST':
         shop=request.POST['shop']
-        supplier=request.POST['supplier']
-        category=request.POST['category']
+        dateTime=request.POST['dateTime']
+        # category=request.POST['category']
         imeis=request.POST.getlist('imei', None )
         names=request.POST.getlist('name', None )
         quantities=request.POST.getlist('quantity', None)
         prices=request.POST.getlist('price', None)
+        try:
+            supplier=request.POST['supplier']
+        except:
+            messages.error(request, 'Введите поставщика')            
+            return redirect ('delivery', identifier.id)
         shop=Shop.objects.get(id=shop)
-        category=ProductCategory.objects.get(id=category)
+        # category=ProductCategory.objects.get(id=category)
         supplier=Supplier.objects.get(id=supplier)
+        
         if imeis:
-            document=Document.objects.create(
-                title= doc_type,
-                user= request.user,
-            )
+            if dateTime:
+                document=Document.objects.create(
+                    title= doc_type,
+                    user= request.user,
+                    created=dateTime
+                )
+            else:
+                 document=Document.objects.create(
+                    title= doc_type,
+                    user= request.user,
+                )
             n=len(names)
             document_sum=0
             for i in range(n):
@@ -269,7 +283,8 @@ def delivery_input(request, identifier_id):
                     remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
                 delivery_item=Delivery.objects.create(
                     document=document,
-                    category=category,
+                    # category=category,
+                    created=document.created,
                     supplier=supplier,
                     shop=shop,
                     name=names[i],
@@ -279,11 +294,11 @@ def delivery_input(request, identifier_id):
                     sub_total=int(quantities[i]) * int(prices[i])
                 )
                 document_sum+=delivery_item.sub_total
-
                 remainder_history=RemainderHistory.objects.create(
                     document=document,
+                    created=document.created,
                     shop=shop,
-                    category=category,
+                    # category=category,
                     imei=imeis[i],
                     name=names[i],
                     pre_remainder=remainder_current.current_remainder,
@@ -295,13 +310,49 @@ def delivery_input(request, identifier_id):
                 )
                 remainder_current.current_remainder=remainder_history.current_remainder
                 remainder_current.save()
-            document.sum=document_sum
-            document.save()
-                  
-            for register in registers:
-                register.delete()
-            identifier.delete()
-            return redirect ('index')
+                document.sum=document_sum
+                document.save()
+
+                if document.created != datetime.now() and RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
+                    print('DATETIME COMPARAISON WORKS')
+                    sequence_rhos=RemainderHistory.objects.filter(imei=imeis[i], shop=shop)
+                    if sequence_rhos.filter(created__lt=document.created).exists():
+                        sequence_rhos_before=sequence_rhos.filter(created__lt=document.created)
+                        rho_before=sequence_rhos_before.latest('created')
+                        remainder_current.current_remainder=rho_before.current_remainder
+                        remainder_history.pre_remainder = remainder_current.current_remainder
+                        remainder_history.current_remainder = remainder_current.current_remainder + int(quantities[i])
+                        remainder_history.save()
+                        remainder_current.current_remainder=remainder_history.current_remainder
+                        remainder_current.save()  
+                    else:
+                        print('LOOKING FOR BEFORE DOCS WORKS')
+                        remainder_current.current_remainder =0
+                        remainder_current.save()
+                        remainder_history.pre_remainder = remainder_current.current_remainder
+                        remainder_history.current_remainder = remainder_current.current_remainder + int(quantities[i])
+                        remainder_history.save()
+                        remainder_current.current_remainder=remainder_history.current_remainder
+                        remainder_current.save()
+                        print (remainder_current.current_remainder)
+                        sequence_rhos_after=sequence_rhos.filter(created__gt=document.created)
+                        sequence_rhos_after=sequence_rhos_after.all().order_by('created')
+                        for obj in sequence_rhos_after:
+                            obj.pre_remainder=remainder_current.current_remainder
+                            obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                            obj.save()
+                            remainder_current.current_remainder=obj.current_remainder
+                            remainder_current.save()
+
+                    for register in registers:
+                        register.delete()
+                    identifier.delete()
+                    return redirect ('log')
+            else:
+                for register in registers:
+                    register.delete()
+                identifier.delete()
+                return redirect ('index')
         else:
             messages.error(request, 'Вы не ввели ни одного наименования.')
             return redirect('delivery', identifier.id)
