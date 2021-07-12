@@ -3,6 +3,7 @@ from . models import Document, Delivery, Sale, Transfer, RemainderHistory, Remai
 
 class DeliveryAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'category','name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
+    ordering = ('-created',)
 
 class SaleAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'category', 'name', 'imei', 'shop', 'quantity', 'price', 'sub_total', 'user', 'staff_bonus' )
@@ -12,7 +13,7 @@ class TransferAdmin(admin.ModelAdmin):
 
 class RemainderHistoryAdmin(admin.ModelAdmin):
     list_display = ('created', 'category', 'document', 'shop', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'av_price', 'sub_total', 'retail_price', 'update_check') 
-    list_filter = ('document',)
+    list_filter = ('imei',)
     ordering = ('-created',)
 
     # def get_ordering(self, request):
@@ -26,6 +27,7 @@ class RemainderCurrentAdmin(admin.ModelAdmin):
 
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'created' , 'user', 'sum')
+    ordering = ('-created',)
 
 class RegisterAdmin(admin.ModelAdmin):
     list_display = ('id', 'product', 'identifier')

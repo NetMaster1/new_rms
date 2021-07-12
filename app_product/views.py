@@ -334,15 +334,14 @@ def delivery_input(request, identifier_id):
                         remainder_history.save()
                         remainder_current.current_remainder=remainder_history.current_remainder
                         remainder_current.save()
-                        print (remainder_current.current_remainder)
-                        sequence_rhos_after=sequence_rhos.filter(created__gt=document.created)
-                        sequence_rhos_after=sequence_rhos_after.all().order_by('created')
-                        for obj in sequence_rhos_after:
-                            obj.pre_remainder=remainder_current.current_remainder
-                            obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
-                            obj.save()
-                            remainder_current.current_remainder=obj.current_remainder
-                            remainder_current.save()
+                    sequence_rhos_after=sequence_rhos.filter(created__gt=document.created)
+                    sequence_rhos_after=sequence_rhos_after.all().order_by('created')
+                    for obj in sequence_rhos_after:
+                        obj.pre_remainder=remainder_current.current_remainder
+                        obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                        obj.save()
+                        remainder_current.current_remainder=obj.current_remainder
+                        remainder_current.save()
 
                     for register in registers:
                         register.delete()
@@ -429,9 +428,6 @@ def change_delivery(request, document_id):
         }
         return render (request, 'documents/change_delivery.html', context)
  
-
-
-
 def file_uploading(request):
     pass
 
@@ -823,7 +819,7 @@ def recognition(request, identifier_id):
 
 
 def log(request):
-    queryset_list=Document.objects.all()
+    queryset_list=Document.objects.all().order_by('-created')
     doc_types=DocumentType.objects.all()
     users=User.objects.all()
     suppliers=Supplier.objects.all()
