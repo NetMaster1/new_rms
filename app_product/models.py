@@ -113,6 +113,7 @@ class RemainderHistory (models.Model):
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)
     sub_total = models.IntegerField(default=0)
+    wholesale_price = models.IntegerField(default=0, null=True)
     av_price = models.IntegerField(default=0, null=True)
     pre_remainder=models.IntegerField(default=0)
     incoming_quantity=models.IntegerField(null=True)
@@ -135,6 +136,8 @@ class RemainderCurrent (models.Model):
     imei = models.CharField(max_length=250)
     name = models.CharField(max_length=250, null=True)
     current_remainder = models.IntegerField(default=0)
+    av_price = models.IntegerField(null=True)
+    total_av_price = models.IntegerField(null=True)
     retail_price = models.IntegerField(default=0, null=True)
 
     def __int__(self):

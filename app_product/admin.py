@@ -12,7 +12,7 @@ class TransferAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop_sender', 'shop_receiver', 'quantity', 'price' )
 
 class RemainderHistoryAdmin(admin.ModelAdmin):
-    list_display = ('created', 'category', 'document', 'shop', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'av_price', 'sub_total', 'retail_price', 'update_check') 
+    list_display = ('created', 'category', 'document', 'shop', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'av_price', 'sub_total', 'retail_price', 'update_check') 
     list_filter = ('imei',)
     ordering = ('-created',)
 
@@ -23,7 +23,7 @@ class RemainderHistoryAdmin(admin.ModelAdmin):
     #         return ('imei',)
 
 class RemainderCurrentAdmin(admin.ModelAdmin):
-    list_display = ('updated', 'shop', 'name', 'imei', 'current_remainder', 'retail_price')  
+    list_display = ('updated', 'shop', 'name', 'imei', 'current_remainder', 'av_price', 'total_av_price', 'retail_price')  
 
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'created' , 'user', 'sum')

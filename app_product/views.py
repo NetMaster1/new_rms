@@ -278,6 +278,8 @@ def delivery_input(request, identifier_id):
                         shop=shop,
                         imei=imeis[i],
                         current_remainder=0,
+                        av_price=0,
+                        total_av_price = 0,
                         name=names[i]
                     )
                     remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
@@ -305,10 +307,14 @@ def delivery_input(request, identifier_id):
                     incoming_quantity=quantities[i],
                     outgoing_quantity=0,
                     current_remainder=remainder_current.current_remainder+int(quantities[i]),
-                    av_price=prices[i],
-                    sub_total=int(quantities[i]) * int(prices[i])
+                    wholesale_price=int(prices[i]),
+                    sub_total=int(int(quantities[i]) * int(prices[i]) + remainder_current.total_av_price),
+
+                    av_price = (int(quantities[i]) * int(prices[i])+ remainder_current.total_av_price)/(remainder_current.current_remainder+int(quantities[i]))
                 )
                 remainder_current.current_remainder=remainder_history.current_remainder
+                remainder_current.av_price=remainder_history.av_price
+                remainder_current.total_av_price=remainder_history.sub_total
                 remainder_current.save()
                 document.sum=document_sum
                 document.save()
@@ -322,36 +328,46 @@ def delivery_input(request, identifier_id):
                         remainder_current.current_remainder=rho_before.current_remainder
                         remainder_history.pre_remainder = remainder_current.current_remainder
                         remainder_history.current_remainder = remainder_current.current_remainder + int(quantities[i])
+                        remainder_history.sub_total = remainder_history.current_remainder * remainder_history.av_price
                         remainder_history.save()
                         remainder_current.current_remainder=remainder_history.current_remainder
-                        remainder_current.save()  
+                        remainder_current.save()
+
                     else:
                         print('LOOKING FOR BEFORE DOCS WORKS')
                         remainder_current.current_remainder =0
+                        remainder_current.total_av_price =0
                         remainder_current.save()
                         remainder_history.pre_remainder = remainder_current.current_remainder
-                        remainder_history.current_remainder = remainder_current.current_remainder + int(quantities[i])
+                        remainder_history.current_remainder=remainder_current.current_remainder+ int(quantities[i])
+                        remainder_history.sub_total = remainder_history.current_remainder * int(prices[i])+remainder_current.total_av_price
+
+                        remainder_history.av_price= int(remainder_history.sub_total/remainder_history.current_remainder)
+
                         remainder_history.save()
                         remainder_current.current_remainder=remainder_history.current_remainder
+                        remainder_current.total_av_price=remainder_history.sub_total
+                        remainder_current.av_price=remainder_history.av_price
                         remainder_current.save()
                     sequence_rhos_after=sequence_rhos.filter(created__gt=document.created)
                     sequence_rhos_after=sequence_rhos_after.all().order_by('created')
                     for obj in sequence_rhos_after:
                         obj.pre_remainder=remainder_current.current_remainder
                         obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                        obj.sub_total=remainder_current.total_av_price + obj.incoming_quantity * obj.wholesale_price
+                        obj.av_price=obj.sub_total/obj.current_remainder
                         obj.save()
-                        remainder_current.current_remainder=obj.current_remainder
-                        remainder_current.save()
 
-                    for register in registers:
-                        register.delete()
-                    identifier.delete()
-                    return redirect ('log')
+                        remainder_current.current_remainder=obj.current_remainder
+                        remainder_current.total_av_price=obj.sub_total
+                        remainder_current.av_price=obj.av_price
+                        
+                        remainder_current.save()
             else:
                 for register in registers:
                     register.delete()
                 identifier.delete()
-                return redirect ('index')
+                return redirect ('log')
         else:
             messages.error(request, 'Вы не ввели ни одного наименования.')
             return redirect('delivery', identifier.id)
@@ -427,6 +443,11 @@ def change_delivery(request, document_id):
             'categories': categories,
         }
         return render (request, 'documents/change_delivery.html', context)
+
+def delete_delivery(request, document_id):
+    document=Document.objects.get(id=document_id)
+    deliveries=Delivery.objects.filter(document=document)
+    pass
  
 def file_uploading(request):
     pass

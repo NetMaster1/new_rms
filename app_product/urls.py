@@ -10,6 +10,8 @@ urlpatterns = [
     path ('delete_line_delivery/<int:imei>/<int:identifier_id>', views.delete_line_delivery, name='delete_line_delivery'),
     path ('enter_new_product/<int:identifier_id>', views.enter_new_product, name='enter_new_product'),
     path ('clear_delivery/<int:identifier_id>', views.clear_delivery, name='clear_delivery'),
+    path ('change_delivery/<int:document_id>', views.change_delivery, name='change_delivery'),
+    path ('delete_delivery/<int:document_id>', views.delete_delivery, name='delete_delivery'),
    
 
     path ('identifier_sale', views.identifier_sale, name='identifier_sale'),
@@ -40,7 +42,7 @@ urlpatterns = [
     path ('clear_recognition/<int:identifier_id>', views.clear_recognition, name='clear_recognition'),
     path ('recognition/<int:identifier_id>', views.recognition, name='recognition'),
 
-    path ('change_delivery/<int:document_id>', views.change_delivery, name='change_delivery'),
+    
     path ('close_edited_document', views.close_edited_document, name='close_edited_document'),
     
 ]
