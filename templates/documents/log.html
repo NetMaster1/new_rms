@@ -188,7 +188,7 @@
 
 
 
-        <div class="col-2">{{document.sum}} руб.</div>
+        <div class="col-2"><a href="{% url 'delete_delivery' document.id %}">{{document.sum}} руб.</a></div>
 
         {% if document.title.name == 'Поступление ТМЦ' %}
          <div class="col-4">{{document.delivery.first.supplier}}</div>

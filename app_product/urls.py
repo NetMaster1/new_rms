@@ -12,6 +12,7 @@ urlpatterns = [
     path ('clear_delivery/<int:identifier_id>', views.clear_delivery, name='clear_delivery'),
     path ('change_delivery/<int:document_id>', views.change_delivery, name='change_delivery'),
     path ('delete_delivery/<int:document_id>', views.delete_delivery, name='delete_delivery'),
+    path ('delete_line_change_delivery/<int:document_id>/<int:imei>/<int:shop_id>', views.delete_line_change_delivery, name='delete_line_change_delivery'),
    
 
     path ('identifier_sale', views.identifier_sale, name='identifier_sale'),

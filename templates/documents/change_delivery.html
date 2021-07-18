@@ -115,7 +115,7 @@
                         <input type="number" class='form-control' id="sub_total" name="sub_total" value='{{delivery.sub_total}}' maxlength='50'>
         </div>
         <div class="col">
-            <a href="#">
+            <a href="{% url 'delete_line_change_delivery' document.id delivery.imei delivery.shop.id %}">
                 <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
             </a>
         </div>
