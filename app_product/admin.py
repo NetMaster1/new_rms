@@ -2,8 +2,9 @@ from django.contrib import admin
 from . models import Document, Delivery, Sale, Transfer, RemainderHistory, RemainderCurrent, Register, Identifier
 
 class DeliveryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created', 'category','name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
+    list_display = ('id', 'created', 'supplier' ,'name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
     ordering = ('-created',)
+    list_filter = ('imei',)
 
 class SaleAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'category', 'name', 'imei', 'shop', 'quantity', 'price', 'sub_total', 'user', 'staff_bonus' )
@@ -13,7 +14,7 @@ class TransferAdmin(admin.ModelAdmin):
 
 class RemainderHistoryAdmin(admin.ModelAdmin):
     list_display = ('created', 'category', 'document', 'shop', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'av_price', 'sub_total', 'retail_price', 'update_check') 
-    list_filter = ('imei', 'document')
+    list_filter = ('imei', 'document', 'shop')
     ordering = ('-created',)
 
     # def get_ordering(self, request):
