@@ -1,3 +1,4 @@
+from django.db.models.fields import NullBooleanField
 from app_product.admin import RemainderHistoryAdmin
 from app_clients.models import Client
 from app_personnel.models import BonusAccount
@@ -461,6 +462,8 @@ def change_delivery(request, document_id):
             return redirect ('change_delivery', document.id)
         supplier=Supplier.objects.get(id=supplier)
         dateTime=request.POST['dateTime']
+        print(dateTime)
+        # print(document.created)
         imeis=request.POST.getlist('imei', None )
         names=request.POST.getlist('name', None )
         quantities=request.POST.getlist('quantity', None)
@@ -469,146 +472,10 @@ def change_delivery(request, document_id):
         sum=0
         n=len(names)
         # for i in range(n)
-        # date has not been changed
-        if dateTime == False:
-            for delivery, i , rho in zip (deliveries, range(n), rem_hist_objs):
-                # delivery.created=dateTime
-                delivery.shop=shop_changed
-                delivery.supplier=supplier
-                delivery.quantity=quantities[i]
-                delivery.price=prices[i]
-                delivery.sub_total=int(quantities[i])*int(prices[i])
-                delivery.save()
-                sum+=delivery.sub_total
-                rho.shop=shop_current
-                #date & shop has not been changed
-                if shop_current==shop_changed:
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__lt=rho.created).exists():
-                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current)
-                        rho_sequence_before=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__lt=rho.created)
-                        rho_before=rho_sequence_before.latest('created')
-                        remainder_current.current_remainder=rho_before.current_remainder
-                        remainder_current.total_av_price=rho_before.sub_total
-                        remainder_current.av_price=rho_before.av_price
-                        remainder_current.save()
-                    else:
-                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current )
-                        remainder_current.current_remainder=0
-                        remainder_current.total_av_price=0
-                        remainder_current.av_price=0
-                        remainder_current.save()
-                    rho.incoming_quantity=int(quantities[i])
-                    rho.wholesale_price=int(prices[i])
-                    rho.sub_total=remainder_current.total_av_price+(int(quantities[i]) * int(prices[i]))
-                    rho.current_remainder=rho.pre_remainder+int(quantities[i])
-                    rho.av_price=rho.sub_total/rho.current_remainder
-                    rho.save()
-
-                    remainder_current.current_remainder=rho.current_remainder
-                    remainder_current.av_price=rho.av_price
-                    remainder_current.total_av_price=rho.sub_total
-                    remainder_current.save()
-                    
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=rho.created).exists():
-                        sequence_rhos=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__gt=rho.created)
-                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current)
-                        remainder_current.current_remainder=rho.current_remainder
-                        remainder_current.total_av_price=rho.sub_total
-                        remainder_current.av_price=rho.av_price
-                        remainder_current.save()
-                        for obj in sequence_rhos:
-                            obj.pre_remainder=remainder_current.current_remainder
-                            obj.sub_total=remainder_current.total_av_price+obj.wholesale_price*(obj.incoming_quantity - obj.outgoing_quantity)
-                            obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
-                            obj.av_price=obj.sub_total/obj.current_remainder
-                            obj.save()
-                            remainder_current.current_remainder=obj.current_remainder
-                            remainder_current.total_av_price=obj.sub_total
-                            remainder_current.av_price=obj.av_price
-                            remainder_current.save()
-                #date has not been changed & shop has been changed
-                else:
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__lt=rho.created).exists():
-                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current)
-                        rho_sequence_before=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__lt=rho.created) 
-                        rho_before=rho_sequence_before.latest('created')
-                        remainder_current.current_remainder=rho_before.current_remainder
-                        remainder_current.total_av_price=rho_before.sub_total
-                        remainder_current.av_price=rho_before.av_price
-                        remainder_current.save()
-                    else:
-                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current)
-                        remainder_current.current_remainder=0
-                        remainder_current.total_av_price=0
-                        remainder_current.av_price=0
-                        remainder_current.save()
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__gt=rho.created).exists():
-                        sequence_rhos=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__gt=rho.created)
-                        for obj in sequence_rhos:
-                            obj.pre_remainder=remainder_current.current_remainder
-                            obj.sub_total=remainder_current.total_av_price+obj.wholesale_price*(obj.incoming_quantity - obj.outgoing_quantity)
-                            obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
-                            obj.av_price=obj.sub_total/obj.current_remainder
-                            obj.save()
-                            remainder_current.current_remainder=obj.current_remainder
-                            remainder_current.total_av_price=obj.sub_total
-                            remainder_current.av_price=obj.av_price
-                            remainder_current.save()
-                    rho.delete()
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_changed, created__lt=dateTime).exists():
-                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_changed)
-                        rho_sequence_before=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_changed, created__lt=dateTime) 
-                        rho_before=rho_sequence_before.latest('created')
-                        remainder_current.current_remainder=rho_before.current_remainder
-                        remainder_current.total_av_price=rho_before.sub_total
-                        remainder_current.av_price=rho_before.av_price
-                        remainder_current.save()
-                    else:
-                        RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_changed)
-                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_changed)
-                        remainder_current.av_price=0
-                        remainder_current.total_av_price=0
-                        remainder_current.current_remainder=0
-                        # else:
-                        #     remainder_current=RemainderCurrent.objects.create(
-                        #         imei=imeis[i],
-                        #         shop=shop_changed,
-                        #         current_remainder=0,
-                        #         total_av_price=0,
-                        #         av_price=0 
-                        #     )
-                    rho_new=RemainderHistory.objects.create(
-                        created=dateTime,
-                        document=document,
-                        shop=shop_changed,
-                        name=names[i],
-                        imei=imeis[i],
-                        incoming_quantity=int(quantities[i]),
-                        outgoing_quantity=0,
-                        current_remainder=remainder_current.current_remainder+int(quantities[i]),
-                        wholesale_price=int(prices[i]),
-                        sub_total=remainder_current.total_av_price+(int(quantities[i])*int(prices[i])),
-                        av_price= (remainder_current.total_av_price+(int(quantities[i])*int(prices[i])))/(remainder_current.current_remainder+int(quantities[i]))
-                    )
-                    remainder_current.current_remainder=rho_new.current_remainder
-                    remainder_current.av_price=rho_new.av_price
-                    remainder_current.total_av_price=rho_new.sub_total
-                    remainder_current.save()
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_changed, created__gt=rho_new.created).exists():
-                        sequence_rhos=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_changed, created__gt=rho_new.created)
-                        for obj in sequence_rhos:
-                            obj.pre_remainder=remainder_current.current_remainder
-                            obj.sub_total=remainder_current.total_av_price+obj.wholesale_price*(obj.incoming_quantity - obj.outgoing_quantity)
-                            obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
-                            obj.av_price=obj.sub_total/obj.current_remainder
-                            obj.save()
-                            remainder_current.current_remainder=obj.current_remainder
-                            remainder_current.total_av_price=obj.sub_total
-                            remainder_current.av_price=obj.av_price
-                            remainder_current.save()
-
         #date has been changed
-        else:
+        if dateTime:
+            #converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            dateTime=datetime.strptime(dateTime, '%Y-%m-%dT%H:%M')
             for delivery, i , rho in zip (deliveries, range(n), rem_hist_objs):
                 delivery.created=dateTime
                 delivery.shop=shop_changed
@@ -618,7 +485,7 @@ def change_delivery(request, document_id):
                 delivery.sub_total=int(quantities[i])*int(prices[i])
                 delivery.save()
                 sum+=delivery.sub_total
-                rho.shop=shop_current
+                shop_current=rho.shop
                 # date has been chaned & shop has not been changed
                 if shop_current==shop_changed:
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__lt=rho.created).exists():
@@ -630,11 +497,12 @@ def change_delivery(request, document_id):
                         remainder_current.av_price=rho_before.av_price
                         remainder_current.save()
                     else:
-                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current )
+                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current)
                         remainder_current.current_remainder=0
                         remainder_current.total_av_price=0
                         remainder_current.av_price=0
                         remainder_current.save()
+
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__gt=rho.created).exists():
                         sequence_rhos=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__gt=rho.created)
                         for obj in sequence_rhos:
@@ -652,13 +520,14 @@ def change_delivery(request, document_id):
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__lt=dateTime).exists():
                         rho_hist_objs_before=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__lt=dateTime)
                         rho_hist_before=rho_hist_objs_before.latest('created')
-                        remainder_current=RemainderCurrent(imei=imeis[i], shop=shop_current)
+                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current)
+                        # remainder_current=RemainderCurrent(imei=imeis[i], shop=shop_current)#creates a new object which we don't need
                         remainder_current.current_remainder=rho_hist_before.current_remainder
                         remainder_current.total_av_price=rho_hist_before.sub_total
                         remainder_current.av_price=rho_hist_before.av_price
                         remainder_current.save()
                     else:
-                        remainder_current=RemainderCurrent(imei=imeis[i], shop=shop_current)
+                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current)
                         remainder_current.current_remainder=0
                         remainder_current.total_av_price=0
                         remainder_current.av_price=0
@@ -734,7 +603,6 @@ def change_delivery(request, document_id):
                         remainder_current.av_price=rho_before.av_price
                         remainder_current.save()
                     else:
-                        remainder_current=RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_changed)
                         remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_changed)
                         remainder_current.av_price=0
                         remainder_current.total_av_price=0
@@ -778,6 +646,147 @@ def change_delivery(request, document_id):
                             remainder_current.save()
             document.created=dateTime
             document.save()
+
+
+        # date has not been changed
+        else:
+            for delivery, i , rho in zip (deliveries, range(n), rem_hist_objs):
+                # delivery.created=dateTime
+                delivery.shop=shop_changed
+                delivery.supplier=supplier
+                delivery.quantity=quantities[i]
+                delivery.price=prices[i]
+                delivery.sub_total=int(quantities[i])*int(prices[i])
+                delivery.save()
+                sum+=delivery.sub_total
+                shop_current=rho.shop
+                #date & shop has not been changed
+                if shop_current==shop_changed:
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__lt=rho.created).exists():
+                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current)
+                        rho_sequence_before=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__lt=rho.created)
+                        rho_before=rho_sequence_before.latest('created')
+                        remainder_current.current_remainder=rho_before.current_remainder
+                        remainder_current.total_av_price=rho_before.sub_total
+                        remainder_current.av_price=rho_before.av_price
+                        remainder_current.save()
+                    else:
+                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current )
+                        remainder_current.current_remainder=0
+                        remainder_current.total_av_price=0
+                        remainder_current.av_price=0
+                        remainder_current.save()
+                    rho.incoming_quantity=int(quantities[i])
+                    rho.wholesale_price=int(prices[i])
+                    rho.sub_total=remainder_current.total_av_price+(int(quantities[i]) * int(prices[i]))
+                    rho.current_remainder=rho.pre_remainder+int(quantities[i])
+                    rho.av_price=rho.sub_total/rho.current_remainder
+                    rho.save()
+
+                    remainder_current.current_remainder=rho.current_remainder
+                    remainder_current.av_price=rho.av_price
+                    remainder_current.total_av_price=rho.sub_total
+                    remainder_current.save()
+                    
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=rho.created).exists():
+                        sequence_rhos=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__gt=rho.created)
+                        # remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current)
+                        # remainder_current.current_remainder=rho.current_remainder
+                        # remainder_current.total_av_price=rho.sub_total
+                        # remainder_current.av_price=rho.av_price
+                        # remainder_current.save()
+                        for obj in sequence_rhos:
+                            obj.pre_remainder=remainder_current.current_remainder
+                            obj.sub_total=remainder_current.total_av_price+obj.wholesale_price*(obj.incoming_quantity - obj.outgoing_quantity)
+                            obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                            obj.av_price=obj.sub_total/obj.current_remainder
+                            obj.save()
+                            remainder_current.current_remainder=obj.current_remainder
+                            remainder_current.total_av_price=obj.sub_total
+                            remainder_current.av_price=obj.av_price
+                            remainder_current.save()
+                #date has not been changed & shop has been changed
+                else:
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__lt=rho.created).exists():
+                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current)
+                        rho_sequence_before=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__lt=rho.created) 
+                        rho_before=rho_sequence_before.latest('created')
+                        remainder_current.current_remainder=rho_before.current_remainder
+                        remainder_current.total_av_price=rho_before.sub_total
+                        remainder_current.av_price=rho_before.av_price
+                        remainder_current.save()
+                    else:
+                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_current)
+                        remainder_current.current_remainder=0
+                        remainder_current.total_av_price=0
+                        remainder_current.av_price=0
+                        remainder_current.save()
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__gt=rho.created).exists():
+                        sequence_rhos=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_current, created__gt=rho.created)
+                        for obj in sequence_rhos:
+                            obj.pre_remainder=remainder_current.current_remainder
+                            obj.sub_total=remainder_current.total_av_price+obj.wholesale_price*(obj.incoming_quantity - obj.outgoing_quantity)
+                            obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                            obj.av_price=obj.sub_total/obj.current_remainder
+                            obj.save()
+                            remainder_current.current_remainder=obj.current_remainder
+                            remainder_current.total_av_price=obj.sub_total
+                            remainder_current.av_price=obj.av_price
+                            remainder_current.save()
+                    rho.delete()
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_changed, created__lt=dateTime).exists():
+                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_changed)
+                        rho_sequence_before=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_changed, created__lt=dateTime) 
+                        rho_before=rho_sequence_before.latest('created')
+                        remainder_current.current_remainder=rho_before.current_remainder
+                        remainder_current.total_av_price=rho_before.sub_total
+                        remainder_current.av_price=rho_before.av_price
+                        remainder_current.save()
+                    else:
+                        # RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_changed)
+                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_changed)
+                        remainder_current.av_price=0
+                        remainder_current.total_av_price=0
+                        remainder_current.current_remainder=0
+                        # else:
+                        #     remainder_current=RemainderCurrent.objects.create(
+                        #         imei=imeis[i],
+                        #         shop=shop_changed,
+                        #         current_remainder=0,
+                        #         total_av_price=0,
+                        #         av_price=0 
+                        #     )
+                    rho_new=RemainderHistory.objects.create(
+                        created=dateTime,
+                        document=document,
+                        shop=shop_changed,
+                        name=names[i],
+                        imei=imeis[i],
+                        incoming_quantity=int(quantities[i]),
+                        outgoing_quantity=0,
+                        current_remainder=remainder_current.current_remainder+int(quantities[i]),
+                        wholesale_price=int(prices[i]),
+                        sub_total=remainder_current.total_av_price+(int(quantities[i])*int(prices[i])),
+                        av_price= (remainder_current.total_av_price+(int(quantities[i])*int(prices[i])))/(remainder_current.current_remainder+int(quantities[i]))
+                    )
+                    remainder_current.current_remainder=rho_new.current_remainder
+                    remainder_current.av_price=rho_new.av_price
+                    remainder_current.total_av_price=rho_new.sub_total
+                    remainder_current.save()
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_changed, created__gt=rho_new.created).exists():
+                        sequence_rhos=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_changed, created__gt=rho_new.created)
+                        for obj in sequence_rhos:
+                            obj.pre_remainder=remainder_current.current_remainder
+                            obj.sub_total=remainder_current.total_av_price+obj.wholesale_price*(obj.incoming_quantity - obj.outgoing_quantity)
+                            obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                            obj.av_price=obj.sub_total/obj.current_remainder
+                            obj.save()
+                            remainder_current.current_remainder=obj.current_remainder
+                            remainder_current.total_av_price=obj.sub_total
+                            remainder_current.av_price=obj.av_price
+                            remainder_current.save()
+
+        
         document.sum = sum
         document.save()
         return redirect ('log')
