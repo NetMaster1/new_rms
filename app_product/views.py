@@ -603,22 +603,24 @@ def change_delivery(request, document_id):
                         remainder_current.av_price=rho_before.av_price
                         remainder_current.save()
                     else:
-                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_changed)
-                        remainder_current.av_price=0
-                        remainder_current.total_av_price=0
-                        remainder_current.current_remainder=0
-                        # else:
-                        #     remainder_current=RemainderCurrent.objects.create(
-                        #         imei=imeis[i],
-                        #         shop=shop_changed,
-                        #         current_remainder=0,
-                        #         total_av_price=0,
-                        #         av_price=0 
-                        #     )
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_changed).exists():
+                            remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_changed)
+                            remainder_current.av_price=0
+                            remainder_current.total_av_price=0
+                            remainder_current.current_remainder=0
+                        else:
+                            remainder_current=RemainderCurrent.objects.create(
+                                imei=imeis[i],
+                                shop=shop_changed,
+                                current_remainder=0,
+                                total_av_price=0,
+                                av_price=0 
+                            )
                     rho_new=RemainderHistory.objects.create(
                         created=dateTime,
                         document=document,
                         shop=shop_changed,
+                        pre_remainder=remainder_current.current_remainder,
                         name=names[i],
                         imei=imeis[i],
                         incoming_quantity=int(quantities[i]),
@@ -733,6 +735,7 @@ def change_delivery(request, document_id):
                             remainder_current.total_av_price=obj.sub_total
                             remainder_current.av_price=obj.av_price
                             remainder_current.save()
+                    dateTime=rho.created
                     rho.delete()
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_changed, created__lt=dateTime).exists():
                         remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_changed)
@@ -743,19 +746,19 @@ def change_delivery(request, document_id):
                         remainder_current.av_price=rho_before.av_price
                         remainder_current.save()
                     else:
-                        # RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_changed)
-                        remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_changed)
-                        remainder_current.av_price=0
-                        remainder_current.total_av_price=0
-                        remainder_current.current_remainder=0
-                        # else:
-                        #     remainder_current=RemainderCurrent.objects.create(
-                        #         imei=imeis[i],
-                        #         shop=shop_changed,
-                        #         current_remainder=0,
-                        #         total_av_price=0,
-                        #         av_price=0 
-                        #     )
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_changed).exists():
+                            remainder_current=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_changed)
+                            remainder_current.av_price=0
+                            remainder_current.total_av_price=0
+                            remainder_current.current_remainder=0
+                        else:
+                            remainder_current=RemainderCurrent.objects.create(
+                                imei=imeis[i],
+                                shop=shop_changed,
+                                current_remainder=0,
+                                total_av_price=0,
+                                av_price=0 
+                            )
                     rho_new=RemainderHistory.objects.create(
                         created=dateTime,
                         document=document,
@@ -808,15 +811,30 @@ def delete_delivery(request, document_id):
     remainder_history_objects=RemainderHistory.objects.filter(document=document)
     for rho in remainder_history_objects:
         rho_all=RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei)
-        
-        rho_all_before=rho_all.filter(created__lt=document.created)
-        rho_latest_before=rho_all_before.latest('created')
+        if rho_all.filter(created__lt=document.created).exists():
+            rho_all_before=rho_all.filter(created__lt=document.created)
+            rho_latest_before=rho_all_before.latest('created')
 
-        remainder_current=RemainderCurrent.objects.get(shop=rho.shop, imei=rho.imei)
-        remainder_current.current_remainder=rho_latest_before.current_remainder
-        remainder_current.total_av_price=rho_latest_before.sub_total
-        remainder_current.av_price=rho_latest_before.av_price
-        remainder_current.save()
+            remainder_current=RemainderCurrent.objects.get(shop=rho.shop, imei=rho.imei)
+            remainder_current.current_remainder=rho_latest_before.current_remainder
+            remainder_current.total_av_price=rho_latest_before.sub_total
+            remainder_current.av_price=rho_latest_before.av_price
+            remainder_current.save()
+        else:
+            if RemainderCurrent.objects.filter(shop=rho.shop, imei=rho.imei).exists():
+                remainder_current=RemainderCurrent.objects.get(shop=rho.shop, imei=rho.imei)
+                remainder_current.current_remainder=0
+                remainder_current.total_av_price=0
+                remainder_current.av_price=0
+                remainder_current.save()
+            else:
+                remainder_current=RemainderCurrent.objets.create(
+                    current_remainder=0,
+                    av_total_price=0,
+                    av_price=0,
+                    imei=rho.imei,
+                    shop=rho.shop
+                )
 
         if rho_all.filter(created__gt=document.created).exists():
             rho_all_after=rho_all.filter(created__gt=document.created)
@@ -833,7 +851,7 @@ def delete_delivery(request, document_id):
             remainder_current.save()
             
         
-            remainder_after_loop=RemainderHistory.objects.filter(created__gt=rho_first_after.created)
+            remainder_after_loop=rho_all_after.filter(created__gt=rho_first_after.created)
             for obj in remainder_after_loop:
                 obj.pre_remainder=remainder_current.current_remainder
                 obj.current_remainder=obj.pre_remainder+obj.incoming_quantity-obj.outgoing_quantity
