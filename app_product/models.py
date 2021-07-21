@@ -94,6 +94,7 @@ class Transfer (models.Model):
     imei = models.CharField(max_length=250)
     price = models.IntegerField(default=0)#counter
     quantity = models.IntegerField(default=0) 
+    sub_total = models.IntegerField(default=0) 
     
 
 

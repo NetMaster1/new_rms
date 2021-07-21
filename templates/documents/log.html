@@ -102,8 +102,11 @@
     {% for document in queryset_list %}
 
     <div class="row mt-1">
+        {% if document.title.name == 'Поступление ТМЦ' %}
         <div class="col-2"><a href="{% url 'change_delivery' document.id %}">{{document.created}}</a></div>
-
+        {% else %}
+        <div class="col-2"><a href="{% url 'change_transfer' document.id %}">{{document.created}}</a></div>
+        {% endif %}
 
 
         <!-- ===================Document Modal Triger========================= -->
