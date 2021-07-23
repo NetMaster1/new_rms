@@ -32,12 +32,12 @@
 
                         <div class="form-row">
                             <div class="col-3">
-                                <label for="shop">
+                                <label for="shop_sender">
                                     <h5>Фирма отправитель</h5>
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="shop" id="shop_sender" class='form-control' required>
+                                <select name="shop_sender" id="shop_sender" class='form-control' required>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
@@ -47,12 +47,12 @@
 
                         <div class="form-row">
                             <div class="col-3">
-                                <label for="shop">
+                                <label for="shop_receiver">
                                     <h5>Фирма получатель</h5>
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="shop" id="shop_receiver" class='form-control' required>
+                                <select name="shop_receiver" id="shop_receiver" class='form-control' required>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
