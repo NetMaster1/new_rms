@@ -41,14 +41,14 @@
             <form action="{% url 'transfer_input' identifier.id %}" method='POST'>
                 {% csrf_token %}
 
-                <!-- <div class="form-row">
+                <div class="form-row">
                     <div class="col-2">
-                        <label for="date">Дата</label>
+                        <label for="dateTime">Дата</label>
                     </div>
                     <div class="col">
-                        <input type="datetime-local" class='form-control' id="date" name="date" value='today'><br>
+                        <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" ><br>
                     </div>
-                </div> -->
+                </div>
 
                 <div class="form-row">
                     <div class="col-3">

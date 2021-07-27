@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import Document, Delivery, Sale, Transfer, RemainderHistory, RemainderCurrent, Register, Identifier, AveragePriceCurrent
+from . models import Document, Delivery, Sale, Transfer, RemainderHistory, RemainderCurrent, Register, Identifier
 
 class DeliveryAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'supplier' ,'name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
@@ -27,10 +27,6 @@ class RemainderCurrentAdmin(admin.ModelAdmin):
     list_display = ('updated', 'shop', 'name', 'imei', 'current_remainder', 'av_price', 'total_av_price', 'retail_price')  
     list_filter = ('imei',)
 
-class AveragePriceCurrentAdmin(admin.ModelAdmin):
-    list_display = ('updated', 'name', 'imei', 'av_price_current', 'remainder')  
-    list_filter = ('imei',)
-
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'created' , 'user', 'sum')
     ordering = ('-created',)
@@ -49,7 +45,7 @@ admin.site.register(RemainderCurrent, RemainderCurrentAdmin)
 admin.site.register(Document, DocumentAdmin)
 admin.site.register(Register, RegisterAdmin)
 admin.site.register(Identifier, IdentifierAdmin)
-admin.site.register(AveragePriceCurrent, AveragePriceCurrentAdmin)
+
 
 
 

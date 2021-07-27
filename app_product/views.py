@@ -3,7 +3,7 @@ from app_product.admin import RemainderHistoryAdmin
 from app_clients.models import Client
 from app_personnel.models import BonusAccount
 from django.shortcuts import render, redirect, get_object_or_404
-from . models import AveragePriceCurrent, Document, Delivery, Sale, Transfer, RemainderHistory, Register, Identifier, RemainderCurrent
+from . models import Document, Delivery, Sale, Transfer, RemainderHistory, Register, Identifier, RemainderCurrent
 import datetime
 import pytz
 from datetime import datetime, date
@@ -850,15 +850,18 @@ def transfer_input(request, identifier_id):
             quantities=request.POST.getlist('quantity', None )
             shop_sender=request.POST['shop_sender']
             shop_receiver=request.POST['shop_receiver']
-            # date=request.POST['date']
+            dateTime=request.POST['dateTime']
             shop_sender=Shop.objects.get(id=shop_sender)
             shop_receiver=Shop.objects.get(id=shop_receiver)
-            
+            if dateTime:
+                #converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                dateTime=datetime.strptime(dateTime, '%Y-%m-%dT%H:%M')
+            else:
+                dateTime=datetime.now()
             if shop_sender==shop_receiver:
                 messages.error(request, 'Документ не проведен. Выберите фирму получателя отличную от отправителя')
                 return redirect ('transfer', identifier.id)
             else:
-
                 check_point = []
                 n=len(names)
                 for i in range(n):
@@ -875,6 +878,7 @@ def transfer_input(request, identifier_id):
                     return redirect ('transfer', identifier.id)
                 else:
                     document=Document.objects.create(
+                            created=dateTime,
                             title=doc_type,
                             user=request.user
                         )
@@ -882,6 +886,7 @@ def transfer_input(request, identifier_id):
                     for i in range(n):
                         remainder_current_sender=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
                         transfer=Transfer.objects.create(
+                            created=dateTime,
                             document=document,
                             shop_sender=shop_sender,
                             shop_receiver=shop_receiver,
@@ -892,6 +897,7 @@ def transfer_input(request, identifier_id):
                         )
 
                         remainder_history=RemainderHistory.objects.create(
+                            created=dateTime,
                             document=document,
                             shop=shop_sender,
                             # category=category,
@@ -916,32 +922,10 @@ def transfer_input(request, identifier_id):
                         remainder_current_sender.save()
 
                         if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
+                            remainder_current_sender=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
                             remainder_current_receiver=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_receiver)
-
                             remainder_history=RemainderHistory.objects.create(
-                            document=document,
-                            shop=shop_receiver,
-                            # category=category,
-                            imei=imeis[i],
-                            name=names[i],
-                            retail_price=prices[i],
-                            pre_remainder=remainder_current_receiver.current_remainder,
-                            incoming_quantity=quantities[i],
-                            outgoing_quantity=0,
-                            current_remainder=remainder_current_receiver.current_remainder+int(quantities[i]),
-                            av_price=remainder_current_receiver.av_price,
-                            sub_total=remainder_current_receiver.av_price *(remainder_current_receiver.current_remainder+int(quantities[i]))
-                        )
-                        else:
-                            remainder_current_receiver=RemainderCurrent.objects.create(
-                                imei=imeis[i],
-                                name=names[i],
-                                shop=shop_receiver,
-                                current_remainder=0,
-                                total_av_price=0,
-                                av_price=0
-                            )
-                            remainder_history=RemainderHistory.objects.create(
+                                created=dateTime,
                                 document=document,
                                 shop=shop_receiver,
                                 # category=category,
@@ -952,8 +936,32 @@ def transfer_input(request, identifier_id):
                                 incoming_quantity=quantities[i],
                                 outgoing_quantity=0,
                                 current_remainder=remainder_current_receiver.current_remainder+int(quantities[i]),
-                                av_price=remainder_current_sender.av_price,
-                                sub_total=remainder_current_sender.av_price *(remainder_current_receiver.current_remainder+int(quantities[i]))
+                                av_price=(int(remainder_current_sender.av_price)*int(quantities[i])+int(remainder_current_receiver.total_av_price))/(int(remainder_current_receiver.current_remainder)+int(quantities[i])),
+                                sub_total=int(remainder_current_sender.av_price)*int(quantities[i])+ int(remainder_current_receiver.total_av_price)
+                            )
+                        else:
+                            remainder_current_receiver=RemainderCurrent.objects.create(
+                                imei=imeis[i],
+                                name=names[i],
+                                shop=shop_receiver,
+                                current_remainder=0,
+                                total_av_price=0,
+                                av_price=0
+                            )
+                            remainder_history=RemainderHistory.objects.create(
+                                created=dateTime,
+                                document=document,
+                                shop=shop_receiver,
+                                # category=category,
+                                imei=imeis[i],
+                                name=names[i],
+                                retail_price=prices[i],
+                                pre_remainder=remainder_current_receiver.current_remainder,
+                                incoming_quantity=quantities[i],
+                                outgoing_quantity=0,
+                                current_remainder=remainder_current_receiver.current_remainder+int(quantities[i]),
+                                av_price=(int(remainder_current_sender.av_price)*int(quantities[i])+int(remainder_current_receiver.total_av_price))/(int(remainder_current_receiver.current_remainder)+int(quantities[i])),
+                                sub_total=int(remainder_current_sender.av_price)*int(quantities[i])+ int(remainder_current_receiver.total_av_price)
                             )
                         remainder_history.save()
                         remainder_current_receiver.current_remainder=remainder_history.current_remainder
