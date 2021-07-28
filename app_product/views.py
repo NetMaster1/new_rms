@@ -729,43 +729,43 @@ def delete_delivery(request, document_id):
         
         if RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__gt=rho.created).exists():
             sequence_rhos_after=RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__gt=rho.created)
+            sequence_rhos_after=sequence_rhos_after.all().order_by('created')
             for obj in sequence_rhos_after:
+
                 if obj.document.title.name =='Перемещение ТМЦ':
+                    obj.pre_remainder=remainder_current.current_remainder
+                    obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                    obj.av_price=remainder_current.av_price
+                    obj.sub_total=remainder_current.av_price*obj.current_remainder
+                    obj.save()
+                    remainder_current.current_remainder=obj.current_remainder
+                    remainder_current.total_av_price=obj.sub_total
+                    remainder_current.av_price=obj.av_price
+                    remainder_current.save()
+
                     document_new=Document.objects.get(id=obj.document)
                     shop_receiver= document_new.transfer_set.first().shop_receiver
-                    print(shop_receiver)
-                    if RemainderHistory.objects.filter(imei=rho.imei, shop=shop_receiver, created__gt=document.created).exists():
-                        new_sequence=RemainderHistory.objects.filter(imei=rho.imei, shop=shop_receiver, created__gt=document.created)
+                    if RemainderHistory.objects.filter(imei=rho.imei, shop=shop_receiver, document=document_new.id, created__gt=document.created).exists():
+                        new_sequence=RemainderHistory.objects.filter(imei=rho.imei, shop=shop_receiver, created__gt=document.created, document=document_new.id)
                         for new_obj in new_sequence:
-                            new_obj.sub_total=new_obj.current_remainder*remainder_current.av_price
                             new_obj.av_price=remainder_current.av_price
+                            new_obj.sub_total=new_obj.current_remainder*remainder_current.av_price
                             new_obj.save()
                             remainder_current_new=RemainderCurrent.objects.get(imei=rho.imei, shop=shop_receiver)
                             remainder_current_new.av_price=new_obj.av_price
                             remainder_current_new.total_av_price=new_obj.sub_total
                             remainder_current_new.save()
-
-                        obj.pre_remainder=remainder_current.current_remainder
-                        obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
-                        obj.sub_total=remainder_current.total_av_price+(obj.incoming_quantity*obj.wholesale_price)-(obj.outgoing_quantity*remainder_current.av_price)
-                        obj.av_price=obj.sub_total/obj.current_remainder
-                        obj.save()
-                        remainder_current.current_remainder=obj.current_remainder
-                        remainder_current.total_av_price=obj.sub_total
-                        remainder_current.av_price=obj.av_price
-                        remainder_current.save()
                 else:
                     obj.pre_remainder=remainder_current.current_remainder
                     obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
-
                     obj.sub_total=remainder_current.total_av_price+obj.incoming_quantity*obj.wholesale_price
-
                     obj.av_price=obj.sub_total/obj.current_remainder
                     obj.save()
                     remainder_current.current_remainder=obj.current_remainder
                     remainder_current.total_av_price=obj.sub_total
                     remainder_current.av_price=obj.av_price
-                    remainder_current.save() 
+                    remainder_current.save()
+                   
         rho.delete()
     for delivery in deliveries:
         delivery.delete()
