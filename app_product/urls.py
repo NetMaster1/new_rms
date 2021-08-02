@@ -28,6 +28,7 @@ urlpatterns = [
     path ('delete_line_transfer/<int:imei>/<int:identifier_id>', views.delete_line_transfer, name='delete_line_transfer'),
     path ('clear_transfer/<int:identifier_id>', views.clear_transfer, name='clear_transfer'),
     path ('change_transfer/<int:document_id>', views.change_transfer, name='change_transfer'),
+    path ('delete_transfer/<int:document_id>', views.delete_transfer, name='delete_transfer'),
 
     path ('log', views.log, name='log'),
     path ('open_document/<int:document_id>', views.open_document, name='open_document'),

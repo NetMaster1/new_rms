@@ -144,6 +144,18 @@ class RemainderCurrent (models.Model):
     def __int__(self):
         return self.id
 
+class AvPrice (models.Model):
+    updated = models.DateTimeField(auto_now=True)
+    imei = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, null=True)
+    current_remainder = models.IntegerField(default=0)
+    av_price = models.IntegerField(null=True)
+    sum = models.IntegerField(null=True)
+
+    def __int__(self):
+        return self.id
+
+
 class Register (models.Model):
     shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)#serves to pass the shop in payment
     product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
