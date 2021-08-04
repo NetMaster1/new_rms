@@ -2,11 +2,14 @@ from django.db import models
 from django.contrib.auth.models import User
 from app_reference.models import Shop
 from app_product.models import Document
+# import datetime
+from datetime import datetime, date
+from django.utils import timezone
 
 # Create your models here.
 
 class Cash (models.Model):
-    created = models.DateField(auto_now_add=True)
+    created = models.DateTimeField(default=timezone.now, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)

@@ -19,6 +19,8 @@
 <div class="enterModalCash">
     <div class="modal-dialog">
         <div class="modal-content">
+
+            {% if client.f_name != "default" %}
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Кэшбэк клиента</h5>
                 <div class="row">
@@ -32,14 +34,28 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
 
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Оплатить наличными</h5>
                 <!-- <button type="button" class="btn_close"></button> -->
             </div>
             <div class="modal-body">
-                <form action="#" method="POST">
+                <form action="{% url 'sale_input_cash' identifier.id%}" method="POST">
                     {% csrf_token %}
+                    {% for group in request.user.groups.all %}
+                    {% if group.name == 'admin' %}
+                    <div class="form-row">
+                        <div class="col-2">
+                            <label for="date">Дата</label>
+                        </div>
+                        <div class="col">
+                            <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today'><br>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+
                     <div class='form-inline'>
                         <div class="row m-2">
                             <div class="col-2"><label for="imei">IMEI</label></div>
@@ -54,24 +70,24 @@
                     <div class="row m-2">
                        
                         <div class="col-2">
-                            {{register.product.imei}}
-                            <!-- <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}'> -->
+                            <!-- {{register.product.imei}} -->
+                            <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}' readonly>
                         </div>
                         <div class="col-4">
-                            {{register.product.name}}
-                            <!-- <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'> -->
+                            <!-- {{register.product.name}} -->
+                            <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}' readonly>
                         </div>
                         <div class="col-1">
-                            {{register.quantity}}
-                            <!-- <input type="number" class='form-control' id="quantity" name="quantity" value={{register.quantity}}> -->
+                            <!-- {{register.quantity}} -->
+                            <input type="number" class='form-control' id="quantity" name="quantity" value={{register.quantity}} readonly>
                         </div>
                         <div class="col-2">
-                            {{register.price}}
-                            <!-- <input type="number" class='form-control' id="price" name="price" value='{{register.price}}'> -->
+                            <!-- {{register.price}} -->
+                            <input type="number" class='form-control' id="price" name="price" value='{{register.price}}' readonly>
                         </div>
                         <div class="col-2">
-                            {{register.sub_total}}
-                            <!-- <input type="number" class='form-control' id="sub_total" name="sub_total" value="{{register.sub_total}}"> -->
+                            <!-- {{register.sub_total}} -->
+                            <input type="number" class='form-control' id="sub_total" name="sub_total" value="{{register.sub_total}}" readonly>
                         </div>
                     </div>
                     {% endfor %}
@@ -80,17 +96,21 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary btn_close_cash"
                             data-bs-dismiss="modal">Закрыть</button>
+                 
                         <button type="submit" class="btn btn-secondary ">Оплатить</button>
-                    </form>
-                   
+                </form>
+
+
+
+                   {% if client.f_name != 'default' %}
                         <!-- =====================cashback_off_modal trigger=========================== -->
-                        <a href="#">
+                        <!-- <a href="#"> -->
                             <input type="button" value="Списать кэшбэк" class="btn btn-secondary btn_cashback_off">
-                        </a>
+                        <!-- </a> -->
                         <!-- =====================End of cashback_off_modal trigger=========================== -->
                         <!-- =====================Cashback_off_modal =========================== -->
                         <div class="cashback_off_modal mt-2">
-                            <form action="{% url 'cashback_off' identifier.id client.id %}" method="POST">
+                        <form action="#" method="POST">
                                 {% csrf_token %}
                                 <div class="row m-1">
                                     <div class="col-8">
@@ -111,10 +131,10 @@
                             </form>
                        
                         <!-- =====================End of Cashback_off_modal =========================== -->
-
                     </div>
-                </div>
+                    {% endif %}
 
+                </div>
         </div>
     </div>
 </div>

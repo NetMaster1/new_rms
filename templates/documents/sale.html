@@ -149,23 +149,21 @@
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">Введител телефон для начисления кэшбэка</h5>
+                                    <h5 class="modal-title" id="exampleModalLabel">Введите телефон для начисления кэшбэка</h5>
                                     <!-- <button type="button" class="btn_close"></button> -->
                                 </div>
                                 <div class="modal-body">
-                                    <form action="{% url 'cashback' identifier.id%}" method="POST">
-                                        {% csrf_token %}
+                                <form action="{% url 'cashback' identifier.id%}" method="POST">
+                                    {% csrf_token %}
                                         <div class="form-group">
                                             <label for="phone">Телефон:</label>
                                             <input class='form-control' type="text" id="phone" name="phone" maxlength='11' required>
                                         </div>
                     
-                    
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary btn_close_cashback" data-bs-dismiss="modal">Закрыть без
-                                        сохранения</button>
-                                    <button type="submit" class="btn btn-secondary">Ввести</button>
-                                </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary btn_close_cashback" data-bs-dismiss="modal">Закрыть без сохранения</button>
+                                        <button type="submit" class="btn btn-secondary">Ввести</button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
@@ -187,7 +185,7 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Введите новое наименование</h5>
+                                        <h5 class="modal-title" id="exampleModalLabel">Введите данные нового клиента</h5>
                                         <!-- <button type="button" class="btn_close"></button> -->
                                     </div>
                                     <div class="modal-body">
@@ -224,7 +222,7 @@
             </div>
             <div class="col-2">
                 <!-- 4 is a service number assigned to Sergei -->
-                    <a href="{% url 'payment' identifier.id 4%}"> 
+                    <a href="{% url 'noCashback' identifier.id %}"> 
                         <input type="button" value="Продолжить без кэшбэка" class="btn btn-sm btn-outline-dark btn_modal">
                     </a>
             </div>
