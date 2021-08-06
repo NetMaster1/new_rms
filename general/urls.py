@@ -25,4 +25,5 @@ urlpatterns = [
     path('cash', include ('app_cash.urls')),
     path('cashback', include ('app_cashback.urls')),
     path('reports', include ('app_reports.urls')),
+    path('finance', include ('app_finance.urls')),
 ]

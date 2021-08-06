@@ -39,7 +39,10 @@ urlpatterns = [
     path ('cashback/<int:identifier_id>', views.cashback, name='cashback'),
     path ('noCashback/<int:identifier_id>', views.noCashback, name='noCashback'),
     path ('payment/<int:identifier_id>/<int:client_id>', views.payment, name='payment'),
-    path ('sale_input_cash/<int:identifier_id>', views.sale_input_cash, name='sale_input_cash'),
+    path ('sale_input_cash/<int:identifier_id>/<int:client_id>', views.sale_input_cash, name='sale_input_cash'),
+    path ('sale_input_credit/<int:identifier_id>/<int:client_id>', views.sale_input_credit, name='sale_input_credit'),
+    path ('sale_input_card/<int:identifier_id>/<int:client_id>', views.sale_input_card, name='sale_input_card'),
+    path ('sale_input_complex/<int:identifier_id>/<int:client_id>', views.sale_input_complex, name='sale_input_complex'),
    
     # path ('cashback_off/<int:identifier_id>/<int:client_id>', views.cashback_off, name='cashback_off'),
 

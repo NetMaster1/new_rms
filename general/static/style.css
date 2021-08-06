@@ -104,7 +104,7 @@
 }
 /* ====================== End of Payment Page Modal for Credits ==================================== */
 
-/* ====================== Payment Page Modal for Credits ==================================== */
+/* ====================== Payment Page Modal for Cards ==================================== */
 .enterModalCard {
     display: none;
 }
@@ -113,9 +113,23 @@
     display: block;
     position: fixed;
 }
-/* ====================== End of Payment Page Modal for Credits ==================================== */
+/* ====================== End of Payment Page Modal for Cards ==================================== */
 
-/* ====================== Cashback_off Modal for Cash ==================================== */
+/* ====================== Payment Page Modal for Complex payment ==================================== */
+.enterModalComplex {
+    display: none;
+}
+
+.enterModalComplex.openModal {
+    display: block;
+    position: fixed;
+}
+/* ====================== End of Payment Page Modal for Complex payment ==================================== */
+
+
+
+
+/* ====================== Cashback_off Modal for Cashback ==================================== */
 .cashback_off_modal{
     display: none;
 }

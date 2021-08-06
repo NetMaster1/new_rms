@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import manager
 from app_reference.models import Shop, Supplier, Product, ProductCategory, DocumentType
 
 # import datetime
@@ -66,9 +67,9 @@ class Sale (models.Model):
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)
-    price = models.IntegerField(default=0)
+    price = models.DecimalField(default=0, max_digits=8, decimal_places=2)
     quantity = models.IntegerField(default=0)
-    sub_total = models.IntegerField(default=0)
+    sub_total = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     staff_bonus= models.IntegerField(default=0)
     user = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
     

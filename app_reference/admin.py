@@ -12,11 +12,10 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('id', 'category', 'name', 'imei')
 
 class ProductCategoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'cashback_percent', 'bonus_percent')
+    list_display = ('id', 'name', 'bonus_percent')
 
 class DocumentTypeAdmin(admin.ModelAdmin):
     list_display = ('id', 'name',)
-
 
 admin.site.register(Shop, ShopAdmin)
 admin.site.register(Supplier, SupplierAdmin)

@@ -4,18 +4,19 @@ from app_clients.models import Client
 from app_personnel.models import BonusAccount
 from django.shortcuts import render, redirect, get_object_or_404
 from . models import Document, Delivery, Sale, Transfer, RemainderHistory, Register, Identifier, RemainderCurrent, AvPrice
-from app_cash.models import CashRemainder, Cash
+from app_cash.models import CashRemainder, Cash, Credit, Card
 import datetime
 import pytz
 from datetime import datetime, date
 from app_reference.models import Shop, Supplier, Product, ProductCategory, DocumentType
 from app_cash.models import Cash, CashRemainder, Credit, Card
 from app_clients.models import Client
+from app_cashback.models import Cashback
 from django.contrib.auth.models import User
 from django.contrib import messages, auth
 from django.utils import timezone
 from django.contrib import messages
-
+import decimal
 
 # Create your views here.
 
@@ -158,109 +159,6 @@ def delete_line_sale(request, imei, identifier_id):
     item.delete()
     return redirect ('sale', identifier.id)
 
-def payment (request, identifier_id, client_id):
-    if request.user.is_authenticated:
-        identifier=Identifier.objects.get(id=identifier_id)
-        client=Client.objects.get(id=client_id)
-        registers=Register.objects.filter(identifier=identifier)
-        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
-        sum=0
-        for register in registers:
-            sum+=register.sub_total
-        # client=Client.objects.get(id=client_id)
-        # if client.accum_cashback <= sum/100*20:
-        #     max_cashback_off=client.accum_cashback
-        #     max_cashback_off=int(max_cashback_off)
-        # else:
-        #     max_cashback_off=sum/100*20
-        #     max_cashback_off=int(max_cashback_off)
-        if request.method=="POST":
-            if registers:
-                check_point = []
-                cash_in=0
-                for register in registers:
-                    remainder_current = RemainderCurrent.objects.get(imei=register.product.imei, shop=register.shop)
-                    if remainder_current.current_remainder < register.quantity:
-                        check_point.append(False)
-                    else:
-                        check_point.append(True)
-                    if False in check_point:
-                        messages.error(request, 'Количество, необходимое для продажи отсутствует на данном складе')
-                        return redirect ('sale', identifier.id)
-                    else:
-                        document=Document.objects.create(
-                            title= doc_type,
-                            user= request.user
-                        )
-                        remainder_history=RemainderHistory.objects.create(
-                            document=document,
-                            shop=register.shop,
-                            category=register.product.category,
-                            imei=register.product.imei,
-                            pre_remainder=remainder_current.current_remainder,
-                            incoming_quantity=0,
-                            outgoing_quantity =register.quantity,
-                            current_remainder=remainder_current.current_remainder-register.quantity,
-                            # av_price=prices[i],
-                            # sub_total=int(quantities[i]) * int(prices[i])
-                        )
-                        remainder_current.current_remainder=remainder_history.current_remainder
-                        remainder_current.save()
-
-                        # remainder.sub_total -= register.quantity*remainder.av_price
-                        # remainder.save()
-                        # if remainder.quantity_remainder == 0:
-                        #     remainder.delete()
-                        # else:
-                        #     remainder.av_price= remainder.sub_total/remainder.quantity_remainder
-                        #     remainder.save()
-
-                        sale=Sale.objects.create(
-                            document=document,
-                            imei=register.product.imei,
-                            name=register.product.name,
-                            category=register.product.category,
-                            quantity=register.quantity,
-                            price=register.price,
-                            sub_total=register.sub_total,
-                            shop=register.shop,
-                            user=request.user,
-                            staff_bonus=register.sub_total*register.product.category.bonus_percent
-
-                        )
-                        # cash_in+=register.sub_total#total sum of the sale document
-                        # client.accum_cashback+=register.sub_total*register.product.category.cashback_percent/100
-                        # client.save()
-                        register.delete()
-                        
-                identifier.delete()
-                sales=Sale.objects.filter(document=document)
-                # current_cash_remainder=CashRemainder.objects.get(shop=sales[0].shop.id)
-                # current_cash_remainder.remainder+=cash_in#adding total sum of the sale document to cash remainder
-                # current_cash_remainder.save()
-                # cash=Cash.objects.create(
-                #     document=document,
-                #     shop=sales[0].shop,
-                #     cash_in=cash_in,
-                #     user=request.user,
-                #     current_remainder=current_cash_remainder
-                #     )   
-                return redirect ('index')
-            else:
-                messages.error(request, 'Отсутствуют товары для продажи')
-                return redirect ('sale', identifier.id)
-        else:
-            context={
-                'identifier': identifier,
-                'registers': registers,
-                'client': client,
-                'sum': sum,
-                # 'max_cashback_off': max_cashback_off
-            }
-            return render (request, 'payment/payment.html', context)
-    else:
-        return redirect ('login')
-
 def cashback (request, identifier_id):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
@@ -287,9 +185,27 @@ def noCashback (request, identifier_id):
         auth.logout(request)
         return redirect ('login')
 
-def sale_input_cash (request, identifier_id):
+def payment (request, identifier_id, client_id):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
+        client=Client.objects.get(id=client_id)
+        registers=Register.objects.filter(identifier=identifier)
+        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+        context={
+            'identifier': identifier,
+            'registers': registers,
+            'client': client,
+            'sum': sum,
+            # 'max_cashback_off': max_cashback_off
+            }
+        return render (request, 'payment/payment.html', context)
+    else:
+        return redirect ('login')
+
+def sale_input_cash (request, identifier_id, client_id):
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
+        client=Client.objects.get(id=client_id)
         registers=Register.objects.filter(identifier=identifier)
         shop=registers[0].shop
         shop=Shop.objects.get(name=shop)
@@ -315,9 +231,10 @@ def sale_input_cash (request, identifier_id):
                 n=len(names)
                 document_sum=0
                 for i in range(n):
+                    product=Product.objects.get(imei=imeis[i])
                     sale_item=Sale.objects.create(
                         document=document,
-                        # category=category,
+                        category=product.category,
                         created=dateTime,
                         shop=shop,
                         name=names[i],
@@ -326,6 +243,11 @@ def sale_input_cash (request, identifier_id):
                         quantity=quantities[i],
                         sub_total=int(quantities[i]) * int(prices[i])
                     )
+                    #cashback calculations
+                    if client.f_name != 'default':
+                        cashback=Cashback.objects.get(category=product.category)
+                        client.accum_cashback+=decimal.Decimal(sale_item.sub_total/100)*cashback.size
+                        client.save()
                     document_sum+=sale_item.sub_total
                      #checking docs before remainder_history
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
@@ -380,6 +302,7 @@ def sale_input_cash (request, identifier_id):
                 cash=Cash.objects.create(
                     shop=shop,
                     created=dateTime,
+                    document=document,
                     user=request.user,
                     pre_remainder=cash_pre_remainder,
                     cash_in=document_sum,
@@ -394,7 +317,112 @@ def sale_input_cash (request, identifier_id):
                     )
                 cash_remainder.remainder=cash.current_remainder
                 cash_remainder.save()
+                for register in registers:
+                    register.delete()
+                identifier.delete()
+                return redirect ('log') 
+            else:
+                messages.error(request, 'Вы не ввели ни одного наименования.')
+                return redirect('sale', identifier.id)
+    else:
+        auth.logout(request)
+        return redirect ('login')
 
+def sale_input_credit (request, identifier_id, client_id):
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
+        client=Client.objects.get(id=client_id)
+        registers=Register.objects.filter(identifier=identifier)
+        shop=registers[0].shop
+        shop=Shop.objects.get(name=shop)
+        doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
+        if request.method == 'POST':
+            dateTime=request.POST['dateTime']
+            # category=request.POST['category']
+            imeis=request.POST.getlist('imei', None )
+            names=request.POST.getlist('name', None )
+            quantities=request.POST.getlist('quantity', None)
+            prices=request.POST.getlist('price', None)
+            if imeis:
+                if dateTime:
+                    #converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                    dateTime=datetime.strptime(dateTime, '%Y-%m-%dT%H:%M')
+                else:
+                    dateTime=datetime.now()
+                document=Document.objects.create(
+                    title= doc_type,
+                    user= request.user,
+                    created=dateTime
+                )
+                n=len(names)
+                document_sum=0
+                for i in range(n):
+                    product=Product.objects.get(imei=imeis[i])
+                    sale_item=Sale.objects.create(
+                        document=document,
+                        category=product.category,
+                        created=dateTime,
+                        shop=shop,
+                        name=names[i],
+                        imei=imeis[i],
+                        price=prices[i],
+                        quantity=quantities[i],
+                        sub_total=int(quantities[i]) * int(prices[i])
+                    )
+                    if client.f_name != 'default':
+                        cashback=Cashback.objects.get(category=product.category)
+                        client.accum_cashback+=decimal.Decimal(sale_item.sub_total/100)*cashback.size
+                        client.save()
+                    document_sum+=sale_item.sub_total
+                    #checking docs before remainder_history
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
+                        sequence_rhos_before=RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)
+                        remainder_history=sequence_rhos_before.latest('created')
+                        remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
+                        remainder_current.current_remainder=remainder_history.current_remainder
+                        remainder_current.save()
+                    else:
+                        messages.error(request, 'Данное наименование отсутствует на данном складе.')
+                        return redirect('sale', identifier.id)
+                    #creating remainder_history
+                    remainder_history=RemainderHistory.objects.create(
+                        document=document,
+                        created=dateTime,
+                        shop=shop,
+                        # category=category,
+                        imei=imeis[i],
+                        name=names[i],
+                        pre_remainder=remainder_current.current_remainder,
+                        incoming_quantity=0,
+                        outgoing_quantity=quantities[i],
+                        current_remainder=remainder_current.current_remainder-int(quantities[i]),
+                        # sub_total= int(int(quantities[i]) * int(prices[i])),
+                    )
+                    remainder_current.current_remainder=remainder_history.current_remainder
+                    remainder_current.save()
+                    AvPrice.objects.filter(imei=imeis[i])
+                    av_price_obj=AvPrice.objects.get(imei=imeis[i])
+                    av_price_obj.current_remainder-=int(quantities[i])
+                    av_price_obj.sum-=int(quantities[i])*av_price_obj.av_price
+                    av_price_obj.save()
+                     #checking docs after remainder_history
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
+                        sequence_rhos_after=RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created)
+                        sequence_rhos_after=sequence_rhos_after.all().order_by('created')
+                        for obj in sequence_rhos_after:
+                            obj.pre_remainder=remainder_current.current_remainder
+                            obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                            obj.save()
+                            remainder_current.current_remainder=obj.current_remainder
+                            remainder_current.save()
+                document.sum=document_sum
+                document.save()
+                credit=Credit.objects.create(
+                    shop=shop,
+                    document=document,
+                    user=request.user,
+                    sum=document.sum
+                )
                 for register in registers:
                     register.delete()
                 identifier.delete()
@@ -407,6 +435,262 @@ def sale_input_cash (request, identifier_id):
         auth.logout(request)
         return redirect ('login')
 
+def sale_input_card (request, identifier_id, client_id):
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
+        registers=Register.objects.filter(identifier=identifier)
+        client=Client.objects.get(id=client_id)
+        shop=registers[0].shop
+        shop=Shop.objects.get(name=shop)
+        doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
+        if request.method == 'POST':
+            dateTime=request.POST['dateTime']
+            # category=request.POST['category']
+            imeis=request.POST.getlist('imei', None )
+            names=request.POST.getlist('name', None )
+            quantities=request.POST.getlist('quantity', None)
+            prices=request.POST.getlist('price', None)
+            if imeis:
+                if dateTime:
+                    #converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                    dateTime=datetime.strptime(dateTime, '%Y-%m-%dT%H:%M')
+                else:
+                    dateTime=datetime.now()
+                document=Document.objects.create(
+                    title= doc_type,
+                    user= request.user,
+                    created=dateTime
+                )
+                n=len(names)
+                document_sum=0
+                for i in range(n):
+                    product=Product.objects.get(imei=imeis[i])
+                    sale_item=Sale.objects.create(
+                        document=document,
+                        # category=category,
+                        created=dateTime,
+                        shop=shop,
+                        name=names[i],
+                        imei=imeis[i],
+                        price=prices[i],
+                        quantity=quantities[i],
+                        sub_total=int(quantities[i]) * int(prices[i])
+                    )
+                    if client.f_name != 'default':
+                        cashback=Cashback.objects.get(category=product.category)
+                        client.accum_cashback+=decimal.Decimal(sale_item.sub_total/100)*cashback.size
+                        client.save()
+                    document_sum+=sale_item.sub_total
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
+                        sequence_rhos_before=RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)
+                        remainder_history=sequence_rhos_before.latest('created')
+                        remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
+                        remainder_current.current_remainder=remainder_history.current_remainder
+                        remainder_current.save()
+                    else:
+                        messages.error(request, 'Данное наименование отсутствует на данном складе.')
+                        return redirect('sale', identifier.id)
+                    #creating remainder_history
+                    remainder_history=RemainderHistory.objects.create(
+                        document=document,
+                        created=dateTime,
+                        shop=shop,
+                        # category=category,
+                        imei=imeis[i],
+                        name=names[i],
+                        pre_remainder=remainder_current.current_remainder,
+                        incoming_quantity=0,
+                        outgoing_quantity=quantities[i],
+                        current_remainder=remainder_current.current_remainder-int(quantities[i]),
+                        # sub_total= int(int(quantities[i]) * int(prices[i])),
+                    )
+                    remainder_current.current_remainder=remainder_history.current_remainder
+                    remainder_current.save()
+                    AvPrice.objects.filter(imei=imeis[i])
+                    av_price_obj=AvPrice.objects.get(imei=imeis[i])
+                    av_price_obj.current_remainder-=int(quantities[i])
+                    av_price_obj.sum-=int(quantities[i])*av_price_obj.av_price
+                    av_price_obj.save()
+                     #checking docs after remainder_history
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
+                        sequence_rhos_after=RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created)
+                        sequence_rhos_after=sequence_rhos_after.all().order_by('created')
+                        for obj in sequence_rhos_after:
+                            obj.pre_remainder=remainder_current.current_remainder
+                            obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                            obj.save()
+                            remainder_current.current_remainder=obj.current_remainder
+                            remainder_current.save()
+                document.sum=document_sum
+                document.save()
+                card=Card.objects.create(
+                    shop=shop,
+                    document=document,
+                    user=request.user,
+                    sum=document.sum
+                )
+                for register in registers:
+                    register.delete()
+                identifier.delete()
+                return redirect ('log') 
+            else:
+                print('error')
+                messages.error(request, 'Вы не ввели ни одного наименования.')
+                return redirect('sale', identifier.id)
+    else:
+        auth.logout(request)
+        return redirect ('login')
+
+def sale_input_complex (request, identifier_id, client_id):
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
+        registers=Register.objects.filter(identifier=identifier)
+        client=Client.objects.get(id=client_id)
+        shop=registers[0].shop
+        shop=Shop.objects.get(name=shop)
+        doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
+        if request.method == 'POST':
+            dateTime=request.POST['dateTime']
+            cash=request.POST['cash']
+            # cash=int(cash)
+            credit=request.POST['credit']
+            # credit=int(credit)
+            card=request.POST['card']
+            # card=int(card)
+            # category=request.POST['category']
+            imeis=request.POST.getlist('imei', None )
+            names=request.POST.getlist('name', None )
+            quantities=request.POST.getlist('quantity', None)
+            prices=request.POST.getlist('price', None)
+            if imeis:
+                if dateTime:
+                    #converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                    dateTime=datetime.strptime(dateTime, '%Y-%m-%dT%H:%M')
+                else:
+                    dateTime=datetime.now()
+                document=Document.objects.create(
+                    title= doc_type,
+                    user= request.user,
+                    created=dateTime
+                )
+                n=len(names)
+                document_sum=0
+                for i in range(n):
+                    product=Product.objects.get(imei=imeis[i])
+                    sale_item=Sale.objects.create(
+                        document=document,
+                        category=product.category,
+                        created=dateTime,
+                        shop=shop,
+                        name=names[i],
+                        imei=imeis[i],
+                        price=prices[i],
+                        quantity=quantities[i],
+                        sub_total=int(quantities[i]) * int(prices[i])
+                    )
+                    if client.f_name != 'default':
+                        cashback=Cashback.objects.get(category=product.category)
+                        client.accum_cashback+=decimal.Decimal(sale_item.sub_total/100)*cashback.size
+                        client.save()
+                    document_sum+=sale_item.sub_total
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
+                        sequence_rhos_before=RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)
+                        remainder_history=sequence_rhos_before.latest('created')
+                        remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
+                        remainder_current.current_remainder=remainder_history.current_remainder
+                        remainder_current.save()
+                    else:
+                        messages.error(request, 'Данное наименование отсутствует на данном складе.')
+                        return redirect('sale', identifier.id)
+                    #creating remainder_history
+                    remainder_history=RemainderHistory.objects.create(
+                        document=document,
+                        created=dateTime,
+                        shop=shop,
+                        # category=category,
+                        imei=imeis[i],
+                        name=names[i],
+                        pre_remainder=remainder_current.current_remainder,
+                        incoming_quantity=0,
+                        outgoing_quantity=quantities[i],
+                        current_remainder=remainder_current.current_remainder-int(quantities[i]),
+                        # sub_total= int(int(quantities[i]) * int(prices[i])),
+                    )
+                    remainder_current.current_remainder=remainder_history.current_remainder
+                    remainder_current.save()
+                    AvPrice.objects.filter(imei=imeis[i])
+                    av_price_obj=AvPrice.objects.get(imei=imeis[i])
+                    av_price_obj.current_remainder-=int(quantities[i])
+                    av_price_obj.sum-=int(quantities[i])*av_price_obj.av_price
+                    av_price_obj.save()
+                    #checking docs after remainder_history
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
+                        sequence_rhos_after=RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created)
+                        sequence_rhos_after=sequence_rhos_after.all().order_by('created')
+                        for obj in sequence_rhos_after:
+                            obj.pre_remainder=remainder_current.current_remainder
+                            obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                            obj.save()
+                            remainder_current.current_remainder=obj.current_remainder
+                            remainder_current.save()
+                document.sum=document_sum
+                document.save()
+                sum=int(cash)+int(credit)+int(card) 
+                if sum != document_sum:
+                    print(document_sum)
+                    print(sum)
+                    messages.error(request, 'Сумма в чеке не совпадает с суммой продажи.')
+                    return redirect('sale', identifier.id)
+                if cash:
+                    if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
+                        chos=Cash.objects.filter(shop=shop, created__lt=dateTime)
+                        cho_before=chos.latest('created')
+                        cash_pre_remainder=cho_before.current_remainder
+                    else:
+                        cash_pre_remainder=0
+                    cash=Cash.objects.create(
+                        shop=shop,
+                        created=dateTime,
+                        document=document,
+                        user=request.user,
+                        pre_remainder=cash_pre_remainder,
+                        cash_in=cash,
+                        current_remainder=cash_pre_remainder+int(cash)
+                    )
+                    if CashRemainder.objects.filter(shop=shop).exists():
+                        cash_remainder=CashRemainder.objects.get(shop=shop)
+                    else:
+                        cash_remainder=CashRemainder.objects.create(
+                            shop=shop,
+                            remainder=0
+                        )
+                    cash_remainder.remainder=cash.current_remainder
+                    cash_remainder.save()
+                if card:
+                    card=Card.objects.create(
+                    shop=shop,
+                    document=document,
+                    user=request.user,
+                    sum=card
+                )
+                if credit:
+                   credit=Credit.objects.create(
+                    shop=shop,
+                    document=document,
+                    user=request.user,
+                    sum=credit
+                ) 
+                for register in registers:
+                    register.delete()
+                identifier.delete()
+                return redirect ('log')
+
+            else:
+                messages.error(request, 'Вы не ввели ни одного наименования.')
+                return redirect('sale', identifier.id)    
+    else:
+        auth.logout(request)
+        return redirect ('login')
 
 def identifier_delivery (request):
     identifier=Identifier.objects.create()
@@ -449,13 +733,13 @@ def check_delivery(request, identifier_id):
 
 def delivery(request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
-    # categories=ProductCategory.objects.all()
+    categories=ProductCategory.objects.all()
     suppliers=Supplier.objects.all()
     shops=Shop.objects.all()
     registers = Register.objects.filter(identifier=identifier)
     context={
         'identifier': identifier,
-        # 'categories': categories,
+        'categories': categories,
         'suppliers': suppliers,
         'shops': shops,
         'registers': registers

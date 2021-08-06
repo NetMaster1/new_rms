@@ -32,18 +32,20 @@ class CashRemainder(models.Model):
 
 class Credit (models.Model):
     created = models.DateField(auto_now_add=True)
+    document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-    credit_remainder= models.IntegerField(default=0)
+    sum= models.IntegerField(default=0)
 
     def __int__(self):
         return self.id
 
 class Card (models.Model):
     created = models.DateField(auto_now_add=True)
+    document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-    credit_remainder= models.IntegerField(default=0)
+    sum= models.IntegerField(default=0)
 
     def __int__(self):
         return self.id
