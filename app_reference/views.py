@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.shortcuts import render
 from . models import Product
-from app_product.models import RemainderHistory
-from app_clients.models import Client
+from app_product.models import RemainderHistory, RemainderCurrent
+from app_clients.models import Customer
 from django.contrib import messages
 
 # Create your views here.
@@ -11,7 +11,7 @@ def reference (request):
 
 def products (request):
     products=Product.objects.all()
-    remainders=Remainder.objects.all()
+    remainders=RemainderCurrent.objects.all()
     context={
         'products': products,
         'remainders': remainders
@@ -19,7 +19,7 @@ def products (request):
     return render (request, 'reference/products.html', context )
 
 def clients (request):
-    clients=Client.objects.all()
+    clients=Customer.objects.all()
     context = {
         'clients': clients
     }

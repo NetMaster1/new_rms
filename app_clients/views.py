@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from . models import Client
+from . models import Customer
 from app_product.models import Identifier
 
 # Create your views here.
@@ -9,7 +9,7 @@ def new_client_sale (request, identifier_id):
         f_name=request.POST['f_name']
         l_name=request.POST['f_name']
         phone=request.POST['phone']
-        new_client=Client.objects.create(
+        new_client=Customer.objects.create(
             f_name=f_name,
             l_name=l_name,
             phone=phone,

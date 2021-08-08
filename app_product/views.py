@@ -1,6 +1,6 @@
 from django.db.models.fields import NullBooleanField
 from app_product.admin import RemainderHistoryAdmin
-from app_clients.models import Client
+from app_clients.models import Customer
 from app_personnel.models import BonusAccount
 from django.shortcuts import render, redirect, get_object_or_404
 from . models import Document, Delivery, Sale, Transfer, RemainderHistory, Register, Identifier, RemainderCurrent, AvPrice
@@ -10,7 +10,6 @@ import pytz
 from datetime import datetime, date
 from app_reference.models import Shop, Supplier, Product, ProductCategory, DocumentType
 from app_cash.models import Cash, CashRemainder, Credit, Card
-from app_clients.models import Client
 from app_cashback.models import Cashback
 from django.contrib.auth.models import User
 from django.contrib import messages, auth
@@ -18,6 +17,7 @@ from django.utils import timezone
 from django.contrib import messages
 import decimal
 import random
+from twilio.rest import Client
 
 # Create your views here.
 
@@ -163,7 +163,7 @@ def delete_line_sale(request, imei, identifier_id):
 def noCashback (request, identifier_id):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
-        client=Client.objects.get(f_name='default')
+        client=Customer.objects.get(f_name='default')
         cashback_off=0
         return redirect ('payment', identifier.id, client.id, cashback_off)
     else:
@@ -173,7 +173,7 @@ def noCashback (request, identifier_id):
 def payment (request, identifier_id, client_id, cashback_off):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
-        client=Client.objects.get(id=client_id)
+        client=Customer.objects.get(id=client_id)
         registers=Register.objects.filter(identifier=identifier)
         sum=0
         for register in registers:
@@ -196,7 +196,7 @@ def payment (request, identifier_id, client_id, cashback_off):
 def sale_input_cash (request, identifier_id, client_id, cashback_off):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
-        client=Client.objects.get(id=client_id)
+        client=Customer.objects.get(id=client_id)
         registers=Register.objects.filter(identifier=identifier)
         shop=registers[0].shop
         shop=Shop.objects.get(name=shop)
@@ -323,7 +323,7 @@ def sale_input_cash (request, identifier_id, client_id, cashback_off):
 def sale_input_credit (request, identifier_id, client_id):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
-        client=Client.objects.get(id=client_id)
+        client=Customer.objects.get(id=client_id)
         registers=Register.objects.filter(identifier=identifier)
         shop=registers[0].shop
         shop=Shop.objects.get(name=shop)
@@ -431,7 +431,7 @@ def sale_input_card (request, identifier_id, client_id):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
         registers=Register.objects.filter(identifier=identifier)
-        client=Client.objects.get(id=client_id)
+        client=Customer.objects.get(id=client_id)
         shop=registers[0].shop
         shop=Shop.objects.get(name=shop)
         doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
@@ -537,7 +537,7 @@ def sale_input_complex (request, identifier_id, client_id):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
         registers=Register.objects.filter(identifier=identifier)
-        client=Client.objects.get(id=client_id)
+        client=Customer.objects.get(id=client_id)
         shop=registers[0].shop
         shop=Shop.objects.get(name=shop)
         doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
@@ -1957,8 +1957,8 @@ def cashback (request, identifier_id):
         identifier=Identifier.objects.get(id=identifier_id)
         if request.method == "POST":
             phone=request.POST['phone']
-            if Client.objects.filter(phone=phone).exists():
-                client=Client.objects.get(phone=phone)
+            if Customer.objects.filter(phone=phone).exists():
+                client=Customer.objects.get(phone=phone)
                 return redirect ('cashback_off_choice', identifier.id, client.id)
             else:
                 messages.error(request, 'Клиент не зарегистрирован в системе. Введите данные клиента.')
@@ -1973,20 +1973,31 @@ def cashback_off_choice (request, identifier_id, client_id):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
         registers=Register.objects.filter(identifier=identifier)
-        client=Client.objects.get(id=client_id)
+        client=Customer.objects.get(id=client_id)
         #two factor authentication
         security_code=[]
         for i in range(4):
             a=random.randint(0,9)
             security_code.append(a)
-        string=''.join(str(i) for i in security_code)#transforming every integer into string
-        print(string)
-        
+        code_string=''.join(str(i) for i in security_code)#transforming every integer into string
+        print(code_string)
+        # ===========Twilo API==================
+        account_sid = 'ACb9a5209252abd7219e19a812f8108acc'
+        auth_token = 'baeff2bde0cda073514388999d246122'
+        client_twilio = Client(account_sid, auth_token)
+        message = client_twilio.messages \
+            .create(
+                body=code_string,
+                from_='+16624993114',
+                to = '+79200711112'
+            )
+        print(message.sid)
+        # ================================
         sum=0
         for register in registers:
             sum+=register.sub_total
         max_cashback_off=sum*0.2
-        client=Client.objects.get(id=client_id)
+        client=Customer.objects.get(id=client_id)
         if max_cashback_off<=client.accum_cashback:
             cashback_off=max_cashback_off
         else:
@@ -2007,7 +2018,7 @@ def cashback_off (request, identifier_id, client_id):
     for register in registers:
         sum+=register.sub_total
     max_cashback_off=sum*0.2
-    client=Client.objects.get(id=client_id)
+    client=Customer.objects.get(id=client_id)
     if max_cashback_off<=client.accum_cashback:
         cashback_off=max_cashback_off
     else:
@@ -2021,7 +2032,7 @@ def cashback_off (request, identifier_id, client_id):
 
 def no_cashback_off (request, identifier_id, client_id):
     identifier=Identifier.objects.get(id=identifier_id)
-    client=Client.objects.get(id=client_id)
+    client=Customer.objects.get(id=client_id)
     cashback_off=0
     return redirect ('payment', identifier.id, client.id, cashback_off)
 

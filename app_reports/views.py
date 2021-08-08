@@ -5,7 +5,7 @@ from app_cash.models import Cash
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from app_product.models import Product, RemainderHistory, Sale, Transfer, Delivery, Document
-from app_clients.models import Client
+from app_clients.models import Customer
 from . models import ProductHistory
 from django.contrib import messages
 import pandas as pd

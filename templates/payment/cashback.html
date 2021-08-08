@@ -19,6 +19,12 @@
                         </a>
                     </div>
                     <div class="col">
+                        <a href="{% url 'cashback_off' identifier.id client.id  %}">
+                            <input type="submit" value="Получить код" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+
+                    <div class="col">
                         <a href="{% url 'no_cashback_off' identifier.id client.id  %}">
                             <input type="submit" value="Продолжить без списания" class="btn btn-sm btn-block btn-outline-dark">
                         </a>
