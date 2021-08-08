@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+
+            <div class="row m-3">
+                <div class="col-6">
+                    <h5>Cумма кэшбэка возможная к списанию</h5>
+                </div>
+                <div class="col-2">
+                    <h5>{{cashback_off}} руб.</h5>
+                </div>
+            </div>
+                <div class="row mb-2">
+                    <div class="col">
+                        <a href="{% url 'cashback_off' identifier.id client.id  %}">
+                            <input type="submit" value="Списать кэшбэк" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a href="{% url 'no_cashback_off' identifier.id client.id  %}">
+                            <input type="submit" value="Продолжить без списания" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+
+
+                </div>
+                
+                <div class="row mb-2">
+                    <div class="col">
+                     
+                    </div>
+                </div>
+
+
+                    <div class="col-6 border rounded p-3">
+                        <a href="{% url 'close_without_save' identifier.id %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

@@ -36,15 +36,18 @@ urlpatterns = [
 
     path ('close_without_save/<int:identifier_id>', views.close_without_save, name='close_without_save'),
 
-    path ('cashback/<int:identifier_id>', views.cashback, name='cashback'),
+    
     path ('noCashback/<int:identifier_id>', views.noCashback, name='noCashback'),
-    path ('payment/<int:identifier_id>/<int:client_id>', views.payment, name='payment'),
-    path ('sale_input_cash/<int:identifier_id>/<int:client_id>', views.sale_input_cash, name='sale_input_cash'),
+    path ('payment/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.payment, name='payment'),
+    path ('sale_input_cash/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_cash, name='sale_input_cash'),
     path ('sale_input_credit/<int:identifier_id>/<int:client_id>', views.sale_input_credit, name='sale_input_credit'),
     path ('sale_input_card/<int:identifier_id>/<int:client_id>', views.sale_input_card, name='sale_input_card'),
     path ('sale_input_complex/<int:identifier_id>/<int:client_id>', views.sale_input_complex, name='sale_input_complex'),
    
-    # path ('cashback_off/<int:identifier_id>/<int:client_id>', views.cashback_off, name='cashback_off'),
+    path ('cashback/<int:identifier_id>', views.cashback, name='cashback'),
+    path ('cashback_off_choice/<int:identifier_id>/<int:client_id>', views.cashback_off_choice, name='cashback_off_choice'),
+    path ('cashback_off/<int:identifier_id>/<int:client_id>', views.cashback_off, name='cashback_off'),
+    path ('no_cashback_off/<int:identifier_id>/<int:client_id>', views.no_cashback_off, name='no_cashback_off'),
 
 
     path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),

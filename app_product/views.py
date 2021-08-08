@@ -17,6 +17,7 @@ from django.contrib import messages, auth
 from django.utils import timezone
 from django.contrib import messages
 import decimal
+import random
 
 # Create your views here.
 
@@ -159,50 +160,40 @@ def delete_line_sale(request, imei, identifier_id):
     item.delete()
     return redirect ('sale', identifier.id)
 
-def cashback (request, identifier_id):
-    if request.user.is_authenticated:
-        identifier=Identifier.objects.get(id=identifier_id)
-        if request.method == "POST":
-            phone=request.POST['phone']
-            if Client.objects.filter(phone=phone).exists():
-                client=Client.objects.get(phone=phone)
-                return redirect ('payment', identifier.id, client.id)
-            else:
-                messages.error(request, 'Клиент не зарегистрирован в системе. Введите данные клиента.')
-                return redirect ('sale', identifier.id)
-        else:
-            return redirect ('sale', identifier_id)
-    else:
-        auth.logout(request)
-        return redirect ('login')
-
 def noCashback (request, identifier_id):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
         client=Client.objects.get(f_name='default')
-        return redirect ('payment', identifier.id, client.id)
+        cashback_off=0
+        return redirect ('payment', identifier.id, client.id, cashback_off)
     else:
         auth.logout(request)
         return redirect ('login')
 
-def payment (request, identifier_id, client_id):
+def payment (request, identifier_id, client_id, cashback_off):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
         client=Client.objects.get(id=client_id)
         registers=Register.objects.filter(identifier=identifier)
+        sum=0
+        for register in registers:
+            sum+=register.sub_total
+        sum_to_pay=sum-cashback_off
+
         doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
         context={
             'identifier': identifier,
             'registers': registers,
             'client': client,
             'sum': sum,
-            # 'max_cashback_off': max_cashback_off
+            'cashback_off': cashback_off,
+            'sum_to_pay': sum_to_pay
             }
         return render (request, 'payment/payment.html', context)
     else:
         return redirect ('login')
 
-def sale_input_cash (request, identifier_id, client_id):
+def sale_input_cash (request, identifier_id, client_id, cashback_off):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
         client=Client.objects.get(id=client_id)
@@ -293,6 +284,7 @@ def sale_input_cash (request, identifier_id, client_id):
                             remainder_current.save()
                 document.sum=document_sum
                 document.save()
+                sum_to_pay=document_sum-cashback_off
                 if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
                     chos=Cash.objects.filter(shop=shop, created__lt=dateTime)
                     cho_before=chos.latest('created')
@@ -305,7 +297,7 @@ def sale_input_cash (request, identifier_id, client_id):
                     document=document,
                     user=request.user,
                     pre_remainder=cash_pre_remainder,
-                    cash_in=document_sum,
+                    cash_in=sum_to_pay,
                     current_remainder=cash_pre_remainder+document_sum
                 )
                 if CashRemainder.objects.filter(shop=shop).exists():
@@ -1960,80 +1952,80 @@ def open_document(request, document_id):
     }
     return render(request, 'documents/open_document.html', context)
 
-# def cashback_off (request, identifier_id, client_id):
-#     identifier=Identifier.objects.get(id=identifier_id)
-#     registers=Register.objects.filter(identifier=identifier)
-#     doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
-#     sum=0
-#     for register in registers:
-#         sum+=register.sub_total
-#     client=Client.objects.get(id=client_id)
-#     if request.method=="POST":
-#         cashback_off=request.POST['cashback_off']
-#         cashback_off=int(cashback_off)
-#         if registers:
-#             check_point = []
-#             cash_in=0
-#             for register in registers:
-#                 cash_in+=register.sub_total#total sum of the sale document
-#                 remainder = Remainder.objects.get(imei=register.product.imei, shop=register.shop)
-#                 if remainder.quantity_remainder < register.quantity:
-#                     check_point.append(False)
-#                 else:
-#                     check_point.append(True)
-#                 if False in check_point:
-#                     messages.error(request, 'Количество, необходимое для продажи отсутствует на данном складе')
-#                     return redirect ('sale', identifier.id)
-#                 else:
-#                     if cashback_off > cash_in/100*20:
-#                         messages.error(request, 'Сумма кэшбэка не может составлять более 20% от суммы покупки')
-#                         return redirect ('payment', identifier.id, client.id)
-#                     elif cashback_off > client.accum_cashback:
-#                         messages.error(request, 'Введенная сумма превышает кэшбэк клиента.')
-#                         return redirect ('payment', identifier.id, client.id)
-#                     else:
-#                         client.accum_cashback = client.accum_cashback-cashback_off 
-#                         client.save()
-#                         remainder.quantity_remainder -= register.quantity
-#                         remainder.sub_total -= register.quantity*remainder.av_price
-#                         remainder.save()
-#                         if remainder.quantity_remainder == 0:
-#                             remainder.delete()
-#                         else:
-#                             remainder.av_price= remainder.sub_total/remainder.quantity_remainder
-#                             remainder.save()
-#                         document=Document.objects.create(
-#                                 title= doc_type,
-#                                 user= request.user
-#                             )
-#                         sale=Sale.objects.create(
-#                             document=document,
-#                             imei=register.product.imei,
-#                             name=register.product.name,
-#                             category=register.product.category,
-#                             quantity=register.quantity,
-#                             price=register.price,
-#                             sub_total=register.sub_total,
-#                             shop=register.shop
-#                         )
-#                         register.delete()
-#             identifier.delete()
-#             sales=Sale.objects.filter(document=document)
-#             current_cash_remainder=CashRemainder.objects.get(shop=sales[0].shop.id)
-#             cash=Cash.objects.create(
-#                 document=document,
-#                 shop=sales[0].shop,
-#                 pre_remainder=current_cash_remainder.remainder,
-#                 cash_in=(cash_in-cashback_off),
-#                 cash_out=0,
-#                 current_remainder=current_cash_remainder.remainder+(cash_in-cashback_off),
-#                 user=request.user,
-#             )
-#             #updating cash remainder value
-#             current_cash_remainder.remainder+=(cash_in-cashback_off)
-#             current_cash_remainder.save()
-#             return redirect ('index')
-#             return redirect ('index')
+def cashback (request, identifier_id):
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
+        if request.method == "POST":
+            phone=request.POST['phone']
+            if Client.objects.filter(phone=phone).exists():
+                client=Client.objects.get(phone=phone)
+                return redirect ('cashback_off_choice', identifier.id, client.id)
+            else:
+                messages.error(request, 'Клиент не зарегистрирован в системе. Введите данные клиента.')
+                return redirect ('sale', identifier.id)
+        else:
+            return redirect ('sale', identifier_id)
+    else:
+        auth.logout(request)
+        return redirect ('login')
+
+def cashback_off_choice (request, identifier_id, client_id):
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
+        registers=Register.objects.filter(identifier=identifier)
+        client=Client.objects.get(id=client_id)
+        #two factor authentication
+        security_code=[]
+        for i in range(4):
+            a=random.randint(0,9)
+            security_code.append(a)
+        string=''.join(str(i) for i in security_code)#transforming every integer into string
+        print(string)
+        
+        sum=0
+        for register in registers:
+            sum+=register.sub_total
+        max_cashback_off=sum*0.2
+        client=Client.objects.get(id=client_id)
+        if max_cashback_off<=client.accum_cashback:
+            cashback_off=max_cashback_off
+        else:
+            cashback_off=client.accum_cashback
+
+        context={
+            'identifier': identifier,
+            'client': client,
+            'cashback_off': cashback_off,
+            }
+        return render (request, 'payment/cashback.html', context)
+
+def cashback_off (request, identifier_id, client_id):
+    identifier=Identifier.objects.get(id=identifier_id)
+    registers=Register.objects.filter(identifier=identifier)
+    doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
+    sum=0
+    for register in registers:
+        sum+=register.sub_total
+    max_cashback_off=sum*0.2
+    client=Client.objects.get(id=client_id)
+    if max_cashback_off<=client.accum_cashback:
+        cashback_off=max_cashback_off
+    else:
+        cashback_off=client.accum_cashback
+    cashback_off=int(cashback_off)
+    client.accum_cashback=client.accum_cashback-cashback_off
+    client.save()
+
+    return redirect ('payment', identifier.id, client.id, cashback_off)
+
+
+def no_cashback_off (request, identifier_id, client_id):
+    identifier=Identifier.objects.get(id=identifier_id)
+    client=Client.objects.get(id=client_id)
+    cashback_off=0
+    return redirect ('payment', identifier.id, client.id, cashback_off)
+
+
 
 def file_uploading(request):
     pass

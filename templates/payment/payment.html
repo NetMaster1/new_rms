@@ -3,6 +3,10 @@
 <div class="hide">
 <div class="container">
 <div class="page_location">
+
+    <div class="row m-3">
+
+    
             <div class="row m-2">
                 <div class="col">
                     <h3>Выберите тип оплаты</h3>
@@ -19,29 +23,12 @@
 <div class="enterModalCash">
     <div class="modal-dialog">
         <div class="modal-content">
-
-            {% if client.f_name != "default" %}
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Кэшбэк клиента</h5>
-                <div class="row">
-                    <div class="col">Телефон клиента</div>
-                    <div class="col">
-                        {{client.phone}}
-                    </div>
-                    <div class="col">Сумма кэшбэка</div>
-                    <div class="col">
-                        {{client.accum_cashback}}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Оплатить наличными</h5>
                 <!-- <button type="button" class="btn_close"></button> -->
             </div>
             <div class="modal-body">
-                <form action="{% url 'sale_input_cash' identifier.id client.id %}" method="POST">
+                <form action="{% url 'sale_input_cash' identifier.id client.id cashback_off %}" method="POST">
                     {% csrf_token %}
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}
@@ -70,29 +57,32 @@
                     <div class="row m-2">
                        
                         <div class="col-2">
-                            <!-- {{register.product.imei}} -->
                             <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}' readonly>
                         </div>
                         <div class="col-4">
-                            <!-- {{register.product.name}} -->
                             <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}' readonly>
                         </div>
                         <div class="col-1">
-                            <!-- {{register.quantity}} -->
                             <input type="number" class='form-control' id="quantity" name="quantity" value={{register.quantity}} readonly>
                         </div>
                         <div class="col-2">
-                            <!-- {{register.price}} -->
                             <input type="number" class='form-control' id="price" name="price" value='{{register.price}}' readonly>
                         </div>
                         <div class="col-2">
-                            <!-- {{register.sub_total}} -->
                             <input type="number" class='form-control' id="sub_total" name="sub_total" value="{{register.sub_total}}" readonly>
                         </div>
                     </div>
                     {% endfor %}
-                    Общая сумма чека: {{sum}}
+                    <div class="row m-2">
+                    Общая сумма чека: {{sum}} руб.
+                    </div>
+                    <div class="row m-2">
+                    Сумма к оплате с учетом кэшбэка {{sum_to_pay}} руб.
+                    </div>
                 </div>
+                  
+
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary btn_close_cash"
                             data-bs-dismiss="modal">Закрыть</button>
@@ -102,39 +92,7 @@
 
 
 
-                   {% if client.f_name != 'default' %}
-                        <!-- =====================cashback_off_modal trigger=========================== -->
-                        <!-- <a href="#"> -->
-                            <input type="button" value="Списать кэшбэк" class="btn btn-secondary btn_cashback_off">
-                        <!-- </a> -->
-                        <!-- =====================End of cashback_off_modal trigger=========================== -->
-                        <!-- =====================Cashback_off_modal =========================== -->
-                        <div class="cashback_off_modal mt-2">
-                        <form action="" method="POST">
-                                {% csrf_token %}
-                                <div class="row m-1">
-                                    <div class="col-8">
-                                        <label for="cashback_off">Введите сумму для списания</label>
-                                    </div>
-                                    <div class="col-4">
-                                        <input type="number" class='form-control' id="cashback_off" name="cashback_off" value='{{max_cashback_off}}'>
-                                    </div>
-                                </div>
-                                <div class="row m-1">
-                                    <div class="col-6">
-                                    <button type="button" class="btn btn-block btn-secondary btn-block btn_close_cashback_off" data-bs-dismiss="modal">Закрыть</button>
-                                    </div>
-                                    <div class="col-6">
-                                        <button type="submit" class="btn btn-block btn-secondary btn_close_cashback_off" data-bs-dismiss="modal">Списать</button>
-                                    </div>
-                                </div>    
-                            </form>
-                       
-                        <!-- =====================End of Cashback_off_modal =========================== -->
-                    </div>
-                    {% endif %}
-
-                </div>
+ </div>
         </div>
     </div>
 </div>
@@ -235,7 +193,7 @@
                 <!-- <button type="button" class="btn_close"></button> -->
             </div>
             <div class="modal-body">
-                <form action="{% url 'sale_input_card' identifier.id %}" method="POST">
+                <form action="{% url 'sale_input_card' identifier.id client.id %}" method="POST">
                     {% csrf_token %}
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}
@@ -312,7 +270,7 @@
                 <!-- <button type="button" class="btn_close"></button> -->
             </div>
             <div class="modal-body">
-                <form action="{% url 'sale_input_complex' identifier.id %}" method="POST">
+                <form action="{% url 'sale_input_complex' identifier.id client.id %}" method="POST">
                     {% csrf_token %}
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}
