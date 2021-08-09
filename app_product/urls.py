@@ -48,8 +48,9 @@ urlpatterns = [
     path ('cashback_off_choice/<int:identifier_id>/<int:client_id>', views.cashback_off_choice, name='cashback_off_choice'),
     path ('cashback_off/<int:identifier_id>/<int:client_id>', views.cashback_off, name='cashback_off'),
     path ('no_cashback_off/<int:identifier_id>/<int:client_id>', views.no_cashback_off, name='no_cashback_off'),
-
-
+    path ('security_code/<int:identifier_id>/<int:client_id>', views.security_code, name='security_code'),
+    path ('sec_code_confirm/<int:identifier_id>/<int:client_id>', views.sec_code_confirm, name='sec_code_confirm'),
+   
     path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),
     path ('clear_recognition/<int:identifier_id>', views.clear_recognition, name='clear_recognition'),
     path ('recognition/<int:identifier_id>', views.recognition, name='recognition'),

@@ -1,4 +1,5 @@
 from django.db.models.fields import NullBooleanField
+from django.http import request
 from app_product.admin import RemainderHistoryAdmin
 from app_clients.models import Customer
 from app_personnel.models import BonusAccount
@@ -1974,30 +1975,11 @@ def cashback_off_choice (request, identifier_id, client_id):
         identifier=Identifier.objects.get(id=identifier_id)
         registers=Register.objects.filter(identifier=identifier)
         client=Customer.objects.get(id=client_id)
-        #two factor authentication
-        security_code=[]
-        for i in range(4):
-            a=random.randint(0,9)
-            security_code.append(a)
-        code_string=''.join(str(i) for i in security_code)#transforming every integer into string
-        print(code_string)
-        # ===========Twilo API==================
-        account_sid = 'ACb9a5209252abd7219e19a812f8108acc'
-        auth_token = 'baeff2bde0cda073514388999d246122'
-        client_twilio = Client(account_sid, auth_token)
-        message = client_twilio.messages \
-            .create(
-                body=code_string,
-                from_='+16624993114',
-                to = '+79200711112'
-            )
-        print(message.sid)
-        # ================================
+        sum=0
         sum=0
         for register in registers:
             sum+=register.sub_total
         max_cashback_off=sum*0.2
-        client=Customer.objects.get(id=client_id)
         if max_cashback_off<=client.accum_cashback:
             cashback_off=max_cashback_off
         else:
@@ -2010,15 +1992,75 @@ def cashback_off_choice (request, identifier_id, client_id):
             }
         return render (request, 'payment/cashback.html', context)
 
-def cashback_off (request, identifier_id, client_id):
+
+def security_code (request, identifier_id, client_id):
+    if request.user.is_authenticated:
+        client=Customer.objects.get(id=client_id)
+        identifier=Identifier.objects.get(id=identifier_id)
+        registers=Register.objects.filter(identifier=identifier)
+        # if request.method=="POST":
+        security_code=[]
+        for i in range(4):
+            a=random.randint(0,9)
+            security_code.append(a)
+        code_string=''.join(str(i) for i in security_code)#transforming every integer into string
+        print(code_string)
+        # ===========Twilio API==================
+        account_sid = 'ACb9a5209252abd7219e19a812f8108acc'
+        auth_token = 
+        client_twilio = Client(account_sid, auth_token)
+        message = client_twilio.messages \
+            .create(
+                body=code_string,
+                from_='+16624993114',
+                to = '+79200711112'
+            )
+        # ================================
+        context = {
+            'identifier': identifier,
+            'client': client,
+            # 'cashback_off': cashback_off,
+            'code_string': code_string
+        }
+        return render(request, 'payment/security_code.html', context)
+    else:
+        auth.logout(request)
+        return redirect ('login')
+
+def sec_code_confirm (request, identifier_id, client_id):
     identifier=Identifier.objects.get(id=identifier_id)
     registers=Register.objects.filter(identifier=identifier)
+    client=Customer.objects.get(id=client_id)
+    if request.method=='POST':
+        code_string=request.POST['code_string']
+        code=request.POST['code']
+        if code == code_string:
+            sum=0
+            for register in registers:
+                sum+=register.sub_total
+            max_cashback_off=sum*0.2
+            if max_cashback_off<=client.accum_cashback:
+                cashback_off=max_cashback_off
+            else:
+                cashback_off=client.accum_cashback
+            cashback_off=int(cashback_off)
+            client.accum_cashback=client.accum_cashback-cashback_off
+            client.save()
+            
+            return redirect ('payment', identifier.id, client.id, cashback_off)
+        else:
+            messages.error(request, 'Неверный код. Попробуйте еще раз.')
+            return redirect ('security_code', identifier.id, client.id)
+
+
+def cashback_off (request, identifier_id, client_id):
+    client=Customer.objects.get(id=client_id)
+    registers=Register.objects.filter(identifier=identifier_id)
     doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
     sum=0
     for register in registers:
         sum+=register.sub_total
     max_cashback_off=sum*0.2
-    client=Customer.objects.get(id=client_id)
     if max_cashback_off<=client.accum_cashback:
         cashback_off=max_cashback_off
     else:
