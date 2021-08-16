@@ -194,7 +194,11 @@
         <div class="col-2"><a href="{% url 'delete_delivery' document.id %}">{{document.sum}} руб.</a></div>
         {% elif document.title.name == 'Перемещение ТМЦ' %}
         <div class="col-2"><a href="{% url 'delete_transfer' document.id %}">{{document.sum}} руб.</a></div>
+        {% elif document.title.name == 'Продажа ТМЦ' %}
+        <div class="col-2"><a href="{% url 'delete_sale_input_cash' document.id %}">{{document.sum}} руб.</a></div>
         {% endif %}
+
+
 
         {% if document.title.name == 'Поступление ТМЦ' %}
          <div class="col-4">{{document.delivery.first.supplier}}</div>

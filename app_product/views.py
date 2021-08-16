@@ -161,15 +161,7 @@ def delete_line_sale(request, imei, identifier_id):
     item.delete()
     return redirect ('sale', identifier.id)
 
-def noCashback (request, identifier_id):
-    if request.user.is_authenticated:
-        identifier=Identifier.objects.get(id=identifier_id)
-        client=Customer.objects.get(f_name='default')
-        cashback_off=0
-        return redirect ('payment', identifier.id, client.id, cashback_off)
-    else:
-        auth.logout(request)
-        return redirect ('login')
+
 
 def payment (request, identifier_id, client_id, cashback_off):
     if request.user.is_authenticated:
@@ -283,12 +275,15 @@ def sale_input_cash (request, identifier_id, client_id, cashback_off):
                             obj.save()
                             remainder_current.current_remainder=obj.current_remainder
                             remainder_current.save()
+
                 document.sum=document_sum
                 document.save()
                 sum_to_pay=document_sum-cashback_off
+
+                #operations with cash
                 if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
-                    chos=Cash.objects.filter(shop=shop, created__lt=dateTime)
-                    cho_before=chos.latest('created')
+                    chos=Cash.objects.filter(shop=shop, created__lt=dateTime)#cash history objects
+                    cho_before=chos.latest('created')#cash history object
                     cash_pre_remainder=cho_before.current_remainder
                 else:
                     cash_pre_remainder=0
@@ -310,6 +305,17 @@ def sale_input_cash (request, identifier_id, client_id, cashback_off):
                     )
                 cash_remainder.remainder=cash.current_remainder
                 cash_remainder.save()
+                if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
+                        sequence_chos_after=Cash.objects.filter(shop=shop, created__gt=document.created)
+                        sequence_chos_after=sequence_chos_after.all().order_by('created')
+                        for obj in sequence_chos_after:
+                            obj.pre_remainder=cash_remainder.remainder
+                            obj.current_remainder=cash_remainder.remainder + obj.cash_in - obj.cash_out
+                            obj.save()
+                            cash_remainder.remainder=obj.current_remainder
+                            cash_remainder.save()
+                #end of operations with cash
+
                 for register in registers:
                     register.delete()
                 identifier.delete()
@@ -320,6 +326,71 @@ def sale_input_cash (request, identifier_id, client_id, cashback_off):
     else:
         auth.logout(request)
         return redirect ('login')
+
+def delete_sale_input_cash(request, document_id):
+    document=Document.objects.get(id=document_id)
+    sales=Sale.objects.filter(document=document)
+    remainder_history_objects=RemainderHistory.objects.filter(document=document)
+    for rho in remainder_history_objects:
+        av_price_obj=AvPrice.objects.get(imei=rho.imei)
+        av_price_obj.current_remainder+=rho.outgoing_quantity
+        av_price_obj.sum+=rho.outgoing_quantity*av_price_obj.av_price
+        av_price_obj.save()
+
+        if RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__lt=rho.created).exists():
+            sequence_rhos_before=RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__lt=rho.created)
+            rho_latest_before=sequence_rhos_before.latest('created')
+            remainder_current=RemainderCurrent.objects.get(shop=rho.shop, imei=rho.imei)
+            remainder_current.current_remainder=rho_latest_before.current_remainder
+            # remainder_current.total_av_price=rho_latest_before.sub_total
+            # remainder_current.av_price=rho_latest_before.av_price
+            remainder_current.save()
+        else:
+            remainder_current=RemainderCurrent.objects.get(shop=rho.shop, imei=rho.imei)
+            remainder_current.current_remainder=0
+            # remainder_current.total_av_price=0
+            # remainder_current.av_price=0
+            remainder_current.save()
+        if RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__gt=rho.created).exists():
+            sequence_rhos_after=RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__gt=rho.created)
+            sequence_rhos_after=sequence_rhos_after.all().order_by('created')
+            for obj in sequence_rhos_after:
+                obj.pre_remainder=remainder_current.current_remainder
+                obj.current_remainder=remainder_current.current_remainder + obj.incoming_quantity - obj.outgoing_quantity
+                obj.save()
+                remainder_current.current_remainder=obj.current_remainder
+                remainder_current.save()
+        rho.delete()
+    for sale in sales:
+        sale.delete()
+
+    cash_history_objects=Cash.objects.filter(document=document)
+    for cho in cash_history_objects:
+        if Cash.objects.filter(shop=cho.shop, created__lt=cho.created).exists():
+            sequence_chos_before=Cash.objects.filter(shop=cho.shop, created__lt=cho.created)
+            cho_latest_before=sequence_chos_before.latest('created')
+            cash_remainder=CashRemainder.objects.get(shop=cho.shop)
+            cash_remainder.remainder=cho_latest_before.current_remainder
+            cash_remainder.save()
+        else:
+            cash_remainder=CashRemainder.objects.get()
+            cash_remainder.remainder=0
+            cash_remainder.save()
+        
+        if Cash.objects.filter(shop=cho.shop, created__gt=cho.created).exists():
+            sequence_chos_after=Cash.objects.filter(shop=cho.shop, created__gt=cho.created)
+            sequence_chos_after=sequence_chos_after.all().order_by('created')
+            for obj in sequence_chos_after:
+                obj.pre_remainder=cash_remainder.remainder
+                obj.current_remainder=cash_remainder.remainder + obj.cash_in - obj.cash_out
+                obj.save()
+                cash_remainder.remainder=obj.current_remainder
+                cash_remainder.save()
+        cho.delete()
+    
+    document.delete()
+    return redirect ('log')
+  
 
 def sale_input_credit (request, identifier_id, client_id):
     if request.user.is_authenticated:
@@ -684,6 +755,8 @@ def sale_input_complex (request, identifier_id, client_id):
     else:
         auth.logout(request)
         return redirect ('login')
+
+
 
 def identifier_delivery (request):
     identifier=Identifier.objects.create()
@@ -1953,6 +2026,7 @@ def open_document(request, document_id):
     }
     return render(request, 'documents/open_document.html', context)
 
+
 def cashback (request, identifier_id):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
@@ -1992,7 +2066,6 @@ def cashback_off_choice (request, identifier_id, client_id):
             }
         return render (request, 'payment/cashback.html', context)
 
-
 def security_code (request, identifier_id, client_id):
     if request.user.is_authenticated:
         client=Customer.objects.get(id=client_id)
@@ -2007,7 +2080,7 @@ def security_code (request, identifier_id, client_id):
         print(code_string)
         # ===========Twilio API==================
         account_sid = 'ACb9a5209252abd7219e19a812f8108acc'
-        auth_token = 
+        auth_token = ''
         client_twilio = Client(account_sid, auth_token)
         message = client_twilio.messages \
             .create(
@@ -2052,7 +2125,6 @@ def sec_code_confirm (request, identifier_id, client_id):
             messages.error(request, 'Неверный код. Попробуйте еще раз.')
             return redirect ('security_code', identifier.id, client.id)
 
-
 def cashback_off (request, identifier_id, client_id):
     client=Customer.objects.get(id=client_id)
     registers=Register.objects.filter(identifier=identifier_id)
@@ -2071,14 +2143,21 @@ def cashback_off (request, identifier_id, client_id):
 
     return redirect ('payment', identifier.id, client.id, cashback_off)
 
-
 def no_cashback_off (request, identifier_id, client_id):
     identifier=Identifier.objects.get(id=identifier_id)
     client=Customer.objects.get(id=client_id)
     cashback_off=0
     return redirect ('payment', identifier.id, client.id, cashback_off)
 
-
+def noCashback (request, identifier_id):
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
+        client=Customer.objects.get(f_name='default')
+        cashback_off=0
+        return redirect ('payment', identifier.id, client.id, cashback_off)
+    else:
+        auth.logout(request)
+        return redirect ('login')
 
 def file_uploading(request):
     pass
