@@ -23,8 +23,8 @@ def new_client(request):
 
 def calculate_discount (request):
     bar_code=request.POST['bar_code']
-    if Client.objects.filter(bar_code=bar_code).exists():
-        client=Client.objects.get(bar_code=bar_code)
+    if Customer.objects.filter(bar_code=bar_code).exists():
+        client=Customer.objects.get(bar_code=bar_code)
 
     else:
         pass

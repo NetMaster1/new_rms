@@ -2348,7 +2348,7 @@ def security_code (request, identifier_id, client_id):
         print(code_string)
         # ===========Twilio API==================
         account_sid = 'ACb9a5209252abd7219e19a812f8108acc'
-        auth_token = '8536b0493a7743246c127e78d2db1472'
+        auth_token = ''
         client_twilio = Client(account_sid, auth_token)
         message = client_twilio.messages \
             .create(
@@ -2409,7 +2409,7 @@ def cashback_off (request, identifier_id, client_id):
     client.accum_cashback=client.accum_cashback-cashback_off
     client.save()
 
-    return redirect ('payment', identifier.id, client.id, cashback_off)
+    return redirect ('payment', identifier_id, client.id, cashback_off)
 
 def no_cashback_off (request, identifier_id, client_id):
     identifier=Identifier.objects.get(id=identifier_id)
