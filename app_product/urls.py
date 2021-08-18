@@ -13,7 +13,22 @@ urlpatterns = [
     path ('change_delivery/<int:document_id>', views.change_delivery, name='change_delivery'),
     path ('delete_delivery/<int:document_id>', views.delete_delivery, name='delete_delivery'),
     path ('delete_line_change_delivery/<int:document_id>/<int:imei>/<int:shop_id>', views.delete_line_change_delivery, name='delete_line_change_delivery'),
-   
+
+    path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),
+    path ('check_recognition/<int:identifier_id>', views.check_recognition, name='check_recognition'),
+    path ('clear_recognition/<int:identifier_id>', views.clear_recognition, name='clear_recognition'),
+    path ('recognition/<int:identifier_id>', views.recognition, name='recognition'),
+    path ('delete_line_recognition/<int:imei>/<int:identifier_id>', views.delete_line_recognition, name='delete_line_recognition'),
+    path ('recognition_input/<int:identifier_id>', views.recognition_input, name='recognition_input'),
+    path ('delete_recognition/<int:document_id>', views.delete_recognition, name='delete_recognition'),
+
+    path ('identifier_signing_off', views.identifier_signing_off, name='identifier_signing_off'),
+    path ('check_signing_off/<int:identifier_id>', views.check_signing_off, name='check_signing_off'),
+    # path ('clear_signing_off/<int:identifier_id>', views.clear_signing_off, name='clear_signing_off'),
+    path ('signing_off/<int:identifier_id>', views.signing_off, name='signing_off'),
+    # path ('delete_line_signing_off/<int:imei>/<int:identifier_id>', views.delete_line_signing_off, name='delete_line_signing_off'),
+    # path ('signing_off_input/<int:identifier_id>', views.signing_off_input, name='signing_off_input'),
+    # path ('delete_signing_off/<int:document_id>', views.delete_signing_off, name='delete_signing_off'),
 
     path ('identifier_sale', views.identifier_sale, name='identifier_sale'),
     path ('check_sale/<int:identifier_id>', views.check_sale, name='check_sale'),
@@ -40,8 +55,8 @@ urlpatterns = [
     path ('noCashback/<int:identifier_id>', views.noCashback, name='noCashback'),
     path ('payment/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.payment, name='payment'),
     path ('sale_input_cash/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_cash, name='sale_input_cash'),
-    path ('delete_sale_input_cash/<int:document_id>', views.delete_sale_input_cash, name='delete_sale_input_cash'),
-
+    path ('delete_sale_input/<int:document_id>', views.delete_sale_input, name='delete_sale_input'),
+  
     path ('sale_input_credit/<int:identifier_id>/<int:client_id>', views.sale_input_credit, name='sale_input_credit'),
     path ('sale_input_card/<int:identifier_id>/<int:client_id>', views.sale_input_card, name='sale_input_card'),
     path ('sale_input_complex/<int:identifier_id>/<int:client_id>', views.sale_input_complex, name='sale_input_complex'),
@@ -53,9 +68,7 @@ urlpatterns = [
     path ('security_code/<int:identifier_id>/<int:client_id>', views.security_code, name='security_code'),
     path ('sec_code_confirm/<int:identifier_id>/<int:client_id>', views.sec_code_confirm, name='sec_code_confirm'),
    
-    path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),
-    path ('clear_recognition/<int:identifier_id>', views.clear_recognition, name='clear_recognition'),
-    path ('recognition/<int:identifier_id>', views.recognition, name='recognition'),
+
 
     
     path ('close_edited_document', views.close_edited_document, name='close_edited_document'),

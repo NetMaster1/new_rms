@@ -195,9 +195,10 @@
         {% elif document.title.name == 'Перемещение ТМЦ' %}
         <div class="col-2"><a href="{% url 'delete_transfer' document.id %}">{{document.sum}} руб.</a></div>
         {% elif document.title.name == 'Продажа ТМЦ' %}
-        <div class="col-2"><a href="{% url 'delete_sale_input_cash' document.id %}">{{document.sum}} руб.</a></div>
+        <div class="col-2"><a href="{% url 'delete_sale_input' document.id %}">{{document.sum}} руб.</a></div>
+        {% elif document.title.name == 'Оприходование ТМЦ' %}
+        <div class="col-2"><a href="{% url 'delete_recognition' document.id %}">{{document.sum}} руб.</a></div>
         {% endif %}
-
 
 
         {% if document.title.name == 'Поступление ТМЦ' %}
@@ -206,6 +207,8 @@
         <div class="col-4">С {{document.transfer_set.first.shop_sender}} на {{document.transfer_set.first.shop_receiver}}</div>
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-4">{{document.sale_set.first.shop}} </div>
+        {% elif document.title.name == 'Оприходование ТМЦ' %}
+        <div class="col-4">{{document.recognition.first.shop}} </div>
         {% endif %}
 
         <div class="col-2">{{document.user.first_name}}</div>

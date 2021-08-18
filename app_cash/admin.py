@@ -3,6 +3,7 @@ from . models import Cash, CashRemainder, Credit, Card
 
 class CashAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'document', 'shop', 'pre_remainder', 'cash_in', 'cash_out', 'current_remainder', 'user')
+    ordering = ('-created',)
 
 class CashRemainderAdmin(admin.ModelAdmin):
     list_display = ('id', 'shop', 'remainder')

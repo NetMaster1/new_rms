@@ -57,6 +57,30 @@ class Delivery (models.Model):
     def __int__(self):
         return self.id
 
+class Recognition (models.Model):
+    created = models.DateTimeField(default=timezone.now, null=True)
+    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name='recognition')
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
+    name = models.CharField(max_length=250)
+    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
+    imei = models.CharField(max_length=250)
+    price = models.IntegerField(default=0)#counter
+    quantity = models.IntegerField(default=0)
+    sub_total = models.IntegerField(default=0)
+
+    class Meta:
+        # ordering = ('created',)  # sorting by date
+        verbose_name = 'recognition'
+        verbose_name_plural = 'recognitions'
+
+    # def sub_total(self):
+    #     return self.price * self.quantity
+
+    def __int__(self):
+        return self.id
+
 class Sale (models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     category = models.ForeignKey(ProductCategory, null=True, on_delete=models.DO_NOTHING)

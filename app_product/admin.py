@@ -1,8 +1,13 @@
 from django.contrib import admin
-from . models import Document, Delivery, Sale, Transfer, RemainderHistory, RemainderCurrent, Register, Identifier, AvPrice
+from . models import Document, Delivery, Recognition, Sale, Transfer, RemainderHistory, RemainderCurrent, Register, Identifier, AvPrice
 
 class DeliveryAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'supplier' ,'name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
+    ordering = ('-created',)
+    list_filter = ('imei',)
+
+class RecognitionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'created','name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
     ordering = ('-created',)
     list_filter = ('imei',)
 
@@ -42,6 +47,7 @@ class IdentifierAdmin(admin.ModelAdmin):
     list_display = ('id',)
 
 admin.site.register(Delivery, DeliveryAdmin)
+admin.site.register(Recognition, RecognitionAdmin)
 admin.site.register(Sale, SaleAdmin)
 admin.site.register(Transfer, TransferAdmin)
 admin.site.register(RemainderHistory, RemainderHistoryAdmin)
