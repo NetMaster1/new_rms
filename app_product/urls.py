@@ -24,17 +24,26 @@ urlpatterns = [
 
     path ('identifier_signing_off', views.identifier_signing_off, name='identifier_signing_off'),
     path ('check_signing_off/<int:identifier_id>', views.check_signing_off, name='check_signing_off'),
-    # path ('clear_signing_off/<int:identifier_id>', views.clear_signing_off, name='clear_signing_off'),
+    path ('clear_signing_off/<int:identifier_id>', views.clear_signing_off, name='clear_signing_off'),
     path ('signing_off/<int:identifier_id>', views.signing_off, name='signing_off'),
-    # path ('delete_line_signing_off/<int:imei>/<int:identifier_id>', views.delete_line_signing_off, name='delete_line_signing_off'),
-    # path ('signing_off_input/<int:identifier_id>', views.signing_off_input, name='signing_off_input'),
-    # path ('delete_signing_off/<int:document_id>', views.delete_signing_off, name='delete_signing_off'),
+    path ('delete_line_signing_off/<int:imei>/<int:identifier_id>', views.delete_line_signing_off, name='delete_line_signing_off'),
+    path ('signing_off_input/<int:identifier_id>', views.signing_off_input, name='signing_off_input'),
+    path ('delete_signing_off/<int:document_id>', views.delete_signing_off, name='delete_signing_off'),
 
     path ('identifier_sale', views.identifier_sale, name='identifier_sale'),
     path ('check_sale/<int:identifier_id>', views.check_sale, name='check_sale'),
     path ('sale/<int:identifier_id>', views.sale, name='sale'),
     path ('delete_line_sale/<int:imei>/<int:identifier_id>', views.delete_line_sale, name='delete_line_sale'),
     path ('clear_sale/<int:identifier_id>', views.clear_sale, name='clear_sale'),
+
+    
+    path ('identifier_return', views.identifier_return, name='identifier_return'),
+    path ('check_return/<int:identifier_id>', views.check_return, name='check_return'),
+    path ('return_doc/<int:identifier_id>', views.return_doc, name='return_doc'),
+    path ('delete_line_return/<int:imei>/<int:identifier_id>', views.delete_line_return, name='delete_line_return'),
+    path ('clear_return/<int:identifier_id>', views.clear_return, name='clear_return'),
+    path ('return_input/<int:identifier_id>', views.return_input, name='return_input'),
+    path ('delete_return/<int:document_id>', views.delete_return, name='delete_return'),
 
     path ('identifier_transfer', views.identifier_transfer, name='identifier_transfer'),
     path ('check_transfer/<int:identifier_id>', views.check_transfer, name='check_transfer'),
@@ -44,6 +53,7 @@ urlpatterns = [
     path ('clear_transfer/<int:identifier_id>', views.clear_transfer, name='clear_transfer'),
     path ('change_transfer/<int:document_id>', views.change_transfer, name='change_transfer'),
     path ('delete_transfer/<int:document_id>', views.delete_transfer, name='delete_transfer'),
+
 
     path ('log', views.log, name='log'),
     path ('open_document/<int:document_id>', views.open_document, name='open_document'),

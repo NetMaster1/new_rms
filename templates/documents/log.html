@@ -198,6 +198,12 @@
         <div class="col-2"><a href="{% url 'delete_sale_input' document.id %}">{{document.sum}} руб.</a></div>
         {% elif document.title.name == 'Оприходование ТМЦ' %}
         <div class="col-2"><a href="{% url 'delete_recognition' document.id %}">{{document.sum}} руб.</a></div>
+        {% elif document.title.name == 'Списание ТМЦ' %}
+        <div class="col-2"><a href="{% url 'delete_signing_off' document.id %}">{{document.sum}} руб.</a></div>
+        {% elif document.title.name == 'Переоценка ТМЦ' %}
+        <div class="col-2"><a href="#">{{document.sum}} руб.</a></div>
+        {% elif document.title.name == 'Возврат ТМЦ' %}
+        <div class="col-2"><a href="{% url 'delete_return' document.id %}">{{document.sum}} руб.</a></div>
         {% endif %}
 
 
@@ -209,6 +215,10 @@
         <div class="col-4">{{document.sale_set.first.shop}} </div>
         {% elif document.title.name == 'Оприходование ТМЦ' %}
         <div class="col-4">{{document.recognition.first.shop}} </div>
+        {% elif document.title.name == 'Списание ТМЦ' %}
+        <div class="col-4">{{document.signoff_set.first.shop}} </div>
+        {% elif document.title.name == 'Возврат ТМЦ' %}
+        <div class="col-4">{{document.returning_set.first.shop}} </div>
         {% endif %}
 
         <div class="col-2">{{document.user.first_name}}</div>

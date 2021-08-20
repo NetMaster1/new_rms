@@ -6,13 +6,13 @@
     <div class="page_location">
         <div class="row m-2 pt-2">
             <div class="col">
-                <h3>Списание ТМЦ</h3>
+                <h3>Возврат ТМЦ</h3>
             </div>
         </div>
 
         <div class="row m-2">
             <div class="col-6 border rounded p-3">
-                <form action="{% url 'check_signing_off' identifier.id %}" method="POST">
+                <form action="{% url 'check_return' identifier.id %}" method="POST">
                     {% csrf_token %}
                     <div class="row m-1">
                         <div class="col-6">
@@ -33,7 +33,7 @@
         <div class="row m-2 pb-2">
             <div class="col-12 border rounded p-3">
 
-                <form action="{% url 'signing_off_input' identifier.id %}" method="POST">
+                <form action="{% url 'return_input' identifier.id %}" method="POST">
                     {% csrf_token %}
 
                     {% for group in request.user.groups.all %}
@@ -49,12 +49,12 @@
                     </div>
                     {% endif %}
                     {% endfor %}
-              
+
 
                     <div class="form-row">
                         <div class="col-3">
                             <label for="shop">
-                                <h5>Фирма получатель</h5>
+                                <h5>Фирма</h5>
                             </label>
                         </div>
                         <div class="col">
@@ -98,14 +98,14 @@
                             <input type="number" class='form-control' id="quantity" name="quantity"
                                 value='{{register.quantity}}' required>
                         </div>
-                        <!-- <div class="col-2">
+                        <div class="col-2">
                             <input type="number" class='form-control' id="price" name="price" maxlength='50' required>
-                        </div> -->
+                        </div>
                         <!-- <div class="col-2">
                     <input type="number" class='form-control' id="sub_total" name="sub_total" maxlength='50'>
                 </div> -->
                         <div class="col">
-                            <a href="{% url 'delete_line_signing_off' register.product.imei identifier.id %}">
+                            <a href="{% url 'delete_line_return' register.product.imei identifier.id %}">
                                 <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                             </a>
                         </div>
@@ -120,7 +120,7 @@
                 </form>
 
                 <div class="col-2">
-                    <a href="{% url 'clear_signing_off' identifier.id %}">
+                    <a href="{% url 'clear_return' identifier.id %}">
                         <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark">
                     </a>
                 </div>

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import Document, Delivery, Recognition, Sale, Transfer, RemainderHistory, RemainderCurrent, Register, Identifier, AvPrice
+from . models import Document, Delivery, Recognition, Sale, Transfer, SignOff, Returning, RemainderHistory, RemainderCurrent, Register, Identifier, AvPrice
 
 class DeliveryAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'supplier' ,'name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
@@ -16,6 +16,12 @@ class SaleAdmin(admin.ModelAdmin):
 
 class TransferAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop_sender', 'shop_receiver', 'quantity', 'price' )
+
+class SignOffAdmin(admin.ModelAdmin):
+    list_display = ('id', 'created', 'document', 'name', 'imei', 'shop', 'quantity' )
+
+class ReturningAdmin(admin.ModelAdmin):
+    list_display = ('id', 'created', 'document', 'name', 'imei', 'shop', 'quantity' )
 
 class RemainderHistoryAdmin(admin.ModelAdmin):
     list_display = ('created', 'document', 'shop', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'wholesale_price', 'current_remainder') 
@@ -50,6 +56,8 @@ admin.site.register(Delivery, DeliveryAdmin)
 admin.site.register(Recognition, RecognitionAdmin)
 admin.site.register(Sale, SaleAdmin)
 admin.site.register(Transfer, TransferAdmin)
+admin.site.register(SignOff, SignOffAdmin)
+admin.site.register(Returning, ReturningAdmin)
 admin.site.register(RemainderHistory, RemainderHistoryAdmin)
 admin.site.register(RemainderCurrent, RemainderCurrentAdmin)
 admin.site.register(Document, DocumentAdmin)
