@@ -19,9 +19,9 @@ class Document (models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     sum = models.IntegerField(null=True)
     
-    def __int__(self):
-        return self.id
-
+    def __str__(self):
+        return self.title.name
+  
     # class Meta:
     #     ordering = ('created',)  # sorting by date
     #     verbose_name = self.title
@@ -31,16 +31,27 @@ class Identifier(models.Model):
     def __int__(self):
         return self.id
 
+class Register (models.Model):
+    shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)#serves to pass the shop in payment
+    product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
+    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+    quantity = models.IntegerField(default=1)
+    price = models.IntegerField(default=0)
+    sub_total = models.IntegerField(default=0)
+   
+    def __int__(self):
+        return self.id
+
 
 class Delivery (models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name='delivery')
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING, blank=True)
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
     name = models.CharField(max_length=250)
-    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
+    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING, null=True)
     imei = models.CharField(max_length=250)
     price = models.IntegerField(default=0)#counter
     quantity = models.IntegerField(default=0)
@@ -67,7 +78,7 @@ class Returning (models.Model):
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)
-    price = models.IntegerField(default=0)#counter
+    price = models.IntegerField(default=0)#retail price
     quantity = models.IntegerField(default=0)
     sub_total = models.IntegerField(default=0)
 
@@ -91,7 +102,7 @@ class Recognition (models.Model):
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)
-    price = models.IntegerField(default=0)#counter
+    price = models.IntegerField(default=0)#
     quantity = models.IntegerField(default=0)
     sub_total = models.IntegerField(default=0)
 
@@ -129,6 +140,32 @@ class SignOff (models.Model):
 
     def __int__(self):
         return self.id
+
+class Revaluation (models.Model):
+    created = models.DateTimeField(default=timezone.now, null=True)
+    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+    # category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
+    name = models.CharField(max_length=250)
+    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
+    imei = models.CharField(max_length=250)
+    price_current = models.IntegerField(default=0)
+    price_new = models.IntegerField(default=0)
+    # quantity = models.IntegerField(default=0)
+    # sub_total = models.IntegerField(default=0)
+
+    class Meta:
+        # ordering = ('created',)  # sorting by date
+        verbose_name = 'revaluation'
+        verbose_name_plural = 'revaluations'
+
+    # def sub_total(self):
+    #     return self.price * self.quantity
+
+    def __int__(self):
+        return self.id
+
 
 class Sale (models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
@@ -230,14 +267,5 @@ class AvPrice (models.Model):
         return self.id
 
 
-class Register (models.Model):
-    shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)#serves to pass the shop in payment
-    product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
-    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
-    quantity = models.IntegerField(default=1)
-    price = models.IntegerField(default=0)
-    sub_total = models.IntegerField(default=0)
-   
-    def __int__(self):
-        return self.id
+
 

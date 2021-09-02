@@ -6,80 +6,58 @@
 
         <div class="menu">
             <div class="row">
-                <h3>Журнал документов</h3>
+                <h3>Журнал продаж</h3>
             </div>
         </div>
-    
-            <form action="{% url 'log' %}" method="POST">
-                {% csrf_token %}
-        <div class="menu">
-            <div class="row form-row mt-3">
-              
+
+        <form action="{% url 'list_sale' %}" method="POST">
+            {% csrf_token %}
+            <div class="menu">
+                <div class="row form-row mt-3">
+
                     <div class="col-2">
                         <input type="date" id='start_date' name="start_date">
                     </div>
                     <div class="col-2">
                         <input type="date" id='end_date' name="end_date">
                     </div>
-            
+                    <div class="col-2">
+                    <input type="text" id='IMEI' name="IMEI" placeholder="Введите IMEI">
+                    </div>
 
 
-                <div class="col-2">
-                    <select name="doc_type" id="doc_type" class='form-inline'>
-                        <option value="">Выберите тип документ</option>
-                        {% for doc_type in doc_types %}
-                        <option value="{{doc_type.id}}">{{doc_type.name}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-        
-                <div class="col-2">
-                    <select name="supplier" id="supplier" class='form-inline'>
-                        <option value="">Выберите поставщика</option>
-                        {% for supplier in suppliers %}
-                        <option value="{{supplier.id}}">{{supplier.name}}</option>
-                        {% endfor %}
-                    </select>
+
+                    <div class="col-2">
+                        <select name="shop" id="shop" class='form-inline'>
+                            <option value="">Выберите торговую точку</option>
+                            {% for shop in shops %}
+                            <option value="{{shop.id}}">{{shop.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                
                 </div>
 
-                <div class="col-2">
-                    <select name="shop" id="shop" class='form-inline'>
-                        <option value="">Выберите торговую точку</option>
-                        {% for shop in shops %}
-                        <option value="{{shop.id}}">{{shop.name}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-        
-                <div class="col-2">
-                    <select name="user" id="user" class='form-inline'>
-                        <option value="">Выберите автора</option>
-                        {% for user in users %}
-                        <option value="{{user.id}}">{{user.first_name}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-        
-           
-        
-            <div class="row form-row mt-3">
-                        <div class="col-2">
-                            <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
-                        </div>
-                        <div class="col-2">
-                            <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
-                        </div>
-                        <div class="col-2">
-                            <a href="{% url 'close_report' %}">
-                                <input type="button" value="Закрыть журнал" class="btn btn-sm btn-block btn-outline-dark">
-                            </a>
-                        </div>
-                </form>
-            </div>
-        </div>
 
-    <div class="log">
+
+                <div class="row form-row mt-3">
+                    <div class="col-2">
+                        <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'close_report' %}">
+                            <input type="button" value="Закрыть журнал" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+        </form>
+    </div>
+</div>
+
+<div class="log">
     <div class="row mt-3">
         <div class="col-2">
             <h4>Дата</h4>
@@ -97,17 +75,23 @@
             <h4>Автор</h4>
         </div>
     </div>
-    
+
+    {% for sale in sales%}
+    <div class="row mt-1">
+    {{sale.created}}
+    {{sale.document.title.name}}
+    {{sale.document.id}}
+
+    </div>
+    {% endfor %}
 
     {% for document in queryset_list %}
 
     <div class="row mt-1">
         {% if document.title.name == 'Поступление ТМЦ' %}
-        <div class="col-2"><a href="{% url 'pre_change_delivery' document.id %}">{{document.created}}</a></div>
-        {% elif document.title.name == 'Перемещение ТМЦ' %}
+        <div class="col-2"><a href="{% url 'change_delivery' document.id %}">{{document.created}}</a></div>
+        {% else %}
         <div class="col-2"><a href="{% url 'change_transfer' document.id %}">{{document.created}}</a></div>
-        {% elif document.title.name == 'Продажа ТМЦ' %}
-        <div class="col-2"><a href="{% url 'pre_change_sale' document.id %}">{{document.created}}</a></div>
         {% endif %}
 
 
@@ -129,19 +113,21 @@
 
         <!-- ==================End of Document Modal Triger========================= -->
 
-       <!-- =======================Document Bootstrap Modal================================= -->
-        <div class="modal fade" id="modalLog_{{document.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"class="ModalLogHide" >
+        <!-- =======================Document Bootstrap Modal================================= -->
+        <div class="modal fade" id="modalLog_{{document.id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+            aria-hidden="true" class="ModalLogHide">
             <!-- <div class="ModalLogHide"> -->
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Документ {{document.title}} #{{document.id}} от {{document.created}}</h5>
-                    <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h5 class="modal-title" id="exampleModalLabel">Документ {{document.title}} #{{document.id}} от
+                            {{document.created}}</h5>
+                        <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         {% if document.title.name == 'Поступление ТМЦ' %}
-                            <!-- {{document.delivery.all}} -->
-    <!-- =========================================================
+                        <!-- {{document.delivery.all}} -->
+                        <!-- =========================================================
         из строки родительской таблицы делаем запрос в дочернюю таблицу. Т.е. из "Document"
         запрашиваем строки из таблицы "Deliveries", которые ассоциируются с данным документом (по id Документа).
         Запрос выдает Queryset, сотоящий из нескольких строк(объектов), так как в одному документу
@@ -149,36 +135,36 @@
         В данном случае изпользует delivery вместо delivery_set, так как в соответствующем поле таблицы "Delivery"
         вставлен аттрибут "related_name".
         ====================================================================== -->
-                            {% for item in document.delivery.all %}
-                            <div class="row">
-                                <div class="col-5">{{item.name}}</div>
-                                <div class="col-1">{{item.quantity}}</div>
-                                <div class="col-3">{{item.price}} руб.</div>
-                                <div class="col-3">{{item.sub_total}} руб.</div>
-                            </div>
-                            {% endfor %}
+                        {% for item in document.delivery.all %}
+                        <div class="row">
+                            <div class="col-5">{{item.name}}</div>
+                            <div class="col-1">{{item.quantity}}</div>
+                            <div class="col-3">{{item.price}} руб.</div>
+                            <div class="col-3">{{item.sub_total}} руб.</div>
+                        </div>
+                        {% endfor %}
 
                         {% elif document.title.name == 'Перемещение ТМЦ' %}
-                            <!-- {{document.transfer_set.all}} -->
-                            {% for item in document.transfer_set.all %}
-                            <div class="row">
-                                <div class="col-5">{{item.name}}</div>
-                                <div class="col-1">{{item.quantity}}</div>
-                                <div class="col-3">{{item.price}} руб.</div>
-                                <div class="col-3">{{item.sub_total}} руб.</div>
-                            </div>
-                            {% endfor %}
+                        <!-- {{document.transfer_set.all}} -->
+                        {% for item in document.transfer_set.all %}
+                        <div class="row">
+                            <div class="col-5">{{item.name}}</div>
+                            <div class="col-1">{{item.quantity}}</div>
+                            <div class="col-3">{{item.price}} руб.</div>
+                            <div class="col-3">{{item.sub_total}} руб.</div>
+                        </div>
+                        {% endfor %}
                         {% elif document.title.name == 'Продажа ТМЦ' %}
-                            <!-- {{document.sale_set.all}} -->
-                            {% for item in document.sale_set.all %}
-                                <div class="row">
-                                    <div class="col-5">{{item.name}}</div>
-                                    <div class="col-1">{{item.quantity}}</div>
-                                    <div class="col-3">{{item.price}} руб.</div>
-                                    <div class="col-3">{{item.sub_total}} руб.</div>
-                                </div>
-                            {% endfor %}
-                           
+                        <!-- {{document.sale_set.all}} -->
+                        {% for item in document.sale_set.all %}
+                        <div class="row">
+                            <div class="col-5">{{item.name}}</div>
+                            <div class="col-1">{{item.quantity}}</div>
+                            <div class="col-3">{{item.price}} руб.</div>
+                            <div class="col-3">{{item.sub_total}} руб.</div>
+                        </div>
+                        {% endfor %}
+
                         {% endif %}
                         ...
                     </div>
@@ -189,7 +175,7 @@
                 </div>
             </div>
         </div>
-       <!-- ============================End of Document Bootstrap Modal======================================= -->
+        <!-- ============================End of Document Bootstrap Modal======================================= -->
 
 
         {% if document.title.name == 'Поступление ТМЦ' %}
@@ -210,9 +196,10 @@
 
 
         {% if document.title.name == 'Поступление ТМЦ' %}
-         <div class="col-4">{{document.delivery.first.supplier}}</div>
+        <div class="col-4">{{document.delivery.first.supplier}}</div>
         {% elif document.title.name == 'Перемещение ТМЦ' %}
-        <div class="col-4">С {{document.transfer_set.first.shop_sender}} на {{document.transfer_set.first.shop_receiver}}</div>
+        <div class="col-4">С {{document.transfer_set.first.shop_sender}} на
+            {{document.transfer_set.first.shop_receiver}}</div>
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-4">{{document.sale_set.first.shop}} </div>
         {% elif document.title.name == 'Оприходование ТМЦ' %}
@@ -227,7 +214,7 @@
     </div>
 
     {% endfor %}
-    </div>
+</div>
 
 </div>
 </div>

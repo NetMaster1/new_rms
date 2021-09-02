@@ -8,6 +8,23 @@
                 <div class="col">
                     <h3>Изменить документ {{document.title}} # {{document.id}}</h3>
                 </div>
+
+                <div class="col-6 border rounded p-3">
+                    <form action="{% url 'check_delivery_change' document.id identifier.id%}" method="POST">
+                        {% csrf_token %}
+                        <div class="row m-1">
+                            <div class="col-6">
+                                <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required
+                                    placeholder="Введите IMEI">
+                            </div>
+                
+                            <div class="col-6">
+                                <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
             </div>
 
 
@@ -15,7 +32,7 @@
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'change_delivery' document.id %}" method="POST">
+                    <form action="{% url 'change_delivery' document.id identifier.id %}" method="POST">
                         {% csrf_token %}
 
             <div class="form-row">
@@ -23,7 +40,7 @@
                     <label for="date"><h5>Текущая дата документа: {{document.created}}</h5></label>
                 </div>
                 <div class="col">
-                    <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='{{delivery.created}}'><br>
+                    <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value="{{document.created}}">
                 </div>
             </div>
 
@@ -81,46 +98,43 @@
                             </div>
                         </div>
 
-    {% for delivery in deliveries %}
+    {% for register in registers %}
     <div class="row m-auto mb-1">
         <div class="col-2">
-            <input type="text" class='form-control' id="imei" name="imei" value='{{delivery.imei}}' readonly>
+            <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}' readonly>
         </div>
         <div class="col-2">
-            <input type="text" class='form-control' id="name" name="name" value='{{delivery.name}}' readonly>
+            <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}' readonly>
         </div>
         <div class="col-2">
-            <input type="number" class='form-control' id="quantity" name="quantity" value='{{delivery.quantity}}' required>
+            <input type="number" class='form-control' id="quantity" name="quantity" value='{{register.quantity}}' required>
         </div>
         <div class="col-2">
-            <input type="number" class='form-control' id="price" name="price" value='{{delivery.price}}' maxlength='50' required>
+            <input type="number" class='form-control' id="price" name="price" value='{{register.price}}' maxlength='50' required>
         </div>
         <div class="col-2">
-                        <input type="number" class='form-control' id="sub_total" name="sub_total" value='{{delivery.sub_total}}' maxlength='50'readonly >
+            <input type="number" class='form-control' id="sub_total" name="sub_total" value='{{delivery.sub_total}}' maxlength='50'readonly >
         </div>
         <div class="col">
-            <a href="{% url 'delete_line_change_delivery' document.id delivery.imei delivery.shop.id %}">
+            <a href="{% url 'delete_line_change_delivery' document.id identifier.id register.product.imei  %}">
                 <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
             </a>
         </div>
     </div>
     {% endfor %}
 
-
-                 
-
-                    <div class="row m-auto mt-3 ">
-                        <div class="col-2">
-                            <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
-                        </div>
-                        </form>
-                    
-                        <div class="col-2">
-                            <a href="{% url 'close_edited_document' %}">
-                                <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
-                            </a>
-                        </div>
-                    </div>
+        <div class="row m-auto mt-3 ">
+            <div class="col-2">
+                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+            </div>
+            </form>
+        
+            <div class="col-2">
+                <a href="{% url 'close_edited_document' identifier.id %}">
+                    <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                </a>
+            </div>
+        </div>
 
                    
                 </div>
