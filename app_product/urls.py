@@ -62,8 +62,14 @@ urlpatterns = [
     path ('transfer_input/<int:identifier_id>', views.transfer_input, name='transfer_input'),
     path ('delete_line_transfer/<int:imei>/<int:identifier_id>', views.delete_line_transfer, name='delete_line_transfer'),
     path ('clear_transfer/<int:identifier_id>', views.clear_transfer, name='clear_transfer'),
-    path ('change_transfer/<int:document_id>', views.change_transfer, name='change_transfer'),
     path ('delete_transfer/<int:document_id>', views.delete_transfer, name='delete_transfer'),
+    path ('pre_change_transfer/<int:document_id>', views.pre_change_transfer, name='pre_change_transfer'),
+    path ('change_transfer/<int:document_id>/<int:identifier_id>', views.change_transfer, name='change_transfer'),
+    path ('check_transfer_change/<int:document_id>/<int:identifier_id>', views.check_transfer_change, name='check_transfer_change'),
+    path ('delete_line_change_transfer/<int:document_id>/<int:identifier_id>/<int:imei>', views.delete_line_change_transfer, name='delete_line_change_transfer'),
+
+
+
     # ===============================Revaluation==================================
     path ('identifier_revaluation', views.identifier_revaluation, name='identifier_revaluation'),
     path ('check_revaluation/<int:identifier_id>', views.check_revaluation, name='check_revaluation'),

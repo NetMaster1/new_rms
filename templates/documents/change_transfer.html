@@ -10,12 +10,32 @@
                 </div>
             </div>
 
-
+                <div class="col-12 border rounded p-3">
+                    <form action="{% url 'check_transfer_change' document.id identifier.id%}" method="POST">
+                        {% csrf_token %}
+                        <div class="row m-1">
+                            <div class="col-4">
+                                <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required
+                                    placeholder="Введите IMEI">
+                            </div>
+                            <div class="col-1">
+                                <label for="quantity">Кол-во</label>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" class='form-control' id="quantity" name="quantity" value=1 required>
+                            </div>
+                
+                            <div class="col-2">
+                                <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark">
+                            </div>
+                        </div>
+                    </form>
+                </div>
 
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'change_transfer' document.id %}" method="POST">
+                    <form action="{% url 'change_transfer' document.id identifier.id %}" method="POST">
                         {% csrf_token %}
 
                         <div class="form-row">
@@ -38,6 +58,7 @@
                             </div>
                             <div class="col">
                                 <select name="shop_sender" id="shop_sender" class='form-control' required>
+                                    <option selected="true" value="{{shop_sender_current.id}}">{{shop_sender_current.name}}</option>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
@@ -53,6 +74,9 @@
                             </div>
                             <div class="col">
                                 <select name="shop_receiver" id="shop_receiver" class='form-control' required>
+                                    <option selected="true" value="{{shop_receiver_current.id}}">
+                                    {{shop_receiver_current.name}}</option>
+
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
@@ -83,30 +107,30 @@
                             </div>
                         </div>
 
-                        {% for transfer in transfers %}
+                        {% for register in registers %}
                         <div class="row m-auto mb-1">
                             <div class="col-2">
-                                <input type="text" class='form-control' id="imei" name="imei" value='{{transfer.imei}}'
+                                <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}'
                                     readonly>
                             </div>
                             <div class="col-2">
-                                <input type="text" class='form-control' id="name" name="name" value='{{transfer.name}}'
+                                <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'
                                     readonly>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="quantity" name="quantity"
-                                    value='{{transfer.quantity}}' required>
+                                    value='{{register.quantity}}' required readonly>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="price" name="price"
-                                    value='{{transfer.price}}' maxlength='50' required>
+                                    value='{{register.price}}' maxlength='50' required>
                             </div>
-                            <!-- <div class="col-2">
+                            <div class="col-2">
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
-                                    value='{{delivery.sub_total}}' maxlength='50' readonly>
-                            </div> -->
+                                    value='{{register.sub_total}}' maxlength='50' readonly>
+                            </div>
                             <div class="col">
-                                <a href="#">
+                                <a href="{% url 'delete_line_change_transfer' document.id identifier.id register.product.imei %}">
                                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                                 </a>
 
@@ -124,7 +148,7 @@
                     </form>
 
                     <div class="col-2">
-                        <a href="{% url 'close_edited_document' %}">
+                        <a href="{% url 'close_edited_document' identifier.id %}">
                             <input type="button" value="Закрыть без сохранения"
                                 class="btn btn-sm btn-block btn-outline-dark">
                         </a>

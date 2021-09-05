@@ -20,8 +20,10 @@
                     <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required placeholder='Введите IMEI'>
                 </div>
                 <div class="col-4">
-                <select name="shop" id="shop" class='form-control' required>
-                    <option value="#">Введите ТТ, с которой перемещается ТМЦ</option>
+            <select name="shop" id="shop" class='form-control' required>
+                <option selected="true" value="{{shop_default.id}}">
+                    {{shop_default.name}}</option>
+
                     {% for shop in shops %}
                     <option value="{{shop.id}}">{{shop.name}}</option>
                     {% endfor %}
