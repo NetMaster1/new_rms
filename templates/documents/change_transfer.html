@@ -15,16 +15,19 @@
                         {% csrf_token %}
                         <div class="row m-1">
                             <div class="col-4">
-                                <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required
+                                <input type="text" class='form-control' id="imei_check" name="imei_check" maxlength='50' required
                                     placeholder="Введите IMEI">
                             </div>
                             <div class="col-1">
                                 <label for="quantity">Кол-во</label>
                             </div>
                             <div class="col-2">
-                                <input type="number" class='form-control' id="quantity" name="quantity" value=1 required>
+                                <input type="number" class='form-control' id="quantity_input" name="quantity_input" value=1 required>
                             </div>
-                
+                            
+
+
+
                             <div class="col-2">
                                 <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark">
                             </div>
@@ -119,7 +122,7 @@
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="quantity" name="quantity"
-                                    value='{{register.quantity}}' required readonly>
+                                    value='{{register.quantity}}' required>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="price" name="price"
@@ -127,30 +130,34 @@
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
-                                    value='{{register.sub_total}}' maxlength='50' readonly>
+                                    value='{{register.sub_total}}' maxlength='50'>
                             </div>
+                            
                             <div class="col">
                                 <a href="{% url 'delete_line_change_transfer' document.id identifier.id register.product.imei %}">
                                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                                 </a>
 
                             </div>
+                            <p id="demo"></p>
                         </div>
                         {% endfor %}
-
-
-
-
+                
+                       
+                   
+            
                         <div class="row m-auto mt-3 ">
                             <div class="col-2">
-                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark id_for_js_button">
                             </div>
                     </form>
+                    
+
 
                     <div class="col-2">
                         <a href="{% url 'close_edited_document' identifier.id %}">
                             <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark">
+                                class="btn btn-sm btn-block btn-outline-dark id_for_js_button">
                         </a>
                     </div>
                 </div>
@@ -162,4 +169,108 @@
 </div>
 </div>
 </div>
+
+
+<script>
+    console.log('OK')
+
+    let quantities = document.querySelectorAll("#quantity");
+    let sub_totals = document.querySelectorAll("#sub_total");
+    let prices = document.querySelectorAll("#price");
+    const button = document.querySelector('.id_for_js_button')
+
+    //const val= typeof quantities
+ 
+    //changing inputs & loading changed input to session storage
+    //================================================================================================
+    for (let i=0; i<quantities.length; i++) {
+    //console.log(quantities[i].value)
+    //console.log(i)
+
+    quantities[i].addEventListener('change', e=> {
+    sub_totals[i].value =quantities[i].value * prices[i].value;
+    let arr = []
+    arr.push(quantities[i].value)
+    arr.push(prices[i].value)
+    arr.push(sub_totals[i].value)
+    sessionStorage.setItem(i, JSON.stringify(arr));
+
+    /*if (sessionStorage.getItem('quantities_arr') === null) {
+            quantities_arr = []
+            console.log(quantities_arr)
+        }
+        else {
+            quantities_arr = JSON.parse(sessionStorage.getItem('quantities_arr'));
+            console.log('oops')
+            console.log(quantities_arr) 
+        }
+        quantities_arr.push(quantities[i].value)
+        sessionStorage.setItem('quantities_arr', JSON.stringify(quantities_arr));*/
+    //sessionStorage.setItem(JSON.stringify(quantities[i]), JSON.stringify(b));
+    //e.preventDefault();
+    })
+}
+    // getting data from session storage & passing it to html code on page reload
+    //=================================================================================
+  document.addEventListener('DOMContentLoaded', e=> {
+      for (i=0; i<quantities.length; i++) {
+      if (sessionStorage.getItem(i)===null){
+          console.log('null')
+      }
+      else{
+        arr = JSON.parse(sessionStorage.getItem(i));
+        //console.log(arr)
+        quantities[i].value=arr[0]
+        prices[i].value=arr[1]
+        sub_totals[i].value=arr[2]
+      }
+      }
+  })
+
+
+  //clearing session storage on pushing Submit & Close buttons
+  //===========================================================================
+   // button.addEventListener('submit', e =>{
+     //   sessionStorage.clear();
+    //})
+
+    button.addEventListener('submit', clearStorage)
+
+    function clearStorage(){
+        sessionStorage.clear();
+    }
+
+                /*if (sessionStorage.getItem('quantities_arr') === null) {
+                        quantities_arr = []
+                        console.log(quantities_arr)
+                    }
+                    else {
+                        quantities_arr = JSON.parse(sessionStorage.getItem('quantities_arr'));
+                        console.log('oops')
+                        console.log(quantities_arr) 
+                    }
+                    quantities_arr.push(quantities[i].value)
+                    sessionStorage.setItem('quantities_arr', JSON.stringify(quantities_arr));*/
+
+                //sessionStorage.setItem(JSON.stringify(quantities[i]), JSON.stringify(b));
+                //e.preventDefault();
+            //}
+       // }
+        
+
+
+    
+    //quantities.forEach(quantity => {
+      // quantity.addEventListener('input', e=> {
+            //alert("The value of the input field was changed.");
+       //     demos.forEach(demo => {
+       //     demo.innerHTML = "You selected: " + quantity.value;
+       //   })     
+    //   })
+ // });
+
+
+
+    console.log ('oky')
+</script>
 {% endblock %}

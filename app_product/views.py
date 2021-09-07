@@ -705,7 +705,6 @@ def change_sale (request, document_id, identifier_id):
             return redirect ('delete_sale_input', document.id)               
         #card operations
         check_sum =credit_new+cash_new+card_new
-        print(check_sum)
         if check_sum == document_sum:
         
             if card :
@@ -1969,13 +1968,13 @@ def check_transfer_change (request, document_id, identifier_id):
     shop_receiver_current=transfers.first().shop_receiver
     # if 'imei' in request.GET:
     if request.method == "POST":
-        imei = request.POST['imei']
-        quantity=request.POST['quantity']
+        imei = request.POST['imei_check']
+        quantity=request.POST['quantity_input']
         quantity=int(quantity)
         # price=request.POST['price']
         # price=int(price)
         if Product.objects.filter(imei=imei).exists():
-            if RemainderCurrent.objects.filter(shop=shop_receiver_current, imei=imei).exists:
+            if RemainderCurrent.objects.filter(shop=shop_receiver_current, imei=imei).exists():
                 print('ok')
                 remainder_current=RemainderCurrent.objects.get(shop=shop_receiver_current, imei=imei)
                 retail_price=remainder_current.retail_price

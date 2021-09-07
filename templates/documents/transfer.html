@@ -10,7 +10,20 @@
             <h3>Пeремещение ТМЦ</h3>
         </div>
     </div>
-
+    <!-- =====================Alert Messages Module=================== -->
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info" role="alert">
+            <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+            {{ message }}
+        </div>
+        {% endfor%}
+        {% endif%}
+    </div>
+    <!-- ===================End of Alert Messages Module================ -->
     <div class="row m-2 ">
         <div class="col-12 border rounded p-3 ">
         <form action="{% url 'check_transfer' identifier.id %}">
@@ -83,10 +96,10 @@
                 <div class='form-inline'>
                     <div class="row m-2">
                         <div class="col-2"><label for="imei"><h5>IMEI</h5></label></div>
-                        <div class="col-2"><label for="imei"><h5>Наименование</h5></label></div>
-                        <div class="col-2"><label for="imei"><h5>Кол-во</h5></label></div>
-                        <div class="col-2"><label for="imei"><h5>Розничная цена</h5></label></div>
-                        <div class="col-2"><label for="imei"><h5></h5></label></div>
+                        <div class="col-2"><label for="name"><h5>Наименование</h5></label></div>
+                        <div class="col-2"><label for="qnt"><h5>Кол-во</h5></label></div>
+                        <div class="col-2"><label for="retail_price"><h5>Розничная цена</h5></label></div>
+                        <div class="col-2"><label for="sum"><h5>Сумма</h5></label></div>
                         
                     </div>
                 </div>
@@ -96,20 +109,20 @@
 
                 <div class="row m-2">
                     <div class="col-2">
-                        <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}'>
+                        <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}' readonly>
                     </div>
                     <div class="col-2">
-                        <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'>
+                        <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}' readonly>
                     </div>
                     <div class="col-2">
                         <input type="text" class='form-control' id="quantity" name="quantity" value=1 required>
                     </div>
                     <div class="col-2">
-                        <input type="number" class='form-control' id="price" name="price" required>
+                        <input type="number" class='form-control' id="price" name="price" required value=0>
                     </div>
-                    <!-- <div class="col-2">
-                        <input type="number" class='form-control' id="sum" name="sum">
-                    </div> -->
+                    <div class="col-2">
+                        <input type="number" class='form-control' id="sub_total" name="sub_total" value=0>
+                    </div>
                     <div class="col">
                         <a href="{% url 'delete_line_transfer' register.product.imei identifier.id %}">
                             <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
@@ -140,4 +153,43 @@
 </div>
 </div>
 </div>
+
+
+<script>
+    console.log('OK')
+
+    const quantities = document.querySelectorAll("#quantity");
+    const sub_totals = document.querySelectorAll("#sub_total");
+    const prices = document.querySelectorAll("#price");
+    //const demos = document.querySelectorAll("#demo");
+    //const val= typeof quantities
+    //const val= typeof demos
+    //const val= typeof sub_totals
+    const val = typeof prices
+    console.log(val)
+
+    for (let i = 0, j = 0, k = 0; i < quantities.length, j < sub_totals.length, k < prices.length; i++, j++, k++) {
+        console.log(quantities[i].value)
+        console.log(sub_totals[i].value)
+        console.log(prices[i].value)
+        quantities[i].addEventListener('input', e => {
+            sub_totals[i].value = quantities[i].value * prices[i].value
+            //sub_totals[i].innerHTML ='You selected: ' + quantities[i].value;
+            //demos[i].innerHTML ='You selected: ' + prices[i].value;
+            //e.preventDefault();
+        })
+    }
+
+    //quantities.forEach(quantity => {
+    // quantity.addEventListener('input', e=> {
+    //alert("The value of the input field was changed.");
+    //     demos.forEach(demo => {
+    //     demo.innerHTML = "You selected: " + quantity.value;
+    //   })     
+    //   })
+    // });
+
+    console.log('oky')
+</script>
+
 {%endblock%}

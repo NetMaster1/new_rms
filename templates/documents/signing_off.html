@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<!-- <div class="hide"> -->
+<div class="hide">
 
 <div class="container">
     <div class="page_location">
@@ -9,7 +9,20 @@
                 <h3>Списание ТМЦ</h3>
             </div>
         </div>
-
+    <!-- =====================Alert Messages Module=================== -->
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info" role="alert">
+            <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+            {{ message }}
+        </div>
+        {% endfor%}
+        {% endif%}
+    </div>
+    <!-- ===================End of Alert Messages Module================ -->
         <div class="row m-2">
             <div class="col-6 border rounded p-3">
                 <form action="{% url 'check_signing_off' identifier.id %}" method="POST">

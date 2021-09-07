@@ -1,14 +1,31 @@
 {% extends 'base.html' %}
 {% block content %}
-<!-- <div class="hide"> -->
-    
+<div class="hide">
+
 <div class="container">
+
+  
+
     <div class="page_location">
     <div class="row m-2 pt-2">
         <div class="col">
             <h3>Поступление ТМЦ</h3>
         </div>
     </div>
+    <!-- =====================Alert Messages Module=================== -->
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info" role="alert">
+            <!-- <button class="close" data-dismiss="alert">
+                    <small><sup>x</sup></small>
+                </button> -->
+            {{ message }}
+        </div>
+        {% endfor%}
+        {% endif%}
+    </div>
+    <!-- ===================End of Alert Messages Module================ -->
 
 <div class="row m-2">
     <div class="col-6 border rounded p-3">
@@ -208,9 +225,6 @@
     const enterDeliveryModal =document.querySelector('.enterDeliveryModal')
     const btn_close =document.querySelector('.btn_close')
    
-   
-   
-
     btn_modal.addEventListener('click', openModal)
     btn_close.addEventListener('click', closeModal)
 

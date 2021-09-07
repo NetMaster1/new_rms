@@ -9,6 +9,22 @@
         <h3>Продажа ТМЦ</h3>
     </div>
 </div>
+    <!-- =====================Alert Messages Module=================== -->
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info" role="alert">
+            <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+            {{ message }}
+        </div>
+        {% endfor%}
+        {% endif%}
+    </div>
+    <!-- ===================End of Alert Messages Module================ -->
+
+
 <!-- ============================Check availability================================== -->
 <div class="row m-2">
     <div class="col-12 border rounded p-3">
