@@ -166,6 +166,7 @@
                     <div class="col-2"><label for="title"><h5>Наименование</h5></label></div>
                     <div class="col-2"><label for="quantity"><h5>Кол-во</h5></label></div>
                     <div class="col-2"><label for="price"><h5>Цена</h5></label></div>
+                    <div class="col-2"><label for="sub_total"><h5>Сумма</h5></label></div>
                 </div>
             </div>
 
@@ -184,12 +185,12 @@
                 <div class="col-2">
                     <input type="number" class='form-control' id="price" name="price" maxlength='50' required>
                 </div>
-                <!-- <div class="col-2">
+                <div class="col-2">
                     <input type="number" class='form-control' id="sub_total" name="sub_total" maxlength='50'>
-                </div> -->
+                </div>
                 <div class="col">
                     <a href="{% url 'delete_line_delivery' register.product.imei identifier.id %}">
-                        <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
+                        <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
                     </a>
                 </div>
             </div>
@@ -198,18 +199,18 @@
 
         <div class="row m-auto mt-3 ">
             <div class="col-2">
-                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark clear_storage">
             </div>
         </form>
             
             <div class="col-2">
                     <a href="{% url 'clear_delivery' identifier.id %}">
-                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark">
+                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storage">
                     </a>
             </div>
             <div class="col-2">
                 <a href="{% url 'close_without_save' identifier.id %}">
-                    <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                    <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage ">
                 </a>
             </div>
         </div>
@@ -218,12 +219,18 @@
 </div>
 </div>
 </div>
+
 <script>
     console.log('Script works');
 
     const btn_modal =document.querySelector('.btn_modal')
     const enterDeliveryModal =document.querySelector('.enterDeliveryModal')
     const btn_close =document.querySelector('.btn_close')
+    const quantities = document.querySelectorAll("#quantity");
+    const sub_totals = document.querySelectorAll("#sub_total");
+    const prices = document.querySelectorAll("#price");
+    const buttons = document.querySelectorAll('.clear_storage');
+    const delete_buttons = document.querySelectorAll('.delete_line_storage');
    
     btn_modal.addEventListener('click', openModal)
     btn_close.addEventListener('click', closeModal)
@@ -237,6 +244,76 @@
             enterDeliveryModal.classList.remove('openModal')
            
         }
+
+    //changing inputs & loading changed input to session storage
+    //deleting line from session storage on clicking on 'Delete Line Button'
+    //================================================================================================
+    for (let i = 0; i < quantities.length; i++) {
+        quantities[i].addEventListener('change', e => {
+            sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(i, JSON.stringify(arr));
+        })
+    }
+
+
+    //updating session storage on pushing 'Delete line button'
+    //===========================================================================
+    for (let i = 0; i<delete_buttons.length; i++) {
+        delete_buttons[i].addEventListener('click', e=> {
+            gen_arr = []
+            //console.log(sessionStorage.length)
+            //console.log(sessionStorage[0])
+            //console.log(sessionStorage[1])
+            //console.log(sessionStorage[2])
+            for (let j=0; j<sessionStorage.length; j++) {
+                arr = JSON.parse(sessionStorage.getItem(j));
+                gen_arr.push(arr)
+            }
+            console.log(gen_arr.length)
+            gen_arr.splice(i,1);
+            console.log(gen_arr.length)
+            //console.log(i)
+            sessionStorage.clear();
+            for (let k=0; k<gen_arr.length; k++) {
+                console.log(k)
+                arr=gen_arr[k]
+                sessionStorage.setItem(k, JSON.stringify(arr));
+            }
+           //e.preventDefault();
+        })
+    }
+
+    // getting data from session storage & passing it to html code on page reload
+    //=================================================================================
+    document.addEventListener('DOMContentLoaded', e => {
+    for (i = 0; i < quantities.length; i++) {
+        if (sessionStorage.getItem(i) === null) {
+            console.log('null')
+        }
+        else {
+            arr = JSON.parse(sessionStorage.getItem(i));
+            //console.log(arr)
+            quantities[i].value = arr[0]
+            prices[i].value = arr[1]
+            sub_totals[i].value = arr[2]
+        }
+    }
+    })
+
+    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //===========================================================================
+    for (let button of buttons) {
+        // console.log(buttons)
+        button.addEventListener('click', clearStorage);
+    }
+    function clearStorage(e) {
+        sessionStorage.clear();
+    };
+
 
 </script>
 {% endblock %}

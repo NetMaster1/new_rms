@@ -148,7 +148,7 @@
             
                         <div class="row m-auto mt-3 ">
                             <div class="col-2">
-                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark id_for_js_button">
+                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark clear_storage">
                             </div>
                     </form>
                     
@@ -157,7 +157,7 @@
                     <div class="col-2">
                         <a href="{% url 'close_edited_document' identifier.id %}">
                             <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark id_for_js_button">
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage ">
                         </a>
                     </div>
                 </div>
@@ -177,16 +177,13 @@
     let quantities = document.querySelectorAll("#quantity");
     let sub_totals = document.querySelectorAll("#sub_total");
     let prices = document.querySelectorAll("#price");
-    const button = document.querySelector('.id_for_js_button')
-
+    let buttons= document.querySelectorAll('.clear_storage');
+  
     //const val= typeof quantities
  
     //changing inputs & loading changed input to session storage
     //================================================================================================
     for (let i=0; i<quantities.length; i++) {
-    //console.log(quantities[i].value)
-    //console.log(i)
-
     quantities[i].addEventListener('change', e=> {
     sub_totals[i].value =quantities[i].value * prices[i].value;
     let arr = []
@@ -194,7 +191,6 @@
     arr.push(prices[i].value)
     arr.push(sub_totals[i].value)
     sessionStorage.setItem(i, JSON.stringify(arr));
-
     /*if (sessionStorage.getItem('quantities_arr') === null) {
             quantities_arr = []
             console.log(quantities_arr)
@@ -228,17 +224,16 @@
   })
 
 
-  //clearing session storage on pushing Submit & Close buttons
+  //clearing session storage on pushing 'Submit' & 'Close without save' buttons
   //===========================================================================
-   // button.addEventListener('submit', e =>{
-     //   sessionStorage.clear();
-    //})
-
-    button.addEventListener('submit', clearStorage)
-
-    function clearStorage(){
-        sessionStorage.clear();
+    for (let button of buttons) {
+       // console.log(buttons)
+        button.addEventListener('click', clearStorage);
     }
+    
+   function clearStorage(e) {
+        sessionStorage.clear();
+    };
 
                 /*if (sessionStorage.getItem('quantities_arr') === null) {
                         quantities_arr = []
@@ -268,8 +263,6 @@
        //   })     
     //   })
  // });
-
-
 
     console.log ('oky')
 </script>
