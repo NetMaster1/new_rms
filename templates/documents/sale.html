@@ -45,7 +45,6 @@
                     <select name="shop" id="shop" class='form-control'>
                         <option selected="true" disabled="disabled">Выберите ТТ, с которой продается ТМЦ</option>
                         {% for shop in shops %}
-                        
                         <option value="{{shop.id}}"
                         {% if shop.id == register.shop.id %}
                         selected

@@ -33,7 +33,7 @@
         {% csrf_token %}
         <div class="row m-1">
         <div class="col-6">
-            <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required placeholder="Введите IMEI">
+            <input type="text" class='form-control' id="check_imei" name="imei" maxlength='50' required placeholder="Введите IMEI" autofocus>
         </div>
     
         <div class="col-6">
@@ -81,7 +81,7 @@
                     </div>
                     <div class="form-group">
                         <label for="name">IMEI:</label>
-                        <input class='form-control' type="text" id="imei" name="imei" maxlength='100' required>
+                        <input class='form-control' type="text" id="input_imei" name="imei" maxlength='100' required>
                     </div>
                     </div>
                       
@@ -163,9 +163,10 @@
 
             <div class='form-inline'>
                 <div class="row m-1">
-                    <div class="col-2"><label for="title"><h5>IMEI</h5></label></div>
-                    <div class="col-2"><label for="title"><h5>Наименование</h5></label></div>
-                    <div class="col-2"><label for="quantity"><h5>Кол-во</h5></label></div>
+                    <div class="col-1"><label for="number"><h5>#</h5></label></div>
+                    <div class="col-2"><label for="imei"><h5>IMEI</h5></label></div>
+                    <div class="col-2"><label for="name"><h5>Наименование</h5></label></div>
+                    <div class="col-1"><label for="quantity"><h5>Кол-во</h5></label></div>
                     <div class="col-2"><label for="price"><h5>Цена</h5></label></div>
                     <div class="col-2"><label for="sub_total"><h5>Сумма</h5></label></div>
                 </div>
@@ -174,13 +175,16 @@
         
             {% for register in registers %}
             <div class="row m-auto mb-1">
+                <div class="col-1">
+                    <input type="text" class='form-control' id="number" name="number" value='{{register.number}}' readonly>
+                </div>
                 <div class="col-2">
                     <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}'readonly >
                 </div>
                 <div class="col-2">
                     <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'readonly >
                 </div>
-                <div class="col-2">
+                <div class="col-1">
                     <input type="number" class='form-control' id="quantity" name="quantity" value='{{register.quantity}}' required>
                 </div>
                 <div class="col-2">
@@ -189,7 +193,7 @@
                 <div class="col-2">
                     <input type="number" class='form-control' id="sub_total" name="sub_total" maxlength='50' value='{{register.sub_total}}'>
                 </div>
-                <div class="col">
+                <div class="col-1">
                     <a href="{% url 'delete_line_delivery' register.product.imei identifier.id %}">
                         <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
                     </a>
@@ -235,6 +239,7 @@
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
     const check_button = document.querySelector('#check_button');
     const supplier = document.querySelector('#supplier');
+    const check_imei = document.querySelector('#check_imei');
    
    
     btn_modal.addEventListener('click', openModal)
@@ -257,53 +262,21 @@
         sessionStorage.setItem('supplier', choice);
     })
 
+    
     //creating session storage inputs on clicking "Check button"
    // =================================================================================
-    check_button.addEventListener('submit', e=> {
-        if (sessionStorage.getItem('supplier') === null) {
-            gen_arr = []
-            for (i = 0; i < sessionStorage.length; i++) {
-                arr = JSON.parse(sessionStorage.getItem(i));
-                gen_arr.push(arr)
+   /check_button.addEventListener('submit', e=> {
+        imei_input=check_imei.value
+        for (i=0; i<imeis.length; i++){
+            if (imeis[i].value == imei_input) {
+                imeis[i].classList.add('imei')
+                //check_imei.value.clear()
+                //e.preventDefault()
             }
-            new_arr = []
-            new_arr.push(1)
-            new_arr.push(0)
-            new_arr.push(0)
-            gen_arr.push(new_arr)
-            for (i = 0; i < gen_arr.length; i++) {
-                sessionStorage.setItem(i, JSON.stringify(gen_arr[i]));
-            }
-            //console.log('Length of quantities.length')
-            //console.log(quantities.length)
-            //console.log('Length of sessionStorage.length')
-            //console.log(sessionStorage.length)
+    } 
+   })
+        //window.location.reload()
 
-            /*if (quantities.length < sessionStorage.length) {
-                console.log("Not equal")
-            }*/
-            //e.preventDefault()
-        }
-          else {
-            choice = sessionStorage.getItem('supplier');
-            console.log(choice)
-            supplier.value = choice
-            gen_arr = []
-            for (i = 0; i < sessionStorage.length-1; i++) {
-                arr = JSON.parse(sessionStorage.getItem(i));
-                gen_arr.push(arr)
-            }
-            new_arr = []
-            new_arr.push(1)
-            new_arr.push(0)
-            new_arr.push(0)
-            gen_arr.push(new_arr)
-            for (i = 0; i < gen_arr.length; i++) {
-                sessionStorage.setItem(i, JSON.stringify(gen_arr[i]));
-            }
-        }
-        })
-      
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')
     //================================================================================================
@@ -311,10 +284,11 @@
         quantities[i].addEventListener('change', e => {
             sub_totals[i].value = quantities[i].value * prices[i].value;
             let arr = []
+            arr.push(imeis[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
-            sessionStorage.setItem(i, JSON.stringify(arr));
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
         })
     }
 
@@ -324,10 +298,11 @@
         prices[i].addEventListener('change', e => {
             sub_totals[i].value = quantities[i].value * prices[i].value;
             let arr = []
+            arr.push(imeis[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
-            sessionStorage.setItem(i, JSON.stringify(arr));
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
         })
     }
 
@@ -337,10 +312,11 @@
         sub_totals[i].addEventListener('change', e => {
             prices[i].value = sub_totals[i].value / quantities[i].value;
             let arr = []
+            arr.push(imeis[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
-            sessionStorage.setItem(i, JSON.stringify(arr));
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
         })
     }
 
@@ -349,84 +325,48 @@
     //===========================================================================
     for (let i = 0; i<delete_buttons.length; i++) {
         delete_buttons[i].addEventListener('click', e=> {
-
-            if (sessionStorage.getItem('supplier') === null) {
-                gen_arr = []
-                for (let j=0; j<sessionStorage.length-1; j++) {
-                    arr = JSON.parse(sessionStorage.getItem(j));
-                    gen_arr.push(arr)
-                }
-                gen_arr.splice(i,1);
-                sessionStorage.clear();
-                for (let k=0; k<gen_arr.length; k++) {
-                    console.log(k)
-                    arr=gen_arr[k]
-                    sessionStorage.setItem(k, JSON.stringify(arr));
-                }
-            }
-            else {
-                console.log("Supplier =true")
-                gen_arr = []
-                for (j = 0; j < sessionStorage.length-1; j++) {
-                    arr = JSON.parse(sessionStorage.getItem(j));
-                    gen_arr.push(arr)
-                }
-                gen_arr.splice(i, 1);
-                choice = sessionStorage.getItem('supplier');
-                sessionStorage.clear();
-                supplier.value =choice;
-                sessionStorage.setItem('supplier', choice);
-                for (let k = 0; k < gen_arr.length; k++) {
-                arr = gen_arr[k]
-                sessionStorage.setItem(k, JSON.stringify(arr));
-                } 
-            }
-            //e.preventDefault();
+            sessionStorage.removeItem(imeis[i].value)
         })
-
     }
-            
-  
-
+          
     // getting data from session storage & passing it to html code on page reload
     //=================================================================================
     document.addEventListener('DOMContentLoaded', e => {
-    
-       // if (sessionStorage.getItem(i) === null) {
-        if (sessionStorage == false) {
-            console.log('null')
+        for (j=0; j<imeis.length; j++){
+            for (i = 0; i < sessionStorage.length; i++) {
+                if (JSON.parse(sessionStorage.getItem(imeis[j].value))){
+                    a = JSON.parse(sessionStorage.getItem(imeis[j].value));
+                    if (imeis[j].value == a[0]){
+                        quantities[j].value=a[1]
+                        prices[j].value=a[2]
+                        sub_totals[j].value=a[3]
+                    }
+                }
+            }
         }
-        else {
-            for (i = 0; i < quantities.length; i++) {
-            arr = JSON.parse(sessionStorage.getItem(i));
-            quantities[i].value = arr[0]
-            prices[i].value = arr[1]
-            sub_totals[i].value = arr[2]
-           
-        }
-        if(sessionStorage.getItem('supplier') === null ){
+        if (sessionStorage.getItem('supplier') === null) {
             console.log('No supplier choice')
         }
-        else{
+        else {
             choice = sessionStorage.getItem('supplier');
-            console.log(choice)
             supplier.value = choice
         }
-   
+    })
+        
 
-    }
-})
+       
+       
+
 
     //clearing session storage on pushing 'Submit' & 'Close without save' buttons
     //===========================================================================
     for (let button of buttons) {
-        // console.log(buttons)
         button.addEventListener('click', clearStorage);
     }
     function clearStorage(e) {
         sessionStorage.clear();
     };
 
-
+console.log ('End of the script')
 </script>
 {% endblock %}

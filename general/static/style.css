@@ -170,3 +170,8 @@ ModalLogHide.openModal {
     position: fixed;
 }
 /* ====================== End of Modal for Log ==================================== */
+
+.imei {
+    border: solid;
+    border-color: red;
+}

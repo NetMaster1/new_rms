@@ -32,6 +32,7 @@ class Identifier(models.Model):
         return self.id
 
 class Register (models.Model):
+    number = models.IntegerField(null=True)
     created = models.DateTimeField(default=timezone.now, null=True)
     shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)#serves to pass the shop in payment
     product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)

@@ -1135,10 +1135,8 @@ def check_delivery(request, identifier_id):
         if Product.objects.filter(imei=imei).exists():
             product=Product.objects.get(imei=imei)
             if Register.objects.filter(identifier=identifier, product=product).exists():
-                register=Register.objects.get(identifier=identifier, product=product)
-                register.quantity +=1
-                register.save()
-                return redirect('delivery', identifier.id)
+                messages.error(request, 'Вы уже ввели данное наименование.')
+                return redirect ('delivery', identifier.id)
             else:
                 register=Register.objects.create(
                     identifier = identifier,
@@ -1163,7 +1161,11 @@ def delivery(request, identifier_id):
     categories=ProductCategory.objects.all()
     suppliers=Supplier.objects.all()
     shops=Shop.objects.all()
-    registers = Register.objects.filter(identifier=identifier)
+    registers = Register.objects.filter(identifier=identifier).order_by('created')
+    numbers=registers.count()
+    for register, i in zip (registers, range(numbers)):
+        register.number=i+1
+        register.save()
     context={
         'identifier': identifier,
         'categories': categories,
@@ -1573,6 +1575,10 @@ def transfer (request, identifier_id):
         shop_default=Shop.objects.get(name='ООС')
         if Register.objects.filter(identifier=identifier).exists():
             registers=Register.objects.filter(identifier=identifier)
+            numbers=registers.count()
+            for register, i in zip (registers, range(numbers)):
+                register.number=i+1
+                register.save()
             context = {
             'identifier': identifier,
             'shops': shops,
@@ -3026,7 +3032,6 @@ def check_revaluation(request, identifier_id):
             messages.error(request, 'Данное наименование отсутствует на данном складе. Вы не можете переоценить его.')
             return redirect ('revaluation', identifier.id)
         
-
 def revaluation(request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     categories=ProductCategory.objects.all()
