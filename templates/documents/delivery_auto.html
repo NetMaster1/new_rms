@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Автоматический ввод поступления ТМЦ</h3>
+                </div>
+            </div>
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                    <small><sup>x</sup></small>
+                </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
+            <div class="row m-2 pb-2">
+                <div class="col-12 border rounded p-3">
+
+                    <form action="{% url 'delivery_auto' %}" method="POST" enctype="multipart/form-data" >
+                        {% csrf_token %}
+
+                     
+                        <div class="form-row ">
+                            <div class="col-2">
+                                <label for="date">
+                                    <h5>Дата/время</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
+                                    value='today'>
+                            </div>
+                        </div>
+                   
+
+                        <div class="form-row mt-2">
+                            <div class="col-2">
+                                <label for="supplier">
+                                    <h5>Поставщик</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <select name="supplier" id="supplier" class='form-control' required>
+                                    <option selected="true" disabled="disabled">Выберите поставщика</option>
+                                    {% for supplier in suppliers %}
+                                    <option value="{{supplier.id}}">{{supplier.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row mt-2">
+                            <div class="col-3">
+                            <label for="shop"><h5>Фирма получатель</h5></label>
+                            </div>
+                            <div class="col">
+                                <select name="shop" id="shop" class='form-control' required>
+                                    {% for shop in shops %}
+                                    <option value="{{shop.id}}">{{shop.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+
+                <div class="form-row mt-2">
+                    <div class="col-3">
+                        <label for="category"><h5>Вид ТМЦ</h5></label>
+                    </div>
+                    <div class="col">
+                        <select name="category id="shop" class='form-control'>
+                        <option selected="true" disabled="disabled">Выберите категорию ТМЦ</option>
+                            {% for category in categories %}
+                            <option value="{{category.id}}"
+                                {% if category.id == register.product.category.id %}
+                                selected
+                                {% endif %}>
+                                {{category.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row mt-2">
+                    <div class="col-3">
+                        <label for="file_name">
+                            <h5>Введите файл в формате Excel</h5>
+                        </label>
+                    </div>
+                    <div class="col">
+                        <input type="file" class='form-control' id="file_name" name="file_name">
+                    </div>
+
+
+                </div>
+
+
+                        <div class="row m-auto mt-3 ">
+                            <div class="col-2">
+                                <input type="submit" value="Провести"
+                                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                            </div>
+                    </form>
+
+                    <div class="col-2">
+                        <a href="#">
+                            <input type="button" value="Очистить форму"
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        </a>
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'log' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock %}
