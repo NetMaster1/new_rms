@@ -19,8 +19,11 @@ class Document (models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     sum = models.IntegerField(null=True)
     
-    def __str__(self):
-        return self.title.name
+    def __int__(self):
+        return self.id
+
+    #def __str__(self):
+    #    return self.title.name
   
     # class Meta:
     #     ordering = ('created',)  # sorting by date
@@ -222,7 +225,9 @@ class Transfer (models.Model):
 class RemainderHistory (models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)
+    rho_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
+    supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)

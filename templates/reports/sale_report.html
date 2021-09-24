@@ -52,6 +52,15 @@
                         {% endfor %}
                     </select>
                 </div>
+
+                <div class="col-2">
+                    <select name="supplier" id="supplier" class='form-inline'>
+                        <option value="">Выберите поставщика</option>
+                        {% for supplier in suppliers %}
+                        <option value="{{supplier.id}}">{{supplier.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
         </div>
 
         <div class="row form-row mt-3">
@@ -66,13 +75,13 @@
                     <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
                 </a>
                 </div>
-                <div class="col-2">
+                <!-- <div class="col-2">
                         <a href="{% url 'save_in_excel' %}">
                             <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
                             Сохранить в Excel 
                             </button>
                         </a>
-                </div>
+                </div> -->
                 </form>
         </div>
     </div>
@@ -96,7 +105,7 @@
     {% for item in queryset_list %}
     <div class="row m-auto">  
         <div class="col-2">{{item.name}}</div>
-        <div class="col-1">{{item.quantity}}</div>
+        <div class="col-2">{{item.quantity}}</div>
         <div class="col-2">{{item.price}}</div>
         <div class="col-2">{{item.sub_total}}</div>
         <div class="col-2">{{item.user}}</div>

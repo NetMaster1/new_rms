@@ -13,7 +13,7 @@
             <form action="{% url 'delivery_report' %}" method="POST">
                 {% csrf_token %}
 
-                <div class="row form-row m-auto">
+                <div class="row form-row">
                     <!-- <div class="col">
                         <input type="text" name="imei" placeholder="IMEI">
                     </div> -->
@@ -36,14 +36,14 @@
                         </select>
                     </div>
 
-                    <div class="col-2">
+                    <!-- <div class="col-2">
                         <select name="user" id="user" class='form-inline'>
                             <option value="">Выберите автора документа</option>
                             {% for user in users %}
                             <option value="{{user.id}}">{{user.first_name}}</option>
                             {% endfor %}
                         </select>
-                    </div>
+                    </div> -->
 
                 </div>
 
@@ -88,74 +88,24 @@
 
         <div class="row">
             <div class="col-2"><h5>Дата</h5></div>
+            <div class="col-1"><h5>Документ</h5></div>
+            <div class="col-2"><h5>IMEI</h5></div>
             <div class="col-2"><h5>Наименование</h5></div>
-            <div class="col-2"><h5>Сумма</h5></div>
+            <div class="col-1"><h5>Кол-во</h5></div>
+            <div class="col-2"><h5>Оптовая цена</h5></div>
+            <div class="col-2"><h5>Поставщик</h5></div>
           
-
         </div>
         {% for item in queryset_list %}
     <div class="row mt-1">
             <div class="col-2">{{item.created}}</div>
-
-<!-- ==============================Trigger for Modal Delivery====================================== -->       
-
-        <div class="col-2">
-            <a href="#" data-bs-toggle="modal" data-bs-target="#modalDelivery_{{item.id}}">
-                {{item.title}} №{{item.id}}
-            </a>
-        </div>
-
-
-<!-- ==============================End of Trigger for Modal Delivery====================================== -->
-
-
-<!-- ==============================Modal Body For Delivery====================================== -->
-<div class="modal fade" id="modalDelivery_{{item.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">{{item.title}} #{{item.id}}</h5>
-                                <!-- <button type="button" class="btn_close"></button> -->
-                            </div>
-                            <div class="modal-body">
-                                    <div class='form-inline'>
-                                        <div class="row m-2">
-                                            <div class="col-2"><label for="imei">IMEI</label></div>
-                                            <div class="col-3"><label for="name">Наименование</label></div>
-                                            <div class="col-2"><label for="quantity">Кол-во</label></div>
-                                            <div class="col-2"><label for="price">Цена</label></div>
-                                            <div class="col-2"><label for="sum">Сумма</label></div>
-                                        </div>
-                                    </div>
-                                 
-                
-                
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary btn_close_delivery"
-                                            data-bs-dismiss="modal">Закрыть</button>
-                                    </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-<!-- ==============================End of Modal Body For Delivery====================================== -->
-
-
-
-            <div class="col-2">{{item.sum}} руб.</div>
-    <!-- =========================================================
-    из строки родительской таблицы делаем запрос в дочернюю таблицу. Т.е. из "Document"
-    запрашиваем строки из таблицы "Deliveries", которые ассоциируются с данным документом (по id Документа).
-    Запрос выдает Queryset, сотоящий из нескольких строк(объектов), так как в одному документу
-    могут соответсвтовать несколько строк из таблицs "Delivery". Выделяем любую строку(объект). В данном случае
-    с помощью метода "last" и берем из него нужное поле. В данном случае 'supplier'
-    В данном случае изпользует delivery вместо delivery_set, так как в соответствующем поле таблицы "Delivery"
-    вставлен аттрибут "related_name".
-    ====================================================================== -->
-            <div class="col-2">{{item.delivery.last.supplier}}</div>
-            
-        </div>
+            <div class="col-1">{{item.document}}</div>
+            <div class="col-2">{{item.imei}}</div>
+            <div class="col-2">{{item.name}}</div>
+            <div class="col-1">{{item.incoming_quantity}} шт. </div>
+            <div class="col-2">{{item.wholesale_price}} руб.</div>
+            <div class="col-2">{{item.supplier}} руб.</div>
+    </div>
         {% endfor %}
     </div>
 
@@ -163,27 +113,7 @@
 
 </div>
 </div>
-<!-- </div> -->
+</div>
 
-<!-- <script>
-    console.log('Script works');
-    console.log({item.id});
-
-    //const enterModalDelivery = document.querySelector('.enterModalDelivery')
-    //const enterModalDelivery = document.querySelector('.`${item.id}`')
-    const enterModalDelivery = document.getElementById("`${item.id}`")
-    
-    const btn_close_delivery = document.querySelector('.btn_close_delivery')
-    const ModalDeliveryHide = document.querySelector('.ModalDeliveryHide')
-    enterModalDelivery.addEventListener('click', openModalDelivery)
-    btn_close_delivery.addEventListener('click', closeModalDelivery)
-    function openModalDelivery() {
-        ModalDeliveryHide.classList.add('openModal')
-    }
-    function closeModalDelivery() {
-        ModalDeliveryHide.classList.remove('openModal')
-    }
-
-</script> -->
 
 {% endblock %}

@@ -32,6 +32,7 @@ class DocumentType (models.Model):
         return self.name
 
 class Product (models.Model):
+    created = models.DateTimeField(auto_now=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=50)
     imei = models.CharField(max_length=50, unique=True)

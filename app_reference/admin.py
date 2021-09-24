@@ -9,7 +9,7 @@ class SupplierAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'category', 'name', 'imei')
+    list_display = ('id', 'created', 'category', 'name', 'imei')
 
 class ProductCategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'bonus_percent')

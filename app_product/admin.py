@@ -24,7 +24,7 @@ class ReturningAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop', 'quantity' )
 
 class RemainderHistoryAdmin(admin.ModelAdmin):
-    list_display = ('created', 'document', 'shop', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'retail_price') 
+    list_display = ('created', 'supplier', 'rho_type', 'shop', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'retail_price') 
     list_filter = ('imei', 'document', 'shop')
     ordering = ('-created',)
     list_select_related = True

@@ -30,15 +30,12 @@
                         {% csrf_token %}
 
                      
-                        <div class="form-row ">
+                        <div class="form-row">
                             <div class="col-2">
-                                <label for="date">
-                                    <h5>Дата/время</h5>
-                                </label>
+                                <label for="date">Дата</label>
                             </div>
                             <div class="col">
-                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value='today'>
+                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today'><br>
                             </div>
                         </div>
                    
@@ -74,20 +71,18 @@
 
 
                 <div class="form-row mt-2">
-                    <div class="col-3">
-                        <label for="category"><h5>Вид ТМЦ</h5></label>
-                    </div>
-                    <div class="col">
-                        <select name="category id="shop" class='form-control'>
-                        <option selected="true" disabled="disabled">Выберите категорию ТМЦ</option>
-                            {% for category in categories %}
-                            <option value="{{category.id}}"
-                                {% if category.id == register.product.category.id %}
-                                selected
-                                {% endif %}>
-                                {{category.name}}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="form-row">
+                        <div class="col-3">
+                            <label for="shop"><h5>Категория</h5></label>
+                        </div>
+                        <div class="col">
+                            <select name="category" id="category" class='form-control' required>
+                                <option value="#">Выберите категорию</option>
+                                {% for category in categories %}
+                                <option value="{{category.id}}" required>{{category.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -98,7 +93,7 @@
                         </label>
                     </div>
                     <div class="col">
-                        <input type="file" class='form-control' id="file_name" name="file_name">
+                        <input type="file" class='form-control' id="file_name" name="file_name" required>
                     </div>
 
 
