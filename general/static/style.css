@@ -28,8 +28,8 @@
 
 .page_location_search {
     /*display: block; */
-    margin-top: 3rem;
-    margin-bottom: 1rem;
+    margin: auto;
+    margin-top: 5rem;
     /* border-style: solid;
     border-width: 5px;
     border-color: red; */
@@ -37,7 +37,7 @@
     border-radius: 0.5%;
     /*position: absolute; */
     width: 40%;
-    height: 25%;
+    height: 100%;
     background-color: white;
     /* overflow-y: scroll; */
     /* overflow-y: auto; */
@@ -188,6 +188,20 @@ ModalLogHide.openModal {
     position: fixed;
 }
 /* ====================== End of Modal for Log ==================================== */
+
+/* ===================== Product Page Modal for Entering Product Card========================= */
+.enterProductCard {
+    display: none;
+}
+
+.enterProductCard.openModal {
+    display: block;
+    position: fixed;
+    /* top: 70mm;
+    right: 0mm; */
+}
+/* ====================End of Product Page Modal for Entering Product Card ======================= */
+
 
 .imei {
     border: solid;

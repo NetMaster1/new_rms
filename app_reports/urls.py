@@ -8,6 +8,7 @@ urlpatterns = [
     path ('sale_report', views.sale_report, name='sale_report'),
     path ('delivery_report', views.delivery_report, name='delivery_report'),
     path ('remainder_report', views.remainder_report, name='remainder_report'),
+    path ('remainder_report_dynamic)', views.remainder_report_dynamic, name='remainder_report_dynamic'),
     path ('item_report', views.item_report, name='item_report'),
     path ('bonus_report', views.bonus_report, name='bonus_report'),
     path ('cash_report', views.cash_report, name='cash_report'),

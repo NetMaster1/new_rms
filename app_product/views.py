@@ -49,7 +49,19 @@ def index(request):
 
 def search (request):
     if request.method == "POST":
-        pass
+        keyword=request.POST['keyword']
+        try:
+            remainders=RemainderCurrent.objects.filter(name__icontains=keyword)
+        except:
+            messages.error(request, "УУУУУПС. Такого наименования не существует")
+            return redirect("seach")
+
+        context ={
+            'remainders': remainders
+        }
+        return render(request, 'documents/search_results.html', context)
+     
+        
     else:
         return render(request, "documents/search.html")
 
@@ -68,7 +80,6 @@ def close_without_save(request, identifier_id):
         identifier.delete()
         return redirect("index")
 
-
 def close_edited_document(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     if Register.objects.filter(identifier=identifier).exists():
@@ -81,14 +92,12 @@ def close_edited_document(request, identifier_id):
         identifier.delete()
         return redirect("log")
 
-
 def clear_transfer(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     registers = Register.objects.filter(identifier=identifier)
     for register in registers:
         register.delete()
     return redirect("transfer", identifier.id)
-
 
 def clear_delivery(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -97,14 +106,12 @@ def clear_delivery(request, identifier_id):
         register.delete()
     return redirect("delivery", identifier.id)
 
-
 def clear_sale(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     registers = Register.objects.filter(identifier=identifier)
     for register in registers:
         register.delete()
     return redirect("sale", identifier.id)
-
 
 def clear_recognition(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -1589,8 +1596,16 @@ def enter_new_product(request, identifier_id):
         imei = request.POST["imei"]
         category = request.POST["category"]
         category = ProductCategory.objects.get(id=category)
-        product = Product.objects.create(name=name, imei=imei, category=category)
-        return redirect("delivery", identifier.id)
+        if Product.objects.filter(imei=imei).exists():
+            messages.error(request, "Наименование в базу данных не введено, так как IMEI не является уникальным")
+            return redirect("delivery", identifier.id)
+        else:
+            product = Product.objects.create(
+                name=name, 
+                imei=imei, 
+                category=category
+            )
+            return redirect("delivery", identifier.id)
     else:
         return redirect("delivery", identifier.id)
 
@@ -2242,6 +2257,7 @@ def transfer_input(request, identifier_id):
                         remainder_history = RemainderHistory.objects.create(
                             created=dateTime,
                             document=document,
+                            rho_type=document.title,
                             shop=shop_sender,
                             # category=category,
                             imei=imeis[i],

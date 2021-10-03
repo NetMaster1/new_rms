@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import Document, Delivery, Recognition, Sale, Transfer, SignOff, Returning, RemainderHistory, RemainderCurrent, Register, Identifier, AvPrice
+from . models import Document, Delivery, Recognition, Sale, Transfer, SignOff, Returning, Revaluation, RemainderHistory, RemainderCurrent, Register, Identifier, AvPrice
 
 class DeliveryAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'supplier' ,'name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
@@ -23,8 +23,11 @@ class SignOffAdmin(admin.ModelAdmin):
 class ReturningAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop', 'quantity' )
 
+class RevaluationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'created', 'document', 'name', 'imei', 'shop')
+
 class RemainderHistoryAdmin(admin.ModelAdmin):
-    list_display = ('created', 'supplier', 'rho_type', 'shop', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'retail_price') 
+    list_display = ('created', 'supplier', 'rho_type', 'shop', 'category', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'retail_price') 
     list_filter = ('imei', 'document', 'shop')
     ordering = ('-created',)
     list_select_related = True
@@ -58,6 +61,7 @@ admin.site.register(Sale, SaleAdmin)
 admin.site.register(Transfer, TransferAdmin)
 admin.site.register(SignOff, SignOffAdmin)
 admin.site.register(Returning, ReturningAdmin)
+admin.site.register(Revaluation, RevaluationAdmin)
 admin.site.register(RemainderHistory, RemainderHistoryAdmin)
 admin.site.register(RemainderCurrent, RemainderCurrentAdmin)
 admin.site.register(Document, DocumentAdmin)

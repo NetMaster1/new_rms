@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+
+    <div class="container">
+
+        <div class="page_location">
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                    <small><sup>x</sup></small>
+                </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
+
+            <div class="row m-2">
+                <div class="col-2">Торговая точка</div>
+                <div class="col-2">Наименование</div>
+                <div class="col-2">IMEI</div>
+                <div class="col-2">Количество</div>
+            </div>
+
+          
+
+            <div class="row">
+                {% for remainder in remainders %}
+                <div class="row">
+                    <div class="col-2">
+                        {{remainder.shop}}
+                    </div>
+                    <div class="col-2">
+                        {{remainder.name}}
+                    </div>
+                    <div class="col-2">
+                        {{remainder.imei}}
+                    </div>
+                    <div class="col-2">
+                        {{remainder.current_remainder}}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="col-4 m-1">
+                    <a href="{% url 'log' %}">
+                        <input type="button" value="Закрыть" class="btn btn-sm btn-block btn-outline-dark">
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+        
+
+
+{% endblock %}

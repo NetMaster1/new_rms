@@ -1,25 +1,34 @@
 {% extends 'base.html' %}
 {% block content %}
-<!-- <div class="hide"> -->
+<div class="hide"> -->
     <div class="container">
         <div class="page_location">
-        
+<!-- =====================Alert Messages Module=================== -->
+<div class="container">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-info" role="alert">
+        <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+        {{ message }}
+    </div>
+    {% endfor%}
+    {% endif%}
+</div>
+<!-- ===================End of Alert Messages Module================ -->
+
             <div class="menu">
-                <h3>Отчет по остаткам</h3>
+                <h3>Отчет по остаткам на дату</h3>
             </div>
 
-
             <div class="menu">
-            <form action="{% url 'remainder_report' %}" method="POST">
+            <form action="{% url 'remainder_report' %}" method="POST" class='clear_storage_on_submit'>
                 {% csrf_token %}
 
                 <div class="row form-row m-auto">
-                    <div class="col-2">
-                        <input type="text" name="imei" placeholder="IMEI">
-                    </div>
-
                     <div class="col-3">
-                        <select name="category" class='form-inline'>
+                        <select name="category" class='form-inline' id='category'>
                             <option value="#">Выберите категорию</option>
                             {% for category in categories %}
                             <option value="{{category.id}}">{{category.name}}</option>
@@ -29,8 +38,8 @@
 
                     <div class="col-3">
                         <select name="shop" id="shop" class='form-inline'>
-                        <!-- <option selected="false" disabled="disabled">Выберите торговую  точку</option> -->
-                        <option value="#">Выберите ТТ</option>
+                        <option selected="false" disabled="disabled">Выберите торговую  точку</option>
+                        <!-- <option value="#">Выберите ТТ</option> -->
                             {% for shop in shops %}
                             <option value="{{shop.id}}">{{shop.name}}</option>
                             {% endfor %}
@@ -39,8 +48,8 @@
                 </div>
 
                 <div class="row form-row mt-3">
-                    <div class="col-2">
-                        <input type="date" id='date' name="date">
+                    <div class="col-3">
+                        <input type="datetime-local" id='date' name="date" >
                     </div>
 
 
@@ -48,17 +57,17 @@
                         <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
                     </div>
                     <div class="col-2">
-                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
                     </div>
                     <div class="col-2">
                         <a href="{% url 'close_report' %}">
                             <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark">
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
                         </a>
                     </div>
                     <div class="col-2">
                         <a href="{% url 'save_in_excel' %}">
-                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark clear_storage">
                                 Сохранить в Excel
                             </button>
                         </a>
@@ -69,17 +78,13 @@
 
     <div class="log">
         <div class="row m-auto">
-            <div class="col">Всего остатков на сумму:</div>
-            <div class="col">{{sum}}</div>
+            <div class="col"><h5>Остатки по торговой точке {{shop}} на дату: {{date}}</h5></div>
         </div>
 
 
         <div class="row">
-            <div class="col-2"><h5>Дата</h5></div>
-            <div class="col-2"><h5>Категория</h5></div>
             <div class="col-2"><h5>IMEI</h5></div>
             <div class="col-2"><h5>Наименование</h5></div>
-            <div class="col-2"><h5>Торговая точка</h5></div>
             <div class="col-2"><h5>Количество</h5></div>
            
 
@@ -87,22 +92,16 @@
         </div>
         {% for arr in array %}
         <div class="row m-auto">
-            <div class="col-2">{{arr.created}}</div>
-            <div class="col-2">{{arr.category}}</div>
             <div class="col-2">{{arr.imei}}</div>
             <div class="col-2">{{arr.name}}</div>
-            <div class="col-2">{{arr.shop}}</div>
             <div class="col-2">{{arr.current_remainder}}</div>
         </div>
         {% endfor %}
 
-        {% for remainder in queryset_list %}
+        {% for remainder in qs %}
         <div class="row m-auto">
-            <div class="col-2">{{remainder.created}}</div>
-            <div class="col-2">{{remainder.category}}</div>
             <div class="col-2">{{remainder.imei}}</div>
             <div class="col-2">{{remainder.name}}</div>
-            <div class="col-2">{{remainder.shop}}</div>
             <div class="col-2">{{remainder.current_remainder}}</div>
         </div>
         {% endfor %}
@@ -110,6 +109,61 @@
 
 </div>
 </div>
-<!-- </div> -->
+<script>
+
+    const category = document.querySelector('#category');
+    const shop = document.querySelector('#shop');
+    const buttons = document.querySelectorAll('.clear_storage');
+    //const submit_button = document.querySelector('.clear_storage_on_submit');
+
+    //saving "Category select option" from switching to default when updating the page
+    //===========================================================================
+    category.addEventListener('change', e => {
+        choice = category.value;
+        sessionStorage.setItem('category', choice);
+    })
+
+    //saving "Category select option" from switching to default when updating the page
+    //===========================================================================
+    shop.addEventListener('change', e => {
+        choice = shop.value;
+        sessionStorage.setItem('shop', choice);
+    })
+
+
+    // getting data from session storage & passing it to html code on page reload
+    //=================================================================================
+    document.addEventListener('DOMContentLoaded', e => {
+        if (sessionStorage.getItem('category') === null) {
+            console.log('No category choice')
+        }
+        else {
+            choice = sessionStorage.getItem('category');
+            category.value = choice
+        }
+        if (sessionStorage.getItem('shop') === null) {
+            console.log('No shop choice')
+        }
+        else {
+            choice = sessionStorage.getItem('shop');
+            shop.value = choice
+        }
+    })
+
+    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //===========================================================================
+    for (let button of buttons) {
+        button.addEventListener('click', clearStorage);
+    }
+    function clearStorage(e) {
+        sessionStorage.clear();
+    };
+
+    /*submit_button.addEventListener('onload', e => {
+        sessionStorage.clear();
+    })*/
+
+
+</script>
 
 {%endblock%}

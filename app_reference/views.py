@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.shortcuts import render
-from . models import Product
+from . models import Product, ProductCategory
 from app_product.models import RemainderHistory, RemainderCurrent
 from app_clients.models import Customer
 from django.contrib import messages
@@ -11,10 +11,10 @@ def reference (request):
 
 def products (request):
     products=Product.objects.all()
-    remainders=RemainderCurrent.objects.all()
+    categories=ProductCategory.objects.all()
+    products=Product.objects.all()
     context={
         'products': products,
-        'remainders': remainders
     }
     return render (request, 'reference/products.html', context )
 
