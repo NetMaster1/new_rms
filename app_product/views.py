@@ -322,7 +322,8 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                         document=document,
                         created=dateTime,
                         shop=shop,
-                        # category=category,
+                        product_id=product,
+                        category=product.category,
                         imei=imeis[i],
                         name=names[i],
                         retail_price=prices[i],
@@ -1409,6 +1410,7 @@ def delivery_auto(request):
                 product = Product.objects.create(
                     imei=row.Imei, category=category, name=row.Title
                 )
+            product=Product.objects.get(imei=row.Imei)
             delivery_item = Delivery.objects.create(
                     document=document,
                     # category=category,
@@ -1463,8 +1465,9 @@ def delivery_auto(request):
                 rho_type=document.title,
                 created=dateTime,
                 shop=shop,
-                category=category,
+                category=product.category,
                 supplier=supplier,
+                product_id=product.id,
                 imei=row.Imei,
                 name=row.Title,
                 pre_remainder=remainder_current.current_remainder,

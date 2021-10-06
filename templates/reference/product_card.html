@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+
+    <div class="container">
+
+
+
+        <div class="page_location">
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Карточка товара</h3>
+                </div>
+            </div>
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                    <small><sup>x</sup></small>
+                </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+<div class="row m-auto">
+            <form action="{% url 'update_product' product.id %}" method="POST">
+                {% csrf_token %}
+            
+                <div class="form-row">
+                    <div class="col-3">
+                        <label for="category">Вид ТМЦ</label>
+                    </div>
+                    <div class="col">
+                        <select name="category" id="category" class='form-control'>
+                            <!-- <option selected="true" disabled="disabled">Выберите категорию</option> -->
+                            <option value="{{product.category.id}}">{{product.category.name}}</option>
+                            {% for category in categories %}
+                            <option value="{{category.id}}">{{category.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="name">Наименование:</label>
+                    <input class='form-control' type="text" id="name" name="name" value='{{product.name}}'>
+                </div>
+            
+                <div class="form-group">
+                    <label for="name">IMEI:</label>
+                    <input class='form-control' type="text" id="imei" name="imei" value='{{product.imei}}'>
+                </div>
+            
+                </div>
+            
+                <div class="modal-footer">
+
+                <a href="{% url 'products' %}">
+                    <input type="button" value="Закрыть" class="btn btn-secondary">
+                </a>
+                    <button type="submit" class="btn btn-secondary">Сохранить</button>
+                    <button type="button" class="btn btn-danger">Удалить</button>
+                </div>
+            </form>
+    </div>
+</div>
+</div>
+
+<script>
+    console.log('Script works');
+
+    const btn_modal = document.querySelector('.btn_modal');
+    const enterDeliveryModal = document.querySelector('.enterDeliveryModal');
+    const btn_close = document.querySelector('.btn_close');
+    const imeis = document.querySelectorAll("#imei");
+    const quantities = document.querySelectorAll("#quantity");
+    const sub_totals = document.querySelectorAll("#sub_total");
+    const prices = document.querySelectorAll("#price");
+    const buttons = document.querySelectorAll('.clear_storage');
+    const delete_buttons = document.querySelectorAll('.delete_line_storage');
+    const check_button = document.querySelector('#check_button');
+    const supplier = document.querySelector('#supplier');
+    const check_imei = document.querySelector('#check_imei');
+
+
+    btn_modal.addEventListener('click', openModal)
+    btn_close.addEventListener('click', closeModal)
+
+    function openModal() {
+        enterDeliveryModal.classList.add('openModal')
+    }
+
+    function closeModal() {
+        enterDeliveryModal.classList.remove('openModal')
+    }
+
+    //saving "Supplier select option" from switching to default when updating the page
+    //===========================================================================
+    supplier.addEventListener('change', e => {
+        choice = supplier.value;
+        sessionStorage.setItem('supplier', choice);
+    })
+
+
+        //creating session storage inputs on clicking "Check button"
+        // =================================================================================
+        / check_button.addEventListener('submit', e => {
+            imei_input = check_imei.value
+            for (i = 0; i < imeis.length; i++) {
+                if (imeis[i].value == imei_input) {
+                    imeis[i].classList.add('imei')
+                    //check_imei.value.clear()
+                    //e.preventDefault()
+                }
+            }
+        })
+    //window.location.reload()
+
+
+    //changing inputs & loading changed input to session storage (via changing 'quantities')
+    //================================================================================================
+    for (let i = 0; i < quantities.length; i++) {
+        quantities[i].addEventListener('change', e => {
+            sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+
+    //changing inputs & loading changed input to session storage (via changing 'prices')
+    //================================================================================================
+    for (let i = 0; i < prices.length; i++) {
+        prices[i].addEventListener('change', e => {
+            sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+
+    //changing inputs & loading changed input to session storage (via changing 'sub_totals')
+    //================================================================================================
+    for (let i = 0; i < sub_totals.length; i++) {
+        sub_totals[i].addEventListener('change', e => {
+            prices[i].value = sub_totals[i].value / quantities[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+
+
+    //updating session storage on pushing 'Delete line button'
+    //===========================================================================
+    for (let i = 0; i < delete_buttons.length; i++) {
+        delete_buttons[i].addEventListener('click', e => {
+            sessionStorage.removeItem(imeis[i].value)
+        })
+    }
+
+    // getting data from session storage & passing it to html code on page reload
+    //=================================================================================
+    document.addEventListener('DOMContentLoaded', e => {
+        for (j = 0; j < imeis.length; j++) {
+            for (i = 0; i < sessionStorage.length; i++) {
+                if (JSON.parse(sessionStorage.getItem(imeis[j].value))) {
+                    a = JSON.parse(sessionStorage.getItem(imeis[j].value));
+                    if (imeis[j].value == a[0]) {
+                        quantities[j].value = a[1]
+                        prices[j].value = a[2]
+                        sub_totals[j].value = a[3]
+                    }
+                }
+            }
+        }
+        if (sessionStorage.getItem('supplier') === null) {
+            console.log('No supplier choice')
+        }
+        else {
+            choice = sessionStorage.getItem('supplier');
+            supplier.value = choice
+        }
+    })
+
+
+
+    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //===========================================================================
+    for (let button of buttons) {
+        button.addEventListener('click', clearStorage);
+    }
+    function clearStorage(e) {
+        sessionStorage.clear();
+    };
+
+    console.log('End of the script')
+</script>
+{% endblock %}

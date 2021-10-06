@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib import messages, auth
 from django.contrib.auth import update_session_auth_hash, authenticate
-from app_product.models import Sale
+from app_product.models import RemainderHistory, Sale
 from app_reference.models import ProductCategory
 
 
@@ -44,6 +44,8 @@ def my_bonus(request):
     if request.user.is_authenticated:
         categories=ProductCategory.objects.all()
         sales=Sale.objects.filter(user=request.user)
+        #rhos_sales=RemainderHistory.objects.filter(user=request.user, rho_type='Поступление ТМЦ')
+        #accessories=rhos.filter(category=3)
         accessories=sales.filter(category=3)#Аксы
         accessories_sum=0
 
@@ -87,3 +89,6 @@ def my_bonus(request):
         return render(request, 'personnel/my_bonus.html',  context)
     else:
         return redirect ('login')
+
+def motivation (request):
+    return render(request, 'personnel/motivation.html')

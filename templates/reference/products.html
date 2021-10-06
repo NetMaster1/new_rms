@@ -4,19 +4,37 @@
 <div class="container">
     <div class="page_location">
 
+<!-- =====================Alert Messages Module=================== -->
+<div class="container">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-info" role="alert">
+        <!-- <button class="close" data-dismiss="alert">
+                    <small><sup>x</sup></small>
+                </button> -->
+        {{ message }}
+    </div>
+    {% endfor%}
+    {% endif%}
+</div>
+<!-- ===================End of Alert Messages Module================ -->
+
         <div class="menu">
             <h3>Номенклатура</h3>
         </div>
 
 
         <div class="menu">
-            <form action="{% url 'item_report' %}" method="POST">
+            <form action="{% url 'products' %}" method="POST">
                 {% csrf_token %}
 
                 <div class="row form-row m-auto">
                     <div class="col-3">
                         <select name="category" class='form-inline' id='category'>
-                            <option value="#">Выберите категорию</option>
+                            <!-- <option selected="true" disabled="disabled">Выберите категорию</option> -->
+                            <!-- <option value="{{product.category.id}}">{{product.category}}</option> -->
+                            <!-- <option value='#'>Выберите категорию</option> -->
+                            <option value>Выберите категорию</option>
                             {% for category in categories %}
                             <option value="{{category.id}}">{{category.name}}</option>
                             {% endfor %}
@@ -66,19 +84,20 @@
             <h5>Название</h5>
         </div>
     </div>
-    
-    {% for product in products %}
+      
+
+    {% for item in products %}
     <div class="row m-auto">
-        <div class="col-2">{{product.category}}</div>
+        <div class="col-2">{{item.category}}</div>
         <div class="col-2">
-            <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{product.imei}}">
-                {{product.imei}}
+            <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{item.imei}}">
+                {{item.imei}}
             </a>
         </div>
-        <div class="col-2">{{product.name}}</div>
+        <div class="col-2">{{item.name}}</div>
        
     <!-- =======================Document Bootstrap Modal================================= -->
-    <div class="modal fade" id="modal_{{product.imei}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+    <div class="modal fade" id="modal_{{item.imei}}" tabindex="-1" aria-labelledby="exampleModalLabel"
         aria-hidden="true" class="ModalLogHide">
         <!-- <div class="ModalLogHide"> -->
         <div class="modal-dialog">
@@ -88,7 +107,8 @@
                     <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close">X</button>
                 </div>
             <div class="modal-body">
-                <form action="#" method="POST">
+
+                <form action="{% url 'update_product' item.id %}" method="POST">
                     {% csrf_token %}
             
                     <div class="form-row">
@@ -96,7 +116,9 @@
                             <label for="category">Вид ТМЦ</label>
                         </div>
                         <div class="col">
-                            <select name="category" id="category" class='form-control' required>
+                            <select name="category" id="category" class='form-control'>
+                                <!-- <option selected="true" disabled="disabled">Выберите поставщика</option> -->
+                                <option value="{{item.category.id}}">{{item.category}}</option>
                                 {% for category in categories %}
                                 <option value="{{category.id}}">{{category.name}}</option>
                                 {% endfor %}
@@ -105,18 +127,22 @@
                     </div>
                     <div class="form-group">
                         <label for="name">Наименование:</label>
-                        <input class='form-control' type="text" id="name" name="name" value='{{product.name}}'>
+                        <input class='form-control' type="text" id="name" name="name" value='{{item.name}}'>
                     </div>
+
                     <div class="form-group">
                         <label for="name">IMEI:</label>
-                        <input class='form-control' type="text" id="input_imei" name="imei" value='{{product.imei}}'>
+                        <input class='form-control' type="text" id="imei" name="imei" value='{{item.imei}}'>
                     </div>
+               
             </div>
      
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                    <button type="button" class="btn btn-primary">Печать</button>
+                    <button type="submit" class="btn btn-secondary">Сохранить</button>
+                    <button type="button" class="btn btn-danger">Удалить</button>
                 </div>
+            </form>
             </div>
         </div>
     </div>
@@ -131,23 +157,5 @@
 </div>
 </div>
 <!-- </div> -->
-
-<script>
-    /*const product_cards = document.querySelectorAll('#product_card');
-    const btn_close = document.querySelectorAll('.button_close');
-    const enterProductCard = document.querySelector('.enterProductCard');
-
-    for (let i = 0; i < product_cards.length; i++){
-        product_cards[i].addEventListener('click', openModal)
-    }
-
-    function openModal() {
-        enterProductCard.classList.add('openModal')
-    }
-
-    function closeModal() {
-        enterProductCard.classList.remove('openModal')
-    }*/
-</script>*/
 
 {% endblock %}

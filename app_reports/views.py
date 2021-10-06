@@ -1,7 +1,7 @@
 from app_personnel.models import BonusAccount
 from django.db.models import query
 from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product
-from app_cash.models import Cash
+from app_cash.models import Cash, Credit, Card
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from app_product.models import (
@@ -39,6 +39,8 @@ def sale_report(request):
     users = User.objects.all()
     if request.method == "POST":
         queryset_list = Sale.objects.all()
+        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+        queryset_list = RemainderHistory.objects.filter(rho_type=doc_type)
         sum = 0
         category = request.POST["category"]
         shop = request.POST["shop"]
@@ -70,7 +72,7 @@ def sale_report(request):
             sum += item.sub_total
        
         query = queryset_list.values(
-            "category", "supplier", "imei", "name", "quantity", "price", "sub_total", "user"
+            "category", "supplier", "imei", "name", "outgoing_quantity", "retail_price"
         )
         data=pd.DataFrame.from_records(query)
        # data = pd.DataFrame(query)
@@ -268,44 +270,49 @@ def item_report(request):
 
 def bonus_report(request):
     users = User.objects.all()
-    sales = Sale.objects.all()
-    for user in users:
-        sales = sales.filter(user=user)
-        bonus_account = BonusAccount.objects.get(user=user)
-        bonus_account.smarts = 0
-        bonus_account.phones = 0
-        bonus_account.acces = 0
-        bonus_account.sims = 0
-        bonus_account.modems = 0
-        bonus_account.insurance = 0
-        bonus_account.esset = 0
-        bonus_account.wink = 0
-        bonus_account.service = 0
-        bonus_account.other = 0
-        for sale in sales:
-            if sale.category.name == "Смартфоны":
-                bonus_account.smarts += sale.staff_bonus
-            elif sale.category.name == "Трубки":
-                bonus_account.phones += sale.staff_bonus
-            elif sale.category.name == "Аксы":
-                bonus_account.acces += sale.staff_bonus
-            elif sale.category.name == "Сим_карты":
-                bonus_account.sims += sale.staff_bonus
-            elif sale.category.name == "Модемы":
-                bonus_account.modems += sale.staff_bonus
-            elif sale.category.name == "Страховки":
-                bonus_account.insurance += sale.staff_bonus
-            elif sale.category.name == "Esset":
-                bonus_account.esset += sale.staff_bonus
-            elif sale.category.name == "Подписки":
-                bonus_account.wink += sale.staff_bonus
-            elif sale.category.name == "Услуги":
-                bonus_account.service += sale.staff_bonus
-            else:
-                bonus_account.other += sale.staff_bonus
-        bonus_account.save()
-    bonus_accounts = BonusAccount.objects.all()
-    context = {"users": users, "bonus_accounts": bonus_accounts}
+    categories=ProductCategory.objects.all()
+    doc_type=DocumentType.objects.get(name='Поступление ТМЦ')
+    if request.method == "POST":
+        start_date = request.POST["start_date"]
+        end_date = request.POST["end_date"]
+        rhos=RemainderHistory.objects.filter(rho_type=doc_type, created__gte=start_date, created__lte=end_date)
+        gen_arr=[]
+        for user in users:
+            arr=[]
+            for category in categories:
+                if rhos.filter(user=user, category=category).exists():
+                    rhos=rhos.filter(user=user, category=category)
+                    sales=0
+                    for rho in rhos:
+                        sales+=rho.retail_price*rho.outgoing_quantity
+                else:
+                    sales=0
+                dict={category: sales}
+                arr.append(dict)
+            user_arr = {user: arr}
+            gen_arr.append(user_arr)
+            print(gen_arr)
+
+                # phones_sum=0
+                # phones=sales.filter(category=2)#Трубки
+                # for phone in phones:
+                #     phones_sum+=phone.sub_total
+                # category_phones=categories.get(id=2)
+                # bonus_phones=phones_sum*category_phones.bonus_percent
+
+                # arr=[user, category, sales]
+                # arr_category=[]
+                # arr_category.append(arr)
+                # user_arr.append(arr_category)
+        context = {
+            'gen_arr': gen_arr,
+            'categories': categories
+        }
+        return render(request, "reports/bonus_report.html", context)
+
+    context = {
+        'categories': categories
+    }
 
     return render(request, "reports/bonus_report.html", context)
 
@@ -317,10 +324,35 @@ def cash_report(request):
 
     return render(request, "reports/cash_report.html", context)
 
-
 def card_report(request):
-    pass
-
+    shops=Shop.objects.all()
+    cards=Card.objects.all()
+    users=User.objects.all()
+    if request.method == "POST":
+        date_start = request.POST["date_start"]
+        date_end = request.POST["date_end"]
+        shop = request.POST["shop"]
+        user = request.POST["user"]
+        
+    
+    context = {
+        'shops': shops,
+        'users': users
+    }
+    return render(request, 'reports/card_report.html', context)
 
 def credit_report(request):
-    pass
+    shops=Shop.objects.all()
+    credits=Credit.objects.all()
+    users=User.objects.all()
+    if request.method == "POST":
+        date_start = request.POST["date_start"]
+        date_end = request.POST["date_end"]
+        shop = request.POST["shop"]
+        user = request.POST["user"]
+    
+    context = {
+        'shops': shops,
+        'users': users
+    }
+    return render(request, 'reports/credit_report.html', context)

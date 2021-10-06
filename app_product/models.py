@@ -224,10 +224,12 @@ class Transfer (models.Model):
 
 class RemainderHistory (models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)
     rho_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
+    product_id = models.ForeignKey(Product, on_delete=models.DO_NOTHING, null=True)
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)
