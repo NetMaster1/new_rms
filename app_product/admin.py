@@ -27,7 +27,7 @@ class RevaluationAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop')
 
 class RemainderHistoryAdmin(admin.ModelAdmin):
-    list_display = ('created', 'supplier', 'rho_type', 'shop', 'category', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'retail_price') 
+    list_display = ('id', 'created', 'supplier', 'rho_type', 'shop', 'category', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'retail_price', 'user') 
     list_filter = ('imei', 'document', 'shop')
     ordering = ('-created',)
     list_select_related = True

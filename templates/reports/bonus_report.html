@@ -16,10 +16,10 @@
 
                     <div class="row form-row mt-3">
                         <div class="col-2">
-                            <input type="date" id='start_date' name="start_date">
+                            <input type="datetime-local" class='form-control' id='start_date' name="start_date">
                         </div>
                         <div class="col-2">
-                            <input type="date" id='end_date' name="end_date">
+                            <input type="datetime-local" class='form-control' id='end_date' name="end_date">
                         </div>
                         <div class="col-2">
                             <select name="user" id="user" class='form-inline'>
@@ -44,7 +44,7 @@
                             </a>
                         </div>
                         <div class="col-2">
-                            <a href="{% url 'save_in_excel' %}">
+                            <a href="{% url 'bonus_report_excel' %}">
                                 <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
                                     Сохранить в Excel
                                 </button>

@@ -19,6 +19,8 @@ from .models import ProductHistory
 from django.contrib import messages
 import pandas as pd
 import xlwt
+from datetime import datetime, date
+from openpyxl.workbook import Workbook
 
 # Create your views here.
 
@@ -271,11 +273,16 @@ def item_report(request):
 def bonus_report(request):
     users = User.objects.all()
     categories=ProductCategory.objects.all()
-    doc_type=DocumentType.objects.get(name='Поступление ТМЦ')
+    doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
     if request.method == "POST":
         start_date = request.POST["start_date"]
+        # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
         end_date = request.POST["end_date"]
-        rhos=RemainderHistory.objects.filter(rho_type=doc_type, created__gte=start_date, created__lte=end_date)
+        end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
+        rhos=RemainderHistory.objects.filter(rho_type=doc_type)
+
+#=====================================Array Version==========================================
         gen_arr=[]
         for user in users:
             arr=[]
@@ -284,14 +291,15 @@ def bonus_report(request):
                     rhos=rhos.filter(user=user, category=category)
                     sales=0
                     for rho in rhos:
-                        sales+=rho.retail_price*rho.outgoing_quantity
+                       sales+=rho.retail_price*rho.outgoing_quantity*category.bonus_percent
                 else:
                     sales=0
                 dict={category: sales}
                 arr.append(dict)
             user_arr = {user: arr}
             gen_arr.append(user_arr)
-            print(gen_arr)
+#================================End of array version===============================
+
 
                 # phones_sum=0
                 # phones=sales.filter(category=2)#Трубки
@@ -315,6 +323,52 @@ def bonus_report(request):
     }
 
     return render(request, "reports/bonus_report.html", context)
+
+def bonus_report_excel (request):
+    users = User.objects.all()
+    categories=ProductCategory.objects.all()
+    doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+   
+    #start_date = request.POST["start_date"]
+    # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+    #start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
+    #end_date = request.POST["end_date"]
+    #end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
+    rhos=RemainderHistory.objects.filter(rho_type=doc_type)
+
+# =======================Saving in Excel==============================================
+    wb=Workbook()
+    ws=wb.active
+    ws.title="Bonus"
+   
+# ====================================End of Saving in Excel==========================
+
+#=====================================Array Version==========================================
+  
+    starting_row=2
+    for user in users:
+        ws.cell(row=starting_row, column=1).value = user.last_name
+        
+        starting_column=2
+        for category in categories:
+            ws.cell(column=starting_column, row=1).value = category.name
+            
+            if rhos.filter(user=user, category=category).exists():
+                rhos=rhos.filter(user=user, category=category)
+                sales=0
+                for rho in rhos:
+                    sales+=rho.retail_price*rho.outgoing_quantity*category.bonus_percent
+            else:
+                sales=0
+
+            ws.cell(column=starting_column, row=starting_row).value = sales
+            starting_column+=1
+        starting_row+=1
+                
+    wb.save('names.xlsx')
+
+    return redirect ('log')
+
 
 
 def cash_report(request):

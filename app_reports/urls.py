@@ -11,6 +11,7 @@ urlpatterns = [
     path ('remainder_report_dynamic)', views.remainder_report_dynamic, name='remainder_report_dynamic'),
     path ('item_report', views.item_report, name='item_report'),
     path ('bonus_report', views.bonus_report, name='bonus_report'),
+    path ('bonus_report_excel', views.bonus_report_excel, name='bonus_report_excel'),
     path ('cash_report', views.cash_report, name='cash_report'),
     path ('card_report', views.card_report, name='card_report'),
     path ('credit_report', views.credit_report, name='credit_report'),
