@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from app_reference.models import ProductCategory
+# import datetime
+from datetime import datetime, date
+from django.utils import timezone
 
 # Create your models here.
 
@@ -17,5 +20,13 @@ class BonusAccount (models.Model):
     service=models.IntegerField(default=0)
     other=models.IntegerField(default=0)
     
+    def __int__(self):
+        return self.id
+
+class Salary (models.Model):
+    created = models.DateTimeField(default=timezone.now, null=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    paid=models.IntegerField(default=0)
+
     def __int__(self):
         return self.id

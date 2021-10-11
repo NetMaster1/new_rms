@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Перемещение денежных средств</h3>
+                </div>
+            </div>
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
+
+            <div class="row m-2 pb-2">
+                <div class="col-12 border rounded ">
+
+
+                    <form action="{% url 'change_cash_movement' document.id %}" method="POST">
+                        {% csrf_token %}
+
+                        {% for group in request.user.groups.all %}
+                        {% if group.name == 'admin' %}
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="date">
+                                    <h5>Дата</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
+                                    value='today'>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="shop">
+                                    <h5>Торговая точка - отправитель</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <select name="shop_cash_sender" id="shop_cash_sender" class='form-control' required>
+                                    <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
+                                    <!-- <option value="">Выберите торговую точку</option> -->
+                                    <option selected="true" value="{{document.cash_set.first.shop.id}}">{{document.cash_set.first.shop.name}}</option>
+                                    {% for shop in shops %}
+                                    <option value="{{shop.id}}">{{shop.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="shop">
+                                    <h5>Торговая точка - получатель</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <select name="shop_cash_receiver" id="shop_cash_receiver" class='form-control' required>
+                                    <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
+                                    <!-- <option value="">Выберите торговую точку</option> -->
+                                    <option selected="true" value="{{document.cash_set.last.shop.id}}">{{document.cash_set.last.shop.name}}</option>
+                                    {% for shop in shops %}
+                                    <option value="{{shop.id}}">{{shop.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+
+
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="sum">
+                                    <h5>Сумма к перемещению</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="number" class='form-control' id="sum" name="sum" value='{{document.sum}}'required>
+                            </div>
+                        </div>
+
+                        <div class="row m-2 p-2">
+                            <div class="col-2">
+                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                            </div>
+                    </form>
+
+
+                    <div class="col-2">
+                        <a href="{% url 'log' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+
+{% endblock %}

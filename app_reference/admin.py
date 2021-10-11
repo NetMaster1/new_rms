@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import Shop, Supplier, Product, ProductCategory, DocumentType
+from . models import Expense, Shop, Supplier, Product, ProductCategory, DocumentType, Expense, Voucher
 
 
 class ShopAdmin(admin.ModelAdmin):
@@ -17,10 +17,18 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 class DocumentTypeAdmin(admin.ModelAdmin):
     list_display = ('id', 'name',)
 
+class ExpenseAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name',)
+
+class VoucherAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name',)
+
 admin.site.register(Shop, ShopAdmin)
 admin.site.register(Supplier, SupplierAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductCategory, ProductCategoryAdmin)
 admin.site.register(DocumentType, DocumentTypeAdmin)
+admin.site.register(Expense, ExpenseAdmin)
+admin.site.register(Voucher, VoucherAdmin)
 
 

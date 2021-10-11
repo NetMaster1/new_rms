@@ -44,3 +44,15 @@ class Product (models.Model):
 
     def __str__(self):
         return self.name
+
+class Expense (models.Model):
+    name = models.CharField(max_length=50, null=True)
+    
+    def __str__(self):
+        return self.name
+
+class Voucher (models.Model):
+    name = models.CharField(max_length=50, null=True)
+
+    def __str__(self):
+        return self.name

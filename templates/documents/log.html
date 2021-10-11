@@ -84,13 +84,13 @@
         <div class="col-2">
             <h4>Дата</h4>
         </div>
-        <div class="col-2">
+        <div class="col-3">
             <h4>Документ</h4>
         </div>
         <div class="col-2">
             <h4>Сумма</h4>
         </div>
-        <div class="col-4">
+        <div class="col-3">
             <h4>Дополнительная информация</h4>
         </div>
         <div class="col-2">
@@ -108,10 +108,18 @@
         <div class="col-2"><a href="{% url 'pre_change_transfer' document.id %}">{{document.created}}</a></div>
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-2"><a href="{% url 'pre_change_sale' document.id %}">{{document.created}}</a></div>
+        {% elif document.title.name == 'РКО (зарплата)' %}
+        <div class="col-2"><a href="{% url 'change_cash_off_salary' document.id %}">{{document.created}}</a></div>
+        {% elif document.title.name == 'РКО (хоз.расходы)' %}
+        <div class="col-2"><a href="{% url 'change_cash_off_expenses' document.id %}">{{document.created}}</a></div>
+        {% elif document.title.name == 'ПКО' %}
+        <div class="col-2"><a href="{% url 'change_cash_receipt' document.id %}">{{document.created}}</a></div>
+        {% elif document.title.name == 'Перемещение денег' %}
+        <div class="col-2"><a href="{% url 'change_cash_movement' document.id %}">{{document.created}}</a></div>
         {% endif %}
 
         <!-- ===================Document Modal Triger========================= -->
-        <div class="col-2">
+        <div class="col-3">
             <a href="#" data-bs-toggle="modal" data-bs-target="#modalLog_{{document.id}}">
                 {{document.title}} №{{document.id}}
             </a>
@@ -187,9 +195,10 @@
                 </div>
             </div>
         </div>
-       <!-- ============================End of Document Bootstrap Modal======================================= -->
+       <!-- ==========================End of Document Bootstrap Modal======================================= -->
 
 
+       <!-- ==============================Document Sum Column================================================ -->
         {% if document.title.name == 'Поступление ТМЦ' %}
         <div class="col-2"><a href="{% url 'delete_delivery' document.id %}">{{document.sum}} руб.</a></div>
         {% elif document.title.name == 'Перемещение ТМЦ' %}
@@ -204,24 +213,42 @@
         <div class="col-2"><a href="#">{{document.sum}} руб.</a></div>
         {% elif document.title.name == 'Возврат ТМЦ' %}
         <div class="col-2"><a href="{% url 'delete_return' document.id %}">{{document.sum}} руб.</a></div>
+        {% elif document.title.name == 'РКО (зарплата)' %}
+        <div class="col-2"><a href="{% url 'delete_cash_off_salary' document.id %}">{{document.sum}} руб.</a></div>
+        {% elif document.title.name == 'РКО (хоз.расходы)' %}
+        <div class="col-2"><a href="{% url 'delete_cash_off_expenses' document.id %}">{{document.sum}} руб.</a></div>
+        {% elif document.title.name == 'ПКО' %}
+        <div class="col-2"><a href="{% url 'delete_cash_receipt' document.id %}">{{document.sum}} руб.</a></div>
+        {% elif document.title.name == 'Перемещение денег' %}
+        <div class="col-2"><a href="{% url 'delete_cash_movement' document.id %}">{{document.sum}} руб.</a></div>
         {% endif %}
+        <!-- =====================End of Document Sum Column======================================== -->
 
-
+        <!-- =========================Document Additional Info Column======================== -->
         {% if document.title.name == 'Поступление ТМЦ' %}
-         <div class="col-4">{{document.delivery.first.supplier}}</div>
+         <div class="col-3">{{document.delivery.first.supplier}}</div>
         {% elif document.title.name == 'Перемещение ТМЦ' %}
-        <div class="col-4">С {{document.transfer_set.first.shop_sender}} на {{document.transfer_set.first.shop_receiver}}</div>
+        <div class="col-3">С {{document.transfer_set.first.shop_sender}} на {{document.transfer_set.first.shop_receiver}}</div>
         {% elif document.title.name == 'Продажа ТМЦ' %}
-        <div class="col-4">{{document.sale_set.first.shop}} </div>
+        <div class="col-3">{{document.sale_set.first.shop}} </div>
         {% elif document.title.name == 'Оприходование ТМЦ' %}
-        <div class="col-4">{{document.recognition.first.shop}} </div>
+        <div class="col-3">{{document.recognition.first.shop}} </div>
         {% elif document.title.name == 'Списание ТМЦ' %}
-        <div class="col-4">{{document.signoff_set.first.shop}} </div>
+        <div class="col-3">{{document.signoff_set.first.shop}} </div>
         {% elif document.title.name == 'Возврат ТМЦ' %}
-        <div class="col-4">{{document.returning_set.first.shop}} </div>
+        <div class="col-3">{{document.returning_set.first.shop}} </div>
+        {% elif document.title.name == 'РКО (зарплата)' %}
+        <div class="col-3">{{document.cash_set.get.shop}} </div>
+        {% elif document.title.name == 'РКО (хоз.расходы)' %}
+        <div class="col-3">{{document.cash_set.get.shop}} </div>
+        {% elif document.title.name == 'ПКО' %}
+        <div class="col-3">{{document.cash_set.get.shop}} </div>
+       
         {% endif %}
+        <!-- =============================End of Document Additional Info Column================== -->
 
-        <div class="col-2">{{document.user.first_name}}</div>
+
+        <div class="col-2">{{document.user.first_name}} {{document.user.last_name}}</div>
     </div>
 
     {% endfor %}

@@ -2,7 +2,7 @@ from django.contrib import admin
 from . models import Cash, CashRemainder, Credit, Card
 
 class CashAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created', 'document', 'shop', 'pre_remainder', 'cash_in', 'cash_out', 'current_remainder', 'user')
+    list_display = ('id', 'user', 'created', 'document', 'cho_type', 'shop', 'pre_remainder', 'cash_in', 'cash_out', 'current_remainder', 'cash_off_reason', 'cash_in_reason', 'cash_receiver')
     ordering = ('-created',)
 
 class CashRemainderAdmin(admin.ModelAdmin):

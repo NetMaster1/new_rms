@@ -200,6 +200,22 @@ class Sale (models.Model):
     def __int__(self):
         return self.id
 
+class CashOff (models.Model):
+    user = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
+    created = models.DateTimeField(default=timezone.now, null=True)
+    date = models.DateTimeField(default=timezone.now, blank=True)
+    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
+    sub_total = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+ 
+
+    # def sub_total(self):
+    #     return int(self.price) * int(self.quantity)
+
+    def __int__(self):
+        return self.id
+
+
+
 
 class Transfer (models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)

@@ -78,14 +78,28 @@ urlpatterns = [
     path ('check_revaluation/<int:identifier_id>', views.check_revaluation, name='check_revaluation'),
     path ('revaluation/<int:identifier_id>', views.revaluation, name='revaluation'),
     path ('revaluation_input/<int:identifier_id>', views.revaluation_input, name='revaluation_input'),
-
     path ('log', views.log, name='log'),
     path ('open_document/<int:document_id>', views.open_document, name='open_document'),
-    path ('file_uploading', views.file_uploading, name='file_uploading'),
-
     path ('close_without_save/<int:identifier_id>', views.close_without_save, name='close_without_save'),
+    # ==================================================================================
 
+    path ('cash_off_salary', views.cash_off_salary, name='cash_off_salary'),
+    path ('delete_cash_off_salary/<int:document_id>', views.delete_cash_off_salary, name='delete_cash_off_salary'),
+    path ('change_cash_off_salary/<int:document_id>', views.change_cash_off_salary, name='change_cash_off_salary'),
+
+    path ('cash_off_expenses', views.cash_off_expenses, name='cash_off_expenses'),
+    path ('delete_cash_off_expenses/<int:document_id>', views.delete_cash_off_expenses, name='delete_cash_off_expenses'),
+    path ('change_cash_off_expenses/<int:document_id>', views.change_cash_off_expenses, name='change_cash_off_expenses'),
+    path ('cash_receipt', views.cash_receipt, name='cash_receipt'),
+    path ('change_cash_receipt/<int:document_id>', views.change_cash_receipt, name='change_cash_receipt'),
+    path ('delete_cash_receipt/<int:document_id>', views.delete_cash_receipt, name='delete_cash_receipt'),
+    path ('cash_movement', views.cash_movement, name='cash_movement'),
+    path ('delete_cash_movement/<int:document_id>', views.delete_cash_movement, name='delete_cash_movement'),
+    path ('change_cash_movement/<int:document_id>', views.change_cash_movement, name='change_cash_movement'),
     
+
+
+
     path ('noCashback/<int:identifier_id>', views.noCashback, name='noCashback'),
     path ('payment/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.payment, name='payment'),
     path ('sale_input_cash/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_cash, name='sale_input_cash'),
