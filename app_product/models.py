@@ -12,12 +12,18 @@ from django.utils import timezone
 
 
 # Create your models here. 
+class Identifier(models.Model):
+    def __int__(self):
+        return self.id
+
 
 class Document (models.Model):
     title = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     created = models.DateTimeField(default=timezone.now, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     sum = models.IntegerField(null=True)
+    posted = models.BooleanField(default=False)
+    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
     
     def __int__(self):
         return self.id
@@ -28,21 +34,19 @@ class Document (models.Model):
     # class Meta:
     #     ordering = ('created',)  # sorting by date
     #     verbose_name = self.title
-    
-
-class Identifier(models.Model):
-    def __int__(self):
-        return self.id
 
 class Register (models.Model):
     number = models.IntegerField(null=True)
     created = models.DateTimeField(default=timezone.now, null=True)
     shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)#serves to pass the shop in payment
+    supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
     product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+    document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     quantity = models.IntegerField(default=1)
     price = models.IntegerField(default=0)
     sub_total = models.IntegerField(default=0)
+    new= models.BooleanField(default=False)
    
     def __int__(self):
         return self.id
@@ -270,6 +274,7 @@ class RemainderHistory (models.Model):
 class RemainderCurrent (models.Model):
     updated = models.DateTimeField(auto_now=True)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
+    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
     imei = models.CharField(max_length=250)
     name = models.CharField(max_length=250, null=True)
     current_remainder = models.IntegerField(default=0)

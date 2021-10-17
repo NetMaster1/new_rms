@@ -38,7 +38,7 @@ class RemainderHistoryAdmin(admin.ModelAdmin):
     #         return ('imei',)
 
 class RemainderCurrentAdmin(admin.ModelAdmin):
-    list_display = ('updated', 'shop', 'name', 'imei', 'current_remainder', 'av_price', 'total_av_price', 'retail_price')  
+    list_display = ('updated', 'shop', 'category', 'name', 'imei', 'current_remainder', 'av_price', 'total_av_price', 'retail_price')  
     list_filter = ('imei',)
 
 class AvPriceAdmin(admin.ModelAdmin):

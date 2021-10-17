@@ -52,6 +52,11 @@ def update_product (request, id):
         product.category=category
         product.imei=imei
         product.save()
+        if RemainderCurrent.objects.filter(imei=product.imei).exists():
+            remainders=RemainderCurrent.objects.filter(imei=product.imei)
+            for item in remainders:
+                item.category=category
+                item.save()
     return redirect ('products')
 
 def product_card (request, id):

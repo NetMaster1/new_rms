@@ -8,17 +8,35 @@ urlpatterns = [
     # ==================Delivery========================
     path ('delivery_auto', views.delivery_auto, name='delivery_auto'),
     path ('identifier_delivery', views.identifier_delivery, name='identifier_delivery'),
+
     path ('check_delivery/<int:identifier_id>', views.check_delivery, name='check_delivery'),
+    path ('check_delivery_unposted/<int:document_id>', views.check_delivery_unposted, name='check_delivery_unposted'),
+    path ('check_delivery_change/<int:document_id>', views.check_delivery_change, name='check_delivery_change'),
+
     path ('delivery/<int:identifier_id>', views.delivery, name='delivery'),
     path ('delivery_input/<int:identifier_id>', views.delivery_input, name='delivery_input'),
+
     path ('delete_line_delivery/<int:imei>/<int:identifier_id>', views.delete_line_delivery, name='delete_line_delivery'),
+    path ('delete_line_change_delivery/<int:document_id>/<int:imei>', views.delete_line_change_delivery, name='delete_line_change_delivery'),
+
     path ('enter_new_product/<int:identifier_id>', views.enter_new_product, name='enter_new_product'),
     path ('clear_delivery/<int:identifier_id>', views.clear_delivery, name='clear_delivery'),
-    path ('pre_change_delivery/<int:document_id>', views.pre_change_delivery, name='pre_change_delivery'),
-    path ('change_delivery/<int:document_id>/<int:identifier_id>', views.change_delivery, name='change_delivery'),
+    path ('change_delivery_posted/<int:document_id>', views.change_delivery_posted, name='change_delivery_posted'),
     path ('delete_delivery/<int:document_id>', views.delete_delivery, name='delete_delivery'),
-    path ('delete_line_change_delivery/<int:document_id>/<int:identifier_id>/<int:imei>', views.delete_line_change_delivery, name='delete_line_change_delivery'),
-    path ('check_delivery_change/<int:document_id>/<int:identifier_id>', views.check_delivery_change, name='check_delivery_change'),
+    path ('delete_unposted_deivery/<int:document_id>', views.delete_unposted_delivery, name='delete_unposted_delivery'),
+    
+    path ('change_delivery_unposted/<int:document_id>', views.change_delivery_unposted, name='change_delivery_unposted'),
+    
+    
+    path ('enter_new_product_from_unposted/<int:document_id>', views.enter_new_product_from_unposted, name='enter_new_product_from_unposted'),
+    path ('enter_new_product_from_posted/<int:document_id>', views.enter_new_product_from_posted, name='enter_new_product_from_posted'),
+    
+   
+    path ('unpost_delivery/<int:document_id>', views.unpost_delivery, name='unpost_delivery'),
+    path ('close_unposted_document/<int:document_id>', views.close_unposted_document, name='close_unposted_document'),
+   
+
+
     # ======================Recognition=========================
     path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),
     path ('check_recognition/<int:identifier_id>', views.check_recognition, name='check_recognition'),
@@ -119,6 +137,7 @@ urlpatterns = [
 
 
     
-    path ('close_edited_document/<int:identifier_id>', views.close_edited_document, name='close_edited_document'),
+    path ('close_edited_document/<int:document_id>', views.close_edited_document, name='close_edited_document'),
+    path ('inventory', views.inventory, name='inventory'),
     
 ]
