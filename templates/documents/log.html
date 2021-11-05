@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<!-- <div class="hide"> -->
+
 <div class="container">
     <div class="page-location">
 
@@ -13,7 +15,7 @@
             <form action="{% url 'log' %}" method="POST">
                 {% csrf_token %}
         <div class="menu">
-            <div class="row form-row mt-3">
+            <div class="row form-row mt-3 bg-light">
               
                     <div class="col-2">
                         <input type="date" id='start_date' name="start_date">
@@ -125,8 +127,15 @@
             {% else %}
         <div class="col-2"><a href="{% url 'change_delivery_unposted' document.id %}">{{document.title}} {{document.id}}</a></div>
             {% endif %}
+
         {% elif document.title.name == 'Перемещение ТМЦ' %}
-        <div class="col-2"><a href="{% url 'pre_change_transfer' document.id %}">{{document.title}} {{document.id}}</a></div>
+            {% if document.posted == True %}
+        <div class="col-2"><a href="{% url 'change_transfer_posted' document.id %}">{{document.title}} {{document.id}}</a></div>
+            {% else %}
+        <div class="col-2"><a href="{% url 'change_transfer_unposted' document.id %}">{{document.title}} {{document.id}}</a></div>
+            {% endif %}
+
+
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-2"><a href="{% url 'pre_change_sale' document.id %}">{{document.title}} {{document.id}}</a></div>
         {% elif document.title.name == 'РКО (зарплата)' %}
@@ -226,6 +235,14 @@
             {% else %}
         <div class="col-2">{{document.register_set.first.shop}} </div>
             {% endif %}
+
+        {% elif document.title.name == 'Перемещение ТМЦ' %}
+            {% if document.posted == True %}
+                <div class="col-2">C {{document.remainderhistory_set.first.shop}} на {{document.remainderhistory_set.second.shop}}  </div>
+            {% else %}
+        <div class="col-2">C {{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}} </div>
+            {% endif %}
+
        
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-2">{{document.sale_set.first.shop}} </div>
@@ -245,5 +262,5 @@
 </div>
 </div>
 
-
+<!-- </div> -->
 {% endblock %}

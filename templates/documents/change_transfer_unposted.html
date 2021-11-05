@@ -3,42 +3,60 @@
 <div class="hide">
 
     <div class="container">
-        <div class="page_location">
+        <div class="page_location_unposted">
             <div class="row m-2 pt-2">
                 <div class="col">
                     <h3>Изменить документ {{document.title}} # {{document.id}}</h3>
                 </div>
             </div>
 
-                <div class="col-12 border rounded p-3">
-                    <form action="{% url 'check_transfer_change' document.id identifier.id%}" method="POST">
-                        {% csrf_token %}
-                        <div class="row m-1">
-                            <div class="col-4">
-                                <input type="text" class='form-control' id="imei_check" name="imei_check" maxlength='50' required
-                                    placeholder="Введите IMEI">
-                            </div>
-                            <div class="col-1">
-                                <label for="quantity">Кол-во</label>
-                            </div>
-                            <div class="col-2">
-                                <input type="number" class='form-control' id="quantity_input" name="quantity_input" value=1 required>
-                            </div>
-                            
+    <!-- =====================Alert Messages Module=================== -->
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info" role="alert">
+            <!-- <button class="close" data-dismiss="alert">
+                            <small><sup>x</sup></small>
+                        </button> -->
+            {{ message }}
+        </div>
+        {% endfor%}
+        {% endif%}
+    </div>
+    <!-- ===================End of Alert Messages Module================ -->
 
 
-
-                            <div class="col-2">
-                                <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark">
-                            </div>
+            <div class="col-12 border rounded p-3">
+                <form action="{% url 'check_transfer_unposted' document.id%}" method="POST">
+                    {% csrf_token %}
+                    <div class="row m-1">
+                        <div class="col-4">
+                            <input type="text" class='form-control' id="imei_check" name="imei_check" maxlength='50'
+                                required placeholder="Введите IMEI">
                         </div>
-                    </form>
-                </div>
+                        <div class="col-1">
+                            <label for="quantity">Кол-во</label>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="quantity_input" name="quantity_input" value=1
+                                required>
+                        </div>
+
+
+
+
+                        <div class="col-2">
+                            <input type="submit" value="Внести наименование в документ"
+                                class="btn btn-sm btn-outline-dark">
+                        </div>
+                    </div>
+                </form>
+            </div>
 
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'change_transfer' document.id identifier.id %}" method="POST">
+                    <form action="{% url 'change_transfer_unposted' document.id %}" method="POST">
                         {% csrf_token %}
 
                         <div class="form-row">
@@ -61,7 +79,8 @@
                             </div>
                             <div class="col">
                                 <select name="shop_sender" id="shop_sender" class='form-control' required>
-                                    <option selected="true" value="{{shop_sender_current.id}}">{{shop_sender_current.name}}</option>
+                                    <option selected="true" value="{{registers.first.shop_sender.id}}">
+                                        {{registers.first.shop_sender.name}}</option>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
@@ -77,8 +96,8 @@
                             </div>
                             <div class="col">
                                 <select name="shop_receiver" id="shop_receiver" class='form-control' required>
-                                    <option selected="true" value="{{shop_receiver_current.id}}">
-                                    {{shop_receiver_current.name}}</option>
+                                    <option selected="true" value="{{registers.first.shop_receiver.id}}">
+                                        {{registers.first.shop_receiver.name}}</option>
 
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
@@ -113,12 +132,12 @@
                         {% for register in registers %}
                         <div class="row m-auto mb-1">
                             <div class="col-2">
-                                <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}'
-                                    readonly>
+                                <input type="text" class='form-control' id="imei" name="imei"
+                                    value='{{register.product.imei}}' readonly>
                             </div>
                             <div class="col-2">
-                                <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'
-                                    readonly>
+                                <input type="text" class='form-control' id="name" name="name"
+                                    value='{{register.product.name}}' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="quantity" name="quantity"
@@ -132,9 +151,10 @@
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
                                     value='{{register.sub_total}}' maxlength='50'>
                             </div>
-                            
+
                             <div class="col">
-                                <a href="{% url 'delete_line_change_transfer' document.id identifier.id register.product.imei %}">
+                                <a
+                                    href="{% url 'delete_line_unposted_transfer' document.id register.product.imei %}">
                                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                                 </a>
 
@@ -142,22 +162,36 @@
                             <p id="demo"></p>
                         </div>
                         {% endfor %}
-                
-                       
-                   
-            
-                        <div class="row m-auto mt-3 ">
-                            <div class="col-2">
-                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark clear_storage">
-                            </div>
-                    </form>
-                    
 
+
+
+
+                        <div class="row m-auto mt-3 ">
+                            <div class="col-1">
+                                <input type="submit" value="Сохранить"
+                                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                            </div>
+
+                            <div class="col-2">
+                                <label for="post_check"> С проведением </label>
+                                <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                            </div>
+
+
+                    </form>
+
+                 
 
                     <div class="col-2">
-                        <a href="{% url 'close_edited_document' identifier.id %}">
+                        <a href="{% url 'close_unposted_transfer' document.id %}">
                             <input type="button" value="Закрыть без сохранения"
                                 class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                        </a>
+                    </div>
+
+                    <div class="col-3">
+                        <a href="{% url 'delete_unposted_transfer' document.id %}">
+                            <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
                         </a>
                     </div>
                 </div>
@@ -177,20 +211,64 @@
     let quantities = document.querySelectorAll("#quantity");
     let sub_totals = document.querySelectorAll("#sub_total");
     let prices = document.querySelectorAll("#price");
-    let buttons= document.querySelectorAll('.clear_storage');
-  
+    let buttons = document.querySelectorAll('.clear_storage');
+
     //const val= typeof quantities
- 
+
     //changing inputs & loading changed input to session storage
     //================================================================================================
-    for (let i=0; i<quantities.length; i++) {
-    quantities[i].addEventListener('change', e=> {
-    sub_totals[i].value =quantities[i].value * prices[i].value;
-    let arr = []
-    arr.push(quantities[i].value)
-    arr.push(prices[i].value)
-    arr.push(sub_totals[i].value)
-    sessionStorage.setItem(i, JSON.stringify(arr));
+    for (let i = 0; i < quantities.length; i++) {
+        quantities[i].addEventListener('change', e => {
+            sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(i, JSON.stringify(arr));
+            /*if (sessionStorage.getItem('quantities_arr') === null) {
+                    quantities_arr = []
+                    console.log(quantities_arr)
+                }
+                else {
+                    quantities_arr = JSON.parse(sessionStorage.getItem('quantities_arr'));
+                    console.log('oops')
+                    console.log(quantities_arr) 
+                }
+                quantities_arr.push(quantities[i].value)
+                sessionStorage.setItem('quantities_arr', JSON.stringify(quantities_arr));*/
+            //sessionStorage.setItem(JSON.stringify(quantities[i]), JSON.stringify(b));
+            //e.preventDefault();
+        })
+    }
+    // getting data from session storage & passing it to html code on page reload
+    //=================================================================================
+    document.addEventListener('DOMContentLoaded', e => {
+        for (i = 0; i < quantities.length; i++) {
+            if (sessionStorage.getItem(i) === null) {
+                console.log('null')
+            }
+            else {
+                arr = JSON.parse(sessionStorage.getItem(i));
+                //console.log(arr)
+                quantities[i].value = arr[0]
+                prices[i].value = arr[1]
+                sub_totals[i].value = arr[2]
+            }
+        }
+    })
+
+
+    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //===========================================================================
+    for (let button of buttons) {
+        // console.log(buttons)
+        button.addEventListener('click', clearStorage);
+    }
+
+    function clearStorage(e) {
+        sessionStorage.clear();
+    };
+
     /*if (sessionStorage.getItem('quantities_arr') === null) {
             quantities_arr = []
             console.log(quantities_arr)
@@ -202,68 +280,24 @@
         }
         quantities_arr.push(quantities[i].value)
         sessionStorage.setItem('quantities_arr', JSON.stringify(quantities_arr));*/
+
     //sessionStorage.setItem(JSON.stringify(quantities[i]), JSON.stringify(b));
     //e.preventDefault();
-    })
-}
-    // getting data from session storage & passing it to html code on page reload
-    //=================================================================================
-  document.addEventListener('DOMContentLoaded', e=> {
-      for (i=0; i<quantities.length; i++) {
-      if (sessionStorage.getItem(i)===null){
-          console.log('null')
-      }
-      else{
-        arr = JSON.parse(sessionStorage.getItem(i));
-        //console.log(arr)
-        quantities[i].value=arr[0]
-        prices[i].value=arr[1]
-        sub_totals[i].value=arr[2]
-      }
-      }
-  })
+    //}
+    // }
 
 
-  //clearing session storage on pushing 'Submit' & 'Close without save' buttons
-  //===========================================================================
-    for (let button of buttons) {
-       // console.log(buttons)
-        button.addEventListener('click', clearStorage);
-    }
-    
-   function clearStorage(e) {
-        sessionStorage.clear();
-    };
-
-                /*if (sessionStorage.getItem('quantities_arr') === null) {
-                        quantities_arr = []
-                        console.log(quantities_arr)
-                    }
-                    else {
-                        quantities_arr = JSON.parse(sessionStorage.getItem('quantities_arr'));
-                        console.log('oops')
-                        console.log(quantities_arr) 
-                    }
-                    quantities_arr.push(quantities[i].value)
-                    sessionStorage.setItem('quantities_arr', JSON.stringify(quantities_arr));*/
-
-                //sessionStorage.setItem(JSON.stringify(quantities[i]), JSON.stringify(b));
-                //e.preventDefault();
-            //}
-       // }
-        
 
 
-    
     //quantities.forEach(quantity => {
-      // quantity.addEventListener('input', e=> {
-            //alert("The value of the input field was changed.");
-       //     demos.forEach(demo => {
-       //     demo.innerHTML = "You selected: " + quantity.value;
-       //   })     
+    // quantity.addEventListener('input', e=> {
+    //alert("The value of the input field was changed.");
+    //     demos.forEach(demo => {
+    //     demo.innerHTML = "You selected: " + quantity.value;
+    //   })     
     //   })
- // });
+    // });
 
-    console.log ('oky')
+    console.log('oky')
 </script>
 {% endblock %}

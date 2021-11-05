@@ -201,7 +201,7 @@
                             </div>
                             <div class="col">
                                 <a
-                                    href="{% url 'delete_line_change_delivery' register.document.id register.product.imei %}">
+                                    href="{% url 'delete_line_unposted_delivery' register.document.id register.product.imei %}">
                                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
                                 </a>
                             </div>
@@ -217,6 +217,12 @@
                                 <input type="checkbox" id="post_check" name="post_check" value='checked'>
                             </div>
                     </form>
+
+                    <div class="col-3">
+                        <a href="{% url 'close_unposted_delivery' document.id %}">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        </a>
+                    </div>
 
                     <div class="col-3">
                         <a href="{% url 'delete_unposted_delivery' document.id %}">
@@ -253,6 +259,7 @@
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
     const check_button = document.querySelector('#check_button');
     const supplier = document.querySelector('#supplier');
+    const shop = document.querySelector('#shop');
     const check_imei = document.querySelector('#check_imei');
 
 
@@ -272,6 +279,13 @@
     supplier.addEventListener('change', e => {
         choice = supplier.value;
         sessionStorage.setItem('supplier', choice);
+    })
+
+    //saving "Shop select option" from switching to default when updating the page
+        //===========================================================================
+    shop.addEventListener('change', e => {
+        choice = shop.value;
+        sessionStorage.setItem('shop', choice);
     })
 
 
@@ -362,6 +376,13 @@
         else {
             choice = sessionStorage.getItem('supplier');
             supplier.value = choice
+        }
+        if (sessionStorage.getItem('shop') === null) {
+            console.log('No shop choice')
+        }
+        else {
+            choice = sessionStorage.getItem('shop');
+            shop.value = choice
         }
     })
 

@@ -133,9 +133,14 @@
 
 
                 <div class="row m-auto">
-                    <div class="col-2">
-                    <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                    <div class="col-1">
+                    <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
                 </div>
+                <div class="col-2">
+                    <label for="post_check"> С проведением </label>
+                    <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                </div>
+
             </form>
                <div class="col-2">
                     <a href="{% url 'close_without_save' identifier.id %}">
