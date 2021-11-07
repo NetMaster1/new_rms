@@ -9,9 +9,24 @@
                     <h3>Изменить документ {{document.title}} # {{document.id}}</h3>
                 </div>
             </div>
+<!-- =====================Alert Messages Module=================== -->
+<div class="container">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-info" role="alert">
+        <!-- <button class="close" data-dismiss="alert">
+                            <small><sup>x</sup></small>
+                        </button> -->
+        {{ message }}
+    </div>
+    {% endfor%}
+    {% endif%}
+</div>
+<!-- ===================End of Alert Messages Module================ -->
+
 
                 <div class="col-12 border rounded p-3">
-                    <form action="{% url 'check_transfer_change' document.id%}" method="POST">
+                    <form action="{% url 'check_transfer_posted' document.id%}" method="POST">
                         {% csrf_token %}
                         <div class="row m-1">
                             <div class="col-4">
@@ -132,8 +147,8 @@
                             </div>
                             
                             <div class="col">
-                                <a href=#>
-                                    <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
+                                <a href="{% url 'delete_line_posted_transfer' document.id register.product.imei %}">
+                                    <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
                                 </a>
 
                             </div>
@@ -149,7 +164,7 @@
                     
                     <div class="col-3">
                         <a href="{% url 'unpost_transfer' document.id %}">
-                            <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                            <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
 
@@ -173,95 +188,129 @@
 <script>
     console.log('OK')
 
-    let quantities = document.querySelectorAll("#quantity");
-    let sub_totals = document.querySelectorAll("#sub_total");
-    let prices = document.querySelectorAll("#price");
-    let buttons= document.querySelectorAll('.clear_storage');
+    const imeis = document.querySelectorAll("#imei");
+    const quantities = document.querySelectorAll("#quantity");
+    const sub_totals = document.querySelectorAll("#sub_total");
+    const prices = document.querySelectorAll("#price");
+    const shop_sender = document.querySelector('#shop_sender');
+    const shop_receiver = document.querySelector('#shop_receiver');
+    const buttons = document.querySelectorAll('.clear_storage');
+    const save_button = document.querySelector('#save_button');
+    const delete_buttons = document.querySelectorAll('.delete_line_storage');
   
     //const val= typeof quantities
  
-    //changing inputs & loading changed input to session storage
+    //changing inputs & loading changed input to session storage (via changing 'quantities')
     //================================================================================================
-    for (let i=0; i<quantities.length; i++) {
-    quantities[i].addEventListener('change', e=> {
-    sub_totals[i].value =quantities[i].value * prices[i].value;
-    let arr = []
-    arr.push(quantities[i].value)
-    arr.push(prices[i].value)
-    arr.push(sub_totals[i].value)
-    sessionStorage.setItem(i, JSON.stringify(arr));
-    /*if (sessionStorage.getItem('quantities_arr') === null) {
-            quantities_arr = []
-            console.log(quantities_arr)
-        }
-        else {
-            quantities_arr = JSON.parse(sessionStorage.getItem('quantities_arr'));
-            console.log('oops')
-            console.log(quantities_arr) 
-        }
-        quantities_arr.push(quantities[i].value)
-        sessionStorage.setItem('quantities_arr', JSON.stringify(quantities_arr));*/
-    //sessionStorage.setItem(JSON.stringify(quantities[i]), JSON.stringify(b));
-    //e.preventDefault();
-    })
-}
+    for (let i = 0; i < quantities.length; i++) {
+        quantities[i].addEventListener('change', e => {
+            sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+
+    //changing inputs & loading changed input to session storage (via changing 'prices')
+    //================================================================================================
+    for (let i = 0; i < prices.length; i++) {
+        prices[i].addEventListener('change', e => {
+            sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+
+    //changing inputs & loading changed input to session storage (via changing 'sub_totals')
+    //================================================================================================
+    for (let i = 0; i < sub_totals.length; i++) {
+        sub_totals[i].addEventListener('change', e => {
+            prices[i].value = sub_totals[i].value / quantities[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+    //saving "Shop_sender select option" from switching to default when updating the page
+    //================================================================================================
+    shop_sender.addEventListener('change', e => {
+            choice = shop_sender.value;
+            sessionStorage.setItem('shop_sender', choice);
+        })
+
+    //saving "Shop_receiver select option" from switching to default when updating the page
+    //================================================================================================
+    shop_receiver.addEventListener('change', e => {
+            choice = shop_receiver.value;
+            sessionStorage.setItem('shop_receiver', choice);
+        })
+
     // getting data from session storage & passing it to html code on page reload
     //=================================================================================
-  document.addEventListener('DOMContentLoaded', e=> {
-      for (i=0; i<quantities.length; i++) {
-      if (sessionStorage.getItem(i)===null){
-          console.log('null')
-      }
-      else{
-        arr = JSON.parse(sessionStorage.getItem(i));
-        //console.log(arr)
-        quantities[i].value=arr[0]
-        prices[i].value=arr[1]
-        sub_totals[i].value=arr[2]
-      }
-      }
-  })
+    document.addEventListener('DOMContentLoaded', e => {
+        for (j = 0; j < imeis.length; j++) {
+
+            for (i = 0; i < sessionStorage.length; i++) {
+                if (JSON.parse(sessionStorage.getItem(imeis[j].value))) {
+                    a = JSON.parse(sessionStorage.getItem(imeis[j].value));
+                    if (imeis[j].value == a[0]) {
+                        quantities[j].value = a[1]
+                        prices[j].value = a[2]
+                        sub_totals[j].value = a[3]
+                    }
+                }
+            }
+        }
+
+        if (sessionStorage.getItem('shop_sender') === null) {
+            console.log('No shop_sender choice')
+        }
+        else {
+            choice = sessionStorage.getItem('shop_sender');
+            shop_sender.value = choice;
+        }
+
+        if (sessionStorage.getItem('shop_receiver') === null) {
+            console.log('No shop_receiver choice')
+        }
+        else {
+            choice = sessionStorage.getItem('shop_receiver');
+            shop_receiver.value = choice
+        }
+
+    })
+
+    //updating session storage on pushing 'Delete line button'
+    //===========================================================================
+   for (let i = 0; i < delete_buttons.length; i++) {
+        delete_buttons[i].addEventListener('click', e => {
+        sessionStorage.removeItem(imeis[i].value)
+    })
+    };
 
 
-  //clearing session storage on pushing 'Submit' & 'Close without save' buttons
-  //===========================================================================
+    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //===========================================================================
     for (let button of buttons) {
-       // console.log(buttons)
         button.addEventListener('click', clearStorage);
     }
-    
-   function clearStorage(e) {
+    function clearStorage(e) {
         sessionStorage.clear();
     };
 
-                /*if (sessionStorage.getItem('quantities_arr') === null) {
-                        quantities_arr = []
-                        console.log(quantities_arr)
-                    }
-                    else {
-                        quantities_arr = JSON.parse(sessionStorage.getItem('quantities_arr'));
-                        console.log('oops')
-                        console.log(quantities_arr) 
-                    }
-                    quantities_arr.push(quantities[i].value)
-                    sessionStorage.setItem('quantities_arr', JSON.stringify(quantities_arr));*/
-
-                //sessionStorage.setItem(JSON.stringify(quantities[i]), JSON.stringify(b));
-                //e.preventDefault();
-            //}
-       // }
-        
-
-
-    
-    //quantities.forEach(quantity => {
-      // quantity.addEventListener('input', e=> {
-            //alert("The value of the input field was changed.");
-       //     demos.forEach(demo => {
-       //     demo.innerHTML = "You selected: " + quantity.value;
-       //   })     
-    //   })
- // });
+    //save_button.addEventListener('submit', e => {
+      //  sessionStorage.clear();
+    //})
 
     console.log ('oky')
 </script>

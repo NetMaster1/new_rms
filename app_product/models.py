@@ -268,9 +268,7 @@ class RemainderHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)
     rho_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
-    category = models.ForeignKey(
-        ProductCategory, on_delete=models.DO_NOTHING, null=True
-    )
+    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
     product_id = models.ForeignKey(Product, on_delete=models.DO_NOTHING, null=True)
     name = models.CharField(max_length=250)
@@ -299,9 +297,7 @@ class RemainderHistory(models.Model):
 class RemainderCurrent(models.Model):
     updated = models.DateTimeField(auto_now=True)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-    category = models.ForeignKey(
-        ProductCategory, on_delete=models.DO_NOTHING, null=True
-    )
+    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
     imei = models.CharField(max_length=250)
     name = models.CharField(max_length=250, null=True)
     current_remainder = models.IntegerField(default=0)

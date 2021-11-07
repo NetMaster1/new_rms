@@ -93,10 +93,10 @@ urlpatterns = [
     path ('change_transfer_unposted/<int:document_id>/', views.change_transfer_unposted, name='change_transfer_unposted'),
     path ('change_transfer_posted/<int:document_id>', views.change_transfer_posted, name='change_transfer_posted'),
 
-    path ('check_transfer_change/<int:document_id>', views.check_transfer_change, name='check_transfer_change'),
+    path ('check_transfer_posted/<int:document_id>', views.check_transfer_posted, name='check_transfer_posted'),
     path ('check_transfer_unposted/<int:document_id>', views.check_transfer_unposted, name='check_transfer_unposted'),
 
-    path ('delete_line_change_transfer/<int:document_id>/<int:identifier_id>/<int:imei>', views.delete_line_change_transfer, name='delete_line_change_transfer'),
+    path ('delete_line_posted_transfer/<int:document_id>/<int:imei>', views.delete_line_posted_transfer, name='delete_line_posted_transfer'),
     path ('delete_line_unposted_transfer/<int:document_id>/<int:imei>', views.delete_line_unposted_transfer, name='delete_line_unposted_transfer'),
     path ('close_unposted_transfer/<int:document_id>', views.close_unposted_transfer, name='close_unposted_transfer'),
 

@@ -2473,10 +2473,10 @@ def check_transfer(request, identifier_id):
     else:
         return redirect("transfer", identifier.id)
 
-def check_transfer_change(request, document_id):
+def check_transfer_posted(request, document_id):
     document = Document.objects.get(id=document_id)
     registers = Register.objects.filter(document=document)
-    # shop_receiver_current = transfers.first().shop_receiver
+    shop_sender = registers.first().shop_sender
     # if 'imei' in request.GET:
     if request.method == "POST":
         imei = request.POST["imei_check"]
@@ -2485,42 +2485,82 @@ def check_transfer_change(request, document_id):
         # price=request.POST['price']
         # price=int(price)
         if Product.objects.filter(imei=imei).exists():
-            if RemainderCurrent.objects.filter(
-                shop=shop_receiver_current, imei=imei
-            ).exists():
-                print("ok")
-                remainder_current = RemainderCurrent.objects.get(
-                    shop=shop_receiver_current, imei=imei
-                )
-                retail_price = remainder_current.retail_price
+            if RemainderCurrent.objects.filter(shop=shop_sender, imei=imei).exists():
+                remainder_current = RemainderCurrent.objects.get(shop=shop_sender, imei=imei)
+                if remainder_current.current_remainder >= quantity:
+                    product = Product.objects.get(imei=imei)
+                    if Register.objects.filter(document=document, product=product).exists():
+                        register = Register.objects.get(document=document, product=product)
+                        register.quantity += quantity
+                        register.save()
+                        return redirect("change_transfer_posted", document.id)
+                    else:
+                        register = Register.objects.create(
+                            document=document,
+                            product=product,
+                            quantity=quantity,
+                            new=True
+                            #price=retail_price,
+                        )
+                        register.sub_total = register.quantity * register.price
+                        register.save()
+                        return redirect("change_transfer_posted", document.id)
+                else:
+                    messages.error(request, "Необходимое количество отсутствует на складе фирмы-отправителя")
+                    return redirect("change_transfer_posted", document.id)     
             else:
-                retail_price = 0
-            product = Product.objects.get(imei=imei)
-            if Register.objects.filter(document=document, product=product).exists():
-                register = Register.objects.get(document=document, product=product)
-                register.quantity += quantity
-                register.save()
-                register.sub_total = register.price * register.quantity
-                register.save()
-                return redirect("change_transfer", document.id)
-            else:
-                register = Register.objects.create(
-                    document=document,
-                    product=product,
-                    quantity=quantity,
-                    price=retail_price,
-                )
-                register.sub_total = register.quantity * register.price
-                register.save()
-                return redirect("change_transfer_posted", document.id)
+                messages.error(request, "Данное наименование отсутствует на складе фирмы-отправителя")
+                return redirect("change_transfer_posted", document.id)    
         else:
-            messages.error(
-                request, "Данное наименование отсутствует в БД. Введите его."
-            )
+            messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
             return redirect("change_transfer_posted", document.id)
 
 def check_transfer_unposted (request, document_id):
-    pass
+    shops = Shop.objects.all()
+    document = Document.objects.get(id=document_id)
+    registers=Register.objects.filter(document=document)
+    shop_sender=registers.first().shop_sender
+    if "imei_check" in request.GET:
+        imei = request.GET["imei_check"]
+        quantity = request.GET["quantity_input"]
+        # shop = request.GET["shop"]
+        # shop = Shop.objects.get(id=shop)
+        if Product.objects.filter(imei=imei).exists():
+            if RemainderCurrent.objects.filter(imei=imei, shop=shop_sender).exists():
+                remainder_current = RemainderCurrent.objects.get(imei=imei, shop=shop_sender)
+                if remainder_current.current_remainder >= int(quantity):
+                    product = Product.objects.get(imei=imei)
+                    if Register.objects.filter(document=document, product=product).exists():
+                        register = Register.objects.get(document=document, product=product)
+                        register.quantity += 1
+                        register.save()
+                        register.sub_total = remainder_current.retail_price
+                        return redirect("change_transfer_unposted", document.id)
+                    else:
+                        register = Register.objects.create(
+                            product=product,
+                            document=document,
+                            price=remainder_current.retail_price,
+                            quantity=1,
+                            new=True
+                        )
+                        register.sub_total = (
+                            register.quantity * remainder_current.retail_price
+                        )
+                        return redirect("change_transfer_unposted", document.id)
+                else:
+                    messages.error(request, "На складе фирмы-отправителя отсутствует необходимое количество")
+                    return redirect("change_transfer_unposted", document.id)
+            else:
+                messages.error(request, "Данное наименование отсутствует на данном складе")
+                return redirect("change_transfer_unposted", document.id)
+        else:
+            messages.error(request, "Данное наименование отсутствует в базе данных")
+            return redirect("change_transfer_unposted", document.id)
+    else:
+        messages.error(request, "Вы не ввели IMEI")
+        return redirect("change_transfer_unposted", document.id)
+
 
 def delete_line_transfer(request, imei, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -2530,7 +2570,21 @@ def delete_line_transfer(request, imei, identifier_id):
     return redirect("transfer", identifier.id)
 
 def delete_line_unposted_transfer (request, document_id, imei):
-    pass
+    document=Document.objects.get(id=document_id)
+    product = Product.objects.get(imei=imei)
+    register = Register.objects.get(document=document, product=product)
+    register.deleted=True
+    register.save()
+    return redirect ('change_transfer_unposted', document.id)
+
+def delete_line_posted_transfer(request, document_id, imei):
+    document = Document.objects.get(id=document_id)
+    product = Product.objects.get(imei=imei)
+    register = Register.objects.get(document=document, product=product)
+    register.deleted=True
+    register.save()
+    return redirect("change_transfer_posted", document.id)
+
 
 def transfer_input(request, identifier_id):
     if request.user.is_authenticated:
@@ -2559,11 +2613,16 @@ def transfer_input(request, identifier_id):
                 )
                 return redirect("transfer", identifier.id)
             else:
+                #checking posting (version 1)
+                #x = request.POST.get('post_check')
+                #if x == 'on':
+                #checking posting (version 2)
                 try:
                     if request.POST["post_check"]:
                         post_check=True    
                 except KeyError:
                     post_check=False
+                
                 #posting transfer document
                 if post_check==True:
                     check_point = []
@@ -2823,17 +2882,6 @@ def delete_unposted_transfer (request, document_id):
     return redirect ('log')
 
 
-def delete_line_change_transfer(request, document_id, identifier_id, imei):
-    document = Document.objects.get(id=document_id)
-    identifier = Identifier.objects.get(id=identifier_id)
-    product = Product.objects.get(imei=imei)
-    item = Register.objects.get(identifier=identifier, product=product)
-    item.delete()
-    # for item in items:
-    #     item.delete()
-    return redirect("change_transfer", document.id, identifier.id)
-
-
 def change_transfer_posted(request, document_id):
     document = Document.objects.get(id=document_id)
     shops = Shop.objects.all()
@@ -2855,7 +2903,7 @@ def change_transfer_posted(request, document_id):
                     if rho.status==True:
                         register.shop_receiver=rho.shop
                     else:
-                        register.shop_sender=rho.sho
+                        register.shop_sender=rho.shop
                 register.save() 
             else:
                 #creating new register
@@ -2878,9 +2926,9 @@ def change_transfer_posted(request, document_id):
                         sub_total=rho.retail_price * rho.incoming_quantity,
                     )
         registers=Register.objects.filter(document=document).order_by('created')
-        #shop_current = rhos.first().shop
-        shop_sender_current=registers.first().shop_sender
-        shop_receiver_current=registers.first().shop_receiver
+    shop_sender_current=registers.first().shop_sender
+    shop_receiver_current=registers.first().shop_receiver
+    
 
     if request.method == "POST":
         dateTime = request.POST["dateTime"]
@@ -2894,21 +2942,17 @@ def change_transfer_posted(request, document_id):
         prices = request.POST.getlist("price", None)
         sum = 0
         n = len(names)
-        # for i in range(n)
-        # date has been changed
+        # checking if date has been changed
         if dateTime:
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
             dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
         else:
             dateTime = document.created
 
-
         for rho in rhos:
             # changing docs for receiver_shop. It comes before sender_shop since we'll need av_prices of sender_shop
             # deleting rho for shop_receiver_current
-            if RemainderHistory.objects.filter(
-                imei=rho.imei, shop=shop_receiver_current, created__lt=rho.created
-            ).exists():
+            if RemainderHistory.objects.filter(imei=rho.imei, shop=shop_receiver_current, created__lt=rho.created).exists():
                 remainder_current = RemainderCurrent.objects.get(
                     imei=rho.imei, shop=shop_receiver_current
                 )
@@ -2996,9 +3040,7 @@ def change_transfer_posted(request, document_id):
 
         for i in range(n):
             # creating new rho for chop_receiver_changed
-            if RemainderHistory.objects.filter(
-                imei=imeis[i], shop=shop_receiver_changed, created__lt=dateTime
-            ).exists():
+            if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_receiver_changed,  created__lt=dateTime).exists():
                 rho_hist_objs_before = RemainderHistory.objects.filter(
                     imei=imeis[i], shop=shop_receiver_changed, created__lt=dateTime
                 )
@@ -3042,6 +3084,7 @@ def change_transfer_posted(request, document_id):
                 current_remainder=remainder_current.current_remainder
                 + int(quantities[i]),
                 retail_price=int(prices[i]),
+                status=True,
                 # sub_total=remainder_current.total_av_price+remainder_current.av_price*int(quantities[i]),
                 # av_price= (remainder_current.total_av_price+(int(quantities[i])*remainder_current.av_price))/(remainder_current.current_remainder+int(quantities[i]))
             )
@@ -3051,8 +3094,7 @@ def change_transfer_posted(request, document_id):
             remainder_current.save()
 
             if RemainderHistory.objects.filter(
-                imei=imeis[i], shop=shop_receiver_changed, created__gt=rho_new.created
-            ).exists():
+                imei=imeis[i], shop=shop_receiver_changed, created__gt=rho_new.created).exists():
                 sequence_rhos = RemainderHistory.objects.filter(
                     imei=imeis[i],
                     shop=shop_receiver_changed,
@@ -3075,15 +3117,10 @@ def change_transfer_posted(request, document_id):
 
             # creating new rho for shop_sender_changed
             if RemainderHistory.objects.filter(
-                imei=imeis[i], shop=shop_sender_changed, created__lt=dateTime
-            ).exists():
-                rho_hist_objs_before = RemainderHistory.objects.filter(
-                    imei=imeis[i], shop=shop_sender_changed, created__lt=dateTime
-                )
+                imei=imeis[i], shop=shop_sender_changed, created__lt=dateTime).exists():
+                rho_hist_objs_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender_changed, created__lt=dateTime)
                 rho_hist_before = rho_hist_objs_before.latest("created")
-                remainder_current = RemainderCurrent.objects.get(
-                    imei=imeis[i], shop=shop_sender_changed
-                )
+                remainder_current = RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender_changed)
                 # remainder_current=RemainderCurrent(imei=imeis[i], shop=shop_current)#creates a new object which we don't need
                 remainder_current.current_remainder = rho_hist_before.current_remainder
                 # remainder_current.total_av_price=rho_hist_before.sub_total
@@ -3091,11 +3128,8 @@ def change_transfer_posted(request, document_id):
                 remainder_current.save()
             else:
                 if RemainderCurrent.objects.filter(
-                    imei=imeis[i], shop=shop_sender_changed
-                ).exists():
-                    remainder_current = RemainderCurrent.objects.get(
-                        imei=imeis[i], shop=shop_sender_changed
-                    )
+                    imei=imeis[i], shop=shop_sender_changed).exists():
+                    remainder_current = RemainderCurrent.objects.get(imei=imeis[i],shop=shop_sender_changed)
                     remainder_current.current_remainder = 0
                     # remainder_current.total_av_price=0
                     # remainder_current.av_price=av_price
@@ -3130,8 +3164,7 @@ def change_transfer_posted(request, document_id):
             remainder_current.save()
 
             if RemainderHistory.objects.filter(
-                imei=imeis[i], shop=shop_sender_changed, created__gt=rho_new.created
-            ).exists():
+                imei=imeis[i], shop=shop_sender_changed, created__gt=rho_new.created).exists():
                 sequence_rhos = RemainderHistory.objects.filter(
                     imei=imeis[i], shop=shop_sender_changed, created__gt=rho_new.created
                 )
@@ -3152,6 +3185,9 @@ def change_transfer_posted(request, document_id):
         document.sum = sum
         document.created = dateTime
         document.save()
+        registers=Register.objects.filter(document=document)
+        for register in registers:
+            register.delete()
         return redirect("log")
     else:
         context = {
@@ -3203,15 +3239,9 @@ def change_transfer_unposted (request, document_id):
                 check_point = []
                 n = len(names)
                 for i in range(n):
-                    if RemainderCurrent.objects.filter(
-                        imei=imeis[i], shop=shop_sender
-                    ).exists():
-                        remainder_current_sender = RemainderCurrent.objects.get(
-                            imei=imeis[i], shop=shop_sender
-                        )
-                        if remainder_current_sender.current_remainder < int(
-                            quantities[i]
-                        ):
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
+                        remainder_current_sender = RemainderCurrent.objects.get(imei=imeis[i],shop=shop_sender)
+                        if remainder_current_sender.current_remainder < int(quantities[i]):
                             check_point.append(False)
                         else:
                             check_point.append(True)
@@ -3405,11 +3435,16 @@ def change_transfer_unposted (request, document_id):
                                 remainder_current.save()
                     document.sum = sum
                     document.save()
+                    registers=Register.objects.filter(document=document)
                     for register in registers:
                         register.delete()
                     return redirect("log")
             #saving unposted document
             else:
+                if Register.objects.filter(deleted=True).exists():
+                    deleted_registers=Register.objects.filter(deleted=True)
+                    for register in deleted_registers:
+                        register.delete()
                 n=len(names)
                 sum=0
                 for i in range(n):

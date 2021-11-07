@@ -238,7 +238,7 @@
 
         {% elif document.title.name == 'Перемещение ТМЦ' %}
             {% if document.posted == True %}
-                <div class="col-2">C {{document.remainderhistory_set.first.shop}} на {{document.remainderhistory_set.second.shop}}  </div>
+                <div class="col-2">C {{document.remainderhistory_set.first.shop}} на {{document.remainderhistory_set.last.shop}}  </div>
             {% else %}
         <div class="col-2">C {{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}} </div>
             {% endif %}
