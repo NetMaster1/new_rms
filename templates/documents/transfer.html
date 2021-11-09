@@ -30,7 +30,7 @@
             {% csrf_token %}
             <div class="row m-1">
                 <div class="col-2">
-                    <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required placeholder='Введите IMEI'>
+                    <input type="text" class='form-control' id="check_imei" name="check_imei" maxlength='50' required placeholder='Введите IMEI'>
                 </div>
                 <div class="col-4">
             <select name="shop" id="shop" class='form-control' required>
@@ -95,6 +95,8 @@
 
                 <div class='form-inline'>
                     <div class="row m-2">
+                      
+                        <div class="col-1"><label for="number"><h5>#</h5></label></div>
                         <div class="col-2"><label for="imei"><h5>IMEI</h5></label></div>
                         <div class="col-2"><label for="name"><h5>Наименование</h5></label></div>
                         <div class="col-2"><label for="qnt"><h5>Кол-во</h5></label></div>
@@ -108,6 +110,10 @@
                 {% for register in registers %}
 
                 <div class="row m-2">
+                  
+                    <div class="col-1">
+                        <input type="text" class='form-control' id="number" name="number" value='{{register.number}}' readonly>
+                    </div>
                     <div class="col-2">
                         <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}' readonly>
                     </div>
@@ -125,7 +131,7 @@
                     </div>
                     <div class="col">
                         <a href="{% url 'delete_line_transfer' register.product.imei identifier.id %}">
-                            <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
+                            <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage  ">
                         </a>
                     </div>
                 </div>
@@ -163,40 +169,17 @@
 <script>
     console.log('OK')
 
+    const imeis = document.querySelectorAll("#imei");
     const quantities = document.querySelectorAll("#quantity");
     const sub_totals = document.querySelectorAll("#sub_total");
-    const imeis = document.querySelectorAll("#imei");
     const prices = document.querySelectorAll("#price");
-    const shop_sender = document.querySelector("#shop_sender");
-    const shop_receiver = document.querySelector("#shop_receiver");
+    const shop_sender = document.querySelector('#shop_sender');
+    const shop_receiver = document.querySelector('#shop_receiver');
     const buttons = document.querySelectorAll('.clear_storage');
-    //const demos = document.querySelectorAll("#demo");
+    const save_button = document.querySelector('#save_button');
+    const delete_buttons = document.querySelectorAll('.delete_line_storage');
+
     //const val= typeof quantities
-    //const val= typeof demos
-    //const val= typeof sub_totals
-    const val = typeof prices
-    console.log(val)
-
-    for (let i = 0, j = 0, k = 0; i < quantities.length, j < sub_totals.length, k < prices.length; i++, j++, k++) {
-        console.log(quantities[i].value)
-        console.log(sub_totals[i].value)
-        console.log(prices[i].value)
-        quantities[i].addEventListener('input', e => {
-            sub_totals[i].value = quantities[i].value * prices[i].value
-            //sub_totals[i].innerHTML ='You selected: ' + quantities[i].value;
-            //demos[i].innerHTML ='You selected: ' + prices[i].value;
-            //e.preventDefault();
-        })
-    }
-
-    //quantities.forEach(quantity => {
-    // quantity.addEventListener('input', e=> {
-    //alert("The value of the input field was changed.");
-    //     demos.forEach(demo => {
-    //     demo.innerHTML = "You selected: " + quantity.value;
-    //   })     
-    //   })
-    // });
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')
     //================================================================================================
@@ -204,11 +187,11 @@
         quantities[i].addEventListener('change', e => {
             sub_totals[i].value = quantities[i].value * prices[i].value;
             let arr = []
-            //arr.push(imeis[i].value)
+            arr.push(imeis[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
-            sessionStorage.setItem(i, JSON.stringify(arr));
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
         })
     }
 
@@ -218,11 +201,11 @@
         prices[i].addEventListener('change', e => {
             sub_totals[i].value = quantities[i].value * prices[i].value;
             let arr = []
-            //arr.push(imeis[i].value)
+            arr.push(imeis[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
-            sessionStorage.setItem(i, JSON.stringify(arr));
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
         })
     }
 
@@ -232,24 +215,22 @@
         sub_totals[i].addEventListener('change', e => {
             prices[i].value = sub_totals[i].value / quantities[i].value;
             let arr = []
-            //arr.push(imeis[i].value)
+            arr.push(imeis[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
-            sessionStorage.setItem(i, JSON.stringify(arr));
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
         })
     }
-
     //saving "Shop_sender select option" from switching to default when updating the page
-    //===========================================================================
+    //================================================================================================
     shop_sender.addEventListener('change', e => {
         choice = shop_sender.value;
         sessionStorage.setItem('shop_sender', choice);
     })
 
-    
     //saving "Shop_receiver select option" from switching to default when updating the page
-    //===========================================================================
+    //================================================================================================
     shop_receiver.addEventListener('change', e => {
         choice = shop_receiver.value;
         sessionStorage.setItem('shop_receiver', choice);
@@ -258,35 +239,46 @@
     // getting data from session storage & passing it to html code on page reload
     //=================================================================================
     document.addEventListener('DOMContentLoaded', e => {
-        // if (sessionStorage.getItem(i) === null) {
-        if (sessionStorage == false) {
-            console.log('null')
+        for (j = 0; j < imeis.length; j++) {
+
+            for (i = 0; i < sessionStorage.length; i++) {
+                if (JSON.parse(sessionStorage.getItem(imeis[j].value))) {
+                    a = JSON.parse(sessionStorage.getItem(imeis[j].value));
+                    if (imeis[j].value == a[0]) {
+                        quantities[j].value = a[1]
+                        prices[j].value = a[2]
+                        sub_totals[j].value = a[3]
+                    }
+                }
+            }
+        }
+
+        if (sessionStorage.getItem('shop_sender') === null) {
+            console.log('No shop_sender choice')
         }
         else {
-            for (i = 0; i < quantities.length; i++) {
-                arr = JSON.parse(sessionStorage.getItem(i));
-                quantities[i].value = arr[0]
-                prices[i].value = arr[1]
-                sub_totals[i].value = arr[2]
-            }
-            if (sessionStorage.getItem('shop_sender') === null) {
-                console.log('No sender choice')
-            }
-            else {
-                choice = sessionStorage.getItem('shop_sender');
-                console.log(choice)
-                shop_sender.value = choice
-            }
-            if (sessionStorage.getItem('shop_receiver') === null) {
-                console.log('No receiver choice')
-            }
-            else {
-                choice = sessionStorage.getItem('shop_receiver');
-                console.log(choice)
-                shop_receiver.value = choice
-            }
+            choice = sessionStorage.getItem('shop_sender');
+            shop_sender.value = choice;
         }
+
+        if (sessionStorage.getItem('shop_receiver') === null) {
+            console.log('No shop_receiver choice')
+        }
+        else {
+            choice = sessionStorage.getItem('shop_receiver');
+            shop_receiver.value = choice
+        }
+
     })
+
+    //updating session storage on pushing 'Delete line button'
+    //===========================================================================
+    for (let i = 0; i < delete_buttons.length; i++) {
+        delete_buttons[i].addEventListener('click', e => {
+            sessionStorage.removeItem(imeis[i].value)
+        })
+    };
+
 
     //clearing session storage on pushing 'Submit' & 'Close without save' buttons
     //===========================================================================
@@ -297,9 +289,10 @@
         sessionStorage.clear();
     };
 
-
+    //save_button.addEventListener('submit', e => {
+    //  sessionStorage.clear();
+    //})
 
     console.log('oky')
 </script>
-
 {%endblock%}

@@ -81,6 +81,9 @@
 
                     <div class='form-inline'>
                         <div class="row m-1">
+                            <div class="col-1"><label for="title">
+                                    <h5>#</h5>
+                                </label></div>
                             <div class="col-2"><label for="title">
                                     <h5>IMEI</h5>
                                 </label></div>
@@ -99,6 +102,9 @@
 
                     {% for register in registers %}
                     <div class="row m-auto mb-1">
+                        <div class="col-1">
+                            <input type="text" class='form-control' id="number" name="number" value='{{register.number}}' readonly>
+                        </div>
                         <div class="col-2">
                             <input type="text" class='form-control' id="imei" name="imei"
                                 value='{{register.product.imei}}'>
@@ -127,8 +133,12 @@
 
 
                     <div class="row m-auto mt-3 ">
+                        <div class="col-1">
+                            <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
                         <div class="col-2">
-                            <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                            <label for="post_check"> С проведением </label>
+                            <input type="checkbox" id="post_check" name="post_check" value='checked'>
                         </div>
                 </form>
 

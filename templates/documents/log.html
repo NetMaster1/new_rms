@@ -135,6 +135,13 @@
         <div class="col-2"><a href="{% url 'change_transfer_unposted' document.id %}">{{document.title}} {{document.id}}</a></div>
             {% endif %}
 
+        {% elif document.title.name == 'Возврат ТМЦ' %}
+        {% if document.posted == True %}
+        <div class="col-2"><a href="{% url 'change_return_posted' document.id %}">{{document.title}} {{document.id}}</a></div>
+        {% else %}
+        <div class="col-2"><a href="{% url 'change_return_unposted' document.id %}">{{document.title}} {{document.id}}</a>
+        </div>
+        {% endif %}
 
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-2"><a href="{% url 'pre_change_sale' document.id %}">{{document.title}} {{document.id}}</a></div>
@@ -148,82 +155,7 @@
         <div class="col-2"><a href="{% url 'change_cash_movement' document.id %}">{{document.title}} {{document.id}}</a></div>
         {% endif %}
 
-
-
-
-        <!-- ===================Document Modal Triger========================= -->
-        <!-- <div class="col-3">
-            <a href="#" data-bs-toggle="modal" data-bs-target="#modalLog_{{document.id}}">
-                {{document.title}} №{{document.id}}
-            </a>
-        </div> -->
-      
-        <!-- ==================End of Document Modal Triger========================= -->
-
-       <!-- =======================Document Bootstrap Modal================================= -->
-        <!-- <div class="modal fade" id="modalLog_{{document.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"class="ModalLogHide" > -->
-            <!-- <div class="ModalLogHide"> -->
-            <!-- <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Документ {{document.title}} #{{document.id}} от {{document.created}}</h5>
-                    <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        {% if document.title.name == 'Поступление ТМЦ' %} -->
-                            <!-- {{document.delivery.all}} -->
-    <!-- =========================================================
-        из строки родительской таблицы делаем запрос в дочернюю таблицу. Т.е. из "Document"
-        запрашиваем строки из таблицы "Deliveries", которые ассоциируются с данным документом (по id Документа).
-        Запрос выдает Queryset, сотоящий из нескольких строк(объектов), так как в одному документу
-        могут соответсвтовать несколько строк из таблицs "Delivery". Затем делаем цикл по всем полученным объектам дочерней таблицы.
-        В данном случае изпользует delivery вместо delivery_set, так как в соответствующем поле таблицы "Delivery"
-        вставлен аттрибут "related_name".
-        ====================================================================== -->
-                            <!-- {% for item in document.delivery.all %}
-                            <div class="row">
-                                <div class="col-5">{{item.name}}</div>
-                                <div class="col-1">{{item.quantity}}</div>
-                                <div class="col-3">{{item.price}} руб.</div>
-                                <div class="col-3">{{item.sub_total}} руб.</div>
-                            </div>
-                            {% endfor %}
-
-                        {% elif document.title.name == 'Перемещение ТМЦ' %}
-                            {{document.transfer_set.all}} -->
-                            <!-- {% for item in document.transfer_set.all %}
-                            <div class="row">
-                                <div class="col-5">{{item.name}}</div>
-                                <div class="col-1">{{item.quantity}}</div>
-                                <div class="col-3">{{item.price}} руб.</div>
-                                <div class="col-3">{{item.sub_total}} руб.</div>
-                            </div>
-                            {% endfor %}
-                        {% elif document.title.name == 'Продажа ТМЦ' %} -->
-                            <!-- {{document.sale_set.all}} -->
-                            <!-- {% for item in document.sale_set.all %}
-                                <div class="row">
-                                    <div class="col-5">{{item.name}}</div>
-                                    <div class="col-1">{{item.quantity}}</div>
-                                    <div class="col-3">{{item.price}} руб.</div>
-                                    <div class="col-3">{{item.sub_total}} руб.</div>
-                                </div>
-                            {% endfor %}
-                           
-                        {% endif %}
-                        ...
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                        <button type="button" class="btn btn-primary">Печать</button>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-       <!-- ==========================End of Document Bootstrap Modal======================================= -->
-
-
-       <!-- ==============================Document Sum Column================================================ -->
+       <!-- ============================Document Sum Column============================================ -->
         <div class="col-2">
             {{document.sum}} руб.
         </div>
@@ -238,12 +170,18 @@
 
         {% elif document.title.name == 'Перемещение ТМЦ' %}
             {% if document.posted == True %}
-                <div class="col-2">C {{document.remainderhistory_set.first.shop}} на {{document.remainderhistory_set.last.shop}}  </div>
+                <div class="col-2">C {{document.remainderhistory_set.first.shop_sender}} на {{document.remainderhistory_set.last.shop_receiver}}  </div>
             {% else %}
-        <div class="col-2">C {{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}} </div>
+        <div class="col-2">{{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}} </div>
             {% endif %}
 
-       
+        {% elif document.title.name == 'Возврат ТМЦ' %}
+        {% if document.posted == True %}
+        <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
+        {% else %}
+        <div class="col-2">{{document.register_set.first.shop}} </div>
+        {% endif %}
+
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-2">{{document.sale_set.first.shop}} </div>
         {% endif %}

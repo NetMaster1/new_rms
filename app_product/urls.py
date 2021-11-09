@@ -5,41 +5,27 @@ urlpatterns = [
     path ('', views.index, name='index'),
     path ('search', views.search, name='search'),
     path ('close_search', views.close_search, name='close_search'),
+    path ('close_unposted_document/<int:document_id>', views.close_unposted_document, name='close_unposted_document'),
+    path ('delete_unposted_document/<int:document_id>', views.delete_unposted_document, name='delete_unposted_document'),
     # ==================Delivery========================
     path ('delivery_auto', views.delivery_auto, name='delivery_auto'),
     path ('identifier_delivery', views.identifier_delivery, name='identifier_delivery'),
-
     path ('check_delivery/<int:identifier_id>', views.check_delivery, name='check_delivery'),
     path ('check_delivery_unposted/<int:document_id>', views.check_delivery_unposted, name='check_delivery_unposted'),
     path ('check_delivery_change/<int:document_id>', views.check_delivery_change, name='check_delivery_change'),
-
     path ('delivery/<int:identifier_id>', views.delivery, name='delivery'),
     path ('delivery_input/<int:identifier_id>', views.delivery_input, name='delivery_input'),
-
     path ('delete_line_delivery/<int:imei>/<int:identifier_id>', views.delete_line_delivery, name='delete_line_delivery'),
     path ('delete_line_change_delivery/<int:document_id>/<int:imei>', views.delete_line_change_delivery, name='delete_line_change_delivery'),
     path ('delete_line_unposted_delivery/<int:document_id>/<int:imei>', views.delete_line_unposted_delivery, name='delete_line_unposted_delivery'),
-
-
     path ('enter_new_product/<int:identifier_id>', views.enter_new_product, name='enter_new_product'),
     path ('clear_delivery/<int:identifier_id>', views.clear_delivery, name='clear_delivery'),
-
-    path ('delete_delivery/<int:document_id>', views.delete_delivery, name='delete_delivery'),
-    path ('delete_unposted_deivery/<int:document_id>', views.delete_unposted_delivery, name='delete_unposted_delivery'),
-    
-
     path ('change_delivery_unposted/<int:document_id>', views.change_delivery_unposted, name='change_delivery_unposted'),
     path ('change_delivery_posted/<int:document_id>', views.change_delivery_posted, name='change_delivery_posted'),
-    
     path ('enter_new_product_from_unposted/<int:document_id>', views.enter_new_product_from_unposted, name='enter_new_product_from_unposted'),
     path ('enter_new_product_from_posted/<int:document_id>', views.enter_new_product_from_posted, name='enter_new_product_from_posted'),
-    
-   
     path ('unpost_delivery/<int:document_id>', views.unpost_delivery, name='unpost_delivery'),
-    path ('close_unposted_delivery/<int:document_id>', views.close_unposted_delivery, name='close_unposted_delivery'),
    
-
-
     # ======================Recognition=========================
     path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),
     path ('check_recognition/<int:identifier_id>', views.check_recognition, name='check_recognition'),
@@ -74,11 +60,18 @@ urlpatterns = [
     # ==============================Return====================================
     path ('identifier_return', views.identifier_return, name='identifier_return'),
     path ('check_return/<int:identifier_id>', views.check_return, name='check_return'),
-    path ('return_doc/<int:identifier_id>', views.return_doc, name='return_doc'),
+    path ('check_return_unposted/<int:document_id>', views.check_return_unposted, name='check_return_unposted'),
+    path ('return_doc/<int:identifier_id>', views.return_doc,  name='return_doc'),
     path ('delete_line_return/<int:imei>/<int:identifier_id>', views.delete_line_return, name='delete_line_return'),
+    path ('delete_line_posted_return/<int:imei>/<int:document_id>', views.delete_line_posted_return, name='delete_line_posted_return'),
+    path ('delete_line_unposted_return/<int:imei>/<int:document_id>', views.delete_line_unposted_return, name='delete_line_unposted_return'),
     path ('clear_return/<int:identifier_id>', views.clear_return, name='clear_return'),
     path ('return_input/<int:identifier_id>', views.return_input, name='return_input'),
-    path ('delete_return/<int:document_id>', views.delete_return, name='delete_return'),
+    path ('unpost_return/<int:document_id>', views.unpost_return, name='unpost_return'),
+    path ('change_return_unposted/<int:document_id>/', views.change_return_unposted, name='change_return_unposted'),
+    path ('change_return_posted/<int:document_id>/', views.change_return_posted, name='change_return_posted'),
+
+
     # ===========================Return=========================================
     path ('identifier_transfer', views.identifier_transfer, name='identifier_transfer'),
     path ('check_transfer/<int:identifier_id>', views.check_transfer, name='check_transfer'),
@@ -86,21 +79,13 @@ urlpatterns = [
     path ('transfer_input/<int:identifier_id>', views.transfer_input, name='transfer_input'),
     path ('delete_line_transfer/<int:imei>/<int:identifier_id>', views.delete_line_transfer, name='delete_line_transfer'),
     path ('clear_transfer/<int:identifier_id>', views.clear_transfer, name='clear_transfer'),
-    path ('delete_unposted_transfer/<int:document_id>', views.delete_unposted_transfer, name='delete_unposted_transfer'),
-   
-    
     path ('unpost_transfer/<int:document_id>/', views.unpost_transfer, name='unpost_transfer'),
     path ('change_transfer_unposted/<int:document_id>/', views.change_transfer_unposted, name='change_transfer_unposted'),
     path ('change_transfer_posted/<int:document_id>', views.change_transfer_posted, name='change_transfer_posted'),
-
     path ('check_transfer_posted/<int:document_id>', views.check_transfer_posted, name='check_transfer_posted'),
     path ('check_transfer_unposted/<int:document_id>', views.check_transfer_unposted, name='check_transfer_unposted'),
-
     path ('delete_line_posted_transfer/<int:document_id>/<int:imei>', views.delete_line_posted_transfer, name='delete_line_posted_transfer'),
     path ('delete_line_unposted_transfer/<int:document_id>/<int:imei>', views.delete_line_unposted_transfer, name='delete_line_unposted_transfer'),
-    path ('close_unposted_transfer/<int:document_id>', views.close_unposted_transfer, name='close_unposted_transfer'),
-
-
 
     # ===============================Revaluation==================================
     path ('identifier_revaluation', views.identifier_revaluation, name='identifier_revaluation'),
