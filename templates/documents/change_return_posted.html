@@ -23,11 +23,8 @@
                 </div>
                 <!-- ===================End of Alert Messages Module================ -->
 
-
-
-
                 <div class="col-6 border rounded p-3">
-                    <form action="{% url 'check_delivery_change' document.id %}" method="POST" class='check_button'>
+                    <form action="{% url 'check_return_posted' document.id %}" method="POST" class='check_button'>
                         {% csrf_token %}
                         <div class="row m-1">
                             <div class="col-6">
@@ -42,63 +39,6 @@
                         </div>
                     </form>
                 </div>
-                <!-- ==============================Modal Trigger================== -->
-                <div class="col-6 border rounded p-3">
-                    <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
-                        Внести новое наименование в базу данных
-                    </button>
-                </div>
-                <!-- ============================End of Modal Trigger========================= -->
-
-                <!-- ===========================Modal Body================================= -->
-                <div class="enterDeliveryModal">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">Введите новое наименование</h5>
-                                <!-- <button type="button" class="btn_close"></button> -->
-                            </div>
-                            <div class="modal-body">
-                                <form action="{% url 'enter_new_product_from_posted' document.id%}" method="POST">
-                                    {% csrf_token %}
-
-                                    <div class="form-row">
-                                        <div class="col-3">
-                                            <label for="category">Вид ТМЦ</label>
-                                        </div>
-                                        <div class="col">
-                                            <select name="category" id="category" class='form-control' required>
-                                                <!-- <option selected="false" disabled="disabled">Выберите категорию товара</option> -->
-                                                <option value="">Выберите операцию-основание</option>
-                                                {% for category in categories %}
-                                                <option value="{{category.id}}">{{category.name}}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="name">Наименование:</label>
-                                        <input class='form-control' type="text" id="name" name="name" maxlength='100'
-                                            required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="name">IMEI:</label>
-                                        <input class='form-control' type="text" id="input_imei" name="imei"
-                                            maxlength='100' required>
-                                    </div>
-                            </div>
-
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary btn_close"
-                                    data-bs-dismiss="modal">Закрыть без
-                                    сохранения</button>
-                                <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
-                            </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <!-- =================================End of Modal Body======================================== -->
             </div>
 
             <div class="row m-2 pb-2">
@@ -119,23 +59,6 @@
                             </div>
                         </div>
 
-                        <div class="form-row">
-                            <div class="col-2">
-                                <label for="supplier">
-                                    <h5>Поставщик</h5>
-                                </label>
-                            </div>
-                            <div class="col">
-                                <select name="supplier" id="supplier" class='form-control' required>
-                                    <!-- <option selected="true" disabled="disabled">Выберите поставщика</option> -->
-                                    <option selected="true" value="{{registers.first.supplier.id}}">
-                                        {{registers.first.supplier.name}}</option>
-                                    {% for supplier in suppliers %}
-                                    <option value="{{supplier.id}}">{{supplier.name}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
 
                         <div class="form-row">
                             <div class="col-3">
@@ -200,7 +123,7 @@
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="price" name="price"
-                                    value='{{register.price}}' maxlength='50'>
+                                    value='{{register.price}}' maxlength='50' required>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
@@ -208,7 +131,7 @@
                             </div>
                             <div class="col">
                                 <a href="{% url 'delete_line_posted_return' document.id register.product.imei  %}">
-                                    <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
+                                    <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
                                 </a>
                             </div>
                         </div>
@@ -223,7 +146,7 @@
 
                 <div class="col-3">
                     <a href="{% url 'unpost_return' document.id %}">
-                        <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
                     </a>
                 </div>
 
@@ -247,57 +170,14 @@
 <script>
     console.log('Script works');
 
-    const btn_modal = document.querySelector('.btn_modal');
-    const enterDeliveryModal = document.querySelector('.enterDeliveryModal');
-    const btn_close = document.querySelector('.btn_close');
-
     const imeis = document.querySelectorAll("#imei");
     const quantities = document.querySelectorAll("#quantity");
     const sub_totals = document.querySelectorAll("#sub_total");
     const prices = document.querySelectorAll("#price");
-
-    const buttons = document.querySelectorAll('.clear_storage');
+    const shop = document.querySelector('#shop');
+    const button = document.querySelector('.clear_storage');
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
-    const check_button = document.querySelector('.check_button');
-    const supplier = document.querySelector('#supplier');
-    const check_imei = document.querySelector('#check_imei');
     const save_button = document.querySelector('#save_button');
-
-
-
-    btn_modal.addEventListener('click', openModal)
-    btn_close.addEventListener('click', closeModal)
-
-    function openModal() {
-        enterDeliveryModal.classList.add('openModal')
-    }
-
-    function closeModal() {
-        enterDeliveryModal.classList.remove('openModal')
-    }
-
-    //saving "Supplier select option" from switching to default when updating the page
-    //===========================================================================
-    supplier.addEventListener('change', e => {
-        choice = supplier.value;
-        sessionStorage.setItem('supplier', choice);
-    })
-
-
-        //creating session storage inputs on clicking "Check button"
-        // =================================================================================
-        / check_button.addEventListener('submit', e => {
-            imei_input = check_imei.value
-            for (i = 0; i < imeis.length; i++) {
-                if (imeis[i].value == imei_input) {
-                    imeis[i].classList.add('imei')
-                    //check_imei.value.clear()
-                    //e.preventDefault()
-                }
-            }
-        })
-    //window.location.reload()
-
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')
     //================================================================================================
@@ -341,14 +221,22 @@
         })
     }
 
+    //saving "Shop_sender select option" from switching to default when updating the page
+    //================================================================================================
+    shop.addEventListener('change', e => {
+        choice = shop.value;
+        sessionStorage.setItem('shop', choice);
+    })
 
-    //updating session storage on pushing 'Delete line button'
-    //===========================================================================
+//updating session storage on pushing 'Delete line button'
+//===========================================================================
     for (let i = 0; i < delete_buttons.length; i++) {
         delete_buttons[i].addEventListener('click', e => {
             sessionStorage.removeItem(imeis[i].value)
         })
     }
+
+
 
     // getting data from session storage & passing it to html code on page reload
     //=================================================================================
@@ -365,26 +253,28 @@
                 }
             }
         }
-        if (sessionStorage.getItem('supplier') === null) {
-            console.log('No supplier choice')
+        if (sessionStorage.getItem('shop') === null) {
+            console.log('No shop choice')
         }
         else {
-            choice = sessionStorage.getItem('supplier');
-            supplier.value = choice
+            choice = sessionStorage.getItem('shop');
+            shop.value = choice;
         }
+
     })
 
 
 
-    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //clearing session storage on pushing'Close without save' buttons
     //===========================================================================
-    for (let button of buttons) {
-        button.addEventListener('click', clearStorage);
-    }
+    button.addEventListener('click', clearStorage);
+
     function clearStorage(e) {
         sessionStorage.clear();
     };
 
+    //clearing session storage on pushing 'Submit' button
+    //===========================================================================
     save_button.addEventListener('submit', e => {
         sessionStorage.clear();
     })

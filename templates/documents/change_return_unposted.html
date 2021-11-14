@@ -132,7 +132,7 @@
                             </div>
                             <div class="col">
                                 <a href="{% url 'delete_line_unposted_return' register.product.imei document.id  %}">
-                                    <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
+                                    <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
                                 </a>
                             </div>
                         </div>
@@ -174,57 +174,14 @@
 <script>
     console.log('Script works');
 
-    const btn_modal = document.querySelector('.btn_modal');
-    const enterDeliveryModal = document.querySelector('.enterDeliveryModal');
-    const btn_close = document.querySelector('.btn_close');
-
     const imeis = document.querySelectorAll("#imei");
     const quantities = document.querySelectorAll("#quantity");
     const sub_totals = document.querySelectorAll("#sub_total");
     const prices = document.querySelectorAll("#price");
-
-    const buttons = document.querySelectorAll('.clear_storage');
+    const shop = document.querySelector('#shop');
+    const button = document.querySelector('.clear_storage');
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
-    const check_button = document.querySelector('.check_button');
-    const supplier = document.querySelector('#supplier');
-    const check_imei = document.querySelector('#check_imei');
     const save_button = document.querySelector('#save_button');
-
-
-
-    btn_modal.addEventListener('click', openModal)
-    btn_close.addEventListener('click', closeModal)
-
-    function openModal() {
-        enterDeliveryModal.classList.add('openModal')
-    }
-
-    function closeModal() {
-        enterDeliveryModal.classList.remove('openModal')
-    }
-
-    //saving "Supplier select option" from switching to default when updating the page
-    //===========================================================================
-    supplier.addEventListener('change', e => {
-        choice = supplier.value;
-        sessionStorage.setItem('supplier', choice);
-    })
-
-
-        //creating session storage inputs on clicking "Check button"
-        // =================================================================================
-        / check_button.addEventListener('submit', e => {
-            imei_input = check_imei.value
-            for (i = 0; i < imeis.length; i++) {
-                if (imeis[i].value == imei_input) {
-                    imeis[i].classList.add('imei')
-                    //check_imei.value.clear()
-                    //e.preventDefault()
-                }
-            }
-        })
-    //window.location.reload()
-
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')
     //================================================================================================
@@ -268,6 +225,12 @@
         })
     }
 
+    //saving "Shop_sender select option" from switching to default when updating the page
+    //================================================================================================
+    shop.addEventListener('change', e => {
+        choice = shop.value;
+        sessionStorage.setItem('shop', choice);
+    })
 
     //updating session storage on pushing 'Delete line button'
     //===========================================================================
@@ -292,26 +255,27 @@
                 }
             }
         }
-        if (sessionStorage.getItem('supplier') === null) {
-            console.log('No supplier choice')
+        if (sessionStorage.getItem('shop') === null) {
+            console.log('No shop choice')
         }
         else {
-            choice = sessionStorage.getItem('supplier');
-            supplier.value = choice
+            choice = sessionStorage.getItem('shop');
+            shop.value = choice;
         }
+
     })
 
 
-
-    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //clearing session storage on pushing'Close without save' buttons
     //===========================================================================
-    for (let button of buttons) {
-        button.addEventListener('click', clearStorage);
-    }
+    button.addEventListener('click', clearStorage);
+
     function clearStorage(e) {
         sessionStorage.clear();
     };
 
+    //clearing session storage on pushing 'Submit' button
+    //===========================================================================
     save_button.addEventListener('submit', e => {
         sessionStorage.clear();
     })
