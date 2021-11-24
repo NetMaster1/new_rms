@@ -3,34 +3,33 @@
 <div class="hide">
 
     <div class="container">
-        <div class="page_location">
+        <div class="page_location_posted">
             <div class="row m-2 pt-2">
                 <div class="col">
-                    <h3>Оприходование ТМЦ</h3>
+                    <h3>Документ {{document.title}} # {{document.id}} (проведен) </h3>
                 </div>
-            </div>
-    <!-- =====================Alert Messages Module=================== -->
-    <div class="container">
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-info" role="alert">
-            <!-- <button class="close" data-dismiss="alert">
-                        <small><sup>x</sup></small>
-                    </button> -->
-            {{ message }}
-        </div>
-        {% endfor%}
-        {% endif%}
-    </div>
-    <!-- ===================End of Alert Messages Module================ -->
-            <div class="row m-2">
+                <!-- =====================Alert Messages Module=================== -->
+                <div class="container">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-info" role="alert">
+                        <!-- <button class="close" data-dismiss="alert">
+                    <small><sup>x</sup></small>
+                </button> -->
+                        {{ message }}
+                    </div>
+                    {% endfor%}
+                    {% endif%}
+                </div>
+                <!-- ===================End of Alert Messages Module================ -->
+
                 <div class="col-6 border rounded p-3">
-                    <form action="{% url 'check_recognition' identifier.id %}" method="POST">
+                    <form action="{% url 'check_signing_off_posted' document.id %}" method="POST" class='check_button'>
                         {% csrf_token %}
                         <div class="row m-1">
                             <div class="col-6">
-                                <input type="text" class='form-control' id="check_imei" name="check_imei" maxlength='50' required
-                                    placeholder="Введите IMEI">
+                                <input type="text" class='form-control' id="check_imei" name="imei" maxlength='50'
+                                    required placeholder="Введите IMEI">
                             </div>
 
                             <div class="col-6">
@@ -40,90 +39,37 @@
                         </div>
                     </form>
                 </div>
-
-                <!-- ==============================Modal Trigger================== -->
-                <div class="col-6 border rounded p-3">
-                    <button type="button" class="btn btn-sm btn-outline-dark btn_modal">
-                        Внести новое наименование в базу данных
-                    </button>
-                </div>
-                <!-- ============================End of Modal Trigger========================= -->
-
-                <!-- ===========================Modal Body================================= -->
-                <div class="enterDeliveryModal">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">Введите новое наименование</h5>
-                                <!-- <button type="button" class="btn_close"></button> -->
-                            </div>
-                            <div class="modal-body">
-                                <form action="{% url 'enter_new_product' identifier.id %}" method="POST">
-                                    {% csrf_token %}
-
-                                    <div class="form-row">
-                                        <div class="col-3">
-                                            <label for="category">Вид ТМЦ</label>
-                                        </div>
-                                        <div class="col">
-                                            <select name="category" id="category" class='form-control' required>
-                                                {% for category in categories %}
-                                                <option value="{{category.id}}">{{category.name}}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="name">Наименование:</label>
-                                        <input class='form-control' type="text" id="name" name="name" maxlength='100'
-                                            required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="name">IMEI:</label>
-                                        <input class='form-control' type="text" id="enter_imei" name="imei" maxlength='100'
-                                            required>
-                                    </div>
-                            </div>
-
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary btn_close"
-                                    data-bs-dismiss="modal">Закрыть без сохранения</button>
-                                <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
-                            </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-    <!-- =================================End of Modal Body======================================== -->
+          
             </div>
 
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'recognition_input' identifier.id %}" method="POST" >
+                    <form action="{% url 'change_signing_off_posted' document.id %}" method="POST" id='save_button'>
                         {% csrf_token %}
 
-                        {% for group in request.user.groups.all %}
-                        {% if group.name == 'admin' %}
                         <div class="form-row">
-                            <div class="col-2">
-                                <label for="date">Дата</label>
+                            <div class="col-6">
+                                <label for="date">
+                                    <h5>Текущая дата документа: {{document.created}}</h5>
+                                </label>
                             </div>
                             <div class="col">
-                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today'><br>
+                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
+                                    value="{{document.created}}">
                             </div>
                         </div>
-                        {% endif %}
-                        {% endfor %}
 
                         <div class="form-row">
                             <div class="col-3">
                                 <label for="shop">
-                                    <h5>Фирма получатель</h5>
+                                    <h5>Фирма для списания</h5>
                                 </label>
                             </div>
                             <div class="col">
                                 <select name="shop" id="shop" class='form-control' required>
+                                    <option selected="true" value="{{registers.first.shop.id}}">
+                                        {{registers.first.shop.name}}</option>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
@@ -134,7 +80,7 @@
 
                         <div class='form-inline'>
                             <div class="row m-1">
-                                <div class="col-1"><label for="number">
+                                <div class="col-1"><label for="title">
                                         <h5>#</h5>
                                     </label></div>
                                 <div class="col-2"><label for="title">
@@ -143,23 +89,25 @@
                                 <div class="col-2"><label for="title">
                                         <h5>Наименование</h5>
                                     </label></div>
-                                <div class="col-2"><label for="quantity">
+                                <div class="col-1"><label for="quantity">
                                         <h5>Кол-во</h5>
                                     </label></div>
                                 <div class="col-2"><label for="price">
                                         <h5>Цена</h5>
-                                    </label></div>
+                                    </label>
+                                </div>
                                 <div class="col-2"><label for="sub_total">
                                         <h5>Сумма</h5>
-                                    </label></div>
+                                    </label>
+                                </div>
                             </div>
                         </div>
-
 
                         {% for register in registers %}
                         <div class="row m-auto mb-1">
                             <div class="col-1">
-                                <input type="text" class='form-control' id="number" name="number" value='{{register.number}}' readonly>
+                                <input type="text" class='form-control' id="number" name="number"
+                                    value='{{register.number}}' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="text" class='form-control' id="imei" name="imei"
@@ -169,84 +117,72 @@
                                 <input type="text" class='form-control' id="name" name="name"
                                     value='{{register.product.name}}' readonly>
                             </div>
-                            <div class="col-2">
+                            <div class="col-1">
                                 <input type="number" class='form-control' id="quantity" name="quantity"
-                                    value='{{register.quantity}}' required>
+                                    value='{{register.quantity}}'>
                             </div>
                             <div class="col-2">
-                                <input type="number" class='form-control' id="price" name="price" maxlength='50'
-                                    required>
+                                <input type="number" class='form-control' id="price" name="price"
+                                    value='{{register.price}}' maxlength='50'>
                             </div>
                             <div class="col-2">
-                                <input type="number" class='form-control' id="sub_total" name="sub_total" maxlength='50'
-                                value='{{register.sub_total}}'>
+                                <input type="number" class='form-control' id="sub_total" name="sub_total"
+                                    value='{{register.sub_total}}' maxlength='50'>
                             </div>
                             <div class="col">
-                                <a href="{% url 'delete_line_recognition' register.product.imei identifier.id %}">
-                                    <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
+                                <a href="{% url 'delete_line_posted_signing_off' register.product.imei document.id %}">
+                                    <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                                 </a>
                             </div>
                         </div>
                         {% endfor %}
 
-
                         <div class="row m-auto mt-3 ">
-                            <div class="col-1">
-                                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
-                            </div>
                             <div class="col-2">
-                                <label for="post_check"> С проведением </label>
-                                <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                                <input type="submit" value="Сохранить и провести"
+                                    class="btn btn-sm btn-block btn-outline-dark">
                             </div>
                     </form>
 
-                    <div class="col-2">
-                        <a href="{% url 'clear_recognition' identifier.id %}">
-                            <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                    <div class="col-3">
+                        <a href="{% url 'unpost_signing_off' document.id %}">
+                            <input type="button" value="Сделать непроведенным"
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
                         </a>
                     </div>
+
                     <div class="col-2">
-                        <a href="{% url 'close_without_save' identifier.id %}">
+                        <a href="{% url 'close_edited_document' document.id %}">
                             <input type="button" value="Закрыть без сохранения"
                                 class="btn btn-sm btn-block btn-outline-dark clear_storage">
                         </a>
                     </div>
                 </div>
+
+
             </div>
         </div>
     </div>
 </div>
 </div>
+</div>
+
+
 <script>
     console.log('Script works');
-
-    const btn_modal = document.querySelector('.btn_modal');
-    const enterDeliveryModal = document.querySelector('.enterDeliveryModal');
-    const btn_close = document.querySelector('.btn_close');
 
     const imeis = document.querySelectorAll("#imei");
     const quantities = document.querySelectorAll("#quantity");
     const sub_totals = document.querySelectorAll("#sub_total");
     const prices = document.querySelectorAll("#price");
-    const shop = document.querySelector("#shop");
 
     const buttons = document.querySelectorAll('.clear_storage');
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
-    const check_imei = document.querySelector('#check_imei');
+    const shop = document.querySelector('#shop');
+    //const check_button = document.querySelector('.check_button');
+   
+    //const check_imei = document.querySelector('#check_imei');
     //const save_button = document.querySelector('#save_button');
-
-
-
-    btn_modal.addEventListener('click', openModal)
-    btn_close.addEventListener('click', closeModal)
-
-    function openModal() {
-        enterDeliveryModal.classList.add('openModal')
-    }
-
-    function closeModal() {
-        enterDeliveryModal.classList.remove('openModal')
-    }
 
     //saving "Shop_receiver select option" from switching to default when updating the page
     //================================================================================================
@@ -254,7 +190,6 @@
         choice = shop.value;
         sessionStorage.setItem('shop', choice);
     })
-
 
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')
@@ -324,13 +259,14 @@
             }
         }
         if (sessionStorage.getItem('shop') === null) {
-            console.log('No shop choice')
+            console.log('No supplier choice')
         }
         else {
             choice = sessionStorage.getItem('shop');
             shop.value = choice
         }
     })
+
 
     //clearing session storage on pushing 'Submit' & 'Close without save' buttons
     //===========================================================================

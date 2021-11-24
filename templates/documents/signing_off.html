@@ -29,7 +29,7 @@
                     {% csrf_token %}
                     <div class="row m-1">
                         <div class="col-6">
-                            <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required
+                            <input type="text" class='form-control' id="check_imei" name="imei" maxlength='50' required
                                 placeholder="Введите IMEI">
                         </div>
 
@@ -81,6 +81,9 @@
 
                     <div class='form-inline'>
                         <div class="row m-1">
+                            <div class="col-1"><label for="title">
+                                    <h5>#</h5>
+                                </label></div>
                             <div class="col-2"><label for="title">
                                     <h5>IMEI</h5>
                                 </label></div>
@@ -93,12 +96,19 @@
                             <div class="col-2"><label for="price">
                                     <h5>Цена</h5>
                                 </label></div>
+                            <div class="col-2"><label for="sub_total">
+                                    <h5>Сумма</h5>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
 
                     {% for register in registers %}
                     <div class="row m-auto mb-1">
+                        <div class="col-1">
+                            <input type="text" class='form-control' id="number" name="number" value='{{register.number}}' readonly>
+                        </div>
                         <div class="col-2">
                             <input type="text" class='form-control' id="imei" name="imei"
                                 value='{{register.product.imei}}'>
@@ -111,15 +121,15 @@
                             <input type="number" class='form-control' id="quantity" name="quantity"
                                 value='{{register.quantity}}' required>
                         </div>
-                        <!-- <div class="col-2">
-                            <input type="number" class='form-control' id="price" name="price" maxlength='50' required>
-                        </div> -->
-                        <!-- <div class="col-2">
-                    <input type="number" class='form-control' id="sub_total" name="sub_total" maxlength='50'>
-                </div> -->
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="price" name="price" value='{{register.price}}' maxlength='50'>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="sub_total" name="sub_total" value='{{register.sub_total}}'maxlength='50'>
+                        </div>
                         <div class="col">
                             <a href="{% url 'delete_line_signing_off' register.product.imei identifier.id %}">
-                                <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
+                                <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
                             </a>
                         </div>
                     </div>
@@ -127,20 +137,24 @@
 
 
                     <div class="row m-auto mt-3 ">
+                        <div class="col-1">
+                            <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        </div>
                         <div class="col-2">
-                            <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                            <label for="post_check"> С проведением </label>
+                            <input type="checkbox" id="post_check" name="post_check" value='checked'>
                         </div>
                 </form>
 
                 <div class="col-2">
                     <a href="{% url 'clear_signing_off' identifier.id %}">
-                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark">
+                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storage">
                     </a>
                 </div>
                 <div class="col-2">
                     <a href="{% url 'close_without_save' identifier.id %}">
                         <input type="button" value="Закрыть без сохранения"
-                            class="btn btn-sm btn-block btn-outline-dark">
+                            class="btn btn-sm btn-block btn-outline-dark clear_storage">
                     </a>
                 </div>
             </div>
@@ -149,5 +163,111 @@
 </div>
 </div>
 </div>
+
+<script>
+    console.log('Script works');
+
+    const imeis = document.querySelectorAll("#imei");
+    const quantities = document.querySelectorAll("#quantity");
+    const sub_totals = document.querySelectorAll("#sub_total");
+    const prices = document.querySelectorAll("#price");
+
+    const buttons = document.querySelectorAll('.clear_storage');
+    const delete_buttons = document.querySelectorAll('.delete_line_storage');
+    const check_button = document.querySelector('#check_button');
+    const shop = document.querySelector('#shop');
+ 
+    //saving "Shop select option" from switching to default when updating the page
+    //===========================================================================
+    shop.addEventListener('change', e => {
+        choice = shop.value;
+        sessionStorage.setItem('shop', choice);
+    })
+
+    //changing inputs & loading changed input to session storage (via changing 'quantities')
+    //================================================================================================
+    for (let i = 0; i < quantities.length; i++) {
+        quantities[i].addEventListener('change', e => {
+            sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+
+    //changing inputs & loading changed input to session storage (via changing 'prices')
+    //================================================================================================
+    for (let i = 0; i < prices.length; i++) {
+        prices[i].addEventListener('change', e => {
+            sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+
+    //changing inputs & loading changed input to session storage (via changing 'sub_totals')
+    //================================================================================================
+    for (let i = 0; i < sub_totals.length; i++) {
+        sub_totals[i].addEventListener('change', e => {
+            prices[i].value = sub_totals[i].value / quantities[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+
+    //updating session storage on pushing 'Delete line button'
+    //===========================================================================
+    for (let i = 0; i < delete_buttons.length; i++) {
+        delete_buttons[i].addEventListener('click', e => {
+            sessionStorage.removeItem(imeis[i].value)
+        })
+    }
+
+    // getting data from session storage & passing it to html code on page reload
+    //=================================================================================
+    document.addEventListener('DOMContentLoaded', e => {
+        for (j = 0; j < imeis.length; j++) {
+            for (i = 0; i < sessionStorage.length; i++) {
+                if (JSON.parse(sessionStorage.getItem(imeis[j].value))) {
+                    a = JSON.parse(sessionStorage.getItem(imeis[j].value));
+                    if (imeis[j].value == a[0]) {
+                        quantities[j].value = a[1]
+                        prices[j].value = a[2]
+                        sub_totals[j].value = a[3]
+                    }
+                }
+            }
+        }
+        if (sessionStorage.getItem('shop') === null) {
+            console.log('No shop choice')
+        }
+        else {
+            choice = sessionStorage.getItem('shop');
+            shop.value = choice
+        }
+    })
+
+    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //===========================================================================
+    for (let button of buttons) {
+        button.addEventListener('click', clearStorage);
+    }
+    function clearStorage(e) {
+        sessionStorage.clear();
+    };
+
+    console.log('End of the script')
+</script>
 
 {% endblock %}

@@ -29,19 +29,41 @@ urlpatterns = [
     # ======================Recognition=========================
     path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),
     path ('check_recognition/<int:identifier_id>', views.check_recognition, name='check_recognition'),
+    path ('check_recognition_unposted/<int:document_id>', views.check_recognition_unposted, name='check_recognition_unposted'),
+    path ('check_recognition_posted/<int:document_id>', views.check_recognition_posted, name='check_recognition_posted'),
+
     path ('clear_recognition/<int:identifier_id>', views.clear_recognition, name='clear_recognition'),
     path ('recognition/<int:identifier_id>', views.recognition, name='recognition'),
     path ('delete_line_recognition/<int:imei>/<int:identifier_id>', views.delete_line_recognition, name='delete_line_recognition'),
+    path ('delete_line_recognition_unposted/<int:imei>/<int:document_id>', views.delete_line_recognition_unposted, name='delete_line_recognition_unposted'),
+    path ('delete_line_recognition_posted/<int:imei>/<int:document_id>', views.delete_line_recognition_posted, name='delete_line_recognition_posted'),
+
     path ('recognition_input/<int:identifier_id>', views.recognition_input, name='recognition_input'),
     path ('delete_recognition/<int:document_id>', views.delete_recognition, name='delete_recognition'),
+    path ('change_recognition_posted/<int:document_id>', views.change_recognition_posted, name='change_recognition_posted'),
+    path ('change_recognition_unposted/<int:document_id>', views.change_recognition_unposted, name='change_recognition_unposted'),
+    path ('unposted_recognition/<int:document_id>', views.unpost_recognition, name='unpost_recognition'),
+    
     # ============================SignOff==========================
     path ('identifier_signing_off', views.identifier_signing_off, name='identifier_signing_off'),
     path ('check_signing_off/<int:identifier_id>', views.check_signing_off, name='check_signing_off'),
+    path ('check_signing_off_unposted/<int:document_id>', views.check_signing_off_unposted, name='check_signing_off_unposted'),
+    path ('check_signing_off_posted/<int:document_id>', views.check_signing_off_posted, name='check_signing_off_posted'),
     path ('clear_signing_off/<int:identifier_id>', views.clear_signing_off, name='clear_signing_off'),
     path ('signing_off/<int:identifier_id>', views.signing_off, name='signing_off'),
     path ('delete_line_signing_off/<int:imei>/<int:identifier_id>', views.delete_line_signing_off, name='delete_line_signing_off'),
+    path ('delete_line_unposted_signing_off/<int:imei>/<int:document_id>', views.delete_line_unposted_signing_off, name='delete_line_unposted_signing_off'),
+    path ('delete_line_posted_signing_off/<int:imei>/<int:document_id>', views.delete_line_posted_signing_off, name='delete_line_posted_signing_off'),
+
+
     path ('signing_off_input/<int:identifier_id>', views.signing_off_input, name='signing_off_input'),
     path ('delete_signing_off/<int:document_id>', views.delete_signing_off, name='delete_signing_off'),
+    path ('change_signing_off_posted/<int:document_id>', views.change_signing_off_posted, name='change_signing_off_posted'),
+    path ('change_signing_off_unposted/<int:document_id>', views.change_signing_off_unposted, name='change_signing_off_unposted'),
+    path ('unpost_signing_off/<int:document_id>', views.unpost_signing_off, name='unpost_signing_off'),
+
+
+
     # =====================Sale===============================================
     path ('identifier_sale', views.identifier_sale, name='identifier_sale'),
     path ('check_sale/<int:identifier_id>', views.check_sale, name='check_sale'),

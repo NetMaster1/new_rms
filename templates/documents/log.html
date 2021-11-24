@@ -143,6 +143,24 @@
         </div>
         {% endif %}
 
+        {% elif document.title.name == 'Оприходование ТМЦ' %}
+        {% if document.posted == True %}
+        <div class="col-2"><a href="{% url 'change_recognition_posted' document.id %}">{{document.title}} {{document.id}}</a></div>
+        {% else %}
+        <div class="col-2"><a href="{% url 'change_recognition_unposted' document.id %}">{{document.title}} {{document.id}}</a>
+        </div>
+        {% endif %}
+
+        {% elif document.title.name == 'Списание ТМЦ' %}
+        {% if document.posted == True %}
+        <div class="col-2"><a href="{% url 'change_signing_off_posted' document.id %}">{{document.title}} {{document.id}}</a>
+        </div>
+        {% else %}
+        <div class="col-2"><a href="{% url 'change_signing_off_unposted' document.id %}">{{document.title}} {{document.id}}</a>
+        </div>
+        {% endif %}
+
+        
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-2"><a href="{% url 'pre_change_sale' document.id %}">{{document.title}} {{document.id}}</a></div>
         {% elif document.title.name == 'РКО (зарплата)' %}
@@ -181,6 +199,21 @@
         {% else %}
         <div class="col-2">{{document.register_set.first.shop}} </div>
         {% endif %}
+
+        {% elif document.title.name == 'Оприходование ТМЦ' %}
+        {% if document.posted == True %}
+        <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
+        {% else %}
+        <div class="col-2">{{document.register_set.first.shop}} </div>
+        {% endif %}
+
+        {% elif document.title.name == 'Списание ТМЦ' %}
+        {% if document.posted == True %}
+        <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
+        {% else %}
+        <div class="col-2">{{document.register_set.first.shop}} </div>
+        {% endif %}
+
 
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-2">{{document.sale_set.first.shop}} </div>
