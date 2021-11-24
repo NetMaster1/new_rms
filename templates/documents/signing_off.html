@@ -46,7 +46,7 @@
         <div class="row m-2 pb-2">
             <div class="col-12 border rounded p-3">
 
-                <form action="{% url 'signing_off_input' identifier.id %}" method="POST">
+                <form action="{% url 'signing_off_input' identifier.id %}" method="POST" id='save_button'>
                     {% csrf_token %}
 
                     {% for group in request.user.groups.all %}
@@ -138,7 +138,7 @@
 
                     <div class="row m-auto mt-3 ">
                         <div class="col-1">
-                            <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                            <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark" id='save_button'>
                         </div>
                         <div class="col-2">
                             <label for="post_check"> С проведением </label>
@@ -176,6 +176,7 @@
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
     const check_button = document.querySelector('#check_button');
     const shop = document.querySelector('#shop');
+    const save_button = document.querySelector('#save_button');
  
     //saving "Shop select option" from switching to default when updating the page
     //===========================================================================
@@ -266,6 +267,11 @@
     function clearStorage(e) {
         sessionStorage.clear();
     };
+
+    save_button.addEventListener('submit', e => {
+        sessionStorage.clear();
+    })
+
 
     console.log('End of the script')
 </script>

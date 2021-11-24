@@ -113,6 +113,8 @@
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today'><br>
                             </div>
                         </div>
+                        {% else %}
+                        <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today' hidden>
                         {% endif %}
                         {% endfor %}
 
@@ -194,10 +196,14 @@
                             <div class="col-1">
                                 <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
                             </div>
-                            <div class="col-2">
-                                <label for="post_check"> С проведением </label>
-                                <input type="checkbox" id="post_check" name="post_check" value='checked'>
-                            </div>
+                        {% for group in request.user.groups.all %}
+                        {% if group == 'admin' %}
+                        <div class="col-2">
+                            <label for="post_check"> С проведением </label>
+                            <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
                     </form>
 
                     <div class="col-2">

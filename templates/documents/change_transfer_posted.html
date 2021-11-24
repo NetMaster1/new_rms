@@ -24,7 +24,8 @@
 </div>
 <!-- ===================End of Alert Messages Module================ -->
 
-
+            {% for group in request.user.groups.all %}
+            {% if group.name == 'admin'%}
                 <div class="col-12 border rounded p-3">
                     <form action="{% url 'check_transfer_posted' document.id%}" method="POST">
                         {% csrf_token %}
@@ -47,6 +48,8 @@
                         </div>
                     </form>
                 </div>
+        {%endif%}
+        {%endfor%}
 
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
@@ -161,7 +164,8 @@
                             <p id="demo"></p>
                         </div>
                         {% endfor %}
-                
+            {% for group in request.user.groups.all %}
+            {% if group.name == 'admin'%}
                         <div class="row m-auto mt-3 ">
                             <div class="col-2">
                                 <input type="submit" value="Сохранить и провести" class="btn btn-sm btn-block btn-outline-dark clear_storage">
@@ -173,7 +177,8 @@
                             <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
-
+            {%endif%}
+            {%endfor%}
                     <div class="col-2">
                         <a href="{% url 'close_edited_document' document.id %}">
                             <input type="button" value="Закрыть без сохранения"

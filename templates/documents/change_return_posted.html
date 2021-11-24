@@ -22,7 +22,8 @@
                     {% endif%}
                 </div>
                 <!-- ===================End of Alert Messages Module================ -->
-
+        {%for group in request.user.groups.all %}
+        {%if group.name == 'admin'%}
                 <div class="col-6 border rounded p-3">
                     <form action="{% url 'check_return_posted' document.id %}" method="POST" class='check_button'>
                         {% csrf_token %}
@@ -39,6 +40,8 @@
                         </div>
                     </form>
                 </div>
+            {%endif%}
+            {%endfor%}
             </div>
 
             <div class="row m-2 pb-2">
@@ -136,7 +139,8 @@
                             </div>
                         </div>
                         {% endfor %}
-
+            {%for group in request.user.groups.all %}
+            {%if group.name == 'admin'%}
                         <div class="row m-auto mt-3 ">
                             <div class="col-2">
                                 <input type="submit" value="Сохранить и провести"
@@ -149,6 +153,8 @@
                         <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
                     </a>
                 </div>
+            {% endif%}
+            {% endfor%}
 
                     <div class="col-2">
                         <a href="{% url 'close_edited_document' document.id %}">

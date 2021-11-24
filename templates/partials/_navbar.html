@@ -92,7 +92,7 @@
                     <li><a class="dropdown-item" href="{% url 'cash_receipt' %}">Приходный кассовый ордер</a></li>
                     <li><a class="dropdown-item" href="{% url 'cash_movement' %}">Перемещение ден.средств</a></li>
                     <li><a class="dropdown-item" href="{% url 'inventory' %}">Инвентаризация</a></li>
-                  
+                   
                    
                     </ul>
                 </li>
@@ -100,18 +100,37 @@
 {% elif group.name == 'sales' %}
     <div class="collapse navbar-collapse">
             <ul class="navbar-nav">
-                <a class="nav-link text-light" href="{% url 'my_bonus' %}">Мой бонус</a>
+                <a class="nav-link text-light" href="{% url 'my_bonus' %}">Мой бонус за текущий месяц</a>
+                <a class="nav-link text-light"href="{% url 'search' %}">Поиск товара</a>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
                         aria-expanded="false">
                         Документы
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                        <li><a class="dropdown-item" href="{% url 'identifier_sale' %}">Продажа ТМЦ</a></li>
-                        <li><a class="dropdown-item" href="#">Возврат ТМЦ</a></li>
-                
+                    <li><a class="dropdown-item" href="{% url 'identifier_sale' %}">Продажа ТМЦ</a></li>
+                    <li><a class="dropdown-item" href="{% url 'identifier_return' %}">Возврат ТМЦ</a></li>
+                    <li><a class="dropdown-item" href="{% url 'identifier_transfer' %}">Перемещение ТМЦ</a>
+                    <a class="dropdown-item" href="{% url 'identifier_recognition' %}">Оприходование ТМЦ</a>
                     </ul>
-                </li>       
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Отчеты
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <li><a class="dropdown-item" href="{% url 'sale_report' %}">Отчет по продажам</a></li>
+                        <li><a class="dropdown-item" href="{% url 'delivery_report' %}">Отчет по закупкам</a></li>
+                        <li><a class="dropdown-item" href="{% url 'remainder_report' %}">Отчет по остаткам на дату</a></li>
+                        <li><a class="dropdown-item" href="{% url 'remainder_report_dynamic' %}">Отчет по остаткам динамический</a></li>
+                        <li><a class="dropdown-item" href="{% url 'item_report' %}">Отчет по движению ТМЦ</a></li>
+                        <li><a class="dropdown-item" href="{% url 'bonus_report' %}">Общий бонус за месяц</a></li>
+                        <li><a class="dropdown-item" href="{% url 'cash_report' %}">Отчет по движению наличных</a></li>
+                        <li><a class="dropdown-item" href="{% url 'card_report' %}">Отчет по оплате картами</a></li>
+                        <li><a class="dropdown-item" href="{% url 'credit_report' %}">Отчет по продажам в кредит</a></li>
+                    </ul>
+                </li>
             </ul>
 {% elif group.name == 'manager' %}
 

@@ -54,15 +54,11 @@ urlpatterns = [
     path ('delete_line_signing_off/<int:imei>/<int:identifier_id>', views.delete_line_signing_off, name='delete_line_signing_off'),
     path ('delete_line_unposted_signing_off/<int:imei>/<int:document_id>', views.delete_line_unposted_signing_off, name='delete_line_unposted_signing_off'),
     path ('delete_line_posted_signing_off/<int:imei>/<int:document_id>', views.delete_line_posted_signing_off, name='delete_line_posted_signing_off'),
-
-
     path ('signing_off_input/<int:identifier_id>', views.signing_off_input, name='signing_off_input'),
     path ('delete_signing_off/<int:document_id>', views.delete_signing_off, name='delete_signing_off'),
     path ('change_signing_off_posted/<int:document_id>', views.change_signing_off_posted, name='change_signing_off_posted'),
     path ('change_signing_off_unposted/<int:document_id>', views.change_signing_off_unposted, name='change_signing_off_unposted'),
     path ('unpost_signing_off/<int:document_id>', views.unpost_signing_off, name='unpost_signing_off'),
-
-
 
     # =====================Sale===============================================
     path ('identifier_sale', views.identifier_sale, name='identifier_sale'),
@@ -77,7 +73,7 @@ urlpatterns = [
     path ('change_sale/<int:document_id>/<identifier_id>/', views.change_sale, name='change_sale'),
     path ('check_sale_change/<int:document_id>/<identifier_id>/', views.check_sale_change, name='check_sale_change'),
     path ('delete_line_change_sale/<int:document_id>/<identifier_id>/<int:imei>', views.delete_line_change_sale, name='delete_line_change_sale'),
-
+    path ('sale_interface', views.sale_interface, name='sale_interface'),
 
     # ==============================Return====================================
     path ('identifier_return', views.identifier_return, name='identifier_return'),

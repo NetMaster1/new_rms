@@ -38,9 +38,17 @@
                                     class="btn btn-sm btn-block btn-outline-dark click_event" >
                             </div>
                             <div class="col-4 m-1">
+                            {%for group in request.user.groups.all%}
+                            {%if group.name == 'sales' %}
+                            <a href="{% url 'sale_interface' %}">
+                                <input type="button" value="Закрыть" class="btn btn-sm btn-block btn-outline-dark">
+                            </a>
+                            {% else %}
                             <a href="{% url 'log' %}">
                                 <input type="button" value="Закрыть" class="btn btn-sm btn-block btn-outline-dark">
                             </a>
+                            {%endif%}
+                            {% endfor %}
                             </div>
                         </div>
                     </form>
