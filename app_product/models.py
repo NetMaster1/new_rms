@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import manager
-from app_reference.models import Shop, Supplier, Product, ProductCategory, DocumentType
+from app_reference.models import Shop, Supplier, Product, ProductCategory, DocumentType, Contributor, Voucher
 
 # import datetime
 from datetime import datetime, date
@@ -46,11 +46,13 @@ class Register(models.Model):
     # serves to pass the shop in delivery/transfer/return
     shop_receiver = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_receiver")
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
-    product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
+    product = models.ForeignKey(Product, null=True, on_delete=models.DO_NOTHING)
     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     quantity = models.IntegerField(default=1)
     price = models.IntegerField(default=0)
+    contributor = models.ForeignKey(Contributor, null=True, on_delete=models.DO_NOTHING)
+    voucher = models.ForeignKey(Voucher, null=True, on_delete=models.DO_NOTHING)
     sub_total = models.IntegerField(default=0)
     new = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)

@@ -155,6 +155,16 @@
         </div>
         {% endif %}
 
+        {% elif document.title.name == 'ПКО' %}
+        {% if document.posted == True %}
+        <div class="col-2"><a href="{% url 'change_cash_receipt_posted' document.id %}">{{document.title}} {{document.id}}</a>
+        </div>
+        {% else %}
+        <div class="col-2"><a href="{% url 'change_cash_receipt_unposted' document.id %}"> {{document.title}} {{document.id}}</a>
+        </div>
+        {% endif %}
+
+
         
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-2"><a href="{% url 'pre_change_sale' document.id %}">{{document.title}} {{document.id}}</a></div>
@@ -162,8 +172,6 @@
         <div class="col-2"><a href="{% url 'change_cash_off_salary' document.id %}">{{document.title}} {{document.id}}</a></div>
         {% elif document.title.name == 'РКО (хоз.расходы)' %}
         <div class="col-2"><a href="{% url 'change_cash_off_expenses' document.id %}">{{document.title}} {{document.id}}</a></div>
-        {% elif document.title.name == 'ПКО' %}
-        <div class="col-2"><a href="{% url 'change_cash_receipt' document.id %}">{{document.title}} {{document.id}}</a></div>
         {% elif document.title.name == 'Перемещение денег' %}
         <div class="col-2"><a href="{% url 'change_cash_movement' document.id %}">{{document.title}} {{document.id}}</a></div>
         {% endif %}

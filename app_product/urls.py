@@ -123,8 +123,13 @@ urlpatterns = [
     path ('cash_off_expenses', views.cash_off_expenses, name='cash_off_expenses'),
     path ('delete_cash_off_expenses/<int:document_id>', views.delete_cash_off_expenses, name='delete_cash_off_expenses'),
     path ('change_cash_off_expenses/<int:document_id>', views.change_cash_off_expenses, name='change_cash_off_expenses'),
+    #====================================================================================
     path ('cash_receipt', views.cash_receipt, name='cash_receipt'),
-    path ('change_cash_receipt/<int:document_id>', views.change_cash_receipt, name='change_cash_receipt'),
+    path ('change_cash_receipt_posted/<int:document_id>', views.change_cash_receipt_posted, name='change_cash_receipt_posted'),
+    path ('change_cash_receipt_unposted/<int:document_id>', views.change_cash_receipt_unposted, name='change_cash_receipt_unposted'),
+    path ('unpost_cash_receipt/<int:document_id>', views.unpost_cash_receipt, name='unpost_cash_receipt'),
+
+    #=================================================================================================
     path ('delete_cash_receipt/<int:document_id>', views.delete_cash_receipt, name='delete_cash_receipt'),
     path ('cash_movement', views.cash_movement, name='cash_movement'),
     path ('delete_cash_movement/<int:document_id>', views.delete_cash_movement, name='delete_cash_movement'),

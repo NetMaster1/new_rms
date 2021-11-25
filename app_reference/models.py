@@ -3,6 +3,12 @@ from django.db import models
 # Create your models here.
 
 
+class Contributor (models.Model):
+    name = models.CharField(max_length=250)
+
+    def __int__(self):
+        return self.id
+
 class Supplier (models.Model):
     name = models.CharField(max_length=50)
 

@@ -2,7 +2,7 @@
 {% block content %}
 <div class="hide">
     <div class="container">
-        <div class="page_location">
+        <div class="page_location_posted">
 
             <div class="row m-2 pt-2">
                 <div class="col">
@@ -29,7 +29,7 @@
                 <div class="col-12 border rounded ">
 
 
-                    <form action="{% url 'cash_receipt'  %}" method="POST">
+                    <form action="{% url 'change_cash_receipt_posted' document.id %}" method="POST">
                         {% csrf_token %}
 
                         {% for group in request.user.groups.all %}
@@ -58,7 +58,8 @@
                             <div class="col">
                                 <select name="shop" id="shop" class='form-control' required>
                                     <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
-                                    <option value="">Выберите торговую точку</option>
+                                    <!-- <option value="">Выберите торговую точку</option> -->
+                                    <option selected="true" value="{{cho.shop.id}}">{{cho.shop.name}}</option>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
@@ -75,7 +76,8 @@
                             <div class="col">
                                 <select name="voucher" id="voucher" class='form-control' required>
                                     <!-- <option selected="true" disabled="disabled">Выберите получателя</option> -->
-                                    <option value="">Выберите операцию-основание</option>
+                                    <!-- <option value="">Выберите операцию-основание</option> -->
+                                    <option selected="true" value="{{cho.cash_in_reason.id}}">{{cho.cash_in_reason.name}}</option>
                                     {% for voucher in vouchers %}
                                     <option value="{{voucher.id}}">{{voucher.name}}</option>
                                     {% endfor %}
@@ -93,9 +95,10 @@
                             <div class="col">
                                 <select name="contributor" id="contributor" class='form-control' required>
                                     <!-- <option selected="true" disabled="disabled">Выберите получателя</option> -->
-                                    <option value="">Выберите вносителя</option>
-                                    {% for contributor in contributors %}
-                                    <option value="{{contributor.id}}">{{contributor.name}}</option>
+                                    <!-- <option value="">Выберите вносителя</option> -->
+                                    <option selected="true" value="{{cho.cash_contributor.id}}">{{cho.cash_contributor.last_name}}</option>
+                                    {% for user in users %}
+                                    <option value="{{user.id}}">{{user.last_name}}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -108,43 +111,29 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <input type="number" class='form-control' id="sum" name="sum" required>
+                                <input type="number" class='form-control' id="sum" name="sum" value='{{cho.cash_in}}'required>
                             </div>
                         </div>
 
                         <div class="row m-2 p-2">
-                            <div class="col-1">
-                                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
-                            </div>
-                            {% for group in request.user.groups.all %}
-                            {% if group.name == 'admin' %}
                             <div class="col-2">
-                                <label for="post_check"> С проведением </label>
-                                <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
                             </div>
-                            {% endif %}
-                            {% endfor %}
                     </form>
 
-            {% for group in request.user.groups.all %}
-            {% if group == 'admin' %}
+                    <div class="col-3">
+                        <a href="{% url 'unpost_cash_receipt' document.id %}">
+                            <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+
+
                     <div class="col-2">
                         <a href="{% url 'log' %}">
                             <input type="button" value="Закрыть без сохранения"
                                 class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
-            {% else %}
-                    <div class="col-2">
-                        <a href="{% url 'sale_interface' %}">
-                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
-                        </a>
-                    </div>
-            {% endif %}
-            {% endfor %}
-          
-          
-
                 </div>
 
             </div>
