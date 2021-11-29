@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import manager
-from app_reference.models import Shop, Supplier, Product, ProductCategory, DocumentType, Contributor, Voucher
+from app_reference.models import Shop, Supplier, Product, ProductCategory, DocumentType, Contributor, Voucher, Expense
 
 # import datetime
 from datetime import datetime, date
@@ -53,6 +53,7 @@ class Register(models.Model):
     price = models.IntegerField(default=0)
     contributor = models.ForeignKey(Contributor, null=True, on_delete=models.DO_NOTHING)
     voucher = models.ForeignKey(Voucher, null=True, on_delete=models.DO_NOTHING)
+    expense = models.ForeignKey(Expense, null=True, on_delete=models.DO_NOTHING)
     sub_total = models.IntegerField(default=0)
     new = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)

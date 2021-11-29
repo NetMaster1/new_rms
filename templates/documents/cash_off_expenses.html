@@ -95,9 +95,18 @@
                         </div>
 
                         <div class="row m-2 p-2">
-                            <div class="col-2">
-                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                            <div class="col-1">
+                                <input type="submit" value="Cохранить" class="btn btn-sm btn-block btn-outline-dark">
                             </div>
+                            {% for group in request.user.groups.all %}
+                            {% if group.name == 'admin' %}
+                            <div class="col-2">
+                                <label for="post_check"> С проведением </label>
+                                <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+
                     </form>
 
 

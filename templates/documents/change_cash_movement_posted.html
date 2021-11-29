@@ -2,7 +2,7 @@
 {% block content %}
 <div class="hide">
     <div class="container">
-        <div class="page_location">
+        <div class="page_location_posted">
 
             <div class="row m-2 pt-2">
                 <div class="col">
@@ -29,7 +29,7 @@
                 <div class="col-12 border rounded ">
 
 
-                    <form action="{% url 'change_cash_movement' document.id %}" method="POST">
+                    <form action="{% url 'change_cash_movement_posted' document.id %}" method="POST">
                         {% csrf_token %}
 
                         {% for group in request.user.groups.all %}

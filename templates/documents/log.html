@@ -164,16 +164,30 @@
         </div>
         {% endif %}
 
+        {% elif document.title.name == 'РКО (хоз.расходы)' %}
+        {% if document.posted == True %}
+        <div class="col-2"><a href="{% url 'change_cash_off_expenses_posted' document.id %}">{{document.title}} {{document.id}}</a>
+        </div>
+        {% else %}
+        <div class="col-2"><a href="{% url 'change_cash_off_expenses_unposted' document.id %}"> {{document.title}} {{document.id}}</a>
+        </div>
+        {% endif %}
 
+        {% elif document.title.name == 'Перемещение денег' %}
+        {% if document.posted == True %}
+        <div class="col-2"><a href="{% url 'change_cash_movement_posted' document.id %}">{{document.title}}
+        {{document.id}}</a>
+        </div>
+        {% else %}
+        <div class="col-2"><a href="{% url 'change_cash_movement_unposted' document.id %}"> {{document.title}}{{document.id}}</a>
+        </div>
+        {% endif %}
         
+
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-2"><a href="{% url 'pre_change_sale' document.id %}">{{document.title}} {{document.id}}</a></div>
         {% elif document.title.name == 'РКО (зарплата)' %}
         <div class="col-2"><a href="{% url 'change_cash_off_salary' document.id %}">{{document.title}} {{document.id}}</a></div>
-        {% elif document.title.name == 'РКО (хоз.расходы)' %}
-        <div class="col-2"><a href="{% url 'change_cash_off_expenses' document.id %}">{{document.title}} {{document.id}}</a></div>
-        {% elif document.title.name == 'Перемещение денег' %}
-        <div class="col-2"><a href="{% url 'change_cash_movement' document.id %}">{{document.title}} {{document.id}}</a></div>
         {% endif %}
 
        <!-- ============================Document Sum Column============================================ -->
@@ -197,29 +211,48 @@
             {% endif %}
 
         {% elif document.title.name == 'Возврат ТМЦ' %}
-        {% if document.posted == True %}
+            {% if document.posted == True %}
         <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
-        {% else %}
+            {% else %}
         <div class="col-2">{{document.register_set.first.shop}} </div>
-        {% endif %}
+            {% endif %}
 
         {% elif document.title.name == 'Оприходование ТМЦ' %}
-        {% if document.posted == True %}
+            {% if document.posted == True %}
         <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
-        {% else %}
+            {% else %}
         <div class="col-2">{{document.register_set.first.shop}} </div>
-        {% endif %}
+            {% endif %}
 
         {% elif document.title.name == 'Списание ТМЦ' %}
-        {% if document.posted == True %}
+            {% if document.posted == True %}
         <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
-        {% else %}
+            {% else %}
         <div class="col-2">{{document.register_set.first.shop}} </div>
-        {% endif %}
-
+            {% endif %}
 
         {% elif document.title.name == 'Продажа ТМЦ' %}
+            {% if document.posted == True %}
         <div class="col-2">{{document.sale_set.first.shop}} </div>
+            {% else %}
+        <div class="col-2">{{document.register_set.first.shop}} </div>
+            {% endif %}
+
+        {% elif document.title.name == 'РКО (хоз.расходы)' %}
+            {% if document.posted == True %}
+        <div class="col-2">{{document.cash_set.first.shop}} </div>
+            {% else %}
+        <div class="col-2">{{document.register_set.first.shop}} </div>
+            {% endif %}
+
+        {% elif document.title.name == 'Перемещение денег' %}
+            {% if document.posted == True %}
+        <div class="col-2"> C {{document.cash_set.first.shop}} на
+            {{document.cash_set.last.shop}} </div>
+            {% else %}
+        <div class="col-2"> C {{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}} </div>
+        {% endif %}
+
         {% endif %}
 
         <div class="col-2">{{document.user.first_name}} {{document.user.last_name}}</div>

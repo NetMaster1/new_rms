@@ -121,8 +121,9 @@ urlpatterns = [
     path ('change_cash_off_salary/<int:document_id>', views.change_cash_off_salary, name='change_cash_off_salary'),
 
     path ('cash_off_expenses', views.cash_off_expenses, name='cash_off_expenses'),
-    path ('delete_cash_off_expenses/<int:document_id>', views.delete_cash_off_expenses, name='delete_cash_off_expenses'),
-    path ('change_cash_off_expenses/<int:document_id>', views.change_cash_off_expenses, name='change_cash_off_expenses'),
+    path ('change_cash_off_expenses_posted/<int:document_id>', views.change_cash_off_expenses_posted, name='change_cash_off_expenses_posted'),
+    path ('change_cash_off_expenses_unposted/<int:document_id>', views.change_cash_off_expenses_unposted, name='change_cash_off_expenses_unposted'),
+     path ('unpost_cash_off_expenses/<int:document_id>', views.unpost_cash_off_expenses, name='unpost_cash_off_expenses'),
     #====================================================================================
     path ('cash_receipt', views.cash_receipt, name='cash_receipt'),
     path ('change_cash_receipt_posted/<int:document_id>', views.change_cash_receipt_posted, name='change_cash_receipt_posted'),
@@ -130,11 +131,12 @@ urlpatterns = [
     path ('unpost_cash_receipt/<int:document_id>', views.unpost_cash_receipt, name='unpost_cash_receipt'),
 
     #=================================================================================================
-    path ('delete_cash_receipt/<int:document_id>', views.delete_cash_receipt, name='delete_cash_receipt'),
+  
     path ('cash_movement', views.cash_movement, name='cash_movement'),
-    path ('delete_cash_movement/<int:document_id>', views.delete_cash_movement, name='delete_cash_movement'),
-    path ('change_cash_movement/<int:document_id>', views.change_cash_movement, name='change_cash_movement'),
-    
+    path ('change_cash_movement_unposted/<int:document_id>', views.change_cash_movement_unposted, name='change_cash_movement_unposted'),
+    path ('change_cash_movement_posted/<int:document_id>', views.change_cash_movement_posted, name='change_cash_movement_posted'),
+    path ('unpost_cash_movement/<int:document_id>', views.unpost_cash_movement, name='unpost_cash_movement'),
+    #===============================================================================================
 
 
 

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from app_reference.models import Shop, Expense, Voucher, DocumentType
+from app_reference.models import Shop, Expense, Voucher, DocumentType, Contributor
 from app_product.models import Document
 # import datetime
 from datetime import datetime, date
@@ -13,7 +13,7 @@ class Cash (models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)#creator of the document
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     cho_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
-    cash_contributor = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING, related_name='contributor')
+    cash_contributor = models.ForeignKey(Contributor, null=True, on_delete=models.DO_NOTHING, related_name='contributor')
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     pre_remainder= models.IntegerField(default=0)
     cash_in= models.IntegerField(default=0)

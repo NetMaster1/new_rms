@@ -50,7 +50,7 @@ class DocumentAdmin(admin.ModelAdmin):
     ordering = ('-created',)
 
 class RegisterAdmin(admin.ModelAdmin):
-    list_display = ('id', 'shop_sender', 'shop_receiver', 'product', 'identifier', 'new', 'deleted')
+    list_display = ('id', 'shop_sender', 'shop_receiver', 'product', 'sub_total', 'identifier', 'new', 'deleted')
 
 class IdentifierAdmin(admin.ModelAdmin):
     list_display = ('id',)
