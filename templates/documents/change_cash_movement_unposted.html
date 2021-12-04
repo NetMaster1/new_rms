@@ -96,15 +96,25 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <input type="number" class='form-control' id="sum" name="sum" value='{{document.sum}}'
+                                <input type="number" class='form-control' id="sum" name="sum" value='{{register.sub_total}}'
                                     required>
                             </div>
                         </div>
 
                         <div class="row m-2 p-2">
-                            <div class="col-2">
-                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                            <div class="col-1">
+                                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
                             </div>
+                            {% for group in request.user.groups.all %}
+                            {% if group.name == 'admin' %}
+                            <div class="col-2">
+                                <label for="post_check"> С проведением </label>
+                                <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+
+
                     </form>
 
 
@@ -114,6 +124,13 @@
                                 class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
+
+                    <div class="col-3">
+                        <a href="{% url 'delete_unposted_document' document.id %}">
+                            <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        </a>
+                    </div>
+
                 </div>
 
             </div>

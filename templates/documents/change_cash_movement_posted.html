@@ -104,6 +104,11 @@
                             </div>
                     </form>
 
+                    <div class="col-3">
+                        <a href="{% url 'unpost_cash_movement' document.id %}">
+                            <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
 
                     <div class="col-2">
                         <a href="{% url 'log' %}">
