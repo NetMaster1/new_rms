@@ -117,9 +117,11 @@ urlpatterns = [
     # ==================================================================================
 
     path ('cash_off_salary', views.cash_off_salary, name='cash_off_salary'),
-    path ('delete_cash_off_salary/<int:document_id>', views.delete_cash_off_salary, name='delete_cash_off_salary'),
-    path ('change_cash_off_salary/<int:document_id>', views.change_cash_off_salary, name='change_cash_off_salary'),
+    path ('change_cash_off_salary_posted/<int:document_id>', views.change_cash_off_salary_posted, name='change_cash_off_salary_posted'),
+    path ('change_cash_off_salary_unposted/<int:document_id>', views.change_cash_off_salary_unposted, name='change_cash_off_salary_unposted'),
+    path ('unpost_cash_off_salary/<int:document_id>', views.unpost_cash_off_salary, name='unpost_cash_off_salary'),
 
+    #========================================================================================
     path ('cash_off_expenses', views.cash_off_expenses, name='cash_off_expenses'),
     path ('change_cash_off_expenses_posted/<int:document_id>', views.change_cash_off_expenses_posted, name='change_cash_off_expenses_posted'),
     path ('change_cash_off_expenses_unposted/<int:document_id>', views.change_cash_off_expenses_unposted, name='change_cash_off_expenses_unposted'),
@@ -137,8 +139,6 @@ urlpatterns = [
     path ('change_cash_movement_posted/<int:document_id>', views.change_cash_movement_posted, name='change_cash_movement_posted'),
     path ('unpost_cash_movement/<int:document_id>', views.unpost_cash_movement, name='unpost_cash_movement'),
     #===============================================================================================
-
-
 
     path ('noCashback/<int:identifier_id>', views.noCashback, name='noCashback'),
     path ('payment/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.payment, name='payment'),

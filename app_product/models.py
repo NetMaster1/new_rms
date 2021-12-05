@@ -52,6 +52,7 @@ class Register(models.Model):
     quantity = models.IntegerField(default=1)
     price = models.IntegerField(default=0)
     contributor = models.ForeignKey(Contributor, null=True, on_delete=models.DO_NOTHING)
+    cash_receiver = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
     voucher = models.ForeignKey(Voucher, null=True, on_delete=models.DO_NOTHING)
     expense = models.ForeignKey(Expense, null=True, on_delete=models.DO_NOTHING)
     sub_total = models.IntegerField(default=0)

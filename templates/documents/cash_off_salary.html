@@ -23,13 +23,10 @@
                 {% endif%}
             </div>
             <!-- ===================End of Alert Messages Module================ -->
-           
 
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded ">
-
-                
-                    <form action="{% url 'cash_off_salary'  %}" method="POST">
+                    <form action="{% url 'cash_off_salary' %}" method="POST">
                         {% csrf_token %}
 
                         {% for group in request.user.groups.all %}
@@ -71,11 +68,11 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="user" id="user" class='form-control' required>
+                                <select name="cash_receiver" id="cash_receiver" class='form-control' required>
                                     <!-- <option selected="true" disabled="disabled">Выберите получателя</option> -->
-                                    <option value="">Выберите получателяу</option>
+                                    <option value="">Выберите получателя</option>
                                     {% for user in users %}
-                                    <option value="{{user.id}}">{{user.last_name}}</option>
+                                    <option value="{{user.id}}">{{user.first_name}} {{user.last_name}}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -93,8 +90,12 @@
                         </div>
 
                         <div class="row m-2 p-2">
+                            <div class="col-1">
+                                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
+                            </div>
                             <div class="col-2">
-                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                                <label for="post_check"> С проведением </label>
+                                <input type="checkbox" id="post_check" name="post_check" value='checked'>
                             </div>
                     </form>
 
