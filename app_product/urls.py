@@ -7,6 +7,7 @@ urlpatterns = [
     path ('close_search', views.close_search, name='close_search'),
     path ('close_unposted_document/<int:document_id>', views.close_unposted_document, name='close_unposted_document'),
     path ('delete_unposted_document/<int:document_id>', views.delete_unposted_document, name='delete_unposted_document'),
+    
     # ==================Delivery========================
     path ('delivery_auto', views.delivery_auto, name='delivery_auto'),
     path ('identifier_delivery', views.identifier_delivery, name='identifier_delivery'),
@@ -112,6 +113,8 @@ urlpatterns = [
     path ('revaluation/<int:identifier_id>', views.revaluation, name='revaluation'),
     path ('revaluation_input/<int:identifier_id>', views.revaluation_input, name='revaluation_input'),
     path ('log', views.log, name='log'),
+    path ('delete_line_revaluation/<int:imei>/<int:identifier_id>/<shop_id>', views.delete_line_revaluation, name='delete_line_revaluation'),
+
     path ('open_document/<int:document_id>', views.open_document, name='open_document'),
     path ('close_without_save/<int:identifier_id>', views.close_without_save, name='close_without_save'),
     # ==================================================================================
@@ -156,10 +159,10 @@ urlpatterns = [
     path ('security_code/<int:identifier_id>/<int:client_id>', views.security_code, name='security_code'),
     path ('sec_code_confirm/<int:identifier_id>/<int:client_id>', views.sec_code_confirm, name='sec_code_confirm'),
    
-
-
-    
     path ('close_edited_document/<int:document_id>', views.close_edited_document, name='close_edited_document'),
-    path ('inventory', views.inventory, name='inventory'),
+    
+    path ('identifier_inventory', views.identifier_inventory, name='identifier_inventory'),
+    path ('inventory/<int:identifier_id>', views.inventory, name='inventory'),
+    path ('post_inventory/<int:identifier_id>', views.post_inventory, name='post_inventory'),
     
 ]

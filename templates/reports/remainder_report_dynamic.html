@@ -16,8 +16,8 @@
                 <div class="row form-row m-auto">
 
                     <div class="col-3">
-                        <select name="category" class='form-inline'>
-                            <option value="#">Выберите категорию</option>
+                        <select name="category" class='form-inline' required>
+                            <option value="">Выберите категорию</option>
                             {% for category in categories %}
                             <option value="{{category.id}}">{{category.name}}</option>
                             {% endfor %}
@@ -25,8 +25,8 @@
                     </div>
 
                     <div class="col-3">
-                        <select name="shop" id="shop" class='form-inline'>
-                            <option selected="false" disabled="disabled">Выберите торговую  точку</option>
+                        <select name="shop" id="shop" class='form-inline' required>
+                        <option value="">Выберите торговую точку</option>
                             <!-- <option value="#">Выберите ТТ</option> -->
                             {% for shop in shops %}
                             <option value="{{shop.id}}">{{shop.name}}</option>

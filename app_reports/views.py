@@ -21,18 +21,26 @@ import pandas as pd
 import xlwt
 from datetime import datetime, date
 from openpyxl.workbook import Workbook
+from django.http import HttpResponse
 
 # Create your views here.
 
+def save_in_excel(request):
+    pass
 
 def reports(request):
     return render(request, "reports/reports.html")
 
 def close_report(request):
+    if ReportTemp.objects.filter(existance_check=True).exists():
+        reports_temp=ReportTemp.objects.all()
+        for obj in reports_temp:
+            obj.delete()
+    if ReportTempId.objects.filter(existance_check=True).exists():
+        report_ids_temp=ReportTempId.objects.all()
+        for obj in report_ids_temp:
+            obj.delete()
     return redirect("index")
-
-def save_in_excel(request):
-    pass
 
 def sale_report(request):
     categories = ProductCategory.objects.all()
@@ -134,13 +142,15 @@ def delivery_report(request):
             "queryset_list": queryset_list,
         }
     return render(request, "reports/delivery_report.html", context)
-
+#=======================================================
 def remainder_report(request):
     categories = ProductCategory.objects.all()
     products=Product.objects.all()
     shops = Shop.objects.all()
     if request.method == "POST":
         date = request.POST["date"]
+        category = request.POST["category"]
+        category=ProductCategory.objects.get(id=category)
         try:
             category = request.POST["category"]
             category=ProductCategory.objects.get(id=category)
@@ -166,18 +176,21 @@ def remainder_report(request):
                 'shop': shop,
                 'array': array,
                 "shops": shops,
-                "categories": categories
+                "categories": categories,
+                "category": category
             }
             return render(request, "reports/remainder_report.html", context)
         else:
-            qs = RemainderCurrent.objects.filter(shop=shop)
+            qs = RemainderCurrent.objects.filter(shop=shop, category=category)
             context = {
                 "qs": qs,
                 'shop': shop,
                 "shops": shops,
                 "categories": categories,
+                "category": category
             }
-            return render(request, "reports/remainder_report.html", context)
+            #return render(request, "reports/remainder_report.html", context)
+            return redirect ('remainder_list', shop.id, category.id)
     else:
         context = {
             "shops": shops,
@@ -185,19 +198,50 @@ def remainder_report(request):
         }
         return render(request, "reports/remainder_report.html", context)
 
+def remainder_list (request, shop_id, category_id):
+    shop=Shop.objects.get(id=shop_id)
+    category=ProductCategory.objects.get(id=category_id)
+    remainders=RemainderCurrent.objects.filter(shop=shop, category=category).order_by('name')
+    context ={
+        'remainders':remainders,
+        'shop': shop,
+        'category': category
+    }
+    return render (request, 'reports/remainder_report_output.html', context)
+
+def update_retail_price (request, imei, shop, category):
+    shop=Shop.objects.get(id=shop)
+    category=ProductCategory.objects.get(id=category)
+    if request.method == "POST":
+        product=Product.objects.get(imei=imei)
+        #shop = request.POST["shop"]
+        #imei = request.POST["imei"]
+        #category = request.POST["category"]
+        #category=ProductCategory.objects.get(id=category)
+        #product.name=name
+        #product.category=category
+        #product.imei=imei
+        retail_price=request.POST['retail_price']
+        remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
+        remainder_current.retail_price=retail_price
+        remainder_current.save()
+        return redirect ('remainder_list', shop.id, category.id)
+
+#======================================================================
+
 def remainder_report_dynamic(request):
     products=Product.objects.all()
     categories = ProductCategory.objects.all()
     products=Product.objects.all()
     shops = Shop.objects.all()
     if request.method == "POST":
+        report_id=ReportTempId.objects.create()
         date_start = request.POST["date_start"]
         date_end = request.POST["date_end"]
         category = request.POST["category"]
         shop = request.POST["shop"]
         shop=Shop.objects.get(id=shop)
-        queryset=RemainderHistory.objects.filter(shop=shop, created__gte=date_start, created__lte=date_end)
-        report_id=ReportTempId.objects.create()
+        queryset=RemainderHistory.objects.filter(shop=shop, category=category, created__gte=date_start, created__lte=date_end)
         for product in products:
             if queryset.filter(imei=product.imei).exists():
                 queryset_list=queryset.filter(imei=product.imei)
@@ -218,38 +262,33 @@ def remainder_report_dynamic(request):
                     end_remainder=rho_end.current_remainder
                 )
             else:
-                if RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__lt=date_start).exists():
+                if RemainderHistory.objects.filter(imei=product.imei, shop=shop, category=category, created__lt=date_start).exists():
                     rhos=RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__lt=date_start)
                     rho_latest=rhos.latest('created')
                     report=ReportTemp.objects.create(
-                    report_id=report_id,
-                    name=rho_latest.name,
-                    imei=rho_latest.imei,
-                    #quantity_in=0,
-                    #quantity_out=0,
-                    initial_remainder=rho_latest.current_remainder,
-                    end_remainder=rho_latest.current_remainder
-                )
-
-
+                        report_id=report_id,
+                        name=rho_latest.name,
+                        imei=rho_latest.imei,
+                        #quantity_in=0,
+                        #quantity_out=0,
+                        initial_remainder=rho_latest.current_remainder,
+                        end_remainder=rho_latest.current_remainder
+                    )
         reports=ReportTemp.objects.filter(report_id=report_id)
-
         context = {
             'reports': reports,
             'shops': shops,
             'categories': categories,
             'date_start': date_start,
             'date_end': date_end,
-            'shop': shop
+            'shop': shop,
         }
         return render (request, 'reports/remainder_report_dynamic.html', context)
-
     context = {
         'shops': shops,
-        'categories': categories
+        'categories': categories,
     }
     return render (request, 'reports/remainder_report_dynamic.html', context)
-
 
 def item_report(request):
     if request.method == "POST":
@@ -269,7 +308,6 @@ def item_report(request):
     else:
         return render(request, "reports/item_report.html")
 
-
 def bonus_report(request):
     users = User.objects.all()
     categories=ProductCategory.objects.all()
@@ -281,8 +319,7 @@ def bonus_report(request):
         end_date = request.POST["end_date"]
         end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
         rhos=RemainderHistory.objects.filter(rho_type=doc_type)
-
-#=====================================Array Version==========================================
+    #===================================Array Version==========================================
         gen_arr=[]
         for user in users:
             arr=[]
@@ -298,9 +335,7 @@ def bonus_report(request):
                 arr.append(dict)
             user_arr = {user: arr}
             gen_arr.append(user_arr)
-#================================End of array version===============================
-
-
+    #================================End of array version===============================
                 # phones_sum=0
                 # phones=sales.filter(category=2)#Трубки
                 # for phone in phones:
@@ -321,7 +356,6 @@ def bonus_report(request):
     context = {
         'categories': categories
     }
-
     return render(request, "reports/bonus_report.html", context)
 
 def bonus_report_excel (request):
@@ -336,15 +370,14 @@ def bonus_report_excel (request):
     #end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
     rhos=RemainderHistory.objects.filter(rho_type=doc_type)
 
-# =======================Saving in Excel==============================================
+    #=======================Saving in Excel==============================================
     wb=Workbook()
     ws=wb.active
     ws.title="Bonus"
    
-# ====================================End of Saving in Excel==========================
+    #====================================End of Saving in Excel==========================
 
-#=====================================Array Version==========================================
-  
+    #=====================================Array Version==========================================
     starting_row=2
     for user in users:
         ws.cell(row=starting_row, column=1).value = user.last_name
@@ -368,8 +401,6 @@ def bonus_report_excel (request):
     wb.save('names.xlsx')
 
     return redirect ('log')
-
-
 
 def cash_report(request):
     shops = Shop.objects.all()
@@ -410,3 +441,4 @@ def credit_report(request):
         'users': users
     }
     return render(request, 'reports/credit_report.html', context)
+

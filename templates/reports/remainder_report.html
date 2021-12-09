@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="hide"> -->
+<!-- <div class="hide"> -->
     <div class="container">
         <div class="page_location">
 <!-- =====================Alert Messages Module=================== -->
@@ -28,8 +28,8 @@
 
                 <div class="row form-row m-auto">
                     <div class="col-3">
-                        <select name="category" class='form-inline' id='category'>
-                            <option value="#">Выберите категорию</option>
+                        <select name="category" class='form-inline' id='category' required>
+                            <option value="">Выберите категорию</option>
                             {% for category in categories %}
                             <option value="{{category.id}}">{{category.name}}</option>
                             {% endfor %}
@@ -37,9 +37,9 @@
                     </div>
 
                     <div class="col-3">
-                        <select name="shop" id="shop" class='form-inline'>
-                        <option selected="false" disabled="disabled">Выберите торговую  точку</option>
-                        <!-- <option value="#">Выберите ТТ</option> -->
+                        <select name="shop" id="shop" class='form-inline' required>
+                        <!-- <option selected="false" disabled="disabled">Выберите торговую  точку</option> -->
+                            <option value="">Выберите торговую точку</option>
                             {% for shop in shops %}
                             <option value="{{shop.id}}">{{shop.name}}</option>
                             {% endfor %}
@@ -86,6 +86,7 @@
             <div class="col-2"><h5>IMEI</h5></div>
             <div class="col-2"><h5>Наименование</h5></div>
             <div class="col-2"><h5>Количество</h5></div>
+            <div class="col-2"><h5>Розничная цена</h5></div>
            
 
 
@@ -95,20 +96,89 @@
             <div class="col-2">{{arr.imei}}</div>
             <div class="col-2">{{arr.name}}</div>
             <div class="col-2">{{arr.current_remainder}}</div>
+            <div class="col-2">{{arr.retail_price}}</div>
         </div>
         {% endfor %}
 
         {% for remainder in qs %}
         <div class="row m-auto">
-            <div class="col-2">{{remainder.imei}}</div>
+
+            <div class="col-2">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{remainder.imei}}">
+                    {{remainder.imei}}
+                </a>
+            </div>
+<!-- =======================Document Bootstrap Modal================================= -->
+<div class="modal fade" id="modal_{{remainder.imei}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+    aria-hidden="true" class="ModalLogHide">
+    <!-- <div class="ModalLogHide"> -->
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Карточка товара</h5>
+                <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'update_retail_price' remainder.imei shop.id %}" method="POST">
+                    {% csrf_token %}
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="shop">Торговая точка:</label>
+                            <input class='form-control' type="text" id="shop" name="shop" value='{{shop}}' readonly>
+                        </div>
+
+                        <div class="col-3">
+                            <label for="category">Вид ТМЦ</label>
+                        </div>
+                        <div class="col">
+                            
+                            <select name="category" id="category" class='form-control' readonly>
+                                <!-- <option selected="true" disabled="disabled">Выберите поставщика</option> -->
+                                <option value="{{item.category.id}}">{{remainder.category}}</option>
+                                <!-- {% for category in categories %}
+                                <option value="{{category.id}}">{{category.name}}</option>
+                                {% endfor %} -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Наименование:</label>
+                        <input class='form-control' type="text" id="name" name="name" value='{{remainder.name}}' readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">IMEI:</label>
+                        <input class='form-control' type="text" id="imei" name="imei" value='{{remainder.imei}}' readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Розничная цена:</label>
+                        <input class='form-control' type="number" id="retail_price" name="retail_price" value='{{remainder.retail_price}}'>
+                    </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="submit" class="btn btn-secondary">Сохранить</button>
+                <!-- <button type="button" class="btn btn-danger">Удалить</button> -->
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- ============================End of Document Bootstrap Modal======================================= -->
             <div class="col-2">{{remainder.name}}</div>
             <div class="col-2">{{remainder.current_remainder}}</div>
+            <div class="col-2">{{remainder.retail_price}}</div>
         </div>
         {% endfor %}
+
     </div>
 
 </div>
-</div>
+<!-- </div> -->
+
 <script>
 
     const category = document.querySelector('#category');

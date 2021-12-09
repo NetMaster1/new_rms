@@ -1584,7 +1584,8 @@ def check_delivery(request, identifier_id):
                 return redirect("delivery", identifier.id)
             else:
                 register = Register.objects.create(
-                    identifier=identifier, product=product
+                    identifier=identifier, 
+                    product=product
                 )
                 return redirect("delivery", identifier.id)
         else:
@@ -6369,7 +6370,7 @@ def check_revaluation(request, identifier_id):
     # shops = Shop.objects.all()
     categories = ProductCategory.objects.all()
     identifier = Identifier.objects.get(id=identifier_id)
-    registers = Register.objects.filter(identifier=identifier)
+    #registers = Register.objects.filter(identifier=identifier)
     # if 'imei' in request.GET:
     if request.method == "POST":
         imei = request.POST["imei"]
@@ -6380,46 +6381,35 @@ def check_revaluation(request, identifier_id):
             messages.error(request, "Вы не выбрали ТТ для переоценки")
             return redirect("revaluation", identifier.id)
         if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+            remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
+            retail_price=remainder_current.retail_price
             product = Product.objects.get(imei=imei)
             # remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
-            if Register.objects.filter(
-                identifier=identifier, product=product, shop=shop
-            ).exists():
-                register = Register.objects.get(identifier=identifier, product=product)
-                register.quantity += 1
-                register.save()
+            if Register.objects.filter(identifier=identifier, product=product, shop=shop).exists():
+                messages.error(request, "Вы уже ввели данное наименование")
                 return redirect("revaluation", identifier.id)
             else:
                 register = Register.objects.create(
-                    shop=shop, identifier=identifier, product=product
+                    shop=shop, 
+                    identifier=identifier, 
+                    product=product,
+                    current_price=retail_price
                 )
                 return redirect("revaluation", identifier.id)
         else:
-            messages.error(
-                request,
-                "Данное наименование отсутствует на данном складе. Вы не можете переоценить его.",
-            )
+            messages.error(request,"Данное наименование отсутствует на данном складе. Вы не можете переоценить его.",)
             return redirect("revaluation", identifier.id)
 
-def clear_revaluation(request, identifier_id):
-    identifier = Identifier.objects.get(id=identifier_id)
-    registers = Register.objects.filter(identifier=identifier)
-    for register in registers:
-        register.delete()
-    return redirect("revaluation", identifier.id)
+def check_revaluating_posted (request, document_id):
+    pass
 
-def delete_line_revaluation(request, imei, identifier_id):
-    identifier = Identifier.objects.get(id=identifier_id)
-    product = Product.objects.get(imei=imei)
-    items = Register.objects.filter(identifier=identifier, product=product)
-    for item in items:
-        item.delete()
-    return redirect("revaluation", identifier.id)
+def check_revaluating_unposted (request, document_id):
+    pass
 
 def revaluation(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     categories = ProductCategory.objects.all()
-    shops = Shop.objects.all()
+    shops = Shop.objects.all().exclude(retail=False)
     registers = Register.objects.filter(identifier=identifier)
     context = {
         "identifier": identifier,
@@ -6428,6 +6418,28 @@ def revaluation(request, identifier_id):
         "registers": registers,
     }
     return render(request, "documents/revaluation.html", context)
+
+def delete_line_revaluation(request, imei, identifier_id, shop_id):
+    identifier = Identifier.objects.get(id=identifier_id)
+    product = Product.objects.get(imei=imei)
+    shop=Shop.objects.get(id=shop_id)
+    items = Register.objects.filter(identifier=identifier, product=product, shop=shop)
+    for item in items:
+        item.delete()
+    return redirect("revaluation", identifier.id)
+
+def delete_line_revaluation_unposted (request, imei, document_id):
+    pass
+
+def delete_line_revaluation_posted (request, imei, document_id):
+    pass
+
+def clear_revaluation(request, identifier_id):
+    identifier = Identifier.objects.get(id=identifier_id)
+    registers = Register.objects.filter(identifier=identifier)
+    for register in registers:
+        register.delete()
+    return redirect("revaluation", identifier.id)
 
 def revaluation_input(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -6515,6 +6527,14 @@ def revaluation_input(request, identifier_id):
         messages.error(request, "Вы не ввели ни одного наименования.")
         return redirect("revaluation", identifier.id)
 
+def change_revaluation_posted (request, document_id):
+    pass
+
+def change_revaluation_unposted (request, document_id):
+    pass
+
+def unpost_revaluation (request, document_id):
+    pass
 # =================================================================================================
 def log(request):
     queryset_list = Document.objects.all().order_by("-created")
@@ -6851,6 +6871,11 @@ def change_cash_off_salary_posted(request, document_id):
         cash_receiver = User.objects.get(id=cash_receiver)
         sum = request.POST["sum"]
         sum = int(sum)
+        if dateTime:
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+        else:
+            dateTime = datetime.now()
         # =====================Checking new cho against cash_remaidner================
         if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
             chos_before = Cash.objects.filter(shop=shop, created__lt=dateTime)
@@ -7225,7 +7250,7 @@ def change_cash_off_expenses_posted(request, document_id):
         sum = int(sum)
         if dateTime:
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M:%S")
         else:
             dateTime = datetime.now()
         # =====================Checking new cho against cash_remaidner================
@@ -8313,10 +8338,24 @@ def unpost_cash_movement (request, document_id):
         return redirect ('log')
 
 # ========================================End of cash_off operations ============================
-def inventory(request):
+def identifier_inventory(request):
+    if request.user.is_authenticated:
+        identifier = Identifier.objects.create()
+        return redirect("inventory", identifier.id)
+    else:
+        return redirect("login")
+
+def inventory(request, identifier_id):
+    identifier=Identifier.objects.get(id=identifier_id)
     shops = Shop.objects.all()
     categories = ProductCategory.objects.all()
     if request.method == "POST":
+        doc_type=DocumentType.objects.get(name='Инвентаризация ТМЦ')
+        document=Document.objects.create(
+            title=doc_type,
+            user=request.user,
+            identifier=identifier
+        )
         shop = request.POST["shop"]
         shop = Shop.objects.get(id=shop)
         category = request.POST["category"]
@@ -8329,14 +8368,36 @@ def inventory(request):
             dateTime = datetime.now()
         if RemainderCurrent.objects.filter(category=category, shop=shop).exists():
             queryset = RemainderCurrent.objects.filter(category=category, shop=shop)
+            for obj in queryset:
+                register=Register.objects.create(
+                    document=document,
+                    shop=shop,
+                    name=obj.name,
+                    imei=obj.imei,
+                    quantity=obj.current_remainder,
+                    price=obj.retail_price
+                )
+            registers=Register.objects.filter(document=document)
         else:
-            messages.error(
-                request,
-                "Товаров данной категории на данном складе не найдено",
-            )
-            return redirect("inventory")
-
-        сontext = {"queryset": queryset, "shops": shops, "categories": categories}
+            messages.error(request,"Товаров данной категории на данном складе не найдено")
+            return redirect("inventory", identifier.id)
+        сontext = {
+            "registers": registers, 
+            "shops": shops, 
+            "categories": categories,
+            'document': document,
+            'identifier': identifier
+            }
         return render(request, "documents/inventory.html", сontext)
-    context = {"shops": shops, "categories": categories}
-    return render(request, "documents/inventory.html", context)
+    else:
+        context = {
+            "shops": shops,
+            "categories": categories,
+            "identifier": identifier,
+            }
+        return render(request, "documents/inventory.html", context)
+
+def post_inventory (request, identifier_id):
+    document=Document.objects.get(identifier=identifier_id)
+    identifier.delete()
+    return redirec ('log')

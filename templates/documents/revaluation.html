@@ -100,9 +100,9 @@
                             <div class="col-1"><label for="quantity">
                                     <h5>Кол-во</h5>
                                 </label></div>
-                            <!-- <div class="col-2"><label for="price_current">
+                            <div class="col-2"><label for="price_current">
                                     <h5>Текущая цена</h5>
-                                </label></div> -->
+                                </label></div>
                             <div class="col-2"><label for="price_new">
                                     <h5>Новая цена</h5>
                                 </label></div>
@@ -127,9 +127,9 @@
                             <input type="number" class='form-control' id="quantity" name="quantity"
                                 value='{{register.quantity}}' required>
                         </div>
-                        <!-- <div class="col-2">
-                            <input type="number" class='form-control' id="price_current" name="price_current" maxlength='50' value='{}' required>
-                        </div> -->
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="price_current" name="price_current" maxlength='50' value='{{register.current_price}}' required>
+                        </div>
                         <div class="col-2">
                             <input type="number" class='form-control' id="price_new" name="price_new" maxlength='50' required>
                         </div>
@@ -137,7 +137,7 @@
                     <input type="number" class='form-control' id="sub_total" name="sub_total" maxlength='50'>
                 </div> -->
                         <div class="col">
-                            <a href="{% url 'delete_line_return' register.product.imei identifier.id %}">
+                            <a href="{% url 'delete_line_revaluation' register.product.imei identifier.id register.shop.id %}">
                                 <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                             </a>
                         </div>

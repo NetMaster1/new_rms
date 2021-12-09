@@ -47,9 +47,12 @@ class Register(models.Model):
     shop_receiver = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_receiver")
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
     product = models.ForeignKey(Product, null=True, on_delete=models.DO_NOTHING)
+    imei=models.CharField(max_length=250, null=True)
+    name=models.CharField(max_length=250, null=True)
     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     quantity = models.IntegerField(default=1)
+    current_price = models.IntegerField(null=True)#used for revalutaion document
     price = models.IntegerField(default=0)
     contributor = models.ForeignKey(Contributor, null=True, on_delete=models.DO_NOTHING)
     cash_receiver = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)

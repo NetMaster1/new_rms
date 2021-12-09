@@ -18,6 +18,7 @@ class Supplier (models.Model):
 class Shop (models.Model):
     name = models.CharField(max_length=50)
     sale_k=models.IntegerField(default=1)
+    retail = models.BooleanField(default=True)#mark for retail shops
 
     def __str__(self):
         return self.name

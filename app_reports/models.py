@@ -28,6 +28,7 @@ class ProductHistory (models.Model):
     
 class ReportTempId (models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
+    existance_check = models.BooleanField(default=True)#service mark
     def __int__(self):
         return self.id
 
@@ -39,6 +40,7 @@ class ReportTemp (models.Model):
     quantity_out = models.IntegerField(null=True)
     initial_remainder = models.IntegerField(null=True)
     end_remainder = models.IntegerField(null=True)
+    existance_check = models.BooleanField(default=True)#service mark
 
     def __int__(self):
         return self.id
