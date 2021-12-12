@@ -104,7 +104,7 @@
         </div>
     </div>
 
-<form action="{% url 'post_inventory' identifier.id %}" method="POST">
+<form action="{% url 'inventory_input' identifier.id %}" method="POST">
     {% csrf_token %}
         {% for item in registers %}
         <div class="row m-auto mb-1">
@@ -128,10 +128,13 @@
         </div>
         {% endfor %}
         <div class="row m-auto mt-3 ">
-            <div class="col-2">
+            <div class="col-1">
                 <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
             </div>
-
+            <div class="col-2">
+                <label for="post_check"> С проведением </label>
+                <input type="checkbox" id="post_check" name="post_check" value='checked'>
+            </div>
     
             </form>
         </div>

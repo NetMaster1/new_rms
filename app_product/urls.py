@@ -163,6 +163,18 @@ urlpatterns = [
     
     path ('identifier_inventory', views.identifier_inventory, name='identifier_inventory'),
     path ('inventory/<int:identifier_id>', views.inventory, name='inventory'),
-    path ('post_inventory/<int:identifier_id>', views.post_inventory, name='post_inventory'),
+    path ('inventory_list/<int:identifier_id>', views.inventory_list, name='inventory_list'),
+    path ('inventory_input/<int:identifier_id>', views.inventory_input, name='inventory_input'),
+    path ('change_inventory_posted/<int:document_id>', views.change_inventory_posted, name='change_inventory_posted'),
+    path ('change_inventory_unposted/<int:document_id>', views.change_inventory_unposted, name='change_inventory_unposted'),
+    path ('unpost_inventory/<int:document_id>', views.unpost_inventory, name='unpost_inventory'),
+
+    path ('check_inventory_unposted/<int:document_id>', views.check_inventory_unposted, name='check_inventory_unposted'),
+    path ('check_inventory_posted/<int:document_id>', views.check_inventory_posted, name='check_inventory_posted'),
+    path ('check_inventory/<int:identifier_id>', views.check_inventory, name='check_inventory'),
+
+    path ('enter_new_product_inventory_unposted/<int:document_id>', views.enter_new_product_inventory_unposted, name='enter_new_product_inventory_unposted'),
+    path ('enter_new_product_inventory_posted/<int:document_id>', views.enter_new_product_inventory_posted, name='enter_new_product_inventory_posted'),
+    path ('enter_new_product_inventory/<int:document_id>', views.enter_new_product_inventory, name='enter_new_product_inventory'),
     
 ]

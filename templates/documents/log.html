@@ -192,6 +192,18 @@
         </div>
         {% endif %}
         
+        {% elif document.title.name == 'Инвентаризация ТМЦ' %}
+        {% if document.posted == True %}
+        <div class="col-2"><a href="{% url 'change_inventory_posted' document.id %}">{{document.title}}
+                {{document.id}}</a>
+        </div>
+        {% else %}
+        <div class="col-2"><a href="{% url 'change_inventory_unposted' document.id %}">
+                {{document.title}}{{document.id}}</a>
+        </div>
+        {% endif %}
+
+
 
         {% elif document.title.name == 'Продажа ТМЦ' %}
         <div class="col-2"><a href="{% url 'pre_change_sale' document.id %}">{{document.title}} {{document.id}}</a></div>
