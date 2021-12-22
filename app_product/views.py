@@ -63,11 +63,11 @@ def index(request):
 def search(request):
     if request.method == "POST":
         keyword = request.POST["keyword"]
-        try:
-            remainders = RemainderCurrent.objects.filter(name__icontains=keyword)
-        except:
+        if RemainderCurrent.objects.filter(name__icontains=keyword).exists():
+            remainders=RemainderCurrent.objects.filter(name__icontains=keyword)
+        else:
             messages.error(request, "УУУУУПС. Такого наименования не существует")
-            return redirect("seach")
+            return redirect("search")
 
         context = {"remainders": remainders}
         return render(request, "documents/search_results.html", context)

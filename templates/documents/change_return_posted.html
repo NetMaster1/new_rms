@@ -132,11 +132,16 @@
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
                                     value='{{register.sub_total}}' maxlength='50'>
                             </div>
+
+                        {%for group in request.user.groups.all %}
+                        {%if group.name == 'admin'%}
                             <div class="col">
                                 <a href="{% url 'delete_line_posted_return' document.id register.product.imei  %}">
                                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
                                 </a>
                             </div>
+                        {%endif%}
+                        {%endfor%}
                         </div>
                         {% endfor %}
             {%for group in request.user.groups.all %}

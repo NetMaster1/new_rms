@@ -3,7 +3,7 @@ from django.db.models import query
 from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product
 from app_cash.models import Cash, Credit, Card
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from app_product.models import (
     Product,
     RemainderHistory,
@@ -32,6 +32,7 @@ def reports(request):
     return render(request, "reports/reports.html")
 
 def close_report(request):
+    users = Group.objects.get(name='sales').user_set.all()
     if ReportTemp.objects.filter(existance_check=True).exists():
         reports_temp=ReportTemp.objects.all()
         for obj in reports_temp:
@@ -40,7 +41,10 @@ def close_report(request):
         report_ids_temp=ReportTempId.objects.all()
         for obj in report_ids_temp:
             obj.delete()
-    return redirect("index")
+    if request.user in users:
+        return redirect ('sale_interface')
+    else:
+        return redirect("log")
 
 def sale_report(request):
     categories = ProductCategory.objects.all()

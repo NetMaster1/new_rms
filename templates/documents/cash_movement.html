@@ -110,14 +110,25 @@
                             {% endfor %}
                     </form>
 
-
+            {%for group in request.user.groups.all %}
+            {%if group.name == 'admin'%}
                     <div class="col-2">
                         <a href="{% url 'log' %}">
                             <input type="button" value="Закрыть без сохранения"
                                 class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
+                    {% else %}
+                    <div class="col-2">
+                        <a href="{% url 'sale_interface' %}">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+            {% endif %}
+            {% endfor %}
                 </div>
+       
+                
 
             </div>
         </div>
