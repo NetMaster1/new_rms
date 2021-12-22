@@ -22,6 +22,7 @@ class Document(models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     sum = models.IntegerField(null=True)
+    base_doc = models.IntegerField(null=True)#link between different documents
     posted = models.BooleanField(default=False)
     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
 
@@ -276,6 +277,7 @@ class RemainderHistory(models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)
+    inventory_doc = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name="inventory" ,null=True)
     rho_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)

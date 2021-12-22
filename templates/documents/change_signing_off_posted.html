@@ -7,6 +7,7 @@
             <div class="row m-2 pt-2">
                 <div class="col">
                     <h3>Документ {{document.title}} # {{document.id}} (проведен) </h3>
+                    <h3>Основание {{base_document.title}} #{{document.base_doc}} от {{base_document.created}}</h3>
                 </div>
                 <!-- =====================Alert Messages Module=================== -->
                 <div class="container">
@@ -23,6 +24,7 @@
                 </div>
                 <!-- ===================End of Alert Messages Module================ -->
 
+                {% if not document.base_doc %}
                 <div class="col-6 border rounded p-3">
                     <form action="{% url 'check_signing_off_posted' document.id %}" method="POST" class='check_button'>
                         {% csrf_token %}
@@ -39,6 +41,7 @@
                         </div>
                     </form>
                 </div>
+                {% endif %}
           
             </div>
 
@@ -129,29 +132,35 @@
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
                                     value='{{register.sub_total}}' maxlength='50'>
                             </div>
+                            {% if not document.base_doc %}
                             <div class="col">
                                 <a href="{% url 'delete_line_posted_signing_off' register.product.imei document.id %}">
                                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                                 </a>
                             </div>
+                            {% endif %}
                         </div>
                         {% endfor %}
 
+                    {% if not document.base_doc %}
                         <div class="row m-auto mt-3 ">
                             <div class="col-2">
                                 <input type="submit" value="Сохранить и провести"
                                     class="btn btn-sm btn-block btn-outline-dark">
                             </div>
+                    {% endif %}
                     </form>
 
+                    {% if not document.base_doc %}
                     <div class="col-3">
                         <a href="{% url 'unpost_signing_off' document.id %}">
                             <input type="button" value="Сделать непроведенным"
                                 class="btn btn-sm btn-block btn-outline-dark clear_storage">
                         </a>
                     </div>
+                    {% endif %}
 
-                    <div class="col-2">
+                    <div class="col-2 mt-3">
                         <a href="{% url 'close_edited_document' document.id %}">
                             <input type="button" value="Закрыть без сохранения"
                                 class="btn btn-sm btn-block btn-outline-dark clear_storage">

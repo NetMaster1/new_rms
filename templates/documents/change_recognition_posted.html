@@ -7,6 +7,7 @@
             <div class="row m-2 pt-2">
                 <div class="col">
                     <h3>Документ {{document.title}} # {{document.id}} (проведен) </h3>
+                    <h3>Основание {{base_document.title}} #{{document.base_doc}} от {{base_document.created}}</h3>
                 </div>
         <!-- =====================Alert Messages Module=================== -->
         <div class="container">
@@ -24,7 +25,7 @@
         <!-- ===================End of Alert Messages Module================ -->
 
 
-
+{% if not document.base_doc %}
 {%for group in request.user.groups.all %}
 {%if group.name == 'admin'%}
     <div class="col-6 border rounded p-3">
@@ -103,6 +104,7 @@
     <!-- =================================End of Modal Body======================================== -->
 {%endif%}    
 {%endfor%}    
+{% endif %}
 </div>
 
             <div class="row m-2 pb-2">
@@ -120,14 +122,6 @@
                             <div class="col">
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
                                     value="{{document.created}}">
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="col-2">
-                                <label for="supplier">
-                                    <h5>Поставщик</h5>
-                                </label>
                             </div>
                         </div>
 
@@ -200,28 +194,37 @@
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
                                     value='{{register.sub_total}}' maxlength='50'>
                             </div>
+                            {% if not document.base_doc %}
                             <div class="col">
                                 <a href="{% url 'delete_line_recognition_posted' register.product.imei document.id  %}">
                                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
                                 </a>
                             </div>
+                            {% endif %}
+
                         </div>
                         {% endfor %}
         {%for group in request.user.groups.all %}
         {%if group.name == 'admin'%}
+                        
                         <div class="row m-auto mt-3 ">
+                            {% if not document.base_doc %}
                             <div class="col-2">
                                 <input type="submit" value="Сохранить и провести"
                                     class="btn btn-sm btn-block btn-outline-dark">
                             </div>
+                            {% endif %}
+
                     </form>
 
+                    {% if not document.base_doc %}
                     <div class="col-3">
                         <a href="{% url 'unpost_recognition' document.id %}">
                             <input type="button" value="Сделать непроведенным"
                                 class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
+                    {% endif %}
         {%endif%}
         {%endfor%}
                     <div class="col-2">
