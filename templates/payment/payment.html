@@ -4,9 +4,6 @@
 <div class="container">
 <div class="page_location">
 
-    <div class="row m-3">
-
-    
             <div class="row m-2">
                 <div class="col">
                     <h3>Выберите тип оплаты</h3>
@@ -17,8 +14,9 @@
         <div class="col">
             <a href="#">
                 <input type="submit" value="Оплата наличными" class="btn btn-sm btn-block btn-outline-dark btn_modal_cash">
-        </a>
+            </a>
             </div>
+    </div>
  <!-- ===========================Modal Body For Paying Cash================================= -->
 <div class="enterModalCash">
     <div class="modal-dialog">
@@ -30,18 +28,21 @@
             <div class="modal-body">
                 <form action="{% url 'sale_input_cash' identifier.id client.id cashback_off %}" method="POST">
                     {% csrf_token %}
-                    {% for group in request.user.groups.all %}
-                    {% if group.name == 'admin' %}
+                    
                     <div class="form-row">
                         <div class="col-2">
                             <label for="date">Дата</label>
                         </div>
                         <div class="col">
+                        {% for group in request.user.groups.all %}
+                        {% if group.name == 'admin' %}
                             <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today'><br>
+                        {% else%}
+                            <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today' readonly><br>
                         </div>
                     </div>
-                    {% endif %}
-                    {% endfor %}
+                        {% endif %}
+                        {% endfor %}
 
                     <div class='form-inline'>
                         <div class="row m-2">
@@ -80,35 +81,26 @@
                     Сумма к оплате с учетом кэшбэка {{sum_to_pay}} руб.
                     </div>
                 </div>
-                  
-
-
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary btn_close_cash"
                             data-bs-dismiss="modal">Закрыть</button>
                  
                         <button type="submit" class="btn btn-secondary ">Оплатить</button>
+                    </div>
                 </form>
-
-
-
- </div>
         </div>
     </div>
 </div>
-    <!-- ==============================End of Modal Body For Paying Cash====================================== -->
+</div>
+</div>
+ <!-- ==========================End of Modal Body For Paying Cash====================================== -->
  
-
-
-
 <!-- =====================Trigger of paying Credit Modal======================= -->
             <div class="row mt-2">
                 <div class="col-5">
                 <input type="submit" value="Оплата в кредит" class="btn btn-sm  btn-outline-dark btn_modal_credit ">
                 </div>
             </div>
-<!-- ===================== End of Trigger of paying Credit Modal======================= -->
-
 <!-- ==============================Modal Body For Paying Credit====================================== -->
 <div class="enterModalCredit">
     <div class="modal-dialog">
@@ -174,7 +166,7 @@
         </div>
     </div>
 </div>
-<!-- ==============================End of Modal Body For Paying Credit====================================== -->
+<!-- =============================End of Modal Body For Paying Credit====================================== -->
 
 <!-- =====================Trigger of paying Card Modal======================= -->
 <div class="row mb-2">
@@ -182,7 +174,6 @@
         <input type="submit" value="Оплата картой" class="btn btn-sm  btn-outline-dark btn_modal_card ">
     </div>
 </div>
-<!-- ===================== End of Trigger of paying Card Modal======================= -->
 
 <!-- ==============================Modal Body For Paying Card====================================== -->
 <div class="enterModalCard">
@@ -259,7 +250,6 @@
         <input type="submit" value="Сложная оплата" class="btn btn-sm  btn-outline-dark btn_modal_complex ">
     </div>
 </div>
-<!-- ===================== End of Trigger of paying Complex Modal======================= -->
 
 <!-- ==============================Modal Body For Paying Complex====================================== -->
 <div class="enterModalComplex">
@@ -367,12 +357,10 @@
                     <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
                 </a>
             </div>
-        </div>
+
     </div>
 </div>
 </div>
-</div>
-
 
 
 
@@ -384,19 +372,14 @@
     const btn_close_cash = document.querySelector('.btn_close_cash')
     btn_modal_cash.addEventListener('click', openModalCash)
     btn_close_cash.addEventListener('click', closeModalCash)
-    function openModalCash() {
-            enterModalCash.classList.add('openModal')
-        }
-    function closeModalCash() {
-            enterModalCash.classList.remove('openModal')
-        }
-
-
+    function openModalCash() {enterModalCash.classList.add('openModal')}
+    function closeModalCash() {enterModalCash.classList.remove('openModal')}
     const btn_modal_credit = document.querySelector('.btn_modal_credit')
     const enterModalCredit = document.querySelector('.enterModalCredit')
     const btn_close_credit = document.querySelector('.btn_close_credit')
     btn_modal_credit.addEventListener('click', openModalCredit)
     btn_close_credit.addEventListener('click', closeModalCredit)
+
     function openModalCredit() {
         enterModalCredit.classList.add('openModal')
     }
@@ -410,6 +393,7 @@
     const btn_close_card = document.querySelector('.btn_close_card')
     btn_modal_card.addEventListener('click', openModalCard)
     btn_close_card.addEventListener('click', closeModalCard)
+
     function openModalCard() {
         enterModalCard.classList.add('openModal')
     }
@@ -422,6 +406,7 @@
     const btn_close_complex = document.querySelector('.btn_close_complex')
     btn_modal_complex.addEventListener('click', openModalComplex)
     btn_close_complex.addEventListener('click', closeModalComplex)
+
     function openModalComplex() {
         enterModalComplex.classList.add('openModal')
     }
@@ -437,6 +422,7 @@
     const btn_close_cashback_off = document.querySelector('.btn_close_cashback_off')
     //btn_cashback_off.addEventListener('click', openModalCashbackOff)
     //btn_close_cashback_off.addEventListener('click', closeModalCashbackOff)
+
     function openModalCashbackOff() {
         cashback_off_modal.classList.add('openModal')
     }

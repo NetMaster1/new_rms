@@ -70,10 +70,12 @@ urlpatterns = [
     path ('list_sale', views.list_sale, name='list_sale'),
     
     path ('sale_input_card/<int:identifier_id>/<int:client_id>', views.sale_input_card, name='sale_input_card'),
-    path ('pre_change_sale/<int:document_id>', views.pre_change_sale, name='pre_change_sale'),
-    path ('change_sale/<int:document_id>/<identifier_id>/', views.change_sale, name='change_sale'),
-    path ('check_sale_change/<int:document_id>/<identifier_id>/', views.check_sale_change, name='check_sale_change'),
-    path ('delete_line_change_sale/<int:document_id>/<identifier_id>/<int:imei>', views.delete_line_change_sale, name='delete_line_change_sale'),
+    path ('change_sale_posted/<int:document_id>/', views.change_sale_posted, name='change_sale_posted'),
+    path ('change_sale_unposted/<int:document_id>/', views.change_sale_unposted, name='change_sale_unposted'),
+    path ('unpost_sale/<int:document_id>/', views.unpost_sale, name='unpost_sale'),
+
+    path ('check_sale_posted/<int:document_id>/', views.check_sale_posted, name='check_sale_posted'),
+    path ('delete_line_change_sale/<int:document_id>/<int:imei>', views.delete_line_change_sale, name='delete_line_change_sale'),
     path ('sale_interface', views.sale_interface, name='sale_interface'),
 
     # ==============================Return====================================

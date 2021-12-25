@@ -3,14 +3,14 @@
 <div class="hide">
 
     <div class="container">
-        <div class="page_location">
+        <div class="page_location_posted">
             <div class="row m-2 pt-2">
                 <div class="col">
                     <h3>Изменить документ {{document.title}} # {{document.id}}</h3>
                 </div>
 
                 <div class="col-6 border rounded p-3">
-                    <form action="{% url 'check_sale_change' document.id identifier.id%}" method="POST">
+                    <form action="{% url 'check_sale_posted' document.id%}" method="POST">
                         {% csrf_token %}
                         <div class="row m-1">
                             <div class="col-6">
@@ -33,7 +33,7 @@
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'change_sale' document.id identifier.id %}" method="POST">
+                    <form action="{% url 'change_sale_posted' document.id %}" method="POST">
                         {% csrf_token %}
 
                         <div class="form-row">
@@ -138,21 +138,34 @@
                             </div>
                             <div class="col">
                                 <a
-                                    href="{% url 'delete_line_change_sale' document.id identifier.id register.product.imei  %}">
+                                    href="{% url 'delete_line_change_sale' document.id register.product.imei  %}">
                                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                                 </a>
                             </div>
                         </div>
                         {% endfor %}
 
-                        <div class="row m-auto mt-3 ">
-                            <div class="col-2">
-                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
-                            </div>
-                    </form>
+
+                    {%for group in request.user.groups.all %}
+                    {%if group.name == 'admin'%}
+                    <div class="row m-auto mt-3 ">
+                        <div class="col-2">
+                            <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                        </form>
+                    
+                        <div class="col-3">
+                            <a href="{% url 'unpost_sale' document.id %}">
+                                <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
+                            </a>
+                        </div>
+                        {% endif%}
+                        {% endfor%}
+
+
 
                     <div class="col-2">
-                        <a href="{% url 'close_edited_document' identifier.id %}">
+                        <a href="{% url 'close_edited_document' document.id %}">
                             <input type="button" value="Закрыть без сохранения"
                                 class="btn btn-sm btn-block btn-outline-dark">
                         </a>
