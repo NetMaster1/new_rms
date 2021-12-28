@@ -41,8 +41,8 @@ import decimal
 import random
 import pandas
 
-# import datetime
-from datetime import datetime
+import datetime
+#from datetime import datetime
 import pytz
 from twilio.rest import Client
 
@@ -113,6 +113,7 @@ def close_edited_document(request, document_id):
 
 def close_unposted_document(request, document_id):
     document = Document.objects.get(id=document_id)
+    users=Group.objects.get(name="sales").user_set.all()
     registers = Register.objects.filter(document=document, new=True)
     for register in registers:
         register.delete()
@@ -120,7 +121,10 @@ def close_unposted_document(request, document_id):
     for register in registers:
         register.deleted = False
         register.save()
-    return redirect("log")
+    if request.user in users:
+        return redirect ('sale_interface')
+    else:
+        return redirect("log")
 
 def clear_transfer(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -152,6 +156,7 @@ def clear_recognition(request, identifier_id):
 
 def delete_unposted_document(request, document_id):
     document = Document.objects.get(id=document_id)
+    users=Group.objects.get(name="sales").user_set.all()
     if Register.objects.filter(document=document).exists():
         registers = Register.objects.filter(document=document)
         for register in registers:
@@ -162,12 +167,18 @@ def delete_unposted_document(request, document_id):
             #rho.update(inventory_doc = None)
             rho.inventory_doc = None
             rho.save()
+    if PaymentRegister.objects.filter(document=document).exists():
+        cash_temp_reg=PaymentRegister.objects.get(document=document)
+        cash_temp_reg.delete()
     if Document.objects.filter(base_doc=document).exists():
         docs=Document.objects.filter(base_doc=document)
         for doc in docs:
             doc.delete()
     document.delete()
-    return redirect("log")
+    if request.user in users:
+        return redirect ('sale_interface')
+    else:
+        return redirect("log")
 # ================================Sale Operations=================================
 def identifier_sale(request):
     if request.user.is_authenticated:
@@ -736,9 +747,11 @@ def change_sale_posted(request, document_id):
     return render(request, "documents/change_sale_posted.html", context)
 
 def change_sale_unposted (request, document_id):
+    users=Group.objects.get(name="sales").user_set.all()
     document=Document.objects.get(id=document_id)
+    doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
     categories=ProductCategory.objects.all()
-    registers=Register.objects.filter(document=document)
+    registers=Register.objects.filter(document=document).exclude(deleted=True)
     temp_cash_reg=PaymentRegister.objects.get(document=document)
     shop=registers.first().shop
     shops=Shop.objects.all()
@@ -769,22 +782,126 @@ def change_sale_unposted (request, document_id):
         if imeis:
             # posting the document
             if post_check == True:
-                pass
-
-
-
-
-
+                document_sum=0
+                product = Product.objects.get(imei=imeis[i])
+                # cashback calculations
+                # if client.f_name != "default":
+                #     cashback = Cashback.objects.get(category=product.category)
+                #     client.accum_cashback += (
+                #         decimal.Decimal(sub_totals[i] / 100) * cashback.size
+                #     )
+                #     client.save()
+                # checking docs before remainder_history
+                if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
+                    sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)
+                    remainder_history = sequence_rhos_before.latest("created")
+                    remainder_current = RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
+                    remainder_current.current_remainder = (remainder_history.current_remainder)
+                    remainder_current.save()
+                else:
+                    messages.error(request, "Данное наименование отсутствует на данном складе.")
+                    return redirect("change_sale_unposted", document.id)
+                # creating remainder_history
+                remainder_history = RemainderHistory.objects.create(
+                    document=document,
+                    created=dateTime,
+                    rho_type=doc_type,
+                    user=request.user,
+                    shop=shop,
+                    product_id=product,
+                    category=product.category,
+                    imei=imeis[i],
+                    name=names[i],
+                    retail_price=prices[i],
+                    pre_remainder=remainder_current.current_remainder,
+                    incoming_quantity=0,
+                    outgoing_quantity=quantities[i],
+                    current_remainder=remainder_current.current_remainder
+                    - int(quantities[i]),
+                    sub_total=int(int(quantities[i]) * int(prices[i])),
+                )
+                document_sum+=remainder_history.sub_total
+                remainder_current.current_remainder =remainder_history.current_remainder
+                remainder_current.save()
+                # AvPrice.objects.filter(imei=imeis[i])
+                # av_price_obj = AvPrice.objects.get(imei=imeis[i])
+                # av_price_obj.current_remainder -= int(quantities[i])
+                # av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
+                # av_price_obj.save()
+                  # checking docs after remainder_history
+                if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
+                    sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created)
+                    sequence_rhos_after = sequence_rhos_after.all().order_by("created")
+                    for obj in sequence_rhos_after:
+                        obj.pre_remainder = remainder_current.current_remainder
+                        obj.current_remainder = (
+                            remainder_current.current_remainder
+                            + obj.incoming_quantity
+                            - obj.outgoing_quantity
+                        )
+                        obj.save()
+                        remainder_current.current_remainder = obj.current_remainder
+                        remainder_current.save()
+                document.sum = document_sum
+                document.posted=True
+                document.save()
+                # operations with cash
+                if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
+                    chos = Cash.objects.filter(shop=shop, created__lt=dateTime)  # cash history objects
+                    cho_before = chos.latest("created")  # cash history object
+                    cash_pre_remainder = cho_before.current_remainder
+                else:
+                    cash_pre_remainder = 0
+                cash = Cash.objects.create(
+                    shop=shop,
+                    created=dateTime,
+                    document=document,
+                    user=request.user,
+                    pre_remainder=cash_pre_remainder,
+                    cash_in=document_sum,
+                    current_remainder=cash_pre_remainder + document_sum,
+                )
+                if CashRemainder.objects.filter(shop=shop).exists():
+                    cash_remainder = CashRemainder.objects.get(shop=shop)
+                else:
+                    cash_remainder = CashRemainder.objects.create(
+                        shop=shop, 
+                        remainder=0
+                    )
+                cash_remainder.remainder = cash.current_remainder
+                cash_remainder.save()
+                if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
+                    sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created)
+                    sequence_chos_after = sequence_chos_after.all().order_by("created")
+                    for obj in sequence_chos_after:
+                        obj.pre_remainder = cash_remainder.remainder
+                        obj.current_remainder = (
+                            cash_remainder.remainder + obj.cash_in - obj.cash_out
+                        )
+                        obj.save()
+                        cash_remainder.remainder = obj.current_remainder
+                        cash_remainder.save()
+                if PaymentRegister.objects.filter(document=document).exists():
+                    temp_cash_reg=PaymentRegister.objects.get(document=document)
+                    temp_cash_reg.delete()
+                # end of operations with cash
+                for register in registers:
+                    register.delete()
+                if request.user in users:
+                    return redirect ('sale_interface')
+                else:
+                    return redirect("log")
+            #saving the document
             else:
                 n = len(names)
                 document_sum = 0
                 for i in range(n):
                     product = Product.objects.get(imei=imeis[i])
-                    if Register.objects.filter(document=document, product=product, deleted=True).exists():
-                        register = Register.objects.filter(document=document, product=product, deleted=True)
+                    if Register.objects.filter(
+                        document=document, deleted=True).exists():
+                        register = Register.objects.filter(document=document, deleted=True)
                         register.delete()
                     else:
-                        register = Register.objects.get(document=document, product=product)
                         register.price = prices[i]
                         register.quantity = quantities[i]
                         register.sub_total = sub_totals[i]
@@ -795,6 +912,11 @@ def change_sale_unposted (request, document_id):
                         document_sum += int(register.sub_total)
                 document.sum = document_sum
                 document.save()
+                if request.user in users:
+                    return redirect ('sale_interface')
+                else:
+                    return redirect("log")
+
         else:
             messages.error(request, "Вы не ввели ни одного наименования.")
             return redirect("change_sale_unposted", document.id)
@@ -896,11 +1018,11 @@ def unpost_sale (request, document_id):
         return redirect ('sale_interface')
     else:
         return redirect("log")
-        
-     
+            
 def check_sale_unposted (request, document_id):
     document = Document.objects.get(id=document_id)
     registers = Register.objects.filter(document=document)
+    shop=registers.first().shop
     if request.method == "POST":
         imei = request.POST["imei"]
         if Product.objects.filter(imei=imei).exists():
@@ -914,7 +1036,14 @@ def check_sale_unposted (request, document_id):
                 register.save()
                 return redirect("change_sale_unposted", document.id)
             else:
-                register = Register.objects.create(document=document, product=product, new=True)
+                remainder_current=RemainderCurrent.objects.get(shop=shop, imei=product.imei)
+                register = Register.objects.create(
+                    document=document, 
+                    product=product,
+                    price=remainder_current.retail_price,
+                    new=True,
+                    sub_total=remainder_current.retail_price
+                )
                 return redirect("change_sale_unposted", document.id)
         else:
             messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
@@ -924,7 +1053,8 @@ def delete_line_change_sale_unposted(request, document_id, imei):
     document = Document.objects.get(id=document_id)
     product = Product.objects.get(imei=imei)
     item = Register.objects.get(document=document, product=product)
-    item.delete()
+    item.deleted=True
+    item.save()
     return redirect("change_sale_unposted", document.id)
 
 def sale_input_complex(request, identifier_id, client_id):
@@ -1210,7 +1340,7 @@ def delete_sale_input(request, document_id):
 
 def sale_interface (request):
     if request.user.is_authenticated:
-        queryset_list = Document.objects.filter(user=request.user).order_by("-created")
+        queryset_list = Document.objects.filter(user=request.user, created__date=date.today()).order_by("-created")
         doc_types = DocumentType.objects.all()
         users = User.objects.all()
         suppliers = Supplier.objects.all()
@@ -2131,11 +2261,8 @@ def change_delivery_unposted(request, document_id):
                 for i in range(n):
                     product = Product.objects.get(imei=imeis[i])
                     if Register.objects.filter(
-                        document=document, product=product, deleted=True
-                    ).exists():
-                        register = Register.objects.filter(
-                            document=document, product=product, deleted=True
-                        )
+                        document=document, deleted=True).exists():
+                        register = Register.objects.filter(document=document, deleted=True)
                         register.delete()
                     else:
                         register = Register.objects.get(
@@ -6375,7 +6502,12 @@ def unpost_revaluation (request, document_id):
     pass
 # =================================================================================================
 def log(request):
-    queryset_list = Document.objects.all().order_by("-created")
+    #year=datetime.datetime.now().year
+    #queryset_list = Document.objects.filter(created__year=year).order_by("-created")
+    #month=datetime.datetime.now().month
+    #queryset_list = Document.objects.filter(created__month=month).order_by("-created")
+    date=datetime.datetime.now()
+    queryset_list = Document.objects.filter(created__date=date).order_by("-created")
     doc_types = DocumentType.objects.all()
     users = User.objects.all()
     suppliers = Supplier.objects.all()

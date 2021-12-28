@@ -8,6 +8,20 @@
                 <div class="col">
                     <h3>Изменить документ {{document.title}} # {{document.id}}</h3>
                 </div>
+        <!-- =====================Alert Messages Module=================== -->
+        <div class="container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">
+                <!-- <button class="close" data-dismiss="alert">
+                            <small><sup>x</sup></small>
+                        </button> -->
+                {{ message }}
+            </div>
+            {% endfor%}
+            {% endif%}
+        </div>
+        <!-- ===================End of Alert Messages Module================ -->
             </div>
 
                 <div class="row border rounded m-2 p-3">
@@ -27,61 +41,6 @@
                         </div>
                     </form>
                     </div>
-
-    <!-- ==============================Modal Trigger================== -->
-    <div class="col-6">
-        <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
-            Внести новое наименование в базу данных
-        </button>
-    </div>
-    <!-- ============================End of Modal Trigger========================= -->
-    
-    <!-- ===========================Modal Body================================= -->
-    <div class="enterDeliveryModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Введите новое наименование</h5>
-                    <!-- <button type="button" class="btn_close"></button> -->
-                </div>
-                <div class="modal-body">
-                    <form action="{% url 'enter_new_product_from_unposted' document.id%}" method="POST">
-                        {% csrf_token %}
-    
-                        <div class="form-row">
-                            <div class="col-3">
-                                <label for="category">Вид ТМЦ</label>
-                            </div>
-                            <div class="col">
-                                <select name="category" id="category" class='form-control' required>
-                                    <!-- <option selected="false" disabled="disabled">Выберите категорию товара</option> -->
-                                    <option value="">Выберите категорию</option>
-                                    {% for category in categories %}
-                                    <option value="{{category.id}}">{{category.name}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="name">Наименование:</label>
-                            <input class='form-control' type="text" id="name" name="name" maxlength='100' required>
-                        </div>
-                        <div class="form-group">
-                            <label for="name">IMEI:</label>
-                            <input class='form-control' type="text" id="input_imei" name="imei" maxlength='100' required>
-                        </div>
-                </div>
-    
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn_close" data-bs-dismiss="modal">Закрыть без
-                        сохранения</button>
-                    <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
-                </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!-- =================================End of Modal Body======================================== -->
 
 </div>
 
@@ -252,9 +211,9 @@
 <script>
     console.log('Script works');
 
-    const btn_modal = document.querySelector('.btn_modal');
-    const enterDeliveryModal = document.querySelector('.enterDeliveryModal');
-    const btn_close = document.querySelector('.btn_close');
+    //const btn_modal = document.querySelector('.btn_modal');
+    //const enterDeliveryModal = document.querySelector('.enterDeliveryModal');
+    //const btn_close = document.querySelector('.btn_close');
 
     const imeis = document.querySelectorAll("#imei");
     const quantities = document.querySelectorAll("#quantity");
@@ -266,11 +225,11 @@
     //const check_button = document.querySelector('.check_button');
     //const supplier = document.querySelector('#supplier');
     const shop = document.querySelector('#shop');
-    const check_imei = document.querySelector('#check_imei');
+    //const check_imei = document.querySelector('#check_imei');
     const save_button = document.querySelector('#save_button');
 
 
-    btn_modal.addEventListener('click', openModal)
+    /*btn_modal.addEventListener('click', openModal)
     btn_close.addEventListener('click', closeModal)
 
     function openModal() {
@@ -279,7 +238,7 @@
 
     function closeModal() {
         enterDeliveryModal.classList.remove('openModal')
-    }
+    }*/
 
      //saving "Shop select option" from switching to default when updating the page
         //===========================================================================
