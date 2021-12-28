@@ -55,3 +55,14 @@ class Card (models.Model):
 
     def __int__(self):
         return self.id
+
+#temporary register for storing cash, card, credit when unposting the sale document
+class PaymentRegister (models.Model):
+    created = models.DateField(auto_now_add=True)
+    document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
+    cash= models.IntegerField(default=0)
+    card= models.IntegerField(default=0)
+    credit= models.IntegerField(default=0)
+ 
+    def __int__(self):
+        return self.id

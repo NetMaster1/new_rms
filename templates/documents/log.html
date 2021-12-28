@@ -198,15 +198,16 @@
                 {{document.id}}</a>
         </div>
         {% else %}
-        <div class="col-2"><a href="{% url 'change_inventory_unposted' document.id %}">
-                {{document.title}}{{document.id}}</a>
+        <div class="col-2"><a href="{% url 'change_inventory_unposted' document.id %}">{{document.title}}{{document.id}}</a>
         </div>
         {% endif %}
 
-
-
         {% elif document.title.name == 'Продажа ТМЦ' %}
+        {% if document.posted == True %}
         <div class="col-2"><a href="{% url 'change_sale_posted' document.id %}">{{document.title}} {{document.id}}</a></div>
+        {% else %}
+        <div class="col-2"><a href="{% url 'change_sale_unposted' document.id %}">{{document.title}} {{document.id}}</a></div>
+        {% endif %}
         {% endif %}
 
        <!-- ============================Document Sum Column============================================ -->

@@ -9,23 +9,6 @@
                     <h3>Изменить документ {{document.title}} # {{document.id}}</h3>
                 </div>
 
-                <div class="col-6 border rounded p-3">
-                    <form action="{% url 'check_sale_posted' document.id%}" method="POST">
-                        {% csrf_token %}
-                        <div class="row m-1">
-                            <div class="col-6">
-                                <input type="text" class='form-control' id="imei" name="imei" maxlength='50' required
-                                    placeholder="Введите IMEI">
-                            </div>
-
-                            <div class="col-6">
-                                <input type="submit" value="Внести наименование в документ"
-                                    class="btn btn-sm btn-outline-dark">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
             </div>
 
 
@@ -44,7 +27,7 @@
                             </div>
                             <div class="col">
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value="{{document.created}}">
+                                    value="{{document.created}}" readonly>
                             </div>
                         </div>
 
@@ -56,7 +39,7 @@
                             </div>
                             <div class="col">
                           
-                                <select name="shop" id="shop" class='form-control' required>
+                                <select name="shop" id="shop" class='form-control' readonly>
                                     <option selected="true" value="{{shop_current.id}}" >{{shop_current.name}}</option>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
@@ -74,20 +57,20 @@
                                     <h5>Наличные, руб.</h5>
                                 </label></div>
                             <div class="col-2">
-                                <input type="number" class='form-control' id="cash" name="cash" value='{{cash.cash_in}}' maxlength='50'>
+                                <input type="number" class='form-control' id="cash" name="cash" value='{{cash.cash_in}}' maxlength='50' readonly>
                             </div>
                             <div class="col-2"><label for="card">
                                     <h5>Карта, руб.</h5>
                                 </label></div>
                             <div class="col-2">
-                                <input type="number" class='form-control' id="card" name="card" value='{{card.sum}}' maxlength='50'>
+                                <input type="number" class='form-control' id="card" name="card" value='{{card.sum}}' maxlength='50' readonly>
                             </div>
                           
                             <div class="col-2"><label for="credit">
                                     <h5>Кредит, руб.</h5>
                                 </label></div>
                             <div class="col-2">
-                            <input type="number" class='form-control' id="credit" name="credit" value='{{credit.sum}}' maxlength='50'>
+                            <input type="number" class='form-control' id="credit" name="credit" value='{{credit.sum}}' maxlength='50' readonly>
                             </div>
                         </div>
                         </div>
@@ -126,22 +109,22 @@
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="quantity" name="quantity"
-                                    value='{{register.quantity}}' required>
+                                    value='{{register.quantity}}' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="price" name="price"
-                                    value='{{register.price}}' maxlength='50' required>
+                                    value='{{register.price}}' maxlength='50' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
                                     value='{{register.sub_total}}' maxlength='50' readonly>
                             </div>
-                            <div class="col">
+                            <!-- <div class="col">
                                 <a
                                     href="{% url 'delete_line_change_sale' document.id register.product.imei  %}">
                                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                                 </a>
-                            </div>
+                            </div> -->
                         </div>
                         {% endfor %}
 
@@ -149,9 +132,9 @@
                     {%for group in request.user.groups.all %}
                     {%if group.name == 'admin'%}
                     <div class="row m-auto mt-3 ">
-                        <div class="col-2">
+                        <!-- <div class="col-2">
                             <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
-                        </div>
+                        </div> -->
                         </form>
                     
                         <div class="col-3">
@@ -166,7 +149,7 @@
 
                     <div class="col-2">
                         <a href="{% url 'close_edited_document' document.id %}">
-                            <input type="button" value="Закрыть без сохранения"
+                            <input type="button" value="Закрыть"
                                 class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>

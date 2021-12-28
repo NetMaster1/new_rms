@@ -74,8 +74,8 @@ urlpatterns = [
     path ('change_sale_unposted/<int:document_id>/', views.change_sale_unposted, name='change_sale_unposted'),
     path ('unpost_sale/<int:document_id>/', views.unpost_sale, name='unpost_sale'),
 
-    path ('check_sale_posted/<int:document_id>/', views.check_sale_posted, name='check_sale_posted'),
-    path ('delete_line_change_sale/<int:document_id>/<int:imei>', views.delete_line_change_sale, name='delete_line_change_sale'),
+    path ('check_sale_unposted/<int:document_id>/', views.check_sale_unposted, name='check_sale_unposted'),
+    path ('delete_line_change_sale_unposted/<int:document_id>/<int:imei>', views.delete_line_change_sale_unposted, name='delete_line_change_sale_unposted'),
     path ('sale_interface', views.sale_interface, name='sale_interface'),
 
     # ==============================Return====================================
