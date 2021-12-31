@@ -13,7 +13,7 @@ from app_product.models import (
     Delivery,
     Document,
 )
-from .models import ReportTemp, ReportTempId
+from .models import ReportTemp, ReportTempId, DailySaleRep
 from app_clients.models import Customer
 from .models import ProductHistory
 from django.contrib import messages
@@ -21,12 +21,91 @@ import pandas as pd
 import xlwt
 from datetime import datetime, date
 from openpyxl.workbook import Workbook
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+import datetime
+from datetime import datetime, date
 
 # Create your views here.
 
 def save_in_excel(request):
-    pass
+    categories=ProductCategory.objects.all()
+    shops=Shop.objects.all()
+    length=shops.count()
+    print('=============')
+    print('number of shops')
+    print(length)
+    titles=['Shop']
+    for category in categories:
+        titles.append(category.name)
+    titles.append('sub_totals')
+    print('======================')
+    print(titles)
+    print('======================')
+    
+    for shop in shops:
+        #dict=[new_key]=new_value #adding new pair (key, value) to python dictionnary
+        shop_row=[]
+        shop_row.append(shop.name)
+
+        for category in categories:
+            rhos=RemainderHistory.objects.filter(shop=shop, category=category)
+            sum=0
+            for rho in rhos:
+                sum+=rho.retail_price
+            shop_row.append(sum)
+        a=len(shop_row)
+        print(a)    
+        print(shop_row)
+        print(shop_row[0])
+        daily_rep=DailySaleRep.objects.create(
+            shop = shop,
+            smarphones = shop_row[1],
+            accessories = shop_row[2],
+            sim_cards = shop_row[3],
+            phones = shop_row[4],
+            insuranсе = shop_row[5],
+            wink = shop_row[6],
+            services = shop_row[7],
+            sub_total = 0
+        )
+    
+    qs=DailySaleRep.objects.filter().exclude(shop='ООС').values()
+    n=qs.count()
+    print(n)
+
+    data=pd.DataFrame(qs)
+    print(data)
+    data.to_excel('D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx')
+
+    registers=DailySaleRep.objects.all()
+    for register in registers:
+        register.delete()
+        
+    # response=HttpResponse(content_type='application/ms-excel')
+    # response['Content-Disposition'] = 'attachment; filename=Expenses' +  str(datetime.datetime.now())+'.xls'
+    # wb = xlwt.Workbook(encoding ='uft-8')
+    # ws=wb.add_sheet('Expenses')
+    # row_num = 0
+    # font_style=xlwt.XFStyle()
+    # font_style.font.bold=True
+
+    # columns = ['Amount', 'Description', 'Category', 'Date']
+    # for col_num in range(len(columns)):
+    #     ws.write(row_num, col_num, columns[col_num], font_style)
+    
+    # font_style = xlwt.XFStyle()
+
+    # rows = Expenses.objects.filter(owner=request.user).values_list('amount','description','category','date')
+
+    # for row in rows:
+    #     row_num+=1
+
+    #     for col_num in range(len(row)):
+    #         ws.write(row_num, col_num, row[col_num], font_style)
+
+    # wb.save(response)
+    return HttpResponse(titles)
+
 
 def reports(request):
     return render(request, "reports/reports.html")
@@ -52,7 +131,6 @@ def sale_report(request):
     suppliers=Supplier.objects.all()
     users = User.objects.all()
     if request.method == "POST":
-        queryset_list = Sale.objects.all()
         doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
         queryset_list = RemainderHistory.objects.filter(rho_type=doc_type)
         sum = 0
@@ -110,6 +188,55 @@ def sale_report(request):
             "users": users,
         }
         return render(request, "reports/sale_report.html", context)
+
+def daily_sales (request):
+    categories = ProductCategory.objects.all()
+    shops = Shop.objects.all()
+    doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+    documents=Document.objects.filter(title=doc_type)
+    date=datetime.datetime.now()
+    rhos=RemainderHistory.objects.filter(rho_type=doc_type, created__date=date)
+    # for shop in shops:
+    #     rhos=rhos.filter(shop=shop)
+    #     categories_dict={}
+    #     for category in categories:
+    #         rhos=rhos.filter(category=category)
+    #         sum=0
+    #         for rho in rhos:
+    #             sum+=rho.retail_price
+    #         categories_dict[category]=sum
+    #     a=len(categories)
+    #     for i in range(a):
+    #         item=DailySaleTemp.objects.create(
+    #         shop=shop,
+
+    #     )
+           
+
+
+
+    # temp_id=ReportTempId.objects.create()
+    # for category in categories:
+    #     for shop in shops:
+    #         rhos=rhos.filter(category=category, shop=shop)
+    #         accumulated_sum=0
+    #         for rho in rhos:
+    #             accumulated_sum+= rho.retail_price
+    #     item=DailySaleTemp.objects.create(
+    #         report_id=temp_id,
+    #         shop=shop,
+    #         category=category,
+    #         sum=accumulated_sum
+    #     )
+    # items=DailySaleTemp.objects.filter(report_id=temp_id)
+
+
+    context = {
+        'items': items,
+        'shops': shops,
+        'categories': categories
+    }
+    return render (request, 'reports/daily_sales.html', context)
 
 def delivery_report(request):
     categories = ProductCategory.objects.all()
@@ -205,10 +332,23 @@ def remainder_report(request):
 def remainder_list (request, shop_id, category_id):
     shop=Shop.objects.get(id=shop_id)
     category=ProductCategory.objects.get(id=category_id)
-    remainders=RemainderCurrent.objects.filter(shop=shop, category=category).order_by('name')
+    #remainders=RemainderCurrent.objects.filter(shop=shop, category=category).order_by('name').values_list()
+    #remainders=RemainderCurrent.objects.filter(shop=shop, category=category).order_by('name')
+    remainders=RemainderCurrent.objects.filter(shop=shop, category=category).order_by('name').values()
+    print('##########################')
+    print(remainders)
+    print('##########################')
+
+
+    df=pd.DataFrame(remainders)
+    print(df.shape)#displays the number of rows & columns
+    print('##########################')
+    print(df)
+    print('##########################')
+    #df.to_excel('data.xlsx')
     context ={
-        'remainders':remainders,
-        'shop': shop,
+        #'remainders':remainders,
+        'df': df.to_html(),
         'category': category
     }
     return render (request, 'reports/remainder_report_output.html', context)

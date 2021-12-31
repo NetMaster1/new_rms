@@ -7,6 +7,8 @@ urlpatterns = [
     path ('close_search', views.close_search, name='close_search'),
     path ('close_unposted_document/<int:document_id>', views.close_unposted_document, name='close_unposted_document'),
     path ('delete_unposted_document/<int:document_id>', views.delete_unposted_document, name='delete_unposted_document'),
+    path ('log', views.log, name='log'),
+    path ('close_log', views.close_log, name='close_log'),
     
     # ==================Delivery========================
     path ('delivery_auto', views.delivery_auto, name='delivery_auto'),
@@ -114,7 +116,6 @@ urlpatterns = [
     path ('check_revaluation/<int:identifier_id>', views.check_revaluation, name='check_revaluation'),
     path ('revaluation/<int:identifier_id>', views.revaluation, name='revaluation'),
     path ('revaluation_input/<int:identifier_id>', views.revaluation_input, name='revaluation_input'),
-    path ('log', views.log, name='log'),
     path ('delete_line_revaluation/<int:imei>/<int:identifier_id>/<shop_id>', views.delete_line_revaluation, name='delete_line_revaluation'),
 
     path ('open_document/<int:document_id>', views.open_document, name='open_document'),

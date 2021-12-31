@@ -7,6 +7,7 @@ urlpatterns = [
     #path ('close_report_dynamic/<int:report_id>', views.close_report_dynamic, name='close_report_dynamic'),
     path ('save_in_excel', views.save_in_excel, name='save_in_excel'),
     path ('sale_report', views.sale_report, name='sale_report'),
+    path ('daily_sales', views.daily_sales, name='daily_sales'),
     path ('delivery_report', views.delivery_report, name='delivery_report'),
     path ('remainder_report', views.remainder_report, name='remainder_report'),
     path ('remainder_list/<int:shop_id>/<int:category_id>', views.remainder_list, name='remainder_list'),

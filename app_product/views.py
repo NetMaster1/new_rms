@@ -20,7 +20,7 @@ from .models import (
     AvPrice,
 )
 from app_cash.models import CashRemainder, Cash, Credit, Card, PaymentRegister
-from datetime import datetime, date
+
 from app_reference.models import (
     Shop,
     Supplier,
@@ -42,7 +42,7 @@ import random
 import pandas
 
 import datetime
-#from datetime import datetime
+from datetime import datetime, date
 import pytz
 from twilio.rest import Client
 
@@ -1340,13 +1340,16 @@ def delete_sale_input(request, document_id):
 
 def sale_interface (request):
     if request.user.is_authenticated:
-        queryset_list = Document.objects.filter(user=request.user, created__date=date.today()).order_by("-created")
+        date=datetime.datetime.now()
+        queryset_list = Document.objects.filter(user=request.user, created__date=date).order_by("-created")
+        #queryset_list = Document.objects.filter(user=request.user, created__date=date.today()).order_by("-created")
         doc_types = DocumentType.objects.all()
-        users = User.objects.all()
         suppliers = Supplier.objects.all()
         shops = Shop.objects.all()
         context = {
             'queryset_list': queryset_list,
+            'shops': shops,
+            'suppliers': suppliers,
         }
         return render (request, 'documents/sale_interface.html', context)
     else:
@@ -6513,15 +6516,13 @@ def log(request):
     suppliers = Supplier.objects.all()
     shops = Shop.objects.all()
     if request.method == "POST":
-        # shop = request.POST['shop']
-        # supplier = request.POST['supplier']
+        shop = request.POST['shop']
         start_date = request.POST["start_date"]
         end_date = request.POST["end_date"]
         user = request.POST["user"]
         supplier = request.POST["supplier"]
         doc_type = request.POST["doc_type"]
-        # if shop:
-        #     queryset_list = queryset_list.filter(shop=shop)
+        queryset_list=Document.objects.all()
         if start_date:
             queryset_list = queryset_list.filter(created__gte=start_date)
         if end_date:
@@ -6529,6 +6530,9 @@ def log(request):
         if doc_type:
             doc_type = DocumentType.objects.get(id=doc_type)
             queryset_list = queryset_list.filter(title=doc_type)
+        if shop:
+            shop=Shop.objects.get(id=shop)
+            queryset_list = queryset_list.filter(shop=shop)
         if user:
             queryset_list = queryset_list.filter(user=user)
         if supplier:
@@ -6537,7 +6541,7 @@ def log(request):
             supplier = Supplier.objects.get(id=supplier)
             new_list = []
             for item in queryset_list:
-                if item.delivery.first().supplier == supplier:
+                if item.remainderhistory_set.first().supplier == supplier:
                     new_list.append(item)
             queryset_list = new_list
             print(queryset_list)
@@ -6561,6 +6565,9 @@ def log(request):
             "shops": shops,
         }
         return render(request, "documents/log.html", context)
+
+def close_log(request):
+    return redirect ('log')
 
 def open_document(request, document_id):
     document = Document.objects.get(id=document_id)

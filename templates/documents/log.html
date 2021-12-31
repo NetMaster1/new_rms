@@ -68,8 +68,8 @@
                             <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
                         </div>
                         <div class="col-2">
-                            <a href="{% url 'close_report' %}">
-                                <input type="button" value="Закрыть журнал" class="btn btn-sm btn-block btn-outline-dark">
+                            <a href="{% url 'close_log' %}">
+                                <input type="button" value="Текущий день" class="btn btn-sm btn-block btn-outline-dark">
                             </a>
                         </div>
                 </form>
@@ -116,7 +116,7 @@
                 {{document.created}}
         </div>
 
-        {% if document.title.name == 'Поступление ТМЦ' %}
+    {% if document.title.name == 'Поступление ТМЦ' %}
             {% if document.posted == True %}
         <div class="col-2"><a href="{% url 'change_delivery_posted' document.id %}">{{document.title}} #{{document.id}}</a></div>
             {% else %}
@@ -208,7 +208,7 @@
         {% else %}
         <div class="col-2"><a href="{% url 'change_sale_unposted' document.id %}">{{document.title}} {{document.id}}</a></div>
         {% endif %}
-        {% endif %}
+    {% endif %}
 
        <!-- ============================Document Sum Column============================================ -->
         <div class="col-2">
@@ -216,63 +216,70 @@
         </div>
 
 
-        {% if document.title.name == 'Поступление ТМЦ' %}
+    {% if document.title.name == 'Поступление ТМЦ' %}
+            {% if document.posted == True %}
+        <div class="col-2">{{document.remainderhistory_set.first.supplier}} </div>
+            {% else %}
+        <div class="col-2">{{document.register_set.first.supplier}} </div>
+            {% endif %}
+
+    {% elif document.title.name == 'Перемещение ТМЦ' %}
+            {% if document.posted == True %}
+                <div class="col-2">C {{document.remainderhistory_set.first.shop}} на {{document.remainderhistory_set.last.shop}}  </div>
+            {% else %}
+            <div class="col-2">С {{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}} </div>
+            {% endif %}
+
+    {% elif document.title.name == 'Возврат ТМЦ' %}
             {% if document.posted == True %}
         <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
             {% else %}
         <div class="col-2">{{document.register_set.first.shop}} </div>
             {% endif %}
 
-        {% elif document.title.name == 'Перемещение ТМЦ' %}
-            {% if document.posted == True %}
-                <div class="col-2">C {{document.remainderhistory_set.first.shop_sender}} на {{document.remainderhistory_set.last.shop_receiver}}  </div>
-            {% else %}
-        <div class="col-2">{{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}} </div>
-            {% endif %}
-
-        {% elif document.title.name == 'Возврат ТМЦ' %}
+    {% elif document.title.name == 'Оприходование ТМЦ' %}
             {% if document.posted == True %}
         <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
             {% else %}
         <div class="col-2">{{document.register_set.first.shop}} </div>
             {% endif %}
 
-        {% elif document.title.name == 'Оприходование ТМЦ' %}
+    {% elif document.title.name == 'Списание ТМЦ' %}
             {% if document.posted == True %}
         <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
             {% else %}
         <div class="col-2">{{document.register_set.first.shop}} </div>
             {% endif %}
 
-        {% elif document.title.name == 'Списание ТМЦ' %}
+    {% elif document.title.name == 'Продажа ТМЦ' %}
             {% if document.posted == True %}
         <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
             {% else %}
         <div class="col-2">{{document.register_set.first.shop}} </div>
             {% endif %}
 
-        {% elif document.title.name == 'Продажа ТМЦ' %}
-            {% if document.posted == True %}
-        <div class="col-2">{{document.sale_set.first.shop}} </div>
-            {% else %}
-        <div class="col-2">{{document.register_set.first.shop}} </div>
-            {% endif %}
-
-        {% elif document.title.name == 'РКО (хоз.расходы)' %}
+    {% elif document.title.name == 'РКО (хоз.расходы)' %}
             {% if document.posted == True %}
         <div class="col-2">{{document.cash_set.first.shop}} </div>
             {% else %}
         <div class="col-2">{{document.register_set.first.shop}} </div>
             {% endif %}
 
-        {% elif document.title.name == 'РКО (зарплата)' %}
+    {% elif document.title.name == 'ПКО' %}
         {% if document.posted == True %}
         <div class="col-2">{{document.cash_set.first.shop}} </div>
         {% else %}
         <div class="col-2">{{document.register_set.first.shop}} </div>
         {% endif %}
 
-        {% elif document.title.name == 'Перемещение денег' %}
+    {% elif document.title.name == 'РКО (зарплата)' %}
+        {% if document.posted == True %}
+        <div class="col-2">{{document.cash_set.first.shop}} </div>
+        {% else %}
+        <div class="col-2">{{document.register_set.first.shop}} </div>
+        {% endif %}
+
+    {% elif document.title.name == 'Перемещение денег' %}
             {% if document.posted == True %}
         <div class="col-2"> C {{document.cash_set.first.shop}} на
             {{document.cash_set.last.shop}} </div>
@@ -280,8 +287,18 @@
         <div class="col-2"> C {{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}} </div>
         {% endif %}
 
+    {% elif document.title.name == 'Инвентаризация ТМЦ' %}
+        {% if document.posted == True %}
+        <div class="col-2"> {{document.remainderhistory.first.shop}} </div>
+        {% else %}
+        <div class="col-2"> C {{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}}
+        </div>
         {% endif %}
 
+    {% endif %}
+        
+
+        <!-- =========================== Creator Column==================================== -->
         <div class="col-2">{{document.user.first_name}} {{document.user.last_name}}</div>
         </div>
             

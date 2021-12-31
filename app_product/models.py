@@ -21,6 +21,7 @@ class Document(models.Model):
     title = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     created = models.DateTimeField(default=timezone.now, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)
     sum = models.IntegerField(null=True)
     base_doc = models.IntegerField(null=True)#link between different documents
     posted = models.BooleanField(default=False)
