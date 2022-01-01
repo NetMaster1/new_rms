@@ -48,6 +48,7 @@ class ReportTemp (models.Model):
 
 class DailySaleRep (models.Model):
     shop = models.CharField(max_length=50, null=True)
+    opening_balance = models.IntegerField(null=True)
     smarphones = models.IntegerField(null=True)
     accessories = models.IntegerField(null=True)
     sim_cards = models.IntegerField(null=True)
@@ -57,6 +58,13 @@ class DailySaleRep (models.Model):
     wink = models.IntegerField(null=True)
     services = models.IntegerField(null=True)
     sub_total = models.IntegerField(null=True)
+    credit = models.IntegerField(null=True)
+    card = models.IntegerField(null=True)
+    salary = models.IntegerField(null=True)
+    expenses = models.IntegerField(null=True)
+    cash_move = models.IntegerField(null=True)
+    return_sum = models.IntegerField(null=True)
+    final_balance = models.IntegerField(null=True)
 
     def __int__(self):
         #return "{} - {} - {}".format(self.name, self.end_remainder)

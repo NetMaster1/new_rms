@@ -1,4 +1,4 @@
-from app_personnel.models import BonusAccount
+from app_personnel.models import BonusAccount, Salary
 from django.db.models import query
 from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product
 from app_cash.models import Cash, Credit, Card
@@ -30,22 +30,46 @@ from datetime import datetime, date
 def save_in_excel(request):
     categories=ProductCategory.objects.all()
     shops=Shop.objects.all()
-    length=shops.count()
-    print('=============')
-    print('number of shops')
-    print(length)
-    titles=['Shop']
+    # length=shops.count()
+    # print('=============')
+    # print('number of shops')
+    # print(length)
+
+    shop_titles=[]
+    for i in shops:
+        shop_titles.append(i.name)
+    print('==============')
+    print(shop_titles)
+    print('==============')
+
+    #====================================================
+    titles=['Shop', 'opeining_balance']
     for category in categories:
-        titles.append(category.name)
+         titles.append(category.name)
     titles.append('sub_totals')
+    titles.append('final_balance')
     print('======================')
     print(titles)
     print('======================')
-    
+
+    # for category in categories:
+    #     category_row=[]
+    #     for shop in shops:
+    #         category_row.append(shop.name)
+    #         rhos=RemainderHistory.objects.filter(shop=shop, category=category)
+    #         sum=0
+    #         for rho in rhos:
+    #             sum+=rho.retail_price
+    #     print(category_row)
+
+    #============================================================
+
+
     for shop in shops:
         #dict=[new_key]=new_value #adding new pair (key, value) to python dictionnary
         shop_row=[]
         shop_row.append(shop.name)
+        shop_row.append('opening_balance')
 
         for category in categories:
             rhos=RemainderHistory.objects.filter(shop=shop, category=category)
@@ -53,20 +77,82 @@ def save_in_excel(request):
             for rho in rhos:
                 sum+=rho.retail_price
             shop_row.append(sum)
+
+        if Cash.objects.filter(shop=shop).exists():
+            chos=Cash.objects.filter(shop=shop)
+            expenses_type=DocumentType.objects.get(name='РКО (хоз.расходы)')
+            if chos.filter(cho_type=expenses_type):
+                chos=chos.filter(cho_type=expenses_type)
+                expenses_sum=0
+                for cho in chos:
+                    expenses_sum+=cho.cash_out
+            else:
+                expenses_sum=0
+            salary_type=DocumentType.objects.get(name='РКО (зарплата)')
+            if chos.filter(cho_type=salary_type):
+                chos=chos.filter(cho_type=salary_type)
+                salary_sum=0
+                for cho in chos:
+                    salary_sum+=cho.cash_out
+            else:
+                salary_sum=0
+            cash_move_type=DocumentType.objects.get(name='Перемещение денег')  
+            if chos.filter(cho_type=cash_move_type):
+                chos=chos.filter(cho_type=cash_move_type)
+                cash_move_sum=0
+                for cho in chos:
+                    cash_move_sum+=cho.cash_out
+            else:
+                cash_move_sum=0
+            return_type=DocumentType.objects.get(name='Возврат ТМЦ')  
+            if chos.filter(cho_type=return_type):
+                chos=chos.filter(cho_type=return_type)
+                return_sum=0
+                for cho in chos:
+                    return_sum+=cho.cash_out
+            else:
+                return_sum=0
+        else:
+            cash_move_sum=0
+            salary_sum=0
+            expenses_sum=0
+            return_sum=0
+        if Card.objects.filter(shop=shop).exists():
+            cards=Card.objects.filter(shop=shop)
+            card_sum=0
+            for card in cards:
+                card_sum+=card.sum
+        else:
+            card_sum=0
+        if Credit.objects.filter(shop=shop).exists():
+            credits=Credit.objects.filter(shop=shop)
+            credit_sum=0
+            for credit in credits:
+                credit_sum+-credit.sum
+        else:
+            credit_sum=0
+        #shop_row.append('final_balance')
         a=len(shop_row)
         print(a)    
         print(shop_row)
         print(shop_row[0])
         daily_rep=DailySaleRep.objects.create(
             shop = shop,
-            smarphones = shop_row[1],
-            accessories = shop_row[2],
-            sim_cards = shop_row[3],
-            phones = shop_row[4],
-            insuranсе = shop_row[5],
-            wink = shop_row[6],
-            services = shop_row[7],
-            sub_total = 0
+            opening_balance=0,
+            smarphones = shop_row[2],
+            accessories = shop_row[3],
+            sim_cards = shop_row[4],
+            phones = shop_row[5],
+            insuranсе = shop_row[6],
+            wink = shop_row[7],
+            services = shop_row[8],
+            credit=credit_sum,
+            card=card_sum,
+            salary=salary_sum,
+            expenses=expenses_sum,
+            cash_move=cash_move_sum,
+            sub_total = 0,
+            final_balance=0
         )
     
     qs=DailySaleRep.objects.filter().exclude(shop='ООС').values()
@@ -75,6 +161,25 @@ def save_in_excel(request):
 
     data=pd.DataFrame(qs)
     print(data)
+    #data.columns =['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
+    # data_1=data.set_index('id')
+    # print(data_1)
+    data.set_index('id', inplace=True)
+    data.set_index('shop', inplace=True)
+    #data.set_index('shop', inplace=True, drop=False)
+    print(data)
+    data_2=data.loc['Дзержинск': 'Городец', 'accessories': 'iphone']
+    print(data_2)
+    data_3=data.loc['Правдинск', 'accessories']
+    print(data_3)
+    data_4=data.loc[:,'accessories']
+    print(data_4)
+    print(list(data_4))
+    data_t=data.T #transposing the dataframe
+    #data=data_t.T #transposing backwards
+    print(data_t)
+    #data_t['totals']=[]
+
     data.to_excel('D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx')
 
     registers=DailySaleRep.objects.all()
