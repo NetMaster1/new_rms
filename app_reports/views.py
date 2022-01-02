@@ -162,7 +162,7 @@ def save_in_excel(request):
     data=pd.DataFrame(qs)
     print(data)
     #data.columns =['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
-    # data_1=data.set_index('id')
+    #data_1=data.set_index('id')
     # print(data_1)
     data.set_index('id', inplace=True)
     data.set_index('shop', inplace=True)
@@ -175,9 +175,10 @@ def save_in_excel(request):
     data_4=data.loc[:,'accessories']
     print(data_4)
     print(list(data_4))
-    data_t=data.T #transposing the dataframe
+    data=data.T #transposing the dataframe
     #data=data_t.T #transposing backwards
-    print(data_t)
+    #data=data_t
+    #print(data_t)
     #data_t['totals']=[]
 
     data.to_excel('D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx')
@@ -204,12 +205,15 @@ def save_in_excel(request):
 
     # for row in rows:
     #     row_num+=1
-
     #     for col_num in range(len(row)):
     #         ws.write(row_num, col_num, row[col_num], font_style)
 
     # wb.save(response)
-    return HttpResponse(titles)
+    context = {
+    'data': data.to_html(),
+    }
+    return render (request, 'reports/sample.html', context)
+    #return HttpResponse(title)
 
 
 def reports(request):
