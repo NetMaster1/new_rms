@@ -42,11 +42,74 @@ import random
 import pandas
 
 import datetime
-from datetime import datetime, date
+#from datetime import datetime, date
 import pytz
 from twilio.rest import Client
 
 # Create your views here.
+
+def log(request):
+    #year=datetime.datetime.now().year
+    #queryset_list = Document.objects.filter(created__year=year).order_by("-created")
+    #month=datetime.datetime.now().month
+    #queryset_list = Document.objects.filter(created__month=month).order_by("-created")
+    #date=datetime.datetime.now()
+    date=datetime.datetime.today()
+    queryset_list = Document.objects.filter(created__date=date).order_by("-created")
+    doc_types = DocumentType.objects.all()
+    users = User.objects.all()
+    suppliers = Supplier.objects.all()
+    shops = Shop.objects.all()
+    if request.method == "POST":
+        shop = request.POST['shop']
+        start_date = request.POST["start_date"]
+        end_date = request.POST["end_date"]
+        user = request.POST["user"]
+        supplier = request.POST["supplier"]
+        doc_type = request.POST["doc_type"]
+        queryset_list=Document.objects.all()
+        if start_date:
+            queryset_list = queryset_list.filter(created__gte=start_date)
+        if end_date:
+            queryset_list = queryset_list.filter(created__lte=end_date)
+        if doc_type:
+            doc_type = DocumentType.objects.get(id=doc_type)
+            queryset_list = queryset_list.filter(title=doc_type)
+        if shop:
+            shop=Shop.objects.get(id=shop)
+            queryset_list = queryset_list.filter(shop=shop)
+        if user:
+            queryset_list = queryset_list.filter(user=user)
+        if supplier:
+            doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
+            queryset_list = queryset_list.filter(title=doc_type)
+            supplier = Supplier.objects.get(id=supplier)
+            new_list = []
+            for item in queryset_list:
+                if item.remainderhistory_set.first().supplier == supplier:
+                    new_list.append(item)
+            queryset_list = new_list
+            print(queryset_list)
+        # if Q(start_date) | Q(end_date):
+        #     queryset_list = queryset_list.filter(created__range=(start_date, end_date))
+        context = {
+            "queryset_list": queryset_list,
+            "doc_types": doc_types,
+            "users": users,
+            "suppliers": suppliers,
+            "shops": shops,
+        }
+        return render(request, "documents/log.html", context)
+
+    else:
+        context = {
+            "queryset_list": queryset_list,
+            "doc_types": doc_types,
+            "users": users,
+            "suppliers": suppliers,
+            "shops": shops,
+        }
+        return render(request, "documents/log.html", context)
 
 def index(request):
     #groups=Group.objects.all()
@@ -312,7 +375,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                     # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
                     dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
                 else:
-                    dateTime = datetime.now()
+                    dateTime = datetime.datetime.now()
                 document = Document.objects.create(
                     title=doc_type,
                     user=request.user,
@@ -1607,6 +1670,12 @@ def delivery(request, identifier_id):
     categories = ProductCategory.objects.all()
     suppliers = Supplier.objects.all()
     shops = Shop.objects.all()
+    #dateTime operations: changing server time to Moscow timezone & changing dateTime format to string
+    # dateTime=datetime.datetime.now(tz=pytz.UTC)#return Greenwich time
+    # dateTime=dateTime.astimezone(pytz.timezone('US/Mountain'))#changes Greenwich current time to local
+    dateTime=datetime.datetime.now()
+    dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
+    #End of time operations
     registers = Register.objects.filter(identifier=identifier).order_by("created")
     numbers = registers.count()
     for register, i in zip(registers, range(numbers)):
@@ -1618,6 +1687,7 @@ def delivery(request, identifier_id):
         "suppliers": suppliers,
         "shops": shops,
         "registers": registers,
+        "dateTime": dateTime,
     }
     return render(request, "documents/delivery.html", context)
 
@@ -1726,9 +1796,9 @@ def delivery_input(request, identifier_id):
         sub_totals = request.POST.getlist("sub_total", None)
         if dateTime:
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
         else:
-            dateTime = datetime.now()
+            dateTime = datetime.datetime.now()
         try:
             supplier = request.POST["supplier"]
         except:
@@ -2108,6 +2178,8 @@ def change_delivery_unposted(request, document_id):
     categories = ProductCategory.objects.all()
     doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
     numbers = registers.count()
+    document_datetime=document.created
+    document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
     for register, i in zip(registers, range(numbers)):
         register.number = i + 1
         register.save()
@@ -2123,9 +2195,9 @@ def change_delivery_unposted(request, document_id):
         sub_totals = request.POST.getlist("sub_total", None)
         if dateTime:
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
         else:
-            dateTime = datetime.now()
+            dateTime = datetime.datetime.now()
         try:
             supplier = request.POST["supplier"]
         except:
@@ -2273,6 +2345,7 @@ def change_delivery_unposted(request, document_id):
             "suppliers": suppliers,
             "document": document,
             "categories": categories,
+            "document_datetime": document_datetime
         }
 
     return render(request, "documents/change_delivery_unposted.html", context)
@@ -6483,68 +6556,7 @@ def change_revaluation_unposted (request, document_id):
 def unpost_revaluation (request, document_id):
     pass
 # =================================================================================================
-def log(request):
-    #year=datetime.datetime.now().year
-    #queryset_list = Document.objects.filter(created__year=year).order_by("-created")
-    #month=datetime.datetime.now().month
-    #queryset_list = Document.objects.filter(created__month=month).order_by("-created")
-    #date=datetime.datetime.now()
-    date=datetime.now()
-    queryset_list = Document.objects.filter(created__date=date).order_by("-created")
-    doc_types = DocumentType.objects.all()
-    users = User.objects.all()
-    suppliers = Supplier.objects.all()
-    shops = Shop.objects.all()
-    if request.method == "POST":
-        shop = request.POST['shop']
-        start_date = request.POST["start_date"]
-        end_date = request.POST["end_date"]
-        user = request.POST["user"]
-        supplier = request.POST["supplier"]
-        doc_type = request.POST["doc_type"]
-        queryset_list=Document.objects.all()
-        if start_date:
-            queryset_list = queryset_list.filter(created__gte=start_date)
-        if end_date:
-            queryset_list = queryset_list.filter(created__lte=end_date)
-        if doc_type:
-            doc_type = DocumentType.objects.get(id=doc_type)
-            queryset_list = queryset_list.filter(title=doc_type)
-        if shop:
-            shop=Shop.objects.get(id=shop)
-            queryset_list = queryset_list.filter(shop=shop)
-        if user:
-            queryset_list = queryset_list.filter(user=user)
-        if supplier:
-            doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
-            queryset_list = queryset_list.filter(title=doc_type)
-            supplier = Supplier.objects.get(id=supplier)
-            new_list = []
-            for item in queryset_list:
-                if item.remainderhistory_set.first().supplier == supplier:
-                    new_list.append(item)
-            queryset_list = new_list
-            print(queryset_list)
-        # if Q(start_date) | Q(end_date):
-        #     queryset_list = queryset_list.filter(created__range=(start_date, end_date))
-        context = {
-            "queryset_list": queryset_list,
-            "doc_types": doc_types,
-            "users": users,
-            "suppliers": suppliers,
-            "shops": shops,
-        }
-        return render(request, "documents/log.html", context)
 
-    else:
-        context = {
-            "queryset_list": queryset_list,
-            "doc_types": doc_types,
-            "users": users,
-            "suppliers": suppliers,
-            "shops": shops,
-        }
-        return render(request, "documents/log.html", context)
 
 def close_log(request):
     return redirect ('log')
