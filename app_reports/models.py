@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from app_reference.models import ProductCategory, Supplier
 
 # import datetime
@@ -23,9 +24,7 @@ class ProductHistory (models.Model):
     #     ordering = ('created',)  # sorting by date
     def __str__(self):
         return self.name
-
-
-    
+   
 class ReportTempId (models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     existance_check = models.BooleanField(default=True)#service mark
@@ -66,6 +65,26 @@ class DailySaleRep (models.Model):
     return_sum = models.IntegerField(null=True)
     final_balance = models.IntegerField(null=True)
 
+    def __int__(self):
+        #return "{} - {} - {}".format(self.name, self.end_remainder)
+        return self.id
+
+    # def sub_total(self):
+    #     return self.price * self.quantity
+
+class MonthlyBonus (models.Model):
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+    smarphones = models.IntegerField(null=True)
+    accessories = models.IntegerField(null=True)
+    sim_cards = models.IntegerField(null=True)
+    phones = models.IntegerField(null=True)
+    iphone = models.IntegerField(null=True)
+    insuranсе = models.IntegerField(null=True)
+    wink = models.IntegerField(null=True)
+    services = models.IntegerField(null=True)
+    credit = models.IntegerField(null=True)
+    sub_total = models.IntegerField(null=True)
+    
     def __int__(self):
         #return "{} - {} - {}".format(self.name, self.end_remainder)
         return self.id

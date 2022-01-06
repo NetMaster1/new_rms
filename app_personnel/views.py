@@ -40,7 +40,8 @@ def my_bonus(request):
         shops=Shop.objects.all()
         categories=ProductCategory.objects.all()
         month=datetime.datetime.now().month
-        rhos=RemainderHistory.objects.filter(user=request.user, created__month=month)
+        year=datetime.datetime.now().year
+        rhos=RemainderHistory.objects.filter(user=request.user, created__year=year, created__month=month)
         sales_array=[]
         bonus_array=[]
         total_sales=0

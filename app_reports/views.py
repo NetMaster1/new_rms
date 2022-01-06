@@ -13,7 +13,7 @@ from app_product.models import (
     Delivery,
     Document,
 )
-from .models import ReportTemp, ReportTempId, DailySaleRep
+from .models import ReportTemp, ReportTempId, DailySaleRep, MonthlyBonus
 from app_clients.models import Customer
 from .models import ProductHistory
 from django.contrib import messages
@@ -23,7 +23,6 @@ from datetime import datetime, date
 from openpyxl.workbook import Workbook
 from django.http import HttpResponse, JsonResponse
 import datetime
-from datetime import datetime, date
 
 # Create your views here.
 
@@ -52,6 +51,7 @@ def save_in_excel(request):
     print(titles)
     print('======================')
 
+    #===============================================================
     # for category in categories:
     #     category_row=[]
     #     for shop in shops:
@@ -61,7 +61,6 @@ def save_in_excel(request):
     #         for rho in rhos:
     #             sum+=rho.retail_price
     #     print(category_row)
-
     #============================================================
 
 
@@ -568,46 +567,81 @@ def bonus_report(request):
     if request.method == "POST":
         start_date = request.POST["start_date"]
         # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
         end_date = request.POST["end_date"]
-        end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
-        rhos=RemainderHistory.objects.filter(rho_type=doc_type)
-    #===================================Array Version==========================================
-        gen_arr=[]
-        for user in users:
-            arr=[]
-            for category in categories:
-                if rhos.filter(user=user, category=category).exists():
-                    rhos=rhos.filter(user=user, category=category)
-                    sales=0
-                    for rho in rhos:
-                       sales+=rho.retail_price*rho.outgoing_quantity*category.bonus_percent
-                else:
-                    sales=0
-                dict={category: sales}
-                arr.append(dict)
-            user_arr = {user: arr}
-            gen_arr.append(user_arr)
-    #================================End of array version===============================
-                # phones_sum=0
-                # phones=sales.filter(category=2)#Трубки
-                # for phone in phones:
-                #     phones_sum+=phone.sub_total
-                # category_phones=categories.get(id=2)
-                # bonus_phones=phones_sum*category_phones.bonus_percent
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
+        rhos=RemainderHistory.objects.filter(rho_type=doc_type, created__gte=start_date, created__lte=end_date)
 
-                # arr=[user, category, sales]
-                # arr_category=[]
-                # arr_category.append(arr)
-                # user_arr.append(arr_category)
+        for user in users:
+            user_name=User.objects.get(id=user.id)
+            user_row=[user]
+            for category in categories:
+                rhos=rhos.filter(user=user, category=category)
+                sum=0
+                for rho in rhos:
+                    sum+=rho.retail_price
+                user_row.append(sum)
+            if Credit.objects.filter(user=user).exists():
+                credits=Credit.objects.filter(user=user)
+                credit_sum=0
+                for credit in credits:
+                    credit_sum+-credit.sum
+            else:
+                credit_sum=0
+            n=len(user_row)
+            monthly_bonus=MonthlyBonus.objects.create(
+                user=user_name,
+                smarphones = user_row[1],
+                accessories = user_row[2],
+                sim_cards = user_row[3],
+                phones = user_row[4],
+                insuranсе = user_row[5],
+                wink = user_row[6],
+                services = user_row[7],
+                credit=credit_sum*0.03,
+                sub_total = 0,
+            )
+        query_set=MonthlyBonus.objects.filter().values()
+        #print(qs)
+        #n=qs.count()
+        data=pd.DataFrame(query_set)
+        data.to_excel('D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx')
+        monthly_bonus_reports=MonthlyBonus.objects.all()
+        for i in  monthly_bonus_reports:
+            i.delete()
+
         context = {
-            'gen_arr': gen_arr,
-            'categories': categories
+            'data': data.to_html(),
         }
-        return render(request, "reports/bonus_report.html", context)
+        return render (request, 'reports/bonus_report.html', context)
+
+#===================================Array Version==========================================
+        # gen_arr=[]
+        # for user in users:
+        #     arr=[]
+        #     for category in categories:
+        #         if rhos.filter(user=user, category=category).exists():
+        #             rhos=rhos.filter(user=user, category=category)
+        #             sales=0
+        #             for rho in rhos:
+        #                sales+=rho.retail_price*rho.outgoing_quantity*category.bonus_percent
+        #         else:
+        #             sales=0
+        #         dict={category: sales}
+        #         arr.append(dict)
+        #     user_arr = {user: arr}
+        #     gen_arr.append(user_arr)
+        # context = {
+        #     'gen_arr': gen_arr,
+        #     'categories': categories
+        # }
+        # return render(request, "reports/bonus_report.html", context)
+
+#=============End of Array Version=====================================================
 
     context = {
-        'categories': categories
+        'categories': categories,
+        'users': users
     }
     return render(request, "reports/bonus_report.html", context)
 
