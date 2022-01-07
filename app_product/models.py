@@ -297,8 +297,8 @@ class RemainderHistory(models.Model):
     update_check = models.BooleanField(default=False)
     status = models.BooleanField(default=False)  # "False" for Transfer(send) "True" for Transfer(receive)
 
-    # class Meta:
-    #     # ordering = ('created',)  # sorting by date
+    class Meta:
+        ordering = ('-created',)  # sorting by date
     #     verbose_name = 'RemainderHistory'
     #     verbose_name_plural = 'remainders'
 
@@ -316,6 +316,9 @@ class RemainderCurrent(models.Model):
     av_price = models.IntegerField(null=True)
     total_av_price = models.IntegerField(null=True)
     retail_price = models.IntegerField(default=0, null=True)
+
+    class Meta:
+        ordering = ('category', 'name',)  # sorting by date
 
     def __int__(self):
         return self.id

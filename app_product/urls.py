@@ -178,4 +178,7 @@ urlpatterns = [
     path ('enter_new_product_inventory_unposted/<int:document_id>', views.enter_new_product_inventory_unposted, name='enter_new_product_inventory_unposted'),
     path ('enter_new_product_inventory/<int:document_id>', views.enter_new_product_inventory, name='enter_new_product_inventory'),
     
+    path('GeneratePDF/<pk>', views.GeneratePDF.as_view(), name="GeneratePDF"),
+    path('DownloadPDF/<int:document_id>', views.DownloadPDF.as_view(), name="DownloadPDF"),
+
 ]

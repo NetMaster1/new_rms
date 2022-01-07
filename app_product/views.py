@@ -42,9 +42,12 @@ import random
 import pandas
 
 import datetime
-#from datetime import datetime, date
 import pytz
+from django.http import HttpResponse
+from django.views import View
 from twilio.rest import Client
+from .utils import render_to_pdf
+import xhtml2pdf.pisa as pisa
 
 # Create your views here.
 
@@ -857,10 +860,12 @@ def change_sale_unposted (request, document_id):
                 #     client.save()
                 # checking docs before remainder_history
                 if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
-                    sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)
-                    remainder_history = sequence_rhos_before.latest("created")
+                    remainer_history = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
+                    #sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)[:5]
+
+                    #remainder_history = sequence_rhos_before.latest("created")
                     remainder_current = RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
-                    remainder_current.current_remainder = (remainder_history.current_remainder)
+                    remainder_current.current_remainder = remainder_history.current_remainder
                     remainder_current.save()
                 else:
                     messages.error(request, "Данное наименование отсутствует на данном складе.")
@@ -8857,4 +8862,63 @@ def unpost_inventory(request, document_id):
     document.posted = False
     document.save()
     return redirect("log")
-    
+
+#===========================================================================
+class GeneratePDF(View):
+    # def get(self, request, *args, **kwargs):
+    def get(self, request, document_id):
+        document=Document.objects.get(id=document_id)
+        registers=Register.objects.filter(document=document)
+        
+        data = {
+            'registers': registers
+        }
+        if request.user.is_authenticated:
+            if Group.objects.filter(name='entities').exists():
+                group=Group.objects.get(name='entities').user_set.all()
+                if request.user in group:
+                    pdf = render_to_pdf('pdf_invoice_entity.html', data)
+                    return HttpResponse(pdf, content_type='application/pdf')
+                else:
+                    pdf = render_to_pdf('pdf_invoice.html', data)
+                    return HttpResponse(pdf, content_type='application/pdf')
+            else:
+                pdf = render_to_pdf('pdf_invoice.html', data)
+                return HttpResponse(pdf, content_type='application/pdf')
+        else:
+            pdf = render_to_pdf('pdf_invoice.html', data)
+            return HttpResponse(pdf, content_type='application/pdf')
+
+class DownloadPDF(View):
+    # def get(self, request, *args, **kwargs):
+    def get(self, request, document_id):
+        document=Document.objects.get(id=document_id)
+        registers=Register.objects.filter(document=document)
+        # invoice = OrderItem.objects.filter(order=pk)
+        # order = Order.objects.get(id=pk)
+        # new_total = 0.00
+        # counter = 0
+        # for item in invoice:
+        #     line_total = float(item.price)*item.quantity
+        #     new_total += line_total
+        #     counter += item.quantity
+        data = {
+            'registers': registers
+        }
+        pdf = render_to_pdf('pdf_transfer.html', data)
+        response = HttpResponse(pdf, content_type='application/pdf')
+        filename = "Transfer_%s.pdf" % (document_id)
+        content = "attachment; filename='%s'" % (filename)
+        response['Content-Disposition'] = content
+        return response
+
+
+# def email(request):
+#     send_mail(
+#         'Hello from DjangoDev',
+#         'Here goes email text',
+#         '79200711112@yandex.ru',
+#         ['Sergei_Vinokurov@rambler.ru'],
+#         fail_silently=False
+#     )
+#     return render(request, 'email/email.html')

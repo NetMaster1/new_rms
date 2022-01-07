@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<meta charset="UTF-8">
+
+<head>
+    <style type="text/css">
+        @font-face {
+            font-family: "Azoft Sans Italic";
+            src: url("webfonts/azoft-sans-italic.ttf")
+        }
+
+        table,
+        h1,
+        p {
+            font-family: "Azoft Sans Italic";
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid grey;
+        }
+    </style>
+</head>
+
+<body>
+ООО Ритейл
+{% for register in registers %}
+{{register.product.name}}
+
+{% endfor %}
+
+
+</body>
+</html>
