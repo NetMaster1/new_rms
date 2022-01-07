@@ -73,7 +73,8 @@ class DailySaleRep (models.Model):
     #     return self.price * self.quantity
 
 class MonthlyBonus (models.Model):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+    #user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+    user_name = models.CharField(max_length=50, null=True)
     smarphones = models.IntegerField(null=True)
     accessories = models.IntegerField(null=True)
     sim_cards = models.IntegerField(null=True)

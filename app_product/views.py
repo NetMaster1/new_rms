@@ -54,8 +54,9 @@ def log(request):
     #month=datetime.datetime.now().month
     #queryset_list = Document.objects.filter(created__month=month).order_by("-created")
     #date=datetime.datetime.now()
-    date=datetime.datetime.today()
-    queryset_list = Document.objects.filter(created__date=date).order_by("-created")
+    month=datetime.datetime.now().month
+    year=datetime.datetime.now().year
+    queryset_list = Document.objects.filter(created__year=year, created__month=month).order_by("-created")
     doc_types = DocumentType.objects.all()
     users = User.objects.all()
     suppliers = Supplier.objects.all()
@@ -834,9 +835,9 @@ def change_sale_unposted (request, document_id):
         sub_totals = request.POST.getlist("sub_total", None)
         if dateTime:
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
         else:
-            dateTime = datetime.now()
+            dateTime = datetime.datetime.now()
         try:
             if request.POST["post_check"]:
                 post_check = True
@@ -869,7 +870,8 @@ def change_sale_unposted (request, document_id):
                     document=document,
                     created=dateTime,
                     rho_type=doc_type,
-                    user=request.user,
+                    #user=request.user,
+                    user=document.user,
                     shop=shop,
                     product_id=product,
                     category=product.category,
@@ -2871,9 +2873,9 @@ def transfer_input(request, identifier_id):
                     return redirect("transfer", identifier.id)
                 if dateTime:
                     # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                    dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                    dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
                 else:
-                    dateTime = datetime.now()
+                    dateTime = datetime.datetime.now()
                 if shop_sender == shop_receiver:
                     messages.error(
                         request,
@@ -4103,9 +4105,9 @@ def recognition_input(request, identifier_id):
             # category=ProductCategory.objects.get(id=category)
             if dateTime:
                 # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
             else:
-                dateTime = datetime.now()
+                dateTime = datetime.datetime.now()
             try:
                 if request.POST["post_check"]:
                     post_check = True

@@ -160,7 +160,10 @@ def save_in_excel(request):
 
     data=pd.DataFrame(qs)
     print(data)
+    #data=pd.read_csv('data.txt')
+    #data_1=data.read_csv('data.txt', header = None)
     #data.columns =['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
+    
     #data_1=data.set_index('id')
     # print(data_1)
     data.set_index('id', inplace=True)
@@ -213,7 +216,6 @@ def save_in_excel(request):
     }
     return render (request, 'reports/sample.html', context)
     #return HttpResponse(title)
-
 
 def reports(request):
     return render(request, "reports/reports.html")
@@ -563,6 +565,7 @@ def item_report(request):
 def bonus_report(request):
     users = User.objects.all()
     categories=ProductCategory.objects.all()
+    shops=Shop.objects.all()
     doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
     if request.method == "POST":
         start_date = request.POST["start_date"]
@@ -571,16 +574,17 @@ def bonus_report(request):
         end_date = request.POST["end_date"]
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
         rhos=RemainderHistory.objects.filter(rho_type=doc_type, created__gte=start_date, created__lte=end_date)
-
+    
         for user in users:
-            user_name=User.objects.get(id=user.id)
-            user_row=[user]
+            user_row=[user.username]
             for category in categories:
-                rhos=rhos.filter(user=user, category=category)
                 sum=0
-                for rho in rhos:
-                    sum+=rho.retail_price
+                for shop in shops:
+                    rhos_new=rhos.filter(category=category, user=user, shop=shop)
+                    for rho in rhos_new:
+                        sum+=int(rho.retail_price*category.bonus_percent*shop.sale_k)
                 user_row.append(sum)
+
             if Credit.objects.filter(user=user).exists():
                 credits=Credit.objects.filter(user=user)
                 credit_sum=0
@@ -590,7 +594,7 @@ def bonus_report(request):
                 credit_sum=0
             n=len(user_row)
             monthly_bonus=MonthlyBonus.objects.create(
-                user=user_name,
+                user_name=user_row[0],
                 smarphones = user_row[1],
                 accessories = user_row[2],
                 sim_cards = user_row[3],
@@ -605,7 +609,15 @@ def bonus_report(request):
         #print(qs)
         #n=qs.count()
         data=pd.DataFrame(query_set)
+        data=data.drop('id', 1)
+        #data=data.drop('1', 0)
+        #data.set_index('user_name', inplace=True)
+        #data.set_index('Name', inplace=True, drop=False)
+
+        data=data.set_index('user_name')
+        #data=data.T #transposing the dataframe
         data.to_excel('D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx')
+
         monthly_bonus_reports=MonthlyBonus.objects.all()
         for i in  monthly_bonus_reports:
             i.delete()
@@ -641,7 +653,7 @@ def bonus_report(request):
 
     context = {
         'categories': categories,
-        'users': users
+        #'users': users
     }
     return render(request, "reports/bonus_report.html", context)
 
