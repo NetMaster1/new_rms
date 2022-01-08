@@ -8,13 +8,11 @@
             font-family: "Azoft Sans Italic";
             src: url("webfonts/azoft-sans-italic.ttf")
         }
-
         table,
         h1,
         p {
             font-family: "Azoft Sans Italic";
         }
-
         table,
         th,
         td {
@@ -24,11 +22,35 @@
 </head>
 
 <body>
-ООО Ритейл
-{% for register in registers %}
-{{register.product.name}}
+    <h1>ООО Ритейл ИНН 5257173237</h1>
+    <table style="width:100%">
+        <tr>
+            <th>#</th>
+            <th>Наименование</th>
+            <th>IMEI</th>
+            <th>Кол-во</th>
+            <th>Цена</th>
+            <th>Сумма</th>
+        </tr>
+        <tr>{{document.created}}</tr>
+        {% for register in registers %}
+        <tr>
+            <td>{{register.number}}</td>
+            <td>{{register.product.name}}</td>
+            <td>{{register.product.imei}}</td>
+            <td>{{register.quantity}}</td>
+            <td>{{register.price}}</td>
+            <td>{{register.sub_total}}</td>
+        </tr>
+        {% endfor %}
 
-{% endfor %}
+    </table>
+
+    <br><br>
+    <span>
+        <h1>Принял ________________________
+            Передал _______________________</h1>
+    </span>
 
 
 </body>

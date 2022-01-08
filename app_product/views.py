@@ -8903,7 +8903,8 @@ class DownloadPDF(View):
         #     new_total += line_total
         #     counter += item.quantity
         data = {
-            'registers': registers
+            'registers': registers,
+            'document': document
         }
         pdf = render_to_pdf('pdf_transfer.html', data)
         response = HttpResponse(pdf, content_type='application/pdf')

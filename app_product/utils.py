@@ -15,7 +15,6 @@ def fetch_pdf_resources(uri, rel):
     # print(path)
     return path
 
-
 def render_to_pdf(template_src, context_dict={}):
     template=get_template(template_src)
     html=template.render(context_dict)
