@@ -1674,7 +1674,7 @@ def delivery(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     categories = ProductCategory.objects.all()
     suppliers = Supplier.objects.all()
-    shops=Shop.objects.all()
+    shop=Shop.objects.get(name='ООС')
     #shops = Shop.objects.all()
     #dateTime operations: changing server time to Moscow timezone & changing dateTime format to string
     # dateTime=datetime.datetime.now(tz=pytz.UTC)#return Greenwich time
@@ -1831,31 +1831,17 @@ def delivery_input(request, identifier_id):
                     # imei=imeis[i]
                     product = Product.objects.get(imei=imeis[i])
                     if RemainderHistory.objects.filter(
-                        imei=imeis[i], shop=shop, created__lt=dateTime
-                    ).exists():
+                        imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                         sequence_rhos_before = RemainderHistory.objects.filter(
-                            imei=imeis[i], shop=shop, created__lt=dateTime
-                        )
+                            imei=imeis[i], shop=shop, created__lt=dateTime)
                         remainder_history = sequence_rhos_before.latest("created")
-                        remainder_current = RemainderCurrent.objects.get(
-                            shop=shop, imei=imeis[i]
-                        )
-                        remainder_current.current_remainder = (
-                            remainder_history.current_remainder
-                        )
-                        # remainder_current.av_price=remainder_history.av_price
-                        # remainder_current.total_av_price=remainder_history.sub_total
+                        remainder_current = RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
+                        remainder_current.current_remainder = remainder_history.current_remainder
                         remainder_current.save()
                     else:
-                        if RemainderCurrent.objects.filter(
-                            imei=imeis[i], shop=shop
-                        ).exists():
-                            remainder_current = RemainderCurrent.objects.get(
-                                imei=imeis[i], shop=shop
-                            )
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                            remainder_current = RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                             remainder_current.current_remainder = 0
-                            # remainder_current.av_price=0
-                            # remainder_current.total_av_price=0
                             remainder_current.save()
                         else:
                             remainder_current = RemainderCurrent.objects.create(
@@ -1865,8 +1851,6 @@ def delivery_input(request, identifier_id):
                                 name=names[i],
                                 category=product.category,
                                 current_remainder=0,
-                                # av_price=0,
-                                # total_av_price=0
                             )
                     # creating remainder_history
                     remainder_history = RemainderHistory.objects.create(
@@ -1887,9 +1871,7 @@ def delivery_input(request, identifier_id):
                         sub_total=int(int(quantities[i]) * int(prices[i])),
                     )
                     document_sum += remainder_history.sub_total
-                    remainder_current.current_remainder = (
-                        remainder_history.current_remainder
-                    )
+                    remainder_current.current_remainder = remainder_history.current_remainder
                     remainder_current.save()
 
                     if AvPrice.objects.filter(imei=imeis[i]).exists():
@@ -3861,6 +3843,7 @@ def check_recognition(request, identifier_id):
                             quantity=1,
                             sub_total=remainder_current.retail_price
                         )
+                        
                     else:
                         remainder_current=RemainderCurrent.objects.create(
                             shop=shop,
@@ -3874,12 +3857,14 @@ def check_recognition(request, identifier_id):
                                 shop=shop,
                                 identifier=identifier,
                                 product=product,
-                                price=remainder_current.current_remainder,
+                                price=remainder_current.retail_price,
                                 quantity=1,
-                                sub_total=remainder_current.current_remainder
+                                sub_total=remainder_current.retail_price
                                 )
                     if remainder_current.current_remainder==0:
                         messages.error(request, "Розничная цена для данного наименования отсутствует. Введите ее.")
+                    else:
+                        messages.error(request, "В поле цена проставлена стандартная розничная цена для данного наименования на данной розничной точке.")
                 else:
                     if AvPrice.objects.filter(imei=imei).exists():
                         av_price_obj = AvPrice.objects.get(imei=imei)
@@ -3909,7 +3894,8 @@ def check_recognition(request, identifier_id):
                             )
                     if av_price_obj.av_price==0:
                         messages.error(request, "Усредненная закупочная цена для данного наименования отсутствует. Введите ее.")
-                    
+                    else:
+                        messages.error(request, "В поле цена проставлена усредненная закупочная цена для данного наименования.")   
                 return redirect("recognition", identifier.id)
         else:
             messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
@@ -4048,15 +4034,16 @@ def recognition_input(request, identifier_id):
         if imeis:
             if post_check == True:
                 document = Document.objects.create(
-                title=doc_type, 
-                user=request.user, 
-                created=dateTime,
-                posted=True
+                    title=doc_type, 
+                    user=request.user, 
+                    created=dateTime,
+                    posted=True
                 )
                 n = len(names)
                 document_sum = 0
                 for i in range(n):
                     # checking docs before remainder_history
+                    product=Product.objects.get(imei=imeis[i])
                     if RemainderHistory.objects.filter(
                         imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                         sequence_rhos_before = RemainderHistory.objects.filter(
@@ -4071,10 +4058,7 @@ def recognition_input(request, identifier_id):
                         if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                             remainder_current = RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                             remainder_current.current_remainder = 0
-                            # remainder_current.av_price=0
-                            # remainder_current.total_av_price=0
                             remainder_current.save()
-
                         else:
                             remainder_current = RemainderCurrent.objects.create(
                                 updated=dateTime,
@@ -4082,8 +4066,6 @@ def recognition_input(request, identifier_id):
                                 imei=imeis[i],
                                 name=names[i],
                                 current_remainder=0,
-                                # av_price=0,
-                                # total_av_price=0
                             )
                     # creating remainder_history
                     remainder_history = RemainderHistory.objects.create(
@@ -4091,42 +4073,55 @@ def recognition_input(request, identifier_id):
                         created=dateTime,
                         rho_type=doc_type,
                         shop=shop,
-                        # category=category,
+                        category=product.category,
                         imei=imeis[i],
                         name=names[i],
                         pre_remainder=remainder_current.current_remainder,
                         incoming_quantity=quantities[i],
                         outgoing_quantity=0,
-                        current_remainder=remainder_current.current_remainder
-                        + int(quantities[i]),
-                        sub_total=quantities[i]*prices[i]
+                        current_remainder=remainder_current.current_remainder + int(quantities[i]),
+                        sub_total=int(quantities[i])*int(prices[i]),
                     )
                     if shop.retail==True:
-                        remainder_history.retail_price=prices[i] 
+                        remainder_history.retail_price=prices[i]
+                        remainder_current.retail_price=prices[i]
                     else:
                         remainder_history.wholesale_price=prices[i]
+                        remainder_current.retail_price=0
                     remainder_current.current_remainder = remainder_history.current_remainder
                     remainder_current.save() 
                     document_sum += remainder_history.sub_total
                    
-                    if AvPrice.objects.filter(imei=imeis[i]).exists():
-                        av_price_obj = AvPrice.objects.get(imei=imeis[i])
-                        av_price_obj.current_remainder += int(quantities[i])
-                        av_price_obj.sum += int(quantities[i]) * av_price_obj.av_price
-                        if av_price_obj.current_remainder != 0:
-                            av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                    if shop.retail==False:
+                        if AvPrice.objects.filter(imei=imeis[i]).exists():
+                            av_price_obj = AvPrice.objects.get(imei=imeis[i])
+                            av_price_obj.current_remainder += int(quantities[i])
+                            av_price_obj.sum += int(quantities[i]) * int(prices[i])
+                            if av_price_obj.current_remainder > 0:
+                                av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                            else:
+                                av_price_obj.av_price =0
+                            av_price_obj.save()
                         else:
-                            av_price_obj.av_price=0
-                        av_price_obj.save()
-                    else:
-                        av_price_obj = AvPrice.objects.create(
+                            av_price_obj = AvPrice.objects.create(
                             name=names[i],
                             imei=imeis[i],
                             current_remainder=int(quantities[i]),
                             sum=int(quantities[i]) * int(prices[i]),
                             av_price=int(prices[i]),
                         )
-                  
+                    #for retail shop we increase the av_price_obj.current_remainder & leave the same
+                    #av_price_obj.sum thus decreasing the av_price for retail recognitions
+                    else:
+                        if AvPrice.objects.filter(imei=imeis[i]).exists():
+                            av_price_obj = AvPrice.objects.get(imei=imeis[i])
+                            av_price_obj.current_remainder += int(quantities[i])
+                            if av_price_obj.current_remainder > 0:
+                                av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                            else:
+                                av_price_obj.av_price =0
+                            av_price_obj.save()
+
                     # checking docs after remainder_history
                     if RemainderHistory.objects.filter(
                         imei=imeis[i], shop=shop, created__gt=document.created).exists():
