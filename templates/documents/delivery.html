@@ -131,11 +131,12 @@
             </div>
 
             <div class="form-row">
-                <!-- <div class="col-3">
+                <div class="col-3">
                     <label for="shop"><h5>Фирма получатель</h5></label>
-                </div> -->
+                </div>
                 <div class="col">
-                    <select name="shop" id="shop" class='form-control' required hidden>
+                    <select name="shop" id="shop" class='form-control' required>
+                        <option value="{{shop.id}}">{{shop.name}}</option>
                         {% for shop in shops %}
                         <option value="{{shop.id}}">{{shop.name}}</option>
                         {% endfor %}

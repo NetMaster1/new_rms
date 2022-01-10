@@ -24,16 +24,29 @@
     </div>
     <!-- ===================End of Alert Messages Module================ -->
         <div class="row m-2">
-            <div class="col-6 border rounded p-3">
+            <div class="col-12 border rounded p-3">
                 <form action="{% url 'check_signing_off' identifier.id %}" method="POST">
                     {% csrf_token %}
                     <div class="row m-1">
-                        <div class="col-6">
+                        <div class="col-3">
                             <input type="text" class='form-control' id="check_imei" name="imei" maxlength='50' required
                                 placeholder="Введите IMEI">
                         </div>
 
-                        <div class="col-6">
+                        <div class="col-2">
+                            <label for="shop">
+                                <h5>Фирма </h5>
+                            </label>
+                        </div>
+                        <div class="col-3">
+                            <select name="shop" id="shop" class='form-control' required>
+                                {% for shop in shops %}
+                                <option value="{{shop.id}}">{{shop.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-3">
                             <input type="submit" value="Внести наименование в документ"
                                 class="btn btn-sm btn-outline-dark">
                         </div>

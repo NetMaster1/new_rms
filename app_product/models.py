@@ -13,6 +13,7 @@ from django.utils import timezone
 
 # Create your models here.
 class Identifier(models.Model):
+    created = models.DateTimeField(default=timezone.now, null=True)
     def __int__(self):
         return self.id
 
@@ -278,7 +279,7 @@ class RemainderHistory(models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)
-    inventory_doc = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name="inventory" ,null=True)
+    inventory_doc = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name="inventory" ,null=True, blank=True)
     rho_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
@@ -313,8 +314,6 @@ class RemainderCurrent(models.Model):
     imei = models.CharField(max_length=250)
     name = models.CharField(max_length=250, null=True)
     current_remainder = models.IntegerField(default=0)
-    av_price = models.IntegerField(null=True)
-    total_av_price = models.IntegerField(null=True)
     retail_price = models.IntegerField(default=0, null=True)
 
     class Meta:

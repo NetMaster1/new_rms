@@ -39,7 +39,7 @@ class RemainderHistoryAdmin(admin.ModelAdmin):
     #         return ('imei',)
 
 class RemainderCurrentAdmin(admin.ModelAdmin):
-    list_display = ('updated','shop', 'category', 'name', 'imei', 'current_remainder', 'av_price', 'total_av_price', 'retail_price')  
+    list_display = ('updated','shop', 'category', 'name', 'imei', 'current_remainder', 'retail_price')  
     list_filter = ('imei',)
 
 class AvPriceAdmin(admin.ModelAdmin):
@@ -51,10 +51,10 @@ class DocumentAdmin(admin.ModelAdmin):
     ordering = ('-created',)
 
 class RegisterAdmin(admin.ModelAdmin):
-    list_display = ('document', 'doc_type', 'shop_sender', 'shop_receiver', 'product', 'sub_total', 'identifier', 'new', 'deleted')
+    list_display = ('created', 'document', 'doc_type', 'shop_sender', 'shop_receiver', 'product', 'sub_total', 'identifier', 'new', 'deleted')
 
 class IdentifierAdmin(admin.ModelAdmin):
-    list_display = ('id',)
+    list_display = ('id', 'created')
 
 admin.site.register(Delivery, DeliveryAdmin)
 admin.site.register(Recognition, RecognitionAdmin)
