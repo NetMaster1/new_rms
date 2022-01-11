@@ -1,15 +1,15 @@
 from django.contrib import admin
-from . models import Document, Delivery, Recognition, Sale, Transfer, SignOff, Returning, Revaluation, RemainderHistory, RemainderCurrent, Register, Identifier, AvPrice
+from . models import Document, Sale, Transfer, Revaluation, RemainderHistory, RemainderCurrent, Register, Identifier, AvPrice #Delivery, Recognition, SignOff, Returning,
 
-class DeliveryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created', 'supplier' ,'name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
-    ordering = ('-created',)
-    list_filter = ('imei',)
+# class DeliveryAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'created', 'supplier' ,'name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
+#     ordering = ('-created',)
+#     list_filter = ('imei',)
 
-class RecognitionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created','name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
-    ordering = ('-created',)
-    list_filter = ('imei',)
+# class RecognitionAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'created','name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
+#     ordering = ('-created',)
+#     list_filter = ('imei',)
 
 class SaleAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'category', 'name', 'imei', 'shop', 'quantity', 'price', 'sub_total', 'user', 'staff_bonus' )
@@ -17,11 +17,11 @@ class SaleAdmin(admin.ModelAdmin):
 class TransferAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop_sender', 'shop_receiver', 'quantity', 'price' )
 
-class SignOffAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created', 'document', 'name', 'imei', 'shop', 'quantity' )
+# class SignOffAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop', 'quantity' )
 
-class ReturningAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created', 'document', 'name', 'imei', 'shop', 'quantity' )
+# class ReturningAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop', 'quantity' )
 
 class RevaluationAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop')
@@ -56,12 +56,12 @@ class RegisterAdmin(admin.ModelAdmin):
 class IdentifierAdmin(admin.ModelAdmin):
     list_display = ('id', 'created')
 
-admin.site.register(Delivery, DeliveryAdmin)
-admin.site.register(Recognition, RecognitionAdmin)
+#admin.site.register(Delivery, DeliveryAdmin)
+#admin.site.register(Recognition, RecognitionAdmin)
 admin.site.register(Sale, SaleAdmin)
 admin.site.register(Transfer, TransferAdmin)
-admin.site.register(SignOff, SignOffAdmin)
-admin.site.register(Returning, ReturningAdmin)
+#admin.site.register(SignOff, SignOffAdmin)
+#admin.site.register(Returning, ReturningAdmin)
 admin.site.register(Revaluation, RevaluationAdmin)
 admin.site.register(RemainderHistory, RemainderHistoryAdmin)
 admin.site.register(RemainderCurrent, RemainderCurrentAdmin)

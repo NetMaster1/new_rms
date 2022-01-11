@@ -10,7 +10,7 @@ from app_product.models import (
     RemainderCurrent,
     Sale,
     Transfer,
-    Delivery,
+    #Delivery,
     Document,
 )
 from .models import ReportTemp, ReportTempId, DailySaleRep, MonthlyBonus

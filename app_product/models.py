@@ -71,110 +71,110 @@ class Register(models.Model):
         return self.id
 
 
-class Delivery(models.Model):
-    created = models.DateTimeField(default=timezone.now, null=True)
-    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name="delivery")
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING, blank=True)
-    supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
-    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
-    name = models.CharField(max_length=250)
-    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING, null=True)
-    imei = models.CharField(max_length=250)
-    price = models.IntegerField(default=0)  # counter
-    quantity = models.IntegerField(default=0)
-    sub_total = models.IntegerField(default=0)
+# class Delivery(models.Model):
+#     created = models.DateTimeField(default=timezone.now, null=True)
+#     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name="delivery")
+#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+#     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING, blank=True)
+#     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
+#     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
+#     name = models.CharField(max_length=250)
+#     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING, null=True)
+#     imei = models.CharField(max_length=250)
+#     price = models.IntegerField(default=0)  # counter
+#     quantity = models.IntegerField(default=0)
+#     sub_total = models.IntegerField(default=0)
 
-    class Meta:
+    # class Meta:
         # ordering = ('created',)  # sorting by date
-        verbose_name = "delivery"
-        verbose_name_plural = "deliveries"
+        # verbose_name = "delivery"
+        # verbose_name_plural = "deliveries"
 
     # def sub_total(self):
     #     return self.price * self.quantity
 
-    def __int__(self):
-        return self.id
+    # def __int__(self):
+    #     return self.id
 
 
-class Returning(models.Model):
-    created = models.DateTimeField(default=timezone.now, null=True)
-    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
-    # supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
-    # category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
-    name = models.CharField(max_length=250)
-    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-    imei = models.CharField(max_length=250)
-    price = models.IntegerField(default=0)  # retail price
-    quantity = models.IntegerField(default=0)
-    sub_total = models.IntegerField(default=0)
+# class Returning(models.Model):
+#     created = models.DateTimeField(default=timezone.now, null=True)
+#     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
+#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+#     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+#     # supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
+#     # category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
+#     name = models.CharField(max_length=250)
+#     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
+#     imei = models.CharField(max_length=250)
+#     price = models.IntegerField(default=0)  # retail price
+#     quantity = models.IntegerField(default=0)
+#     sub_total = models.IntegerField(default=0)
 
-    class Meta:
+#     class Meta:
         # ordering = ('created',)  # sorting by date
-        verbose_name = "return"
-        verbose_name_plural = "returns"
+        # verbose_name = "return"
+        # verbose_name_plural = "returns"
 
     # def sub_to):
     #     return self.price * self.quantity
 
-    def __int__(self):
-        return self.id
+    # def __int__(self):
+    #     return self.id
 
 
-class Recognition(models.Model):
-    created = models.DateTimeField(default=timezone.now, null=True)
-    document = models.ForeignKey(
-        Document, on_delete=models.DO_NOTHING, related_name="recognition"
-    )
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
-    category = models.ForeignKey(
-        ProductCategory, on_delete=models.DO_NOTHING, null=True
-    )
-    name = models.CharField(max_length=250)
-    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-    imei = models.CharField(max_length=250)
-    price = models.IntegerField(default=0)  #
-    quantity = models.IntegerField(default=0)
-    sub_total = models.IntegerField(default=0)
+# class Recognition(models.Model):
+#     created = models.DateTimeField(default=timezone.now, null=True)
+#     document = models.ForeignKey(
+#         Document, on_delete=models.DO_NOTHING, related_name="recognition"
+#     )
+#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+#     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+#     category = models.ForeignKey(
+#         ProductCategory, on_delete=models.DO_NOTHING, null=True
+#     )
+#     name = models.CharField(max_length=250)
+#     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
+#     imei = models.CharField(max_length=250)
+#     price = models.IntegerField(default=0)  #
+#     quantity = models.IntegerField(default=0)
+#     sub_total = models.IntegerField(default=0)
 
-    class Meta:
+    # class Meta:
         # ordering = ('created',)  # sorting by date
-        verbose_name = "recognition"
-        verbose_name_plural = "recognitions"
+        # verbose_name = "recognition"
+        # verbose_name_plural = "recognitions"
 
     # def sub_total(self):
     #     return self.price * self.quantity
 
-    def __int__(self):
-        return self.id
+    # def __int__(self):
+    #     return self.id
 
 
-class SignOff(models.Model):
-    created = models.DateTimeField(default=timezone.now, null=True)
-    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+# class SignOff(models.Model):
+#     created = models.DateTimeField(default=timezone.now, null=True)
+#     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
+#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+#     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
     # category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
-    name = models.CharField(max_length=250)
-    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-    imei = models.CharField(max_length=250)
-    price = models.IntegerField(default=0)
-    quantity = models.IntegerField(default=0)
-    sub_total = models.IntegerField(default=0)
+    # name = models.CharField(max_length=250)
+    # shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
+    # imei = models.CharField(max_length=250)
+    # price = models.IntegerField(default=0)
+    # quantity = models.IntegerField(default=0)
+    # sub_total = models.IntegerField(default=0)
 
-    class Meta:
+    # class Meta:
         # ordering = ('created',)  # sorting by date
-        verbose_name = "signoff"
-        verbose_name_plural = "signoffs"
+        # verbose_name = "signoff"
+        # verbose_name_plural = "signoffs"
 
     # def sub_total(self):
     #     return self.price * self.quantity
 
-    def __int__(self):
-        return self.id
+    # def __int__(self):
+    #     return self.id
 
 
 class Revaluation(models.Model):
