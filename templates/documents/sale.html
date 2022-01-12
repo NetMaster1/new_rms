@@ -147,43 +147,39 @@
                     </a>
                     </div>
               
-
-            
-<!-- ===========================Enter client's phone for cashback modal trigger============================ -->
-       
+<!-- ========================Enter client's phone for cashback modal trigger============================ -->
             <div class="col-3">
             <button type="button" class="btn btn-sm btn-outline-dark btn_modal_cashback">
                 Продажа с кэшбэком
             </button>
             </div>
-      
-<!-- ========================End of client's phone for cashback modal trigger============================= -->
+<!-- ======================End of client's phone for cashback modal trigger============================= -->
 
 <!-- ===========================Client's Phone for cashback modal======================= -->
-                    <div class="enterCashbackModal">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">Введите телефон для начисления кэшбэка</h5>
-                                    <!-- <button type="button" class="btn_close"></button> -->
-                                </div>
-                                <div class="modal-body">
-                                <form action="{% url 'cashback' identifier.id %}" method="POST">
-                                    {% csrf_token %}
-                                        <div class="form-group">
-                                            <label for="phone">Телефон:</label>
-                                            <input class='form-control' type="text" id="phone" name="phone" maxlength='11' required>
-                                        </div>
-                    
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary btn_close_cashback" data-bs-dismiss="modal">Закрыть без сохранения</button>
-                                        <button type="submit" class="btn btn-secondary">Ввести</button>
-                                    </div>
-                                </form>
+        <div class="enterCashbackModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Введите телефон для начисления кэшбэка</h5>
+                        <!-- <button type="button" class="btn_close"></button> -->
+                    </div>
+                    <div class="modal-body">
+                    <form action="{% url 'cashback' identifier.id %}" method="POST">
+                        {% csrf_token %}
+                            <div class="form-group">
+                                <label for="phone">Телефон:</label>
+                                <input class='form-control' type="text" id="phone" name="phone" maxlength='11' required>
                             </div>
+        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary btn_close_cashback" data-bs-dismiss="modal">Закрыть без сохранения</button>
+                            <button type="submit" class="btn btn-secondary">Ввести</button>
                         </div>
-                    </div>
-                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        </div>
     <!-- ==============================End of Client's phone for cashback modal======================== -->
     
 <!-- ==============================New Cashback Client Modal Trigger================== -->
