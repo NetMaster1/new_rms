@@ -3795,15 +3795,7 @@ def check_recognition(request, identifier_id):
             else:
                 if shop.retail==True:
                     if RemainderCurrent.objects.filter(imei=imei, shop=shop):
-                       remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
-                       register = Register.objects.create(
-                            shop=shop,
-                            identifier=identifier,
-                            product=product,
-                            price=remainder_current.retail_price,
-                            quantity=1,
-                            sub_total=remainder_current.retail_price
-                        )       
+                       remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)    
                     else:
                         remainder_current=RemainderCurrent.objects.create(
                             shop=shop,
@@ -3813,14 +3805,14 @@ def check_recognition(request, identifier_id):
                             current_remainder=0,
                             retail_price=0
                         )
-                        register = Register.objects.create(
-                                shop=shop,
-                                identifier=identifier,
-                                product=product,
-                                price=remainder_current.retail_price,
-                                quantity=1,
-                                sub_total=remainder_current.retail_price
-                                )
+                    register = Register.objects.create(
+                            shop=shop,
+                            identifier=identifier,
+                            product=product,
+                            price=remainder_current.retail_price,
+                            quantity=1,
+                            sub_total=remainder_current.retail_price
+                            )
                     if remainder_current.current_remainder==0:
                         messages.error(request, "Розничная цена для данного наименования отсутствует. Введите ее.")
                     else:
@@ -3836,14 +3828,9 @@ def check_recognition(request, identifier_id):
                             quantity=1,
                             sub_total=av_price_obj.av_price
                         )
+                        messages.error(request, "В поле цена проставлена усредненная закупочная цена для данного наименования.")
                     else:
-                        av_price_obj =AvPrice.objects.create(
-                            name=product.name,
-                            imei=imei,
-                            quantity=0,
-                            av_price=0,
-                            total_av_price=0
-                        )
+                        messages.error(request, "Усредненная закупочная цена для данного наименования отсутствует. Введите ее.")
                         register = Register.objects.create(
                             shop=shop,
                             identifier=identifier,
@@ -3851,11 +3838,7 @@ def check_recognition(request, identifier_id):
                             price=0,
                             quantity=1,
                             sub_total=0
-                            )
-                    if av_price_obj.av_price==0:
-                        messages.error(request, "Усредненная закупочная цена для данного наименования отсутствует. Введите ее.")
-                    else:
-                        messages.error(request, "В поле цена проставлена усредненная закупочная цена для данного наименования.")   
+                            )      
                 return redirect("recognition", identifier.id)
         else:
             messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
@@ -3866,56 +3849,59 @@ def check_recognition_unposted (request, document_id):
     registers = Register.objects.filter(document=document)
     if request.method == "POST":
         imei = request.POST["imei"]
+        shop = request.POST["shop"]
+        shop=Shop.objects.get(id=shop)
         if Product.objects.filter(imei=imei).exists():
             product = Product.objects.get(imei=imei)
-            if Register.objects.filter(document=document, product=product, deleted=True).exists():
-                register = Register.objects.get(document=document, product=product, deleted=True)
-                register.deleted = False
-                # register.quantity = 1
-                # register.price = 0
-                # register.sub_total = 0
-                register.save()
-            elif Register.objects.filter(document=document, product=product).exists():
-                messages.error(request, "Вы уже ввели данное наименование.")
+            if RemainderCurrent.objects.filter(shop=shop, imei=imei).exists():
+                remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imei)
+                if Register.objects.filter(document=document, product=product, deleted=True).exists():
+                    register = Register.objects.get(document=document, product=product, deleted=True)
+                    register.deleted = False
+                    register.save()
+                elif Register.objects.filter(document=document, product=product).exists():
+                    messages.error(request, "Вы уже ввели данное наименование.")
+                    return redirect("change_recognition_unposted", document.id)
+                else:
+                    if shop.retail==True:
+                        register = Register.objects.create(
+                            shop=shop,
+                            document=document, 
+                            product=product,
+                            price=remainder_current.retail_price,
+                            sub_total=remainder_current.retail_price,
+                            new=True
+                        )
+                        if register.price==0:
+                            messages.error(request, "Розничная цена для данного наименования отсутствует. Введите ее.")
+                            return redirect("change_recognition_unposted", document.id)
+                        else:
+                            messages.error(request, "В поле цена введена розничная цена для данного наименования.")
+                            return redirect("change_recognition_unposted", document.id)
+                    else:
+                        if AvPrice.objects.filter(imei=imei).exists():
+                            av_price_obj = AvPrice.objects.get(imei=imei)
+                            register = Register.objects.create(
+                                shop=shop,
+                                document=document,
+                                product=product,
+                                price=av_price_obj.av_price,
+                                quantity=1,
+                                sub_total=av_price_obj.av_price,
+                                new=True
+                            )
+                            messages.error(request, "В поле цена введена усредненная закупочная цена для данного наименования.")
+                            return redirect("change_recognition_unposted", document.id)
+                        else:
+                            messages.error(request, "Усредненная закупочная цена для данного наименования отсутствует. Введите ее.")
+                            return redirect("change_recognition_unposted", document.id)
+                return redirect("change_recognition_unposted", document.id)
             else:
-                register = Register.objects.create(
-                    document=document, 
-                    product=product, 
-                    new=True
-                )
-            return redirect("change_recognition_unposted", document.id)
+                messages.error(request, "Данное наименование отсутствует на остатках данной фирмы.")
+                return redirect("change_recognition_unposted", document.id)
         else:
             messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
             return redirect("change_recognition_unposted", document.id)
-
-def check_recognition_posted (request, document_id):
-    document = Document.objects.get(id=document_id)
-    registers = Register.objects.filter(document=document)
-    # if 'imei' in request.GET:
-    if request.method == "POST":
-        imei = request.POST["imei"]
-        if Product.objects.filter(imei=imei).exists():
-            product = Product.objects.get(imei=imei)
-            if Register.objects.filter(document=document, product=product, deleted=True).exists():
-                register = Register.objects.get(document=document, product=product, deleted=True)
-                register.deleted = False
-                # register.quantity = 1
-                # register.price = 0
-                # register.sub_total = 0
-                register.save()
-            elif Register.objects.filter(document=document, product=product).exists():
-                messages.error(request, "Вы уже ввели данное наименование.")
-                return redirect("change_recognition_posted", document.id)
-            else:
-                register = Register.objects.create(
-                    document=document, 
-                    product=product,
-                    new=True
-                    )
-            return redirect("change_recognition_posted", document.id)
-        else:
-            messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
-            return redirect("change_recognition_posted", document.id)
 
 def recognition(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -3949,14 +3935,6 @@ def delete_line_recognition_unposted (request, imei, document_id):
     item.deleted = True
     item.save()
     return redirect("change_recognition_unposted", document.id)
-
-def delete_line_recognition_posted (request, imei, document_id):
-    document = Document.objects.get(id=document_id)
-    product = Product.objects.get(imei=imei)
-    item = Register.objects.get(document=document, product=product)
-    item.deleted = True
-    item.save()
-    return redirect("change_recognition_posted", document.id)
 
 def clear_recognition(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -4042,30 +4020,27 @@ def recognition_input(request, identifier_id):
                     )
                     if shop.retail==True:
                         remainder_history.retail_price=prices[i]
-                        remainder_current.retail_price=prices[i]
                     else:
                         remainder_history.wholesale_price=prices[i]
-                        remainder_current.retail_price=0
                     remainder_current.current_remainder = remainder_history.current_remainder
                     remainder_current.save() 
                     document_sum += remainder_history.sub_total
                     #while performing recognition we increse the av_price_obj.current_remainder &
                     #and leave the same av_price_obj.sum thus making av_price lower
+                    #If av_price & sum are equal to 0, the av_price for the item being recognitioned
+                    # remains 0  
                     if AvPrice.objects.filter(imei=imeis[i]).exists():
-                        av_price_obj = AvPrice.objects.get(imei=imeis[i])
+                        av_price_obj=AvPrice.objects.get(imei=imeis[i])
                         av_price_obj.current_remainder += int(quantities[i])
-                        if av_price_obj.current_remainder > 0:
-                            av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
-                        else:
-                            av_price_obj.av_price =0
+                        av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
                         av_price_obj.save()
                     else:
                         av_price_obj = AvPrice.objects.create(
                         name=names[i],
                         imei=imeis[i],
                         current_remainder=int(quantities[i]),
-                        sum=int(quantities[i]) * int(prices[i]),
-                        av_price=int(prices[i]),
+                        sum=0,
+                        av_price=0,
                     )
                     # checking docs after remainder_history
                     if RemainderHistory.objects.filter(
@@ -4333,15 +4308,11 @@ def change_recognition_unposted(request, document_id):
                         remainder_history = sequence_rhos_before.latest("created")
                         remainder_current = RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
                         remainder_current.current_remainder = (remainder_history.current_remainder)
-                        # remainder_current.av_price=remainder_history.av_price
-                        # remainder_current.total_av_price=remainder_history.sub_total
                         remainder_current.save()
                     else:
                         if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                             remainder_current = RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                             remainder_current.current_remainder = 0
-                            # remainder_current.av_price=0
-                            # remainder_current.total_av_price=0
                             remainder_current.save()
                         else:
                             remainder_current = RemainderCurrent.objects.create(
@@ -4351,8 +4322,6 @@ def change_recognition_unposted(request, document_id):
                                 name=names[i],
                                 category=product.category,
                                 current_remainder=0,
-                                # av_price=0,
-                                # total_av_price=0
                             )
                     # creating remainder_history
                     remainder_history = RemainderHistory.objects.create(
@@ -4377,16 +4346,15 @@ def change_recognition_unposted(request, document_id):
                     if AvPrice.objects.filter(imei=imeis[i]).exists():
                         av_price_obj = AvPrice.objects.get(imei=imeis[i])
                         av_price_obj.current_remainder += int(quantities[i])
-                        av_price_obj.sum += int(quantities[i]) * int(prices[i])
-                        av_price_obj.av_price = (av_price_obj.sum / av_price_obj.current_remainder)
+                        av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
                         av_price_obj.save()
                     else:
                         av_price_obj = AvPrice.objects.create(
                             name=names[i],
                             imei=imeis[i],
                             current_remainder=int(quantities[i]),
-                            sum=int(quantities[i]) * int(prices[i]),
-                            av_price=int(prices[i]),
+                            sum=0,
+                            av_price=0
                         )
 
                     # checking docs after remainder_history
@@ -4483,7 +4451,10 @@ def unpost_recognition(request, document_id):
                 remainder_current.save()
         av_price_obj = AvPrice.objects.get(imei=rho.imei)
         av_price_obj.current_remainder -= rho.incoming_quantity
-        av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+        if av_price_obj.current_remainder > 0:
+            av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+        else:
+            av_price_obj.av_price=0
         av_price_obj.save()
         rho.delete()
     document.posted = False
@@ -4582,6 +4553,10 @@ def check_signing_off(request, identifier_id):
                             price=remainder_current.retail_price,
                             sub_total=remainder_current.retail_price
                         )
+                        if register.price==0:
+                            messages.error(request, "Розничная цена для данного наименования отсутствует. Введите ее.")
+                            return redirect("signing_off", identifier.id)
+                        messages.error(request, "В поле цена введена розничная цена для данного наименования.")
                         return redirect("signing_off", identifier.id)
                     else:
                         if AvPrice.objects.filter(imei=imei).exists():
@@ -4594,9 +4569,10 @@ def check_signing_off(request, identifier_id):
                                 quantity=1,
                                 sub_total=av_price_obj.av_price
                             )
+                            messages.error(request, "В поле цена введена усредненная закупочная цена для данного наименования.")
                             return redirect("signing_off", identifier.id)
                         else:
-                            messages.error(request, "Усредненная закупочная цена для данного наименования отсутствует. Введите ее.")
+                            messages.error(request, "Усредненная закупочная цена для данного наименования отсутствует. Невозможно сделать списание.")
                             return redirect("signing_off", identifier.id)          
             else:
                 messages.error(request, "Данное наименование отсутствует на остатках данной фирмы.")
@@ -4610,56 +4586,59 @@ def check_signing_off_unposted (request, document_id):
     registers = Register.objects.filter(document=document)
     if request.method == "POST":
         imei = request.POST["imei"]
+        shop = request.POST["shop"]
+        shop=Shop.objects.get(id=shop)
         if Product.objects.filter(imei=imei).exists():
             product = Product.objects.get(imei=imei)
-            if Register.objects.filter(document=document, product=product, deleted=True).exists():
-                register = Register.objects.get(document=document, product=product, deleted=True)
-                register.deleted = False
-                # register.quantity = 1
-                # register.price = 0
-                # register.sub_total = 0
-                register.save()
-            elif Register.objects.filter(document=document, product=product).exists():
-                messages.error(request, "Вы уже ввели данное наименование.")
+            if RemainderCurrent.objects.filter(shop=shop, imei=imei).exists():
+                remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imei)
+                if Register.objects.filter(document=document, product=product, deleted=True).exists():
+                    register = Register.objects.get(document=document, product=product, deleted=True)
+                    register.deleted = False
+                    register.save()
+                elif Register.objects.filter(document=document, product=product).exists():
+                    messages.error(request, "Вы уже ввели данное наименование.")
+                    return redirect("change_signing_off_unposted", document.id)
+                else:
+                    if shop.retail==True:
+                        register = Register.objects.create(
+                            shop=shop,
+                            document=document, 
+                            product=product,
+                            price=remainder_current.retail_price,
+                            sub_total=remainder_current.retail_price,
+                            new=True
+                        )
+                        if register.price==0:
+                            messages.error(request, "Розничная цена для данного наименования отсутствует. Введите ее.")
+                            return redirect ('change_signing_off_unposted', document_id)
+                        else:
+                            messages.error(request, "В поле цена введена розничная цена для данного наименования.")
+                            return redirect ('change_signing_off_unposted', document_id)
+                    else:
+                        if AvPrice.objects.filter(imei=imei).exists():
+                            av_price_obj = AvPrice.objects.get(imei=imei)
+                            register = Register.objects.create(
+                                shop=shop,
+                                document=document,
+                                product=product,
+                                price=av_price_obj.av_price,
+                                quantity=1,
+                                sub_total=av_price_obj.av_price,
+                                new=True
+                            )
+                            messages.error(request, "В поле цена введена усредненная закупочная цена для данного наименования.")
+                            return redirect ('change_signing_off_unposted', document_id)
+                        else:
+                            messages.error(request, "Усредненная закупочная цена для данного наименования отсутствует. Введите ее.")
+                            return redirect ('change_signing_off_unposted', document_id) 
+                return redirect ('change_signing_off_unposted', document_id)
             else:
-                register = Register.objects.create(
-                    document=document, 
-                    product=product, 
-                    new=True
-                )
-            return redirect ('change_signing_off_unposted', document_id)
+                messages.error(request, "Данное наименование отсутствует на остатках данной фирмы.")
+                return redirect ('change_signing_off_unposted', document_id)
         else:
             messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
             return redirect ('change_signing_off_unposted', document_id)
-
-def check_signing_off_posted (request, document_id):
-    document = Document.objects.get(id=document_id)
-    registers = Register.objects.filter(document=document)
-    # if 'imei' in request.GET:
-    if request.method == "POST":
-        imei = request.POST["imei"]
-        if Product.objects.filter(imei=imei).exists():
-            product = Product.objects.get(imei=imei)
-            if Register.objects.filter(document=document, product=product, deleted=True).exists():
-                register = Register.objects.get(document=document, product=product, deleted=True)
-                register.deleted = False
-                # register.quantity = 1
-                # register.price = 0
-                # register.sub_total = 0
-                register.save()
-            elif Register.objects.filter(document=document, product=product).exists():
-                messages.error(request, "Вы уже ввели данное наименование.")
-                return redirect("change_signing_off_posted", document.id)
-            else:
-                register = Register.objects.create(
-                    document=document, 
-                    product=product,
-                    new=True
-                    )
-            return redirect("change_signing_off_posted", document.id)
-        else:
-            messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
-            return redirect("change_signing_off_posted", document.id)
 
 def signing_off(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -4693,14 +4672,6 @@ def delete_line_unposted_signing_off (request, imei, document_id):
     item.deleted = True
     item.save()
     return redirect("change_signing_off_unposted", document.id)
-
-def delete_line_posted_signing_off (request, imei, document_id):
-    document = Document.objects.get(id=document_id)
-    product = Product.objects.get(imei=imei)
-    item = Register.objects.get(document=document, product=product)
-    item.deleted = True
-    item.save()
-    return redirect("change_signing_off_posted", document.id)
 
 def clear_signing_off(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -4740,6 +4711,7 @@ def signing_off_input(request, identifier_id):
                 check_point =[]
                 n = len(names)
                 for i in range(n):
+                    product=Product.objects.get(imei=imeis[i])
                     if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                         remainder_current_sender = RemainderCurrent.objects.get(
                             imei=imeis[i], shop=shop)
@@ -4767,8 +4739,6 @@ def signing_off_input(request, identifier_id):
                     remainder_history = sequence_rhos_before.latest("created")
                     remainder_current = RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
                     remainder_current.current_remainder = remainder_history.current_remainder
-                    # remainder_current.av_price=remainder_history.av_price
-                    # remainder_current.total_av_price=remainder_history.sub_total
                     remainder_current.save()
                     # creating remainder_history
                     remainder_history = RemainderHistory.objects.create(
@@ -4776,7 +4746,7 @@ def signing_off_input(request, identifier_id):
                         created=dateTime,
                         shop=shop,
                         rho_type=document.title,
-                        # category=category,
+                        category=product.category,
                         imei=imeis[i],
                         name=names[i],
                         pre_remainder=remainder_current.current_remainder,
@@ -4794,16 +4764,21 @@ def signing_off_input(request, identifier_id):
                     remainder_current.save()
                     if AvPrice.objects.filter(imei=imeis[i]).exists():
                         av_price_obj = AvPrice.objects.get(imei=imeis[i])
-                        av_price_obj.current_remainder -= int(quantities[i])
-                        av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
-                        if av_price_obj.current_remainder > 0:
-                            av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                        if av_price_obj.current_remainder >= int(quantities[i]):
+                            av_price_obj.current_remainder -= int(quantities[i])
+                        else:
+                            messages.error(request, "Значение current_remainder таблицы AvPrice меньше кол-во к списанию. Невозможно сделать списание..")
+                            remainder_history.delete()
+                            document.delete()
+                            return redirect("signing_off", identifier.id)
+                        if av_price_obj.current_remainder != 0:
+                            av_price_obj.av_price= av_price_obj.sum/av_price_obj.current_remainder
                         else:
                             av_price_obj.av_price=0
                         av_price_obj.save()
                     else:
-                        messages.error(request, "Оооопс, что-то пошло не так.")
-                        return redirect("change_delivery_unposted", document.id)
+                        messages.error(request, "Усредненная закупочная цена отсутствует для данного наименования. Невозможно сделать списание..")
+                        return redirect("signing_off", identifier.id)
 
                     # checking docs after remainder_history
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
@@ -5146,8 +5121,6 @@ def change_signing_off_unposted (request, document_id):
                     remainder_history = sequence_rhos_before.latest("created")
                     remainder_current = RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
                     remainder_current.current_remainder = (remainder_history.current_remainder)
-                    # remainder_current.av_price=remainder_history.av_price
-                    # remainder_current.total_av_price=remainder_history.sub_total
                     remainder_current.save()
                     # creating remainder_history
                     remainder_history = RemainderHistory.objects.create(
@@ -5161,25 +5134,29 @@ def change_signing_off_unposted (request, document_id):
                         pre_remainder=remainder_current.current_remainder,
                         incoming_quantity=0,
                         outgoing_quantity=quantities[i],
-                        current_remainder=remainder_current.current_remainder
-                        - int(quantities[i]),
-                        wholesale_price=int(prices[i]),
+                        current_remainder=remainder_current.current_remainder - int(quantities[i]),
                         sub_total=int(int(quantities[i]) * int(prices[i])),
                     )
+                    if shop.retail==True:
+                        remainder_history.retail_price=prices[i]
+                        remainder_history.save()
                     document_sum += remainder_history.sub_total
                     remainder_current.current_remainder = remainder_history.current_remainder
                     remainder_current.save()
                     if AvPrice.objects.filter(imei=imeis[i]).exists():
                         av_price_obj = AvPrice.objects.get(imei=imeis[i])
-                        av_price_obj.current_remainder -= int(quantities[i])
-                        av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
+                        if av_price_obj.current_remainder >= int(quantities[i]):
+                            av_price_obj.current_remainder -= int(quantities[i])
+                        else:
+                            messages.error(request, "Вы не можете сделать списание, так как значение current_remainder таблицы AvPrice меньше списываемого кол-во.")
+                            return redirect("change_signing_off_unposted", document.id)
                         if av_price_obj.current_remainder > 0:
                             av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
                         else:
                             av_price_obj.av_price=0
                         av_price_obj.save()
                     else:
-                        messages.error(request, "Оооопс, что-то пошло не так.")
+                        messages.error(request, "Вы не можете сделать списание, так как отсутствует усредненная закупочная цена для данного наименования.")
                         return redirect("change_signing_off_unposted", document.id)
                
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, 
@@ -5274,15 +5251,10 @@ def unpost_signing_off (request, document_id):
                 obj.save()
                 remainder_current.current_remainder = obj.current_remainder
                 remainder_current.save()
-        if AvPrice.objects.filter(imei=rho.imei).exists():
-            av_price_obj = AvPrice.objects.get(imei=rho.imei)
-            av_price_obj.current_remainder += rho.outgoing_quantity
-            av_price_obj.sum += int(rho.outgoing_quantity) * av_price_obj.av_price           
-            av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
-            av_price_obj.save()
-        else:
-            messages.error(request, "Оооопс, что-то пошло не так.")
-            return redirect("change_delivery_unposted", document.id)
+        av_price_obj = AvPrice.objects.get(imei=rho.imei)
+        av_price_obj.current_remainder += rho.outgoing_quantity        
+        av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+        av_price_obj.save()
         rho.delete()
     if Register.objects.filter(document=document, deleted=True).exists():
         registers=Register.objects.filter(document=document, deleted=True)
@@ -5312,6 +5284,8 @@ def check_return(request, identifier_id):
     # if 'imei' in request.GET:
     if request.method == "POST":
         imei = request.POST["imei"]
+        shop = request.POST["shop"]
+        shop=Shop.objects.get(id=shop)
         if Product.objects.filter(imei=imei).exists():
             product = Product.objects.get(imei=imei)
             if Register.objects.filter(identifier=identifier, product=product).exists():
@@ -5320,14 +5294,40 @@ def check_return(request, identifier_id):
                 register.save()
                 return redirect("return_doc", identifier.id)
             else:
-                register = Register.objects.create(
-                    identifier=identifier, product=product
-                )
-                return redirect("return_doc", identifier.id)
+                if RemainderCurrent.objects.filter(imei=imei, shop=shop):
+                    remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                    print(remainder_current.retail_price)
+                else:
+                    messages.error(request, "Продажа данного наименования с данной торговой точки не осуществлялась. Невозможно сделать возврат")
+                    return redirect("return_doc", identifier.id)
+                if shop.retail==True:
+                    register = Register.objects.create(
+                            shop=shop,
+                            identifier=identifier,
+                            product=product,
+                            price=remainder_current.retail_price,
+                            quantity=1,
+                            sub_total=remainder_current.retail_price
+                        )
+                    messages.error(request, "В поле цена проставлена стандартная розничная цена для данного наименования на данной розничной точке.")
+                else:
+                    if AvPrice.objects.filter(imei=imei).exists():
+                        av_price_obj = AvPrice.objects.get(imei=imei)
+                        register = Register.objects.create(
+                            shop=shop,
+                            identifier=identifier,
+                            product=product,
+                            price=av_price_obj.av_price,
+                            quantity=1,
+                            sub_total=av_price_obj.av_price
+                        )
+                        messages.error(request, "В поле цена проставлена усредненная закупочная цена для данного наименования.")
+                    else:
+                        messages.error(request, "Усредненная закупочная цена для данного наименования отсутствует. Невозможно сделать возврат.")
+           
+            return redirect("return_doc", identifier.id)
         else:
-            messages.error(
-                request, "Данное наименование отсутствует в БД. Введите его."
-            )
+            messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
             return redirect("return_doc", identifier.id)
 
 def check_return_unposted(request, document_id):
@@ -5337,54 +5337,59 @@ def check_return_unposted(request, document_id):
     # if 'imei' in request.GET:
     if request.method == "POST":
         imei = request.POST["imei"]
+        shop = request.POST["shop"]
+        shop=Shop.objects.get(id=shop)
         if Product.objects.filter(imei=imei).exists():
             product = Product.objects.get(imei=imei)
-            if Register.objects.filter(document=document, product=product, deleted=False).exists():
-                messages.error(request, "Вы уже ввели данное наименование.")
-                return redirect("change_return_unposted", document.id)
-            elif Register.objects.filter(document=document, product=product, deleted=True).exists():
-                register = Register.objects.get(document=document, product=product, deleted=True)
-                register.deleted=False
-                #register.price=0
-                #register.sub_total=0
-                register.save()
+            if RemainderCurrent.objects.filter(shop=shop, imei=imei).exists():
+                remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imei)
+                if Register.objects.filter(document=document, product=product, deleted=True).exists():
+                    register = Register.objects.get(document=document, product=product, deleted=True)
+                    register.deleted = False
+                    register.save()
+                elif Register.objects.filter(document=document, product=product).exists():
+                    messages.error(request, "Вы уже ввели данное наименование.")
+                    return redirect("change_return_unposted", document.id)
+                else:
+                    if shop.retail==True:
+                        register = Register.objects.create(
+                            shop=shop,
+                            document=document, 
+                            product=product,
+                            price=remainder_current.retail_price,
+                            sub_total=remainder_current.retail_price,
+                            new=True
+                        )
+                        if register.price==0:
+                            messages.error(request, "Розничная цена для данного наименования отсутствует. Введите ее.")
+                            return redirect("change_return_unposted", document.id)
+                        else:
+                            messages.error(request, "В поле цена введена розничная цена для данного наименования.")
+                            return redirect("change_return_unposted", document.id)
+                    else:
+                        if AvPrice.objects.filter(imei=imei).exists():
+                            av_price_obj = AvPrice.objects.get(imei=imei)
+                            register = Register.objects.create(
+                                shop=shop,
+                                document=document,
+                                product=product,
+                                price=av_price_obj.av_price,
+                                quantity=1,
+                                sub_total=av_price_obj.av_price,
+                                new=True
+                            )
+                            messages.error(request, "В поле цена введена усредненная закупочная цена для данного наименования.")
+                            return redirect("change_return_unposted", document.id)
+                        else:
+                            messages.error(request, "Усредненная закупочная цена для данного наименования отсутствует. Введите ее.")
+                            return redirect("change_return_unposted", document.id)
                 return redirect("change_return_unposted", document.id)
             else:
-                register = Register.objects.create(
-                    document=document,
-                    product=product,
-                    new=True
-                )
+                messages.error(request, "Данное наименование отсутствует на остатках данной фирмы.")
                 return redirect("change_return_unposted", document.id)
         else:
             messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
             return redirect("change_return_unposted", document.id)
-
-def check_return_posted (request, document_id):
-    document = Document.objects.get(id=document_id)
-    registers = Register.objects.filter(document=document) 
-    if request.method == "POST":
-        imei = request.POST["imei"]
-        if Product.objects.filter(imei=imei).exists():
-            product = Product.objects.get(imei=imei)
-            if Register.objects.filter(document=document, product=product, deleted=False).exists():
-                messages.error(request, "Вы уже ввели данное наименование.")
-                return redirect("change_return_posted", document.id)
-            elif Register.objects.filter(document=document, product=product, deleted=True).exists():
-                register = Register.objects.get(document=document, product=product, deleted=True)
-                register.deleted = False
-                register.save()
-                return redirect("change_return_posted", document.id)
-            else:
-                register = Register.objects.create(
-                    document=document, 
-                    product=product, 
-                    new=True
-                )
-                return redirect("change_return_posted", document.id)
-        else:
-            messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
-            return redirect("change_return_posted", document.id)
 
 def return_doc(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -5419,14 +5424,6 @@ def delete_line_unposted_return (request, imei, document_id):
     register.save()
     return redirect("change_return_unposted", document.id)
 
-def delete_line_posted_return (request, document_id, imei):
-    document = Document.objects.get(id=document_id)
-    product = Product.objects.get(imei=imei)
-    register = Register.objects.get(document=document, product=product)
-    register.deleted = True
-    register.save()
-    return redirect("change_return_posted", document.id)
-
 def clear_return(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     registers = Register.objects.filter(identifier=identifier)
@@ -5458,9 +5455,9 @@ def return_input(request, identifier_id):
                 if imeis:
                     if dateTime:
                         # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                        dateTime = dateTime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                        dateTime = dateTime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
                     else:
-                        dateTime = datetime.now()
+                        dateTime = datetime.datetime.now()
                     document = Document.objects.create(
                         title=doc_type, 
                         user=request.user, 
@@ -5477,26 +5474,11 @@ def return_input(request, identifier_id):
                             remainder_history = sequence_rhos_before.latest("created")
                             remainder_current = RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
                             remainder_current.current_remainder = remainder_history.current_remainder
-                            # remainder_current.av_price=remainder_history.av_price
-                            # remainder_current.total_av_price=remainder_history.sub_total
                             remainder_current.save()
                         else:
-                            if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
-                                remainder_current = RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
-                                remainder_current.current_remainder = 0
-                                # remainder_current.av_price=0
-                                # remainder_current.total_av_price=0
-                                remainder_current.save()
-                            else:
-                                remainder_current = RemainderCurrent.objects.create(
-                                    updated=dateTime,
-                                    shop=shop,
-                                    imei=imeis[i],
-                                    name=names[i],
-                                    current_remainder=0,
-                                    # av_price=0,
-                                    # total_av_price=0
-                                )
+                            messages.error(request, "Продажа данного наименования с данной торговой точки не осуществлялась. Невозможно сделать возврат")
+                            document.delete()
+                            return redirect("return_doc", document.id)
                             # creating remainder_history
                         remainder_history = RemainderHistory.objects.create(
                             document=document,
@@ -5521,10 +5503,9 @@ def return_input(request, identifier_id):
                             av_price_obj = AvPrice.objects.get(imei=imeis[i])
                             av_price_obj.current_remainder += int(quantities[i])
                             av_price_obj.sum += int(quantities[i]) * av_price_obj.av_price
-                            # av_price_obj.av_price=av_price_obj.sum/av_price_obj.current_remainder
                             av_price_obj.save()
                         else:
-                            messages.error(request,"Данное наименование никогда не было учтено на балансе фирмы. Вы не можете сделать возврат",)
+                            messages.error(request,"Невозможно сделать возврат, так как усредненная закупочная цена отсутствует для данного наименования")
                             return redirect("return_doc", identifier.id)
                         # checking docs after remainder_history
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, 
@@ -5611,9 +5592,9 @@ def return_input(request, identifier_id):
                 if imeis:
                     if dateTime:
                         # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                        dateTime = dateTime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                        dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
                     else:
-                        dateTime = datetime.now()
+                        dateTime = datetime.datetime.now()
                     try:
                         if request.POST["post_check"]:
                             post_check = True
@@ -5802,9 +5783,9 @@ def change_return_unposted(request, document_id):
         sub_totals = request.POST.getlist("sub_total", None)
         if dateTime:
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
         else:
-            dateTime = datetime.now()
+            dateTime = datetime.datetime.now()
         try:
             if request.POST["post_check"]:
                 post_check = True
@@ -5866,7 +5847,6 @@ def change_return_unposted(request, document_id):
                         av_price_obj = AvPrice.objects.get(imei=imeis[i])
                         av_price_obj.current_remainder += int(quantities[i])
                         av_price_obj.sum += int(quantities[i]) * av_price_obj.av_price
-                        # av_price_obj.av_price=av_price_obj.sum/av_price_obj.current_remainder
                         av_price_obj.save()
                     else:
                         messages.error(request,"Данное наименование никогда не было учтено на балансе фирмы. Вы не можете сделать возврат",)
@@ -6197,12 +6177,6 @@ def unpost_return(request, document_id):
     document = Document.objects.get(id=document_id)
     remainder_history_objects = RemainderHistory.objects.filter(document=document)
     for rho in remainder_history_objects:
-        av_price = AvPrice.objects.get(imei=rho.imei)
-        av_price.current_remainder -= rho.incoming_quantity
-        av_price.sum -= rho.incoming_quantity * av_price.av_price
-        # av_price.av_price=av_price.sum/av_price.current_remainder
-        av_price.save()
-
         if RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__lt=rho.created).exists():
             sequence_rhos_before = RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__lt=rho.created)
             rho_latest_before = sequence_rhos_before.latest("created")
@@ -6231,6 +6205,10 @@ def unpost_return(request, document_id):
                 obj.save()
                 remainder_current.current_remainder = obj.current_remainder
                 remainder_current.save()
+        av_price_obj = AvPrice.objects.get(imei=rho.imei)
+        av_price_obj.current_remainder -= rho.incoming_quantity
+        av_price_obj.sum -= rho.incoming_quantity * av_price_obj.av_price
+        av_price_obj.save()
         rho.delete()
     document.posted = False
     document.save()

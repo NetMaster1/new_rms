@@ -23,33 +23,10 @@
                     {% endif%}
                 </div>
                 <!-- ===================End of Alert Messages Module================ -->
-
-                {% if not document.base_doc %}
-                <div class="col-6 border rounded p-3">
-                    <form action="{% url 'check_signing_off_posted' document.id %}" method="POST" class='check_button'>
-                        {% csrf_token %}
-                        <div class="row m-1">
-                            <div class="col-6">
-                                <input type="text" class='form-control' id="check_imei" name="imei" maxlength='50'
-                                    required placeholder="Введите IMEI">
-                            </div>
-
-                            <div class="col-6">
-                                <input type="submit" value="Внести наименование в документ"
-                                    class="btn btn-sm btn-outline-dark">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                {% endif %}
-          
             </div>
 
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
-
-                    <form action="{% url 'change_signing_off_posted' document.id %}" method="POST" id='save_button'>
-                        {% csrf_token %}
 
                         <div class="form-row">
                             <div class="col-6">
@@ -132,27 +109,13 @@
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
                                     value='{{register.sub_total}}' maxlength='50'>
                             </div>
-                            {% if not document.base_doc %}
-                            <div class="col">
-                                <a href="{% url 'delete_line_posted_signing_off' register.product.imei document.id %}">
-                                    <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
-                                </a>
-                            </div>
-                            {% endif %}
+                        
                         </div>
                         {% endfor %}
 
+                <div class="row">
                     {% if not document.base_doc %}
-                        <div class="row m-auto mt-3 ">
-                            <div class="col-2">
-                                <input type="submit" value="Сохранить и провести"
-                                    class="btn btn-sm btn-block btn-outline-dark">
-                            </div>
-                    {% endif %}
-                    </form>
-
-                    {% if not document.base_doc %}
-                    <div class="col-3">
+                    <div class="col-3 mt-3">
                         <a href="{% url 'unpost_signing_off' document.id %}">
                             <input type="button" value="Сделать непроведенным"
                                 class="btn btn-sm btn-block btn-outline-dark clear_storage">
@@ -167,6 +130,7 @@
                         </a>
                     </div>
                 </div>
+
 
 
             </div>
