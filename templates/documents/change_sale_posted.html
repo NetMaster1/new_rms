@@ -6,12 +6,15 @@
         <div class="page_location_posted">
             <div class="row m-2 pt-2">
                 <div class="col">
-                    <h3>Изменить документ {{document.title}} # {{document.id}}</h3>
+                    {%for group in request.user.groups.all %}
+                    {%if group.name == 'admin'%}
+                    <h3>Изменить документ{{document.title}} # {{document.id}}</h3>
+                    {%else%}
+                    <h3>{{document.title}} # {{document.id}}</h3>
+                    {%endif%}
+                    {%endfor%}
                 </div>
-
             </div>
-
-
 
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">

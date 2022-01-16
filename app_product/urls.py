@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path ('', views.index, name='index'),
+    # path ('', views.index, name='index'),
     path ('search', views.search, name='search'),
     path ('close_search', views.close_search, name='close_search'),
     path ('close_unposted_document/<int:document_id>', views.close_unposted_document, name='close_unposted_document'),
@@ -153,6 +153,8 @@ urlpatterns = [
     path ('security_code/<int:identifier_id>/<int:client_id>', views.security_code, name='security_code'),
     path ('sec_code_confirm/<int:identifier_id>/<int:client_id>', views.sec_code_confirm, name='sec_code_confirm'),
    
+
+   #=========================================================================
     path ('close_edited_document/<int:document_id>', views.close_edited_document, name='close_edited_document'),
     
     path ('identifier_inventory', views.identifier_inventory, name='identifier_inventory'),

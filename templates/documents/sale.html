@@ -95,7 +95,7 @@
                     <div class="col-2"><label for="imei"><h5>IMEI</h5></label></div>
                     <div class="col-3"><label for="name"><h5>Наименование</h5></label></div>
                     <div class="col-2"><label for="quantity"><h5>Кол-во</h5></label></div>
-                    <div class="col-2"><label for="price"><h5>Цена</h5></label></div>
+                    <div class="col-2"><label for="price"><h5>Цена, руб.</h5></label></div>
                     <div class="col-2"><label for="sum">Сумма</label></div>
                 </div>
             <!-- </div> -->
@@ -128,33 +128,33 @@
                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                 </a>
                 </div>
-                </div>
+            </div>
                 {% endfor %}
 
-                <div class="row m-auto mb-2">
-                    <div class="col">Сумма чека:</div>
-                    <div class="col">{{sum}} руб. </div>
-                </div>
-                <div class="row border rounded p-3">
-                 <div class="col-2">
-                    <a href="{% url 'clear_sale' identifier.id %}">
-                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark">
-                    </a>
-                    </div>
-                    <div class="col-2">
-                    <a href="{% url 'close_without_save' identifier.id %}">
-                        <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
-                    </a>
-                    </div>
+<!-- ==============================Menu=================================================== -->
+            <div class="row m-auto mb-2">
+                    <div class="col-3">Сумма чека, руб.:</div>
+                    <div class="col-2">{{sum}} </div>
+            </div>
+
+    <div class="row border rounded p-3">
+            <div class="col-2">
+                <a href="{% url 'clear_sale' identifier.id %}">
+                    <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark">
+                </a>
+            </div>
+            <div class="col-2">
+                <a href="{% url 'close_without_save' identifier.id %}">
+                    <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                </a>
+            </div>
               
 <!-- ========================Enter client's phone for cashback modal trigger============================ -->
-            <div class="col-3">
-            <button type="button" class="btn btn-sm btn-outline-dark btn_modal_cashback">
+            <div class="col-2">
+                <button type="button" class="btn btn-sm btn-outline-dark btn_modal_cashback">
                 Продажа с кэшбэком
-            </button>
+                </button>
             </div>
-<!-- ======================End of client's phone for cashback modal trigger============================= -->
-
 <!-- ===========================Client's Phone for cashback modal======================= -->
         <div class="enterCashbackModal">
             <div class="modal-dialog">
@@ -180,19 +180,16 @@
             </div>
         </div>
         </div>
-    <!-- ==============================End of Client's phone for cashback modal======================== -->
+<!-- ==============================End of Client's phone for cashback modal======================== -->
     
 <!-- ==============================New Cashback Client Modal Trigger================== -->
-            <div class="col-3">
+            <div class="col-2">
                 <button type="button" class="btn btn-sm btn-block btn-outline-dark btn_modal_cashback_new_client">
                     Новый клиент кэшбэк
                 </button>
-            </div>
-<!-- ============================End of New Cashback Client Modal Trigger========================= -->
-                     
-                        
-     <!-- ===========================Modal Body================================= -->
-                        <div class="enterModalCashbackNewClient">
+            </div>               
+<!-- ===========================Modal Body================================= -->
+        <div class="enterModalCashbackNewClient">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
@@ -230,13 +227,15 @@
                         </div>
 <!-- ==============================End of Modal Body====================================== -->
 
-            </div>
-            <div class="col-2">
-                <!-- 4 is a service number assigned to Sergei -->
-                    <a href="{% url 'noCashback' identifier.id %}"> 
-                        <input type="button" value="Продолжить без кэшбэка" class="btn btn-sm btn-outline-dark btn_modal">
-                    </a>
-            </div>
+        </div>
+<!-- ===================================End of New Cashback Client Modal==================== -->
+
+        <div class="col-2">
+            <!-- 4 is a service number assigned to Sergei -->
+                <a href="{% url 'noCashback' identifier.id %}"> 
+                    <input type="button" value="Продолжить без кэшбэка" class="btn btn-sm btn-outline-dark btn_modal">
+                </a>
+        </div>
     </div>
 </div>
 

@@ -14,6 +14,8 @@ def personnel (request):
 
 def login(request):
     if request.method == 'POST':
+        users=Group.objects.get(name="sales").user_set.all()
+        shops=Shop.objects.all()
         username = request.POST['username']
         password = request.POST['password']
         user = auth.authenticate(username=username, password=password)
@@ -22,8 +24,11 @@ def login(request):
             request.session.set_expiry(0)  #user session terminates on browser close
             #request.session.set_expiry(600) #user session terminates every 10 min
             auth.login(request, user)
-            # messages.success(request, 'You are logged in now')
-            return redirect ('index')
+            # messages.success(request, 'You are logged in now')   
+            if request.user in users:
+                return redirect ('shop_choice')
+            else:
+                return redirect("log")
         else:
             messages.error(request, "Неправильные учетные данные, попробуйте еще раз")
             return redirect('login')
@@ -34,6 +39,22 @@ def logout(request):
         auth.logout(request)
         # messages.success(request, 'Вы вышли из системы')
         return redirect('login')
+
+def shop_choice (request):
+    if request.user.is_authenticated:
+        shops=Shop.objects.all()
+        if request.method=='POST':
+            shop = request.POST["shop"]
+            #shop=Shop.objects.get(id=shop)
+            #django has already created a session dictionnary where request.user is stored. Now we may add more info (key, value). Django session store data in JSON format which means we can't store objects. We can store only primitive data types. We can't store "shop" as an object, we can store only 'shop.id'
+            request.session ["session_shop"]=shop 
+            return redirect ('sale_interface')
+        else:
+            context = {
+                'shops': shops
+            }
+            return render(request, 'personnel/shop_choice.html', context)
+    return redirect('login')
 
 def my_bonus(request):
     if request.user.is_authenticated:
