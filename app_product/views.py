@@ -1452,7 +1452,7 @@ def security_code(request, identifier_id, client_id):
         print(code_string)
         # ===========Twilio API==================
         account_sid = "ACb9a5209252abd7219e19a812f8108acc"
-        auth_token = "df4ff46fe6eb1008b7284891578939bf"
+        auth_token = ""
         client_twilio = Client(account_sid, auth_token)
         message = client_twilio.messages.create(
             body=code_string, 
