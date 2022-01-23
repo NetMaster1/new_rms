@@ -11,6 +11,7 @@ class Customer (models.Model):
     bar_code = models.CharField(max_length=50, blank=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     accum_cashback= models.IntegerField(default=0)
+    purchase_counter= models.IntegerField(default=0)
     
     
     def __int__(self):

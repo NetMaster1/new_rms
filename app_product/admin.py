@@ -28,7 +28,7 @@ class RevaluationAdmin(admin.ModelAdmin):
 
 class RemainderHistoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'document','supplier', 'rho_type', 'status', 'shop', 'category', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'retail_price', 'user', 'inventory_doc') 
-    list_filter = ('imei', 'document', 'shop')
+    list_filter = ('imei', 'document', 'shop', 'user')
     ordering = ('-created',)
     list_per_page=25
     list_select_related = True
@@ -40,7 +40,7 @@ class RemainderHistoryAdmin(admin.ModelAdmin):
 
 class RemainderCurrentAdmin(admin.ModelAdmin):
     list_display = ('updated','shop', 'category', 'name', 'imei', 'current_remainder', 'retail_price')  
-    list_filter = ('imei',)
+    list_filter = ('shop', 'imei',)
 
 class AvPriceAdmin(admin.ModelAdmin):
     list_display = ('updated', 'name', 'imei', 'current_remainder', 'av_price', 'sum')  

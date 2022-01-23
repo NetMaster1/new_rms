@@ -50,6 +50,7 @@
                     <li><a class="dropdown-item" href="{% url 'remainder_report_dynamic' %}">Отчет по остаткам динамический</a></li>
                     <li><a class="dropdown-item" href="{% url 'item_report' %}">Отчет по движению ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'bonus_report' %}">Общий бонус за месяц</a></li>
+                    <li><a class="dropdown-item" href="{% url 'number_of_work_days' %}">Кол-во смен в месяц</a></li>
                     <li><a class="dropdown-item" href="{% url 'cash_report' %}">Отчет по движению наличных</a></li>
                     <li><a class="dropdown-item" href="{% url 'card_report' %}">Отчет по оплате картами</a></li>
                     <li><a class="dropdown-item" href="{% url 'credit_report' %}">Отчет по продажам в кредит</a></li>
@@ -145,7 +146,10 @@
 {% endfor %}
         <div class="li navbar-brand">
                 <h5>Добро пожаловать {{request.user.first_name}}</h5>
-            </div>
+        </div>
+        <div class="li navbar-brand">
+            <h5>Торговая точка {{shop}}</h5>
+        </div>
         </div>
 
         <a class="navbar-brand" href="{% url 'logout' %}">Выйти</a>

@@ -4,27 +4,35 @@
 
 
 <div class="container mt-5 mb-5 pt-5">
-    <div class="row">
+   
         <!-- Alerts ========================== -->
         {% include 'partials/_alerts.html' %}
         <!-- ========================================== -->
+<div class="shop_choice_page">
+<div class="shop_choice_form border rounded">
+    <div class="col m-3">
         <form action="#" method='POST'>
             {% csrf_token %}
-        
-            <div class="col-4">
+  
+       
                 <select name="shop" id="shop" class='form-control' required>
                     <option value="">Выберите ТТ, с которой продается ТМЦ</option>
                     {% for shop in shops %}
                     <option value="{{shop.id}}">{{shop.name}}</option>
                     {% endfor %}
                 </select>
-            </div>
+       
+        
         
             <div class="row m-auto mt-3">
-                <input type="submit" value="Выбрать" class="btn btn-primary btn-block">
+               
+                <input type="submit" value="Выбрать" class="btn btn-outline-dark btn-block">
+               
             </div>
         </form>
     </div>
+</div>
+</div>
 </div>
 
 

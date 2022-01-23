@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+   
+    <!-- <div class="page_location"> -->
+        <!-- Alerts ========================== -->
+        {% include 'partials/_alerts.html' %}
+        <!-- ========================================== -->
+        Work Days Report: </br>
+        
+        {% for key, value in work_days.items %}
+        {{key}}: {{value}}</br>
+        {% endfor %}
+
+
+    <!-- </div> -->
+</div>
+
+
+{% endblock %}
