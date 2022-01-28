@@ -385,59 +385,64 @@ def delivery_report(request):
     return render(request, "reports/delivery_report.html", context)
 #=======================================================
 def remainder_report(request):
-    categories = ProductCategory.objects.all()
-    products=Product.objects.all()
-    shops = Shop.objects.all()
-    if request.method == "POST":
-        date = request.POST["date"]
-        category = request.POST["category"]
-        category=ProductCategory.objects.get(id=category)
-        try:
+    if request.user.is_authenticated:
+        categories = ProductCategory.objects.all()
+        products=Product.objects.all()
+        shops = Shop.objects.all()
+        if request.method == "POST":
+            if Group.objects.filter(name='admin').exists():
+                group= Group.objects.get(name='admin').user_set.all()
+                if request.user in group:
+                    shop=request.POST["shop"]
+                    shop=Shop.objects.get(id=shop)
+                    date = request.POST["date"]
+                    if date:
+                        date=datetime.datetime.strptime(date, "%Y-%m-%d")
+                    else:
+                        date=datetime.date.today()
+                    #date is given as 2022-01-28 00:00:00 (start of the day). To make it the end of the day
+                    #we add 1 day to 2022-01-28 00:00:00. By doing so we include all the documents issued during the current date
+                    # tdelta=datetime.timedelta(seconds=86399)
+                    tdelta_1=datetime.timedelta(days=1)
+                    date= (date+tdelta_1)
+                else:
+                    session_shop=request.session['session_shop']
+                    #session_shop=request.session.get['session_shop']
+                    shop=Shop.objects.get(id=session_shop)
+                    date=datetime.date.today()
+                    
             category = request.POST["category"]
             category=ProductCategory.objects.get(id=category)
-        except:
-            messages.error(request, "Выберите категорию товара")
-            return redirect("remainder_report")
-        try:
-            shop = request.POST["shop"]
-            shop=Shop.objects.get(id=shop)
-        except:
-            messages.error(request, "Выберите торговую точку")
-            return redirect("remainder_report")
-        if date:
+           
             array=[]
-            queryset_list=RemainderHistory.objects.filter(shop=shop, category=category, created__lte=date)
+            if RemainderHistory.objects.filter(shop=shop, category=category, current_remainder__gt=0, created__lte=date):
+                queryset_list=RemainderHistory.objects.filter(shop=shop, category=category, current_remainder__gt=0, created__lte=date)
+            else:
+                messages.error(request,"Данная категория отсутствует на данном складе.",)
+                return redirect('remainder_report')
             for product in products:
                 if queryset_list.filter(imei=product.imei, shop=shop).exists():
                     queryset=queryset_list.filter(imei=product.imei, shop=shop)
                     rho = queryset.latest("created")
                     array.append(rho)
+                    context = {
+                        'date': date,
+                        'shop': shop,
+                        'array': array,
+                        "shops": shops,
+                        "categories": categories,
+                        "category": category
+                    }
+                    return render(request, "reports/remainder_report.html", context)
+        
+        else:
             context = {
-                'date': date,
-                'shop': shop,
-                'array': array,
                 "shops": shops,
                 "categories": categories,
-                "category": category
             }
             return render(request, "reports/remainder_report.html", context)
-        else:
-            qs = RemainderCurrent.objects.filter(shop=shop, category=category)
-            context = {
-                "qs": qs,
-                'shop': shop,
-                "shops": shops,
-                "categories": categories,
-                "category": category
-            }
-            #return render(request, "reports/remainder_report.html", context)
-            return redirect ('remainder_list', shop.id, category.id)
     else:
-        context = {
-            "shops": shops,
-            "categories": categories,
-        }
-        return render(request, "reports/remainder_report.html", context)
+        return redirect ('login')
 
 def remainder_list (request, shop_id, category_id):
     shop=Shop.objects.get(id=shop_id)

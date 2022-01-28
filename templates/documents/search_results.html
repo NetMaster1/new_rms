@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="hide">
+<div class="container">
 
-    <div class="container">
-
-        <div class="page_location">
+   <div class="modal-search-results border rounded">
             <!-- =====================Alert Messages Module=================== -->
             <div class="container">
                 {% if messages %}
@@ -21,22 +20,21 @@
             <!-- ===================End of Alert Messages Module================ -->
 
 
-            <div class="row m-2">
-                <div class="col-2">Торговая точка</div>
-                <div class="col-2">Наименование</div>
-                <div class="col-2">IMEI</div>
-                <div class="col-2">Количество</div>
+            <div class="modal-header">
+                <div class="col-3"><h5>Торговая точка</h5></div>
+                <div class="col-3"><h5>Наименование</h5></div>
+                <div class="col-2"><h5>IMEI</h5></div>
+                <div class="col-2"><h5>Количество</h5></div>
+                <div class="col-2"><h5>Цена</h5></div>
             </div>
 
-          
-
-            <div class="row">
+        <div class="col m-2">
                 {% for remainder in remainders %}
-                <div class="row">
-                    <div class="col-2">
+                <div class="row mt-1 mb-1 ">
+                    <div class="col-3">
                         {{remainder.shop}}
                     </div>
-                    <div class="col-2">
+                    <div class="col-3">
                         {{remainder.name}}
                     </div>
                     <div class="col-2">
@@ -45,18 +43,35 @@
                     <div class="col-2">
                         {{remainder.current_remainder}}
                     </div>
+                    <div class="col-2">
+                    {{remainder.retail_price}}
+                    </div>
                 </div>
                 {% endfor %}
 
-                <div class="col-4 m-1">
-                    <a href="{% url 'sale_interface' %}">
-                        <input type="button" value="Закрыть" class="btn btn-sm btn-block btn-outline-dark">
-                    </a>
-                </div>
-            </div>
-
+        
+        {%for group in request.user.groups.all%}
+        {%if group.name == 'sales' %}
+        <div class="row m-auto mt-3">
+            <a href="{% url 'sale_interface' %}" class="btn btn-block btn-outline-dark">
+                Закрыть
+            </a>
         </div>
-    </div>
+        
+        {% else %}
+        <div class="row m-auto mt-3">
+            <a href="{% url 'log' %}" class="btn btn-sm btn-block btn-outline-dark">
+              Закрыть
+            </a>
+        </div>
+        
+        {%endif%}
+        {% endfor %}
+        </div>
+  
+          
+   </div>
+</div>
 </div>
         
 

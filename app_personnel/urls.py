@@ -9,5 +9,6 @@ urlpatterns = [
     path('my_bonus', views.my_bonus, name='my_bonus'),
     path('motivation', views.motivation, name='motivation'),
     path('number_of_work_days', views.number_of_work_days, name='number_of_work_days'),
+    path('cash_back_bonus', views.cash_back_bonus, name='cash_back_bonus'),
 ]
  

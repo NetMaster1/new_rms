@@ -1,86 +1,81 @@
 {% extends 'base.html' %}
 {% block content %}
-<!-- <div class="hide"> -->
+<div class="hide">
     <div class="container">
         <div class="page_location">
-<!-- =====================Alert Messages Module=================== -->
-<div class="container">
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-info" role="alert">
-        <!-- <button class="close" data-dismiss="alert">
-                        <small><sup>x</sup></small>
-                    </button> -->
-        {{ message }}
-    </div>
-    {% endfor%}
-    {% endif%}
-</div>
-<!-- ===================End of Alert Messages Module================ -->
-
-            <div class="menu">
-                <h3>Отчет по остаткам на дату</h3>
+            <div class="border rounded p-3">
+                <!-- =====================Alert Messages Module=================== -->
+                <div class="container">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-info" role="alert">
+                        <!-- <button class="close" data-dismiss="alert">
+                                        <small><sup>x</sup></small>
+                                    </button> -->
+                        {{ message }}
+                    </div>
+                    {% endfor%}
+                    {% endif%}
+                </div>
+                <!-- ===================End of Alert Messages Module================ -->
+                <h3>Отчет по остаткам {{shop}} на дату: {{date}}</h3>
             </div>
 
-            <div class="menu">
+            <div class="border rounded p-3">
             <form action="{% url 'remainder_report' %}" method="POST" class='clear_storage_on_submit'>
                 {% csrf_token %}
 
                 <div class="row form-row m-auto">
                     <div class="col-3">
-                        <select name="category" class='form-inline' id='category' required>
+                        <select name="category" class='form-control' id='category' required>
                             <option value="">Выберите категорию</option>
                             {% for category in categories %}
                             <option value="{{category.id}}">{{category.name}}</option>
                             {% endfor %}
                         </select>
-                    </div>
-
-                    <div class="col-3">
-                        <select name="shop" id="shop" class='form-inline' required>
+                
+            {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
+                        <select name="shop" id="shop" class='form-control' required>
                         <!-- <option selected="false" disabled="disabled">Выберите торговую  точку</option> -->
                             <option value="">Выберите торговую точку</option>
                             {% for shop in shops %}
                             <option value="{{shop.id}}">{{shop.name}}</option>
                             {% endfor %}
                         </select>
-                    </div>
-                </div>
+              
+                        <!-- <input type="datetime-local" id='date' name="date" class="form-control"> -->
+                        <input type="date" id='date' name="date" class='form-control'>
 
-                <div class="row form-row mt-3">
-                    <div class="col-3">
-                        <input type="datetime-local" id='date' name="date" >
+                {% endif %}
+            {% endfor %}
                     </div>
+              
 
 
                     <div class="col-2">
-                        <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
-                    </div>
-                    <div class="col-2">
-                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
-                    </div>
-                    <div class="col-2">
-                        <a href="{% url 'close_report' %}">
-                            <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        <div class="row m-1">
+                        <input type="reset" value="Сбросить" class="btn btn-block btn-outline-dark clear_storage">
+                        </div>
+                        <div class="row m-1">
+                        <input type="submit" value="Применить" class="btn btn-block btn-outline-dark">
+                        </div>
+                        <div class="row m-1">
+                        <a href="{% url 'close_report' %}"  class="btn btn-block btn-outline-dark">
+                           Закрыть  
                         </a>
-                    </div>
-                    <div class="col-2">
-                        <a href="{% url 'save_in_excel' %}">
-                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        </div>
+                        <div class="row m-1">
+                        <a href="{% url 'save_in_excel' %}" class="btn btn-block btn-outline-dark">
                                 Сохранить в Excel
-                            </button>
                         </a>
+                        </div>
                     </div>
             </form>
             </div>
         </div>
 
-    <div class="log">
-        <div class="row m-auto">
-            <div class="col"><h5>Остатки по торговой точке {{shop}} на дату: {{date}}</h5></div>
-        </div>
-
+    <div class="border rounded p-3">
 
         <div class="row">
             <div class="col-2"><h5>IMEI</h5></div>
@@ -177,7 +172,8 @@
     </div>
 
 </div>
-<!-- </div> -->
+</div>
+</div>
 
 <script>
 

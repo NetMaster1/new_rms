@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import manager
 from app_reference.models import Shop, Supplier, Product, ProductCategory, DocumentType, Contributor, Voucher, Expense
+from app_clients.models import Customer
 
 # import datetime
 from datetime import datetime, date
@@ -16,7 +17,6 @@ class Identifier(models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     def __int__(self):
         return self.id
-
 
 class Document(models.Model):
     title = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
@@ -297,6 +297,7 @@ class RemainderHistory(models.Model):
     retail_price = models.IntegerField(default=0)
     update_check = models.BooleanField(default=False)
     status = models.BooleanField(default=False)  # "False" for Transfer(send) "True" for Transfer(receive)
+    client_phone = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, null=True)
 
     class Meta:
         ordering = ('-created',)  # sorting by date

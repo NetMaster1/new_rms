@@ -1,5 +1,7 @@
 import datetime
 from app_reference.models import Product, ProductCategory, Shop
+from app_product.models import RemainderHistory
+from app_clients.models import Customer
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, Group
 from django.contrib import messages
@@ -119,3 +121,24 @@ def number_of_work_days (request):
     }
     return render (request, 'personnel/work_days.html', context)
   
+def cash_back_bonus (request):
+    users=User.objects.all()
+    print(users)
+    rhos=RemainderHistory.objects.all()
+    dict={}
+    for user in users:
+        clients=Customer.objects.filter(user=user)
+        counter=0
+        for client in clients:
+            client_rows=rhos.filter(client_phone=client)
+            n=client_rows.count()
+            if n >= 3:
+                counter+=1
+                #calculating sum of bonus in roubles (30 руб. за каждые три покупки)
+        bonus=counter*50
+        dict[user]=bonus
+        
+        context = {
+            'dict': dict
+        }
+    return render(request, 'personnel/cash_back_bonus.html', context)

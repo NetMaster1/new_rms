@@ -3,56 +3,61 @@
 <div class="hide">
 
     <div class="container">
+            <div class="modal-search">
+                <div class="modal-search-form form border rounded">
 
-        <div class="page_location_search">
-            <!-- =====================Alert Messages Module=================== -->
-            <div class="container">
-                {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-info" role="alert">
-                    <!-- <button class="close" data-dismiss="alert">
-                    <small><sup>x</sup></small>
-                </button> -->
-                    {{ message }}
-                </div>
-                {% endfor%}
-                {% endif%}
-            </div>
-            <!-- ===================End of Alert Messages Module================ -->
+                      
 
+                   
 
-            <div class="row m-2">
-                <div class="col-11 border rounded p-3 m-2">
-
+<!-- =====================Alert Messages Module=================== -->
+<div class="container mt-2">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-info" role="alert">
+        <!-- <button class="close" data-dismiss="alert">
+                                            <small><sup>x</sup></small>
+                                        </button> -->
+        {{ message }}
+    </div>
+    {% endfor%}
+    {% endif%}
+</div>
+<!-- ===================End of Alert Messages Module================ -->
+<div class="col m-3">
                     <form action="{% url 'search' %}" method="POST" class= 'submit_event'>
                         {% csrf_token %}
-                        <div class="row m-2">
-                            <div class="col-12">
-                                <input type="text" class='form-control' id="keyword" name="keyword" maxlength='50' required placeholder="Поиск по наименованию" autofocus>
-                            </div>
-                        </div>
 
-                        <div class="row m-2 ">
-                            <div class="col-4 m-1">
-                                <input type="submit" value="Поиск"
-                                    class="btn btn-sm btn-block btn-outline-dark click_event" >
-                            </div>
-                            <div class="col-4 m-1">
+                        <input type="text" class='form-control' id="keyword" name="keyword" maxlength='50' required placeholder="Введите модель, бренд или любое слово из названия товара, который вы ищете" autofocus>
+                      
+                        <div class="row m-auto mt-3">
+                            <input type="submit" value="Поиск" class="btn btn-outline-dark btn-block">
+                        </div>
+                    
+
                             {%for group in request.user.groups.all%}
                             {%if group.name == 'sales' %}
-                            <a href="{% url 'sale_interface' %}">
-                                <input type="button" value="Закрыть" class="btn btn-sm btn-block btn-outline-dark">
+                            <div class="row m-auto mt-3">
+                            <a href="{% url 'sale_interface' %}"class="btn btn-block btn-outline-dark" >
+                               Закрыть
                             </a>
+                            </div>
+
                             {% else %}
-                            <a href="{% url 'log' %}">
-                                <input type="button" value="Закрыть" class="btn btn-sm btn-block btn-outline-dark">
+                            <div class="row m-auto mt-3">
+                            <a href="{% url 'log' %}" class="btn btn-sm btn-block btn-outline-dark">
+                                <input type="button" value="Закрыть" >
                             </a>
+                            </div>
+
                             {%endif%}
                             {% endfor %}
-                            </div>
-                        </div>
+                    </div>
+                       
                     </form>
-                </div>
+                    </div>
+                
+                <div>
             </div>
 
         <!-- ===========================Modal Body================================= -->
