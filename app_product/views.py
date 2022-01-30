@@ -402,8 +402,8 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             session_shop=request.session['session_shop']
             #session_shop=request.session.get['session_shop']
             shop=Shop.objects.get(id=session_shop)
-            dateTime=request.POST['dateTime']
-            if dateTime:
+            if 'dateTime' in request.POST:
+                dateTime=request.POST['dateTime']
                 # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
             else:
