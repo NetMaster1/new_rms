@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="hide">
-
     <div class="container">
         <div class="page_location_unposted">
             <div class="row m-2 pt-2">
@@ -23,7 +22,7 @@
         </div>
         <!-- ===================End of Alert Messages Module================ -->
             </div>
-
+            {% if group in request.user.groups.all %} 
                 <div class="row border rounded m-2 p-3">
                     <div class="col-6">
                     <form action="{% url 'check_sale_unposted' document.id%}" method="POST">
@@ -41,8 +40,8 @@
                         </div>
                     </form>
                     </div>
-
-</div>
+                </div>
+            {% endif %}
 
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
@@ -53,12 +52,12 @@
                         <div class="form-row">
                             <div class="col-6">
                                 <label for="date">
-                                    <h5>Текущая дата документа: {{document.created}}</h5>
+                                    <h5>Текущая дата документа:</h5>
                                 </label>
                             </div>
                             <div class="col">
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value="{{document.created}}">
+                                    value="{{document_datetime}}">
                             </div>
                         </div>
 
@@ -160,52 +159,52 @@
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
                                     value='{{register.sub_total}}' maxlength='50'>
                             </div>
+                        {% if group in request.user.groups.all %}
                             <div class="col">
                                 <a href="{% url 'delete_line_change_sale_unposted' document.id register.product.imei  %}">
                                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                                 </a>
                             </div>
+                        {% endif %}
                         </div>
                         {% endfor %}
 
-
+                <div class="row m-auto mt-3 ">
                         {%for group in request.user.groups.all %}
                         {%if group.name == 'admin'%}
-                        <div class="row m-auto mt-3 ">
+                       
                             <div class="col-2">
                                 <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage" id='save_button'>
                             </div>
+
                             <div class="col-2">
                                 <label for="post_check"> С проведением </label>
                                 <input type="checkbox" id="post_check" name="post_check" value='checked'>
                             </div>
+
                     </form>
 
-                    <div class="col-3">
+                    <div class="col-2">
                         <a href="{% url 'delete_unposted_document' document.id %}">
                             <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
                         </a>
                     </div>
+
                     {% endif%}
                     {% endfor%}
 
-
-
                     <div class="col-2">
-                        <a href="{% url 'close_unposted_document' document.id %}">
-                            <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark">
-                        </a>
+                        <a href="{% url 'close_unposted_document' document.id %}" class="btn btn-sm btn-block btn-outline-dark"> 
+                            Закрыть без сохранения
+                        </a>  
                     </div>
+
                 </div>
-
-
             </div>
         </div>
     </div>
 </div>
-</div>
-</div>
+<
 
 
 <script>

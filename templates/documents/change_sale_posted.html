@@ -8,7 +8,7 @@
                 <div class="col">
                     {%for group in request.user.groups.all %}
                     {%if group.name == 'admin'%}
-                    <h3>Изменить документ{{document.title}} # {{document.id}}</h3>
+                    <h3>Изменить документ {{document.title}} # {{document.id}}</h3>
                     {%else%}
                     <h3>{{document.title}} # {{document.id}}</h3>
                     {%endif%}
@@ -30,7 +30,7 @@
                             </div>
                             <div class="col">
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value="{{document.created}}" readonly>
+                                    value="{{document_datetime}}" readonly>
                             </div>
                         </div>
 
@@ -44,9 +44,9 @@
                           
                                 <select name="shop" id="shop" class='form-control' readonly>
                                     <option selected="true" value="{{shop_current.id}}" >{{shop_current.name}}</option>
-                                    {% for shop in shops %}
+                                    <!-- {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
-                                    {% endfor %}
+                                    {% endfor %} -->
                                 </select>
 
 
@@ -103,38 +103,38 @@
                             </div>
                         </div>
 
-                        {% for register in registers %}
+                        {% for rho in rhos %}
                         <div class="row m-auto mb-1">
                             <div class="col-1">
-                                <input type="text" class='form-control' id="imei" name="number" value='{{register.number}}' readonly>
+                                <input type="text" class='form-control' id="imei" name="number" value='{{rho.number}}' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="text" class='form-control' id="imei" name="imei"
-                                    value='{{register.product.imei}}' readonly>
+                                    value='{{rho.imei}}' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="text" class='form-control' id="name" name="name"
-                                    value='{{register.product.name}}' readonly>
+                                    value='{{rho.name}}' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="quantity" name="quantity"
-                                    value='{{register.quantity}}' readonly>
+                                    value='{{rho.outgoing_quantity}}' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="price" name="price"
-                                    value='{{register.price}}' maxlength='50' readonly>
+                                    value='{{rho.retail_price}}' maxlength='50' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
-                                    value='{{register.sub_total}}' maxlength='50' readonly>
+                                    value='{{rho.sub_total}}' maxlength='50' readonly>
                             </div>
                         </div>
                         {% endfor %}
 
-
+                <div class="row m-auto mt-3 ">
                     {%for group in request.user.groups.all %}
                     {%if group.name == 'admin'%}
-                    <div class="row m-auto mt-3 ">
+                    
                         <!-- <div class="col-2">
                             <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
                         </div> -->
@@ -151,10 +151,11 @@
 
 
                     <div class="col-2">
-                        <a href="{% url 'close_edited_document' document.id %}">
-                            <input type="button" value="Закрыть"
-                                class="btn btn-sm btn-block btn-outline-dark">
+                        <div class="row">
+                        <a href="{% url 'close_edited_document' document.id %}" class="btn btn-sm btn-block btn-outline-dark">
+                            Закрыть
                         </a>
+                        </div>
                     </div>
                 </div>
 

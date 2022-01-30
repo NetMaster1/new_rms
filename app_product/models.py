@@ -276,6 +276,7 @@ class Transfer(models.Model):
 
 
 class RemainderHistory(models.Model):
+    number = models.IntegerField(default=0, null=True)#utility field for numbering rhos while displaying the at html page
     created = models.DateTimeField(default=timezone.now, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)

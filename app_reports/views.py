@@ -410,6 +410,8 @@ def remainder_report(request):
                     #session_shop=request.session.get['session_shop']
                     shop=Shop.objects.get(id=session_shop)
                     date=datetime.date.today()
+                    tdelta_1=datetime.timedelta(days=1)
+                    date= (date+tdelta_1)
                     
             category = request.POST["category"]
             category=ProductCategory.objects.get(id=category)
@@ -550,22 +552,31 @@ def remainder_report_dynamic(request):
     return render (request, 'reports/remainder_report_dynamic.html', context)
 
 def item_report(request):
-    if request.method == "POST":
-        imei = request.POST["imei"]
-        start_date = request.POST["start_date"]
-        end_date = request.POST["end_date"]
-        imei=request.POST['imei']
-        queryset_list = RemainderHistory.objects.filter(imei=imei).order_by('created')
-        if start_date:
-            queryset_list = queryset_list.filter(created__gte=start_date)
-        if end_date:
-            queryset_list = queryset_list.filter(created__lte=end_date)
-        context = {
-            "queryset_list": queryset_list, 
-        }
-        return render(request, "reports/item_report.html", context)
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            imei = request.POST["imei"]
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            imei=request.POST['imei']
+            queryset_list = RemainderHistory.objects.filter(imei=imei).order_by('created')
+            if start_date:
+                queryset_list = queryset_list.filter(created__gte=start_date)
+            if end_date:
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+                #adding time delta to cover docs created after year:month:day:00:00 till the end of the day 23:59
+                tdelta=datetime.timedelta(days=1)
+                end_date=end_date+tdelta
+                queryset_list = queryset_list.filter(created__lte=end_date)
+
+            context = {
+                "queryset_list": queryset_list, 
+            }
+            return render(request, "reports/item_report.html", context)
+        else:
+            return render(request, "reports/item_report.html")
     else:
-        return render(request, "reports/item_report.html")
+        return redirect ('login')
 
 def bonus_report(request):
     users = User.objects.all()
