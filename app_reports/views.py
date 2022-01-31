@@ -720,7 +720,9 @@ def bonus_report_excel (request):
 def cash_report(request):
     shops = Shop.objects.all()
     queryset_list = Cash.objects.all()
-    context = {"queryset_list": queryset_list, "shops": shops}
+    context = {
+        "queryset_list": queryset_list, 
+        "shops": shops}
 
     return render(request, "reports/cash_report.html", context)
 
@@ -756,4 +758,21 @@ def credit_report(request):
         'users': users
     }
     return render(request, 'reports/credit_report.html', context)
+
+def salary_report (request):
+    arr=[]
+    users=User.objects.all()
+    for user in users:
+        dict={}
+        sum=0
+        qs=user.cash_receiver.all()
+        for item in qs:
+            sum+=int(item.cash_out)
+        dict[user]=sum
+        arr.append(dict)
+    context = {
+        'arr': arr
+    }
+    return render (request, 'reports/salary_report.html', context)
+
 

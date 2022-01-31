@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% for i in arr %}
+    {% for key, value in i.items %}
+    {{key}}: {{value}}<br>
+    {%endfor%}
+
+{% endfor %}
+
+{% endblock %}

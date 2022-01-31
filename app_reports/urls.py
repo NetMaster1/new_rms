@@ -16,6 +16,7 @@ urlpatterns = [
     path ('item_report', views.item_report, name='item_report'),
     path ('bonus_report', views.bonus_report, name='bonus_report'),
     path ('bonus_report_excel', views.bonus_report_excel, name='bonus_report_excel'),
+    path ('salary_report', views.salary_report, name='salary_report'),
     path ('cash_report', views.cash_report, name='cash_report'),
     path ('card_report', views.card_report, name='card_report'),
     path ('credit_report', views.credit_report, name='credit_report'),
