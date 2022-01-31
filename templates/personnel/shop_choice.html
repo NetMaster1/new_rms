@@ -44,18 +44,12 @@
 
 
             <div class="row m-auto mb-2">
-            {% for group in request.user.groups.all %}
-            {% if group.name == 'admin' %}
-            <a href="{% url 'log' %}" class="btn btn-block btn-outline-dark">
-                Закрыть
-            </a>
-            {% else %}
+            
             <a href="{% url 'login' %}" class="btn btn-block btn-outline-dark">
                 Закрыть
             </a>
             </div>
-            {% endif %}
-            {% endfor %}
+        
 
         </form>
     </div>
