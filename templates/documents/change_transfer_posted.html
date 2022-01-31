@@ -24,32 +24,7 @@
 </div>
 <!-- ===================End of Alert Messages Module================ -->
 
-            {% for group in request.user.groups.all %}
-            {% if group.name == 'admin'%}
-                <div class="col-12 border rounded p-3">
-                    <form action="{% url 'check_transfer_posted' document.id%}" method="POST">
-                        {% csrf_token %}
-                        <div class="row m-1">
-                            <div class="col-4">
-                                <input type="text" class='form-control' id="imei_check" name="imei_check" maxlength='50' required
-                                    placeholder="Введите IMEI">
-                            </div>
-                            <div class="col-1">
-                                <label for="quantity">Кол-во</label>
-                            </div>
-                            <div class="col-2">
-                                <input type="number" class='form-control' id="quantity_input" name="quantity_input" value=1 required>
-                            </div>
-                            
 
-                            <div class="col-2">
-                                <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-        {%endif%}
-        {%endfor%}
 
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
@@ -154,22 +129,16 @@
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
                                     value='{{register.sub_total}}' maxlength='50'>
                             </div>
-                            
-                            <div class="col">
-                                <a href="{% url 'delete_line_posted_transfer' document.id register.product.imei %}">
-                                    <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
-                                </a>
-
-                            </div>
+                        
                             <p id="demo"></p>
                         </div>
                         {% endfor %}
             {% for group in request.user.groups.all %}
             {% if group.name == 'admin'%}
-                        <div class="row m-auto mt-3 ">
-                            <div class="col-2">
+                <div class="row m-auto mt-3 ">
+                            <!-- <div class="col-2">
                                 <input type="submit" value="Сохранить и провести" class="btn btn-sm btn-block btn-outline-dark clear_storage">
-                            </div>
+                            </div> -->
                     </form>
                     
                     <div class="col-3">
@@ -177,21 +146,31 @@
                             <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
-            {%endif%}
-            {%endfor%}
-                    <div class="col-2">
-                        <a href="{% url 'close_edited_document' document.id %}">
-                            <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+            
+                    <<div class="col-2">
+                        <a href="{% url 'log' %}">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
 
                     <div class="col-2">
                         <a href="{% url 'DownloadPDF' document.id %}">
-                            <input type="button" value="Вывести на печать"
-                                class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                            <input type="button" value="Вывести на печать" class="btn btn-sm btn-block btn-outline-dark clear_storage ">
                         </a>
                     </div>
+
+                {%endif%}
+                {%endfor%}
+
+                
+                
+                    <div class="col-2">
+                        <a href="{% url 'sale_interface' %}">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+
+                    
                 </div>
 
 

@@ -33,13 +33,19 @@
                                 placeholder="Введите IMEI">
                         </div>
 
-                        <div class="col-4">
-                            <select name="shop" id="shop" class='form-control' required>
-                                {% for shop in shops %}
-                                <option value="{{shop.id}}">{{shop.name}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                    <!-- {% for group in request.user.groups.all %}
+                    {% if group.name == 'admin' %}
+                    <div class="col">
+                        <select name="shop_receiver" id="shop_receiver" class='form-control' required>
+                            <option value="">Выберите фирму получатель</option>
+                            {% for shop in shops %}
+                            <option value="{{shop.id}}">{{shop.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    {% endfor %} -->
+
 
                         <div class="col-4">
                             <input type="submit" value="Внести наименование в документ"
@@ -57,37 +63,37 @@
                 <form action="{% url 'return_input' identifier.id %}" method="POST" id='save_button'>
                     {% csrf_token %}
 
-                    {% for group in request.user.groups.all %}
-                    {% if group.name == 'admin' %}
-                    <div class="form-row">
-                        <div class="col-2">
-                            <label for="date">Дата</label>
-                        </div>
-                        <div class="col">
-                            <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                value='today'><br>
-                        </div>
+            {% for group in request.user.groups.all %}
+            {% if group.name == 'admin' %}
+                <div class="form-row">
+                    <div class="col-2">
+                        <label for="date">Дата</label>
                     </div>
-                    {% else %}
-                        <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today' hidden>
-                    {% endif %}
-                    {% endfor %}
-
-
-                    <div class="form-row">
-                        <div class="col-3">
-                            <label for="shop">
-                                <h5>Фирма</h5>
-                            </label>
-                        </div>
-                        <div class="col">
-                            <select name="shop" id="shop" class='form-control' required>
-                                {% for shop in shops %}
-                                <option value="{{shop.id}}">{{shop.name}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                    <div class="col">
+                        <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"><br>
                     </div>
+                </div>
+                
+                   
+
+                <div class="form-row">
+                    <div class="col-3">
+                        <label for="shop">
+                            <h5>Фирма</h5>
+                        </label>
+                    </div>
+                <div class="col">
+                    <select name="shop" id="shop" class='form-control' required>
+                        <option value="">Выберите фирму получатель</option>
+                        {% for shop in shops %}
+                        <option value="{{shop.id}}">{{shop.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                </div>
+            {% endif %}
+            {% endfor %}
+
 
                     <div class='form-inline'>
                         <div class="row m-1">

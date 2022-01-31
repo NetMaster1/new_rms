@@ -97,9 +97,9 @@ urlpatterns = [
     path ('unpost_transfer/<int:document_id>/', views.unpost_transfer, name='unpost_transfer'),
     path ('change_transfer_unposted/<int:document_id>/', views.change_transfer_unposted, name='change_transfer_unposted'),
     path ('change_transfer_posted/<int:document_id>', views.change_transfer_posted, name='change_transfer_posted'),
-    path ('check_transfer_posted/<int:document_id>', views.check_transfer_posted, name='check_transfer_posted'),
+    # path ('check_transfer_posted/<int:document_id>', views.check_transfer_posted, name='check_transfer_posted'),
     path ('check_transfer_unposted/<int:document_id>', views.check_transfer_unposted, name='check_transfer_unposted'),
-    path ('delete_line_posted_transfer/<int:document_id>/<int:imei>', views.delete_line_posted_transfer, name='delete_line_posted_transfer'),
+    # path ('delete_line_posted_transfer/<int:document_id>/<int:imei>', views.delete_line_posted_transfer, name='delete_line_posted_transfer'),
     path ('delete_line_unposted_transfer/<int:document_id>/<int:imei>', views.delete_line_unposted_transfer, name='delete_line_unposted_transfer'),
 
     # ===============================Revaluation==================================

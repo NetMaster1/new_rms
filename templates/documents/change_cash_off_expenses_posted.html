@@ -26,7 +26,7 @@
 
 
             <div class="row m-2 pb-2">
-                <div class="col-12 border rounded ">
+                <div class="col-12 border rounded pb-3 ">
 
 
                     <form action="{% url 'change_cash_off_expenses_posted' document.id %}" method="POST">
@@ -66,7 +66,7 @@
                             </div>
                         </div>
 
-                        <div class="form-row m-2">
+                    <div class="form-row m-2">
                             <div class="col-3">
                                 <label for="shop">
                                     <h5>Операция-основание</h5>
@@ -85,8 +85,6 @@
                             </div>
                         </div>
 
-
-
                         <div class="form-row m-2">
                             <div class="col-3">
                                 <label for="sum">
@@ -98,28 +96,39 @@
                                     required>
                             </div>
                         </div>
-
+<!-- 
                         <div class="row m-2 p-2">
                             <div class="col-2">
                                 <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
-                            </div>
+                            </div> -->
                     </form>
+                    
+                <div class="row mt-3 ">
+                        {%for group in request.user.groups.all %}
+                        {%if group.name == 'admin'%}
+                        <div class="col-3">
+                            <a href="{% url 'unpost_cash_off_expenses' document.id %}">
+                                <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
+                            </a>
+                        </div>
 
-                    <div class="col-3">
-                        <a href="{% url 'unpost_cash_off_expenses' document.id %}">
-                            <input type="button" value="Сделать непроведенным"
-                                class="btn btn-sm btn-block btn-outline-dark">
-                        </a>
-                    </div>
 
-
-                    <div class="col-2">
-                        <a href="{% url 'log' %}">
-                            <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark">
-                        </a>
-                    </div>
+                        <div class="col-2">
+                            <a href="{% url 'log' %}">
+                                <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="col-2">
+                            <a href="{% url 'sale_interface' %}">
+                                <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
                 </div>
+                        
+            </div>
 
             </div>
         </div>

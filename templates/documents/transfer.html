@@ -78,7 +78,7 @@
                     </div>
                     <div class="col">
                         <select name="shop_sender" id="shop_sender" class='form-control'>
-                            <option value="#">Выберите фирму-отправителя</option>
+                            <option value="{{shop_default.id}}">{{shop_default.name}}</option>
                             {% for shop in shops %}
                             <option value="{{shop.id}}">{{shop.name}}</option>
                             {% endfor %}
@@ -92,8 +92,8 @@
                         <label for="shop_receiver"><h5>Фирма получатель</h5></label>
                     </div>
                     <div class="col">
-                        <select name="shop_receiver" id="shop_receiver" class='form-control'>
-                            <option value="#">Выберите фирму получатель</option>
+                        <select name="shop_receiver" id="shop_receiver" class='form-control' required>
+                            <option value="">Выберите фирму получатель</option>
                             {% for shop in shops %}
                             <option value="{{shop.id}}">{{shop.name}}</option>
                             {% endfor %}

@@ -42,7 +42,7 @@
                             </div>
                             <div class="col">
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value='today'>
+                                    value='{{dateTime}}'>
                             </div>
                         </div>
                         {% endif %}
@@ -98,25 +98,38 @@
                             </div>
                         </div>
 
-                        <div class="row m-2 p-2">
-                            <div class="col-2">
+                <div class="row mt-3 pb-3">
+                            <!-- <div class="col-2">
                                 <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
-                            </div>
+                            </div> -->
                     </form>
 
+                    {%for group in request.user.groups.all %}
+                    {%if group.name == 'admin'%}
                     <div class="col-3">
                         <a href="{% url 'unpost_cash_movement' document.id %}">
                             <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
 
+                  
                     <div class="col-2">
                         <a href="{% url 'log' %}">
-                            <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
+                    {% else %}
+                    <div class="col-2">
+                        <a href="{% url 'sale_interface' %}">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                    {%endif%}
+                    {%endfor%}
                 </div>
+
+
+            </div>
 
             </div>
         </div>

@@ -215,7 +215,7 @@
             {{document.sum}} руб.
         </div>
 
-
+        <!-- ==============================Document Additional Info======================================== -->
     {% if document.title.name == 'Поступление ТМЦ' %}
             {% if document.posted == True %}
         <div class="col-2">{{document.remainderhistory_set.first.supplier}} </div>

@@ -40,10 +40,7 @@
                                     value='today'>
                             </div>
                         </div>
-                        {% endif %}
-                        {% endfor %}
-                   
-
+                    
                         <div class="form-row m-2">
                             <div class="col-3">
                                 <label for="shop">
@@ -60,6 +57,8 @@
                                 </select>
                             </div>
                         </div>
+                        {% endif %}
+                        {% endfor %}
 
                         <div class="form-row m-2">
                             <div class="col-3">
@@ -90,9 +89,13 @@
                         </div>
 
                         <div class="row m-2 p-2">
-                            <div class="col-1">
+                            <div class="col-2">
+                                <div class="row">
                                 <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
+                                </div>
                             </div>
+                        {%for group in request.user.groups.all %}
+                        {%if group.name == 'admin'%}
                             <div class="col-2">
                                 <label for="post_check"> С проведением </label>
                                 <input type="checkbox" id="post_check" name="post_check" value='checked'>
@@ -100,8 +103,6 @@
                     </form>
 
                 
-                    {%for group in request.user.groups.all %}
-                    {%if group.name == 'admin'%}
                     <div class="col-2">
                         <a href="{% url 'log' %}">
                             <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
