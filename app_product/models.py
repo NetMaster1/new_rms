@@ -283,7 +283,7 @@ class RemainderHistory(models.Model):
     inventory_doc = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name="inventory" ,null=True, blank=True)
     rho_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
-    supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
+    supplier = models.ForeignKey(Supplier, null=True, blank=True, on_delete=models.DO_NOTHING)
     product_id = models.ForeignKey(Product, on_delete=models.DO_NOTHING, null=True)
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
@@ -299,6 +299,8 @@ class RemainderHistory(models.Model):
     update_check = models.BooleanField(default=False)
     status = models.BooleanField(default=False)  # "False" for Transfer(send) "True" for Transfer(receive)
     client_phone = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, null=True)
+    cash_back_paid = models.IntegerField(null=True, blank=True)
+    cash_back_awarded = models.IntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ('-created',)  # sorting by date

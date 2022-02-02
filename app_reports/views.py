@@ -13,7 +13,7 @@ from app_product.models import (
     #Delivery,
     Document,
 )
-from .models import ReportTemp, ReportTempId, DailySaleRep, MonthlyBonus
+from .models import ReportTemp, ReportTempId, DailySaleRep, MonthlyBonus, SaleReport
 from app_clients.models import Customer
 from .models import ProductHistory
 from django.contrib import messages
@@ -23,6 +23,7 @@ from datetime import datetime, date
 from openpyxl.workbook import Workbook
 from django.http import HttpResponse, JsonResponse
 import datetime
+
 
 # Create your views here.
 
@@ -237,6 +238,7 @@ def close_report(request):
 
 def sale_report(request):
     categories = ProductCategory.objects.all()
+    products=Product.objects.all()
     shops = Shop.objects.all()
     suppliers=Supplier.objects.all()
     users = User.objects.all()
@@ -254,27 +256,50 @@ def sale_report(request):
         user = request.POST["user"]
         start_date = request.POST["start_date"]
         end_date = request.POST["end_date"]
-            # if imei:
-            #     queryset_list = queryset_list.filter(imei__icontains=imei)
+        
         if category:
             queryset_list = queryset_list.filter(category=category)
+            products=Product.objects.filter(category=category)
         if shop:
             queryset_list = queryset_list.filter(shop=shop)
         if supplier:
             queryset_list = queryset_list.filter(supplier=supplier)
         if user:
             queryset_list = queryset_list.filter(user=user)
+            user=user
         # if Q(start_date) | Q(end_date):
         #     queryset_list = queryset_list.filter(created__range=(start_date, end_date))
         if start_date:
             queryset_list = queryset_list.filter(created__gte=start_date)
         if end_date:
             queryset_list = queryset_list.filter(created__lte=end_date)
-        for item in queryset_list:
-            sum += item.sub_total
-       
-        query = queryset_list.values(
-            "category", "supplier", "imei", "name", "outgoing_quantity", "retail_price"
+
+        report_id=ReportTempId.objects.create()
+        for product in products:
+            av_sum=0
+            quantity=0
+            sum=0
+            rhos=queryset_list.filter(imei=product.imei)
+            for rho in rhos:
+                av_sum+=rho.av_price
+                quantity+=rho.outgoing_quantity
+                sum += rho.sub_total
+            if quantity!=0:
+                sale_rep_row=SaleReport.objects.create(
+                    report_id=report_id,
+                    product = product.name,
+                    av_sum = av_sum,
+                    quantity = quantity,
+                    retail_sum = sum  
+                )
+        sale_report=SaleReport.objects.filter(report_id=report_id)
+        for item in sale_report:
+            sum+=item.retail_sum
+            av_sum+=item.av_sum
+
+
+        query = sale_report.values(
+            "product", "av_sum", "quantity", "retail_sum"
         )
         data=pd.DataFrame.from_records(query)
        # data = pd.DataFrame(query)
@@ -286,8 +311,9 @@ def sale_report(request):
             "shops": shops,
             'suppliers': suppliers,
             "users": users,
-            "queryset_list": queryset_list,
             "sum": sum,
+            'av_sum': av_sum,
+            'sale_report': sale_report,
         }
         return render(request, "reports/sale_report.html", context)
     else:
@@ -760,19 +786,36 @@ def credit_report(request):
     return render(request, 'reports/credit_report.html', context)
 
 def salary_report (request):
-    arr=[]
-    users=User.objects.all()
-    for user in users:
-        dict={}
-        sum=0
-        qs=user.cash_receiver.all()
-        for item in qs:
-            sum+=int(item.cash_out)
-        dict[user]=sum
-        arr.append(dict)
-    context = {
-        'arr': arr
-    }
-    return render (request, 'reports/salary_report.html', context)
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            print(start_date)
+            end_date = request.POST["end_date"]
+            print(end_date)
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            tdelta=datetime.timedelta(days=1)
+            end_date=end_date+tdelta
+            print(start_date)
+            print(end_date)
+            arr=[]
+            users=User.objects.all()
+            for user in users:
+                dict={}
+                sum=0
+                qs=user.cash_receiver.filter(created__gte=start_date, created__lte=end_date)
+                for item in qs:
+                    sum+=int(item.cash_out)
+                dict[user]=sum
+                arr.append(dict)
+            context = {
+                'arr': arr
+            }
+            return render (request, 'reports/salary_report.html', context)
+        else:
+            return render (request, 'reports/salary_report.html')
+    else:
+        return redirect ('login')
 
 

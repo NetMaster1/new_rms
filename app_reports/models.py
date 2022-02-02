@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from app_reference.models import ProductCategory, Supplier
+from app_reference.models import ProductCategory, Supplier, Product
 
 # import datetime
 from datetime import datetime, date
@@ -92,3 +92,13 @@ class MonthlyBonus (models.Model):
 
     # def sub_total(self):
     #     return self.price * self.quantity
+
+class SaleReport (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    product = models.CharField(max_length=50, null=True)
+    av_sum = models.IntegerField(default=0)
+    quantity = models.IntegerField(default=0)
+    retail_sum = models.IntegerField(default=0)
+
+    def __int__(self):
+        return self.id
