@@ -377,7 +377,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
         users=Group.objects.get(name="sales").user_set.all()
         group=Group.objects.get(name="admin").user_set.all()
         identifier = Identifier.objects.get(id=identifier_id)
-        client = Customer.objects.get(id=client_id)
+        #client = Customer.objects.get(id=client_id)
         registers = Register.objects.filter(identifier=identifier)
         sum=0
         for register in registers:
@@ -509,7 +509,12 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                     av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
                     av_price_obj.save()
                     # adding cashback to client's account
-                    
+                    client=Customer.objects.get(id=client_id)
+                    if client.f_name != "default":
+                        cashback = Cashback.objects.get(category=product.category)
+                        cash_back_awarded=decimal.Decimal(int(sub_totals[i]) / 100 * int(cashback.size))
+                        client.accum_cashback += cash_back_awarded
+                        client.save()
 
                     # operations with cash
                     if Cash.objects.filter(shop=shop, created__lt=document.created).exists():
@@ -873,9 +878,7 @@ def sale_input_complex(request, identifier_id, client_id):
                 sum = int(cash) + int(credit) + int(card)
                 if sum != document_sum:
                     print("error")
-                    messages.error(
-                        request, "Сумма в чеке не совпадает с суммой продажи."
-                    )
+                    messages.error(request, "Сумма в чеке не совпадает с суммой продажи.")
                     return redirect("sale", identifier.id)
                 # operations with cash
                 if cash:
@@ -1008,13 +1011,19 @@ def change_sale_unposted (request, document_id):
     if request.method == "POST":
         shop = request.POST["shop"]
         shop = Shop.objects.get(id=shop)
-        dateTime = request.POST["dateTime"]
-        # category=request.POST['category']
         imeis = request.POST.getlist("imei", None)
         names = request.POST.getlist("name", None)
         quantities = request.POST.getlist("quantity", None)
         prices = request.POST.getlist("price", None)
         sub_totals = request.POST.getlist("sub_total", None)
+        cash = request.POST["cash"]
+        #the value is needed to recalculate cash_back awarded
+        client_phones = request.POST["phone"]
+        # cash=int(cash)
+        credit = request.POST["credit"]
+        # credit=int(credit)
+        card = request.POST["card"]
+        dateTime=request.POST.get('dateTime', False)
         if dateTime:
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
             dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
@@ -1028,23 +1037,25 @@ def change_sale_unposted (request, document_id):
         if imeis:
             # posting the document
             if post_check == True:
+                #compairing cash, card & credit sums to document.sum
+                sum=0
+                n=len(sub_totals)
+                for i in range(n):
+                    sum+=sub_totals[i]
+                cash_sum = int(cash) + int(credit) + int(card)
+                if cash_sum != sum:
+                    print("error")
+                    messages.error(request, "Сумма в чеке не совпадает с суммой продажи.")
+                    return redirect("sale", document.id)
                 document_sum=0
+                #calculating remainder_history
                 n=len(names)
                 for i in range(n):
                     product = Product.objects.get(imei=imeis[i])
-                    # cashback calculations
-                    # if client.f_name != "default":
-                    #     cashback = Cashback.objects.get(category=product.category)
-                    #     client.accum_cashback += (
-                    #         decimal.Decimal(sub_totals[i] / 100) * cashback.size
-                    #     )
-                    #     client.save()
-                    # checking docs before remainder_history
+                    av_price=AvPrice.objects.get(imei=imeis[i])
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                         remainder_history = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
                         #sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)[:5]
-
-                        #remainder_history = sequence_rhos_before.latest("created")
                         remainder_current = RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
                         remainder_current.current_remainder = remainder_history.current_remainder
                         remainder_current.save()
@@ -1056,7 +1067,6 @@ def change_sale_unposted (request, document_id):
                         document=document,
                         created=dateTime,
                         rho_type=doc_type,
-                        #user=request.user,
                         user=document.user,
                         shop=shop,
                         product_id=product,
@@ -1064,6 +1074,7 @@ def change_sale_unposted (request, document_id):
                         imei=imeis[i],
                         name=names[i],
                         retail_price=prices[i],
+                        av_price=av_price.av_price,
                         pre_remainder=remainder_current.current_remainder,
                         incoming_quantity=0,
                         outgoing_quantity=quantities[i],
@@ -1074,12 +1085,7 @@ def change_sale_unposted (request, document_id):
                     document_sum+=remainder_history.sub_total
                     remainder_current.current_remainder =remainder_history.current_remainder
                     remainder_current.save()
-                    # AvPrice.objects.filter(imei=imeis[i])
-                    # av_price_obj = AvPrice.objects.get(imei=imeis[i])
-                    # av_price_obj.current_remainder -= int(quantities[i])
-                    # av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
-                    # av_price_obj.save()
-                    # checking docs after remainder_history
+
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
                         sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created)
                         sequence_rhos_after = sequence_rhos_after.all().order_by("created")
@@ -1093,65 +1099,100 @@ def change_sale_unposted (request, document_id):
                             obj.save()
                             remainder_current.current_remainder = obj.current_remainder
                             remainder_current.save()
+                    #calculating av_price for the remainder
+                    AvPrice.objects.filter(imei=imeis[i])
+                    av_price_obj = AvPrice.objects.get(imei=imeis[i])
+                    av_price_obj.current_remainder -= int(quantities[i])
+                    av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
+                    av_price_obj.save()
+                    # editing cashback awarded to client's account
+                    client=Customer.objects.get(phone=client_phones[i])
+                    if client.f_name != "default":
+                        cashback = Cashback.objects.get(category=product.category)
+                        cash_back_awarded=decimal.Decimal(int(sub_totals[i]) / 100 * int(cashback.size))
+                        client.accum_cashback += cash_back_awarded
+                        client.save()
+                    #editing cashback paid if any
+
+
+                    remainder_history.cash_back_awarded=cash_back_awarded
+                    remainder_history.save()
+
+
                     document.sum = document_sum
                     document.posted=True
                     document.save()
+              
+                if cash:
                 # operations with cash
-                if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
-                    chos = Cash.objects.filter(shop=shop, created__lt=dateTime)  # cash history objects
-                    cho_before = chos.latest("created")  # cash history object
-                    cash_pre_remainder = cho_before.current_remainder
-                else:
-                    cash_pre_remainder = 0
-                cash = Cash.objects.create(
-                    shop=shop,
-                    created=dateTime,
-                    document=document,
-                    user=request.user,
-                    pre_remainder=cash_pre_remainder,
-                    cash_in=document_sum,
-                    current_remainder=cash_pre_remainder + document_sum,
-                )
-                if CashRemainder.objects.filter(shop=shop).exists():
-                    cash_remainder = CashRemainder.objects.get(shop=shop)
-                else:
-                    cash_remainder = CashRemainder.objects.create(
-                        shop=shop, 
-                        remainder=0
+                    if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
+                        chos = Cash.objects.filter(shop=shop, created__lt=dateTime)  # cash history objects
+                        cho_before = chos.latest("created")  # cash history object
+                        cash_pre_remainder = cho_before.current_remainder
+                    else:
+                        cash_pre_remainder = 0
+                    cash = Cash.objects.create(
+                        shop=shop,
+                        created=dateTime,
+                        document=document,
+                        user=document.user,
+                        pre_remainder=cash_pre_remainder,
+                        cash_in=cash,
+                        current_remainder=cash_pre_remainder + document_sum,
                     )
-                cash_remainder.remainder = cash.current_remainder
-                cash_remainder.save()
-                if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
-                    sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created)
-                    sequence_chos_after = sequence_chos_after.all().order_by("created")
-                    for obj in sequence_chos_after:
-                        obj.pre_remainder = cash_remainder.remainder
-                        obj.current_remainder = (
-                            cash_remainder.remainder + obj.cash_in - obj.cash_out
+                    if CashRemainder.objects.filter(shop=shop).exists():
+                        cash_remainder = CashRemainder.objects.get(shop=shop)
+                    else:
+                        cash_remainder = CashRemainder.objects.create(
+                            shop=shop, 
+                            remainder=0
                         )
-                        obj.save()
-                        cash_remainder.remainder = obj.current_remainder
-                        cash_remainder.save()
+                    cash_remainder.remainder = cash.current_remainder
+                    cash_remainder.save()
+                    if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
+                        sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created)
+                        sequence_chos_after = sequence_chos_after.all().order_by("created")
+                        for obj in sequence_chos_after:
+                            obj.pre_remainder = cash_remainder.remainder
+                            obj.current_remainder = (
+                                cash_remainder.remainder + obj.cash_in - obj.cash_out
+                            )
+                            obj.save()
+                            cash_remainder.remainder = obj.current_remainder
+                            cash_remainder.save()
+                elif credit:
+                    credit = Credit.objects.create(
+                        user=document.user,
+                        document=document,
+                        shop=shop,
+                        sum=credit
+                    )
+                    pass
+                elif card:
+                    card=Card.objects.creater(
+                        user=document.user,
+                        document=document,
+                        shop=shop,
+                        sum=card
+                    )
+                #deleting reg where cash/credit/card values have been stored in order do display the in html template
                 if PaymentRegister.objects.filter(document=document).exists():
                     temp_cash_reg=PaymentRegister.objects.get(document=document)
                     temp_cash_reg.delete()
-                # end of operations with cash
                 for register in registers:
                     register.delete()
-                if request.user in users:
-                    return redirect ('sale_interface')
-                else:
                     return redirect("log")
-            #saving the document
+
+            #saving unposted document
             else:
                 n = len(names)
                 document_sum = 0
                 for i in range(n):
                     product = Product.objects.get(imei=imeis[i])
-                    if Register.objects.filter(
-                        document=document, deleted=True).exists():
-                        register = Register.objects.filter(document=document, deleted=True)
-                        register.delete()
+                    if Register.objects.filter(document=document, deleted=True).exists():
+                        registers = Register.objects.filter(document=document, deleted=True)
+                        for register in registers:
+                            register.delete()
                     else:
                         register.price = prices[i]
                         register.quantity = quantities[i]
@@ -1167,7 +1208,6 @@ def change_sale_unposted (request, document_id):
                     return redirect ('sale_interface')
                 else:
                     return redirect("log")
-
         else:
             messages.error(request, "Вы не ввели ни одного наименования.")
             return redirect("change_sale_unposted", document.id)
@@ -1226,6 +1266,22 @@ def unpost_sale (request, document_id):
                     remainder_current.current_remainder = obj.current_remainder
                     remainder_current.save()
             product=Product.objects.get(imei=rho.imei)
+            #correcting cashback operations (paying & awarding)
+            if rho.client_phone:
+                client_phone=rho.client_phone
+                client=Customer.objects.get(id=client_phone)
+                if rho.cash_back_paid:
+                    client.accum_cashback=client.accum_cashback+rho.cash_back_paid
+                if rho.cash_back_awarded:
+                    client.accum_cashback=client.accum_cashback-rho.cash_back_awarded
+                client.save()
+
+            #correcting av_price model
+            av_price_item=AvPrice.objects.get(name=rho.name)
+            av_price_item.current_remainder=av_price_item.current_remainder + rho.outgoing_quantity
+            av_price_item.sum=av_price_item.current_remainder*rho.av_price
+            av_price_item.save()
+
             register=Register.objects.create(
                 created=document.created,
                 document=document,
@@ -1236,26 +1292,21 @@ def unpost_sale (request, document_id):
                 price=rho.retail_price,
                 sub_total=rho.sub_total
             )
-            #correcting cashback operations (paying & awarding)
-            client_phone=rho.client_phone
-            client=Customer.objects.get(id=client_phone)
-            client.accum_cashback=client.accum_cashback+rho.cash_back_paid
+            #cashback operations
+            if rho.client_phone:
+                register.client_phone=rho.client_phone
             if rho.cash_back_awarded:
-                client.accum_cashback=client.accum_cashback-rho.cash_back_awarded
-            client.save()
-
-            #correcting av_price model
-            av_price_item=AvPrice.objects.get(name=rho.name)
-            av_price_item.current_remainder=av_price_item.current_remainder + rho.outgoing_quantity
-            av_price_item.sum=av_price_item.current_remainder*rho.av_price
-            av_price_item.save()
+                register.cash_back_awarded=rho.cash_back_awarded
+            if rho.cash_back_paid:
+                register.cash_back_paid=rho.cash_back_paid
+            register.save()
 
             rho.delete()
             document.posted=False
             document.save()
 
         #correcting cash/credit/card operations
-        temp_cash_reg=PaymentRegister.objects.create(
+        payment_register=PaymentRegister.objects.create (
             document=document
         )
         if cash:
@@ -1282,18 +1333,15 @@ def unpost_sale (request, document_id):
                     obj.save()
                     cash_remainder.remainder = obj.current_remainder
                     cash_remainder.save()
-
-            temp_cash_reg.cash=cash.cash_in
-            temp_cash_reg.save()
+            payment_register.cash=cash.cash_in
             cash.delete()
         elif credit:
-            temp_cash_reg.credit=credit.sum
-            temp_cash_reg.save()
+            payment_register.credit=credit.sum
             credit.delete()
         else:
-            temp_cash_reg.card=card.sum
-            temp_cash_reg.save()
+            payment_register.card=card.sum
             card.delete()
+        payment_register.save()
         return redirect("log")
     return redirect ('login')
             
@@ -1340,97 +1388,20 @@ def delete_line_change_sale_unposted(request, document_id, imei):
     return redirect("change_sale_unposted", document.id)
 
 def delete_sale_input(request, document_id):
-    document = Document.objects.get(id=document_id)
-    sales = Sale.objects.filter(document=document)
-    remainder_history_objects = RemainderHistory.objects.filter(document=document)
-    for rho in remainder_history_objects:
-        av_price_obj = AvPrice.objects.get(imei=rho.imei)
-        av_price_obj.current_remainder += rho.outgoing_quantity
-        av_price_obj.sum += rho.outgoing_quantity * av_price_obj.av_price
-        av_price_obj.save()
-
-        if RemainderHistory.objects.filter(
-            shop=rho.shop, imei=rho.imei, created__lt=rho.created
-        ).exists():
-            sequence_rhos_before = RemainderHistory.objects.filter(
-                shop=rho.shop, imei=rho.imei, created__lt=rho.created
-            )
-            rho_latest_before = sequence_rhos_before.latest("created")
-            remainder_current = RemainderCurrent.objects.get(
-                shop=rho.shop, imei=rho.imei
-            )
-            remainder_current.current_remainder = rho_latest_before.current_remainder
-            # remainder_current.total_av_price=rho_latest_before.sub_total
-            # remainder_current.av_price=rho_latest_before.av_price
-            remainder_current.save()
-        else:
-            remainder_current = RemainderCurrent.objects.get(
-                shop=rho.shop, imei=rho.imei
-            )
-            remainder_current.current_remainder = 0
-            # remainder_current.total_av_price=0
-            # remainder_current.av_price=0
-            remainder_current.save()
-        if RemainderHistory.objects.filter(
-            shop=rho.shop, imei=rho.imei, created__gt=rho.created
-        ).exists():
-            sequence_rhos_after = RemainderHistory.objects.filter(
-                shop=rho.shop, imei=rho.imei, created__gt=rho.created
-            )
-            sequence_rhos_after = sequence_rhos_after.all().order_by("created")
-            for obj in sequence_rhos_after:
-                obj.pre_remainder = remainder_current.current_remainder
-                obj.current_remainder = (
-                    remainder_current.current_remainder
-                    + obj.incoming_quantity
-                    - obj.outgoing_quantity
-                )
-                obj.save()
-                remainder_current.current_remainder = obj.current_remainder
-                remainder_current.save()
-        rho.delete()
-    for sale in sales:
-        sale.delete()
-
-    if Cash.objects.filter(document=document):
-        cho = Cash.objects.get(document=document)
-        # for cho in cash_history_objects:
-        if Cash.objects.filter(shop=cho.shop, created__lt=cho.created).exists():
-            sequence_chos_before = Cash.objects.filter(
-                shop=cho.shop, created__lt=cho.created
-            )
-            cho_latest_before = sequence_chos_before.latest("created")
-            cash_remainder = CashRemainder.objects.get(shop=cho.shop)
-            cash_remainder.remainder = cho_latest_before.current_remainder
-            cash_remainder.save()
-        else:
-            cash_remainder = CashRemainder.objects.get()
-            cash_remainder.remainder = 0
-            cash_remainder.save()
-
-        if Cash.objects.filter(shop=cho.shop, created__gt=cho.created).exists():
-            sequence_chos_after = Cash.objects.filter(
-                shop=cho.shop, created__gt=cho.created
-            )
-            sequence_chos_after = sequence_chos_after.all().order_by("created")
-            for obj in sequence_chos_after:
-                obj.pre_remainder = cash_remainder.remainder
-                obj.current_remainder = (
-                    cash_remainder.remainder + obj.cash_in - obj.cash_out
-                )
-                obj.save()
-                cash_remainder.remainder = obj.current_remainder
-                cash_remainder.save()
-        cho.delete()
-    if Card.objects.filter(document=document).exists():
-        cho = Card.objects.get(document=document)  # card history object
-        cho.delete()
-    if Credit.objects.filter(document=document).exists():
-        cho = Credit.objects.get(document=document)  # credit history object
-        cho.delete()
-
-    document.delete()
-    return redirect("log")
+    group=Group.objects.get(name="admin").user_set.all()
+    if request.user in group:
+        document = Document.objects.get(id=document_id)
+        if PaymentRegister.objects.filter(document=document).exists():
+            temp_cash_regs=PaymentRegister.objects.filter(document=document)
+            for temp_cash_reg in temp_cash_regs:
+                temp_cash_reg.delete()
+        if Register.objects.filter(document=document).exists():
+            registers=Register.objects.filter(document=document)
+            for register in registers:
+                register.delete()
+        document.delete()
+        return redirect ('log')
+    return redirect ('login')
 
 # ================================Payment Operations=============================================
 def payment(request, identifier_id, client_id, cashback_off):

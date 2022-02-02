@@ -42,9 +42,9 @@ class Document(models.Model):
 class Register(models.Model):
     number = models.IntegerField(null=True)
     created = models.DateTimeField(default=timezone.now, null=True)
-    # serves to pass the shop in payment
+    # serves to pass the shop in sales/payment
     shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop")
-    # serves to pass the shop in sales/transfer/sign_off
+    # serves to pass the shop in transfer/sign_off
     shop_sender = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_sender")
     # serves to pass the shop in delivery/transfer/return
     shop_receiver = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_receiver")
@@ -64,118 +64,14 @@ class Register(models.Model):
     voucher = models.ForeignKey(Voucher, null=True, on_delete=models.DO_NOTHING)
     expense = models.ForeignKey(Expense, null=True, on_delete=models.DO_NOTHING)
     sub_total = models.IntegerField(default=0)
+    cash_back_awarded = models.IntegerField(null=True, blank=True)
+    cash_back_paid = models.IntegerField(null=True, blank=True)
+    client_phone = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, null=True)
     new = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
 
     def __int__(self):
         return self.id
-
-
-# class Delivery(models.Model):
-#     created = models.DateTimeField(default=timezone.now, null=True)
-#     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name="delivery")
-#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-#     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING, blank=True)
-#     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
-#     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
-#     name = models.CharField(max_length=250)
-#     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING, null=True)
-#     imei = models.CharField(max_length=250)
-#     price = models.IntegerField(default=0)  # counter
-#     quantity = models.IntegerField(default=0)
-#     sub_total = models.IntegerField(default=0)
-
-    # class Meta:
-        # ordering = ('created',)  # sorting by date
-        # verbose_name = "delivery"
-        # verbose_name_plural = "deliveries"
-
-    # def sub_total(self):
-    #     return self.price * self.quantity
-
-    # def __int__(self):
-    #     return self.id
-
-
-# class Returning(models.Model):
-#     created = models.DateTimeField(default=timezone.now, null=True)
-#     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
-#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-#     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
-#     # supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
-#     # category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
-#     name = models.CharField(max_length=250)
-#     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-#     imei = models.CharField(max_length=250)
-#     price = models.IntegerField(default=0)  # retail price
-#     quantity = models.IntegerField(default=0)
-#     sub_total = models.IntegerField(default=0)
-
-#     class Meta:
-        # ordering = ('created',)  # sorting by date
-        # verbose_name = "return"
-        # verbose_name_plural = "returns"
-
-    # def sub_to):
-    #     return self.price * self.quantity
-
-    # def __int__(self):
-    #     return self.id
-
-
-# class Recognition(models.Model):
-#     created = models.DateTimeField(default=timezone.now, null=True)
-#     document = models.ForeignKey(
-#         Document, on_delete=models.DO_NOTHING, related_name="recognition"
-#     )
-#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-#     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
-#     category = models.ForeignKey(
-#         ProductCategory, on_delete=models.DO_NOTHING, null=True
-#     )
-#     name = models.CharField(max_length=250)
-#     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-#     imei = models.CharField(max_length=250)
-#     price = models.IntegerField(default=0)  #
-#     quantity = models.IntegerField(default=0)
-#     sub_total = models.IntegerField(default=0)
-
-    # class Meta:
-        # ordering = ('created',)  # sorting by date
-        # verbose_name = "recognition"
-        # verbose_name_plural = "recognitions"
-
-    # def sub_total(self):
-    #     return self.price * self.quantity
-
-    # def __int__(self):
-    #     return self.id
-
-
-# class SignOff(models.Model):
-#     created = models.DateTimeField(default=timezone.now, null=True)
-#     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
-#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-#     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
-    # category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
-    # name = models.CharField(max_length=250)
-    # shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-    # imei = models.CharField(max_length=250)
-    # price = models.IntegerField(default=0)
-    # quantity = models.IntegerField(default=0)
-    # sub_total = models.IntegerField(default=0)
-
-    # class Meta:
-        # ordering = ('created',)  # sorting by date
-        # verbose_name = "signoff"
-        # verbose_name_plural = "signoffs"
-
-    # def sub_total(self):
-    #     return self.price * self.quantity
-
-    # def __int__(self):
-    #     return self.id
-
 
 class Revaluation(models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
@@ -278,6 +174,8 @@ class Transfer(models.Model):
 class RemainderHistory(models.Model):
     number = models.IntegerField(default=0, null=True)#utility field for numbering rhos while displaying the at html page
     created = models.DateTimeField(default=timezone.now, null=True)
+    #updated = models.DateTimeField(auto_now=True)
+    #editor = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='editor', null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)
     inventory_doc = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name="inventory" ,null=True, blank=True)
