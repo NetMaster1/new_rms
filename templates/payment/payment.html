@@ -102,7 +102,7 @@
                 </form>
             </div>
         </div>
-    <!-- </div> -->
+   
 </div>
 <!-- ==========================End of Modal Body For Paying Cash====================================== -->
 
@@ -112,86 +112,121 @@
 </div>
 <!-- ==============================Modal Body For Paying Credit====================================== -->
 <div class="enterModalCredit">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Оплата в кредит</h5>
-                <div class="col-4">
-                    <h5>Торговая точка: {{shop}}</h5>
-                </div>
-                <div class="col-4">
-                    <h5>Кассир: {{request.user}}</h5>
-                </div>
-                <button type="button" class="btn_close"></button>
-            </div>
-            <div class="modal-body">
-                <form action="{% url 'sale_input_credit' identifier.id client.id %}" method="POST">
-                    {% csrf_token %}
-                    <div class='form-inline'>
-                        <div class="row m-2">
-                            <div class="col-1"><label for="number">
-                                    <h5>#</h5>
-                                </label></div>
-                            <div class="col-2"><label for="imei">
-                                    <h5>IMEI</h5>
-                                </label></div>
-                            <div class="col-3"><label for="name">
-                                    <h5>Наименование</h5>
-                                </label></div>
-                            <div class="col-2"><label for="quantity">
-                                    <h5>Кол-во, шт.</h5>
-                                </label></div>
-                            <div class="col-2"><label for="price">
-                                    <h5>Цена, руб.</h5>
-                                </label></div>
-                            <div class="col-2"><label for="sum">
-                                    <h5>Сумма, руб.</h5>
-                                </label></div>
-                        </div>
-                    </div>
-                    {% for register in registers %}
+    <div class="modal-content">
+        <div class="modal-header">
 
-                    <div class="row m-auto mb-4">
-                        <div class="col-1">
-                            <input type="text" class='form-control' id="number" name="number" value='{{register.number}}' readonly>
-                        </div>
-                        <div class="col-2">
-                            <input type="text" class='form-control' id="imei" name="imei"
-                                value='{{register.product.imei}}' readonly>
-                        </div>
-                        <div class="col-3">
-                            <input type="text" class='form-control' id="name" name="name"
-                                value='{{register.product.name}}' readonly>
-                        </div>
-                        <div class="col-2">
-                            <input type="number" class='form-control' id="quantity" name="quantity"
-                                value={{register.quantity}} readonly>
-                        </div>
-                        <div class="col-2">
-                            <input type="number" class='form-control' id="price" name="price" value='{{register.price}}'
-                                readonly>
-                        </div>
-                        <div class="col-2">
-                            <input type="number" class='form-control' id="sub_total" name="sub_total"
-                                value="{{register.sub_total}}" readonly>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    <div class="modal-footer">
-                        <div class="col-8" style="text-align:left">
-                            <h5>Общая сумма чека: {{sum}} руб. </h5>
-                        </div>
-                    
-                        <div class="col-3" style="text-align:right">
-                        <button type="button" class="btn btn-secondary btn_close_credit"
-                            data-bs-dismiss="modal">Закрыть</button>
-                        <button type="submit" class="btn btn-secondary ">Оплатить</button>
-                    </div>
-                    </div>
-                </form>
 
+            <h5 class="modal-title" id="exampleModalLabel">Оплата в кредит</h5>
+
+            <div class="col-2">
+                <h5>Торговая точка: {{shop}}</h5>
             </div>
+            <div class="col-">
+                <h5>Кассир: {{request.user}}</h5>
+            </div>
+            <div class="col-4">
+                <h5>Кэшбэк: {{cashback_off}} руб.</h5>
+            </div>
+            <div class="col-4">
+                <h5>Остаток на лс: {{client.accum_cashback}} руб.</h5>
+            </div>
+
+            <!-- <button type="button" class="btn_close"></button> -->
+
         </div>
+        <div class="modal-body">
+
+            <form action="{% url 'sale_input_credit' identifier.id client.id cashback_off %}" method="POST">
+                {% csrf_token %}
+
+                {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
+
+                <div class="row">
+                    <h5>Не вносите дату и время, если хотите провести продажу текущим временем</h5>
+                </div>
+                <div class="form-row">
+                    <div class="col">
+                        <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"><br>
+                    </div>
+                </div>
+
+                {% endif %}
+                {% endfor %}
+
+
+                <div class='form-inline'>
+                    <div class="row m-2">
+                        <div class="col-1"><label for="number">
+                                <h5>#</h5>
+                            </label></div>
+                        <div class="col-2"><label for="imei">
+                                <h5>IMEI</h5>
+                            </label></div>
+                        <div class="col-3"><label for="name">
+                                <h5>Наименование</h5>
+                            </label></div>
+                        <div class="col-2"><label for="quantity">
+                                <h5>Кол-во, шт.</h5>
+                            </label></div>
+                        <div class="col-2"><label for="price">
+                                <h5>Цена, руб.</h5>
+                            </label></div>
+                        <div class="col-2"><label for="sum">
+                                <h5>Сумма, руб.</h5>
+                            </label></div>
+                    </div>
+                </div>
+                {% for register in registers %}
+
+                <div class="row m-auto mb-4">
+                    <div class="col-1">
+                        <input type="text" class='form-control' id="number" name="number" value='{{register.number}}'
+                            readonly>
+                    </div>
+                    <div class="col-2">
+                        <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}'
+                            readonly>
+                    </div>
+                    <div class="col-3">
+                        <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'
+                            readonly>
+                    </div>
+                    <div class="col-2">
+                        <input type="number" class='form-control' id="quantity" name="quantity"
+                            value='{{register.quantity}}' readonly>
+                    </div>
+                    <div class="col-2">
+                        <input type="number" class='form-control' id="price" name="price" value='{{register.price}}'
+                            readonly>
+                    </div>
+                    <div class="col-2">
+                        <input type="number" class='form-control' id="sub_total" name="sub_total"
+                            value="{{register.sub_total}}" readonly>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="modal-footer">
+                    <!-- <div class="col-6" style="text-align:left"> -->
+                    <h5>Сумма к уплате за вычетом кэшбэка:</h5>
+                    <h3>{{sum_to_pay}}</h3>
+                    <h5>руб.</h5>
+                    </h5>
+                    <!-- </div> -->
+
+                    <div class="col-3" style="text-align:right">
+                        <button type="button" class="btn btn-secondary btn_close_cash"
+                            data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-secondary">Оплатить</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </div>
+
 <!-- ========================End of Modal Body For Paying Credit====================================== -->
 
 <!-- =====================Trigger of paying Card Modal======================= -->

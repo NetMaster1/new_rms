@@ -4,15 +4,15 @@
 <!-- <div class="hide"> -->
 
 <div class="container">
-    <div class="page-location">
+    <!-- <div class="page-location"> -->
 
-        <div class="log border rounded">
-            <div class="row">
-                <h3>Журнал документов</h3>
-            </div>
-        </div> 
+    <div class="log border rounded">
+        <div class="row">
+            <h3>Журнал документов</h3>
+        </div>
+    </div> 
 
-        <div class="log border rounded">
+    <div class="log border rounded">
             <form action="{% url 'log' %}" method="POST">
                 {% csrf_token %}
      
@@ -61,9 +61,7 @@
                 </div>
             </div>
         
-           
-        
-            <div class="row form-row mt-3">
+           <div class="row mt-2 mb-2">
                         <div class="col-2">
                             <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark form-control">
                         </div>
@@ -75,11 +73,12 @@
                                 <input type="button" value="Текущий день" class="btn btn-sm btn-block btn-outline-dark form-control">
                             </a>
                         </div>
-                </form>
-            </div>
-        </div>
+           </div>
+            </form>      
+    </div>
 
-    <div class="log border rounded">
+<div class="log border rounded">
+
     <div class="row mt-3">
         <div class="col-1 m-auto">
             <h4>Статус</h4>
@@ -102,10 +101,9 @@
     </div>
     
 
+<div class="row">
 {% for document in queryset_list %}
-
-    <div class="row">
-
+<div class="row">
         <div class="col-1 m-auto">
             {% if document.posted == True %}
             <i class="far fa-check-square"></i>
@@ -207,15 +205,13 @@
             {{document.sum}} руб.
         </div>
 
-      
+
         <!-- ==============================Document Additional Info======================================== -->
         <div class="col-3 m-auto">
+            
     {% if document.title.name == 'Поступление ТМЦ' %}
-            {% if document.posted == True %}
-        {{document.remainderhistory_set.first.supplier}}
-            {% else %}
-        {{document.register_set.first.supplier}}
-            {% endif %}
+    {{document.shop}}
+   
 
     {% elif document.title.name == 'Перемещение ТМЦ' %}
             {% if document.posted == True %}
@@ -225,53 +221,25 @@
             {% endif %}
 
     {% elif document.title.name == 'Возврат ТМЦ' %}
-            {% if document.posted == True %}
-      {{document.remainderhistory_set.first.shop}}
-            {% else %}
-       {{document.register_set.first.shop}}
-            {% endif %}
+        {{document.shop}}
 
     {% elif document.title.name == 'Оприходование ТМЦ' %}
-            {% if document.posted == True %}
-       >{{document.remainderhistory_set.first.shop}}
-            {% else %}
-       {{document.register_set.first.shop}}
-            {% endif %}
+        {{document.shop}}
 
     {% elif document.title.name == 'Списание ТМЦ' %}
-            {% if document.posted == True %}
-        {{document.remainderhistory_set.first.shop}}
-            {% else %}
-       {{document.register_set.first.shop}}
-            {% endif %}
+        {{document.shop}}
 
     {% elif document.title.name == 'Продажа ТМЦ' %}
-            {% if document.posted == True %}
-        {{document.remainderhistory_set.first.shop}}
-            {% else %}
-        {{document.register_set.first.shop}}
-            {% endif %}
-
+        {{document.shop}}
+        
     {% elif document.title.name == 'РКО (хоз.расходы)' %}
-        {% if document.posted == True %}
-        {{document.cash_set.first.shop}}
-        {% else %}
-        {{document.register_set.first.shop}}
-        {% endif %}
+       {{document.shop}}
 
     {% elif document.title.name == 'ПКО' %}
-        {% if document.posted == True %}
-        {{document.cash_set.first.shop}}
-        {% else %}
-        {{document.register_set.first.shop}}
-        {% endif %}
+        {{document.shop}}
 
     {% elif document.title.name == 'РКО (зарплата)' %}
-        {% if document.posted == True %}
-        {{document.cash_set.first.shop}}
-        {% else %}
-        {{document.register_set.first.shop}} 
-        {% endif %}
+        {{document.shop}}
 
     {% elif document.title.name == 'Перемещение денег' %}
         {% if document.posted == True %}
@@ -282,26 +250,17 @@
         {% endif %}
 
     {% elif document.title.name == 'Инвентаризация ТМЦ' %}
-        {% if document.posted == True %}
-        {{document.remainderhistory.first.shop}}
-        {% else %}
-         C {{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}}
-        {% endif %}
-
+        {{document.shop}}
     {% endif %}
     </div>
 
         <!-- =========================== Creator Column==================================== -->
         <div class="col-2 m-auto">{{document.user.first_name}} {{document.user.last_name}}</div>
-    {% endfor %}
-    </div>
-            
-
-    
-    </div>
-
 </div>
+{% endfor %}
+</div>
+               
 </div>
 
-<!-- </div> -->
+</div>
 {% endblock %}

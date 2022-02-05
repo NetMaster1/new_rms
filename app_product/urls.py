@@ -24,7 +24,7 @@ urlpatterns = [
     path ('change_delivery_unposted/<int:document_id>', views.change_delivery_unposted, name='change_delivery_unposted'),
     path ('change_delivery_posted/<int:document_id>', views.change_delivery_posted, name='change_delivery_posted'),
     path ('enter_new_product_from_unposted/<int:document_id>', views.enter_new_product_from_unposted, name='enter_new_product_from_unposted'),
-    path ('enter_new_product_from_posted/<int:document_id>', views.enter_new_product_from_posted, name='enter_new_product_from_posted'),
+   
     path ('unpost_delivery/<int:document_id>', views.unpost_delivery, name='unpost_delivery'),
    
     # ======================Recognition=========================
@@ -63,8 +63,12 @@ urlpatterns = [
     path ('delete_line_sale/<int:imei>/<int:identifier_id>', views.delete_line_sale, name='delete_line_sale'),
     path ('clear_sale/<int:identifier_id>', views.clear_sale, name='clear_sale'),
     path ('list_sale', views.list_sale, name='list_sale'),
-    
+
+    path ('sale_input_cash/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_cash, name='sale_input_cash'),
     path ('sale_input_card/<int:identifier_id>/<int:client_id>', views.sale_input_card, name='sale_input_card'),
+    path ('sale_input_credit/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_credit, name='sale_input_credit'),
+    path ('sale_input_complex/<int:identifier_id>/<int:client_id>', views.sale_input_complex, name='sale_input_complex'),
+
     path ('change_sale_posted/<int:document_id>/', views.change_sale_posted, name='change_sale_posted'),
     path ('change_sale_unposted/<int:document_id>/', views.change_sale_unposted, name='change_sale_unposted'),
     path ('unpost_sale/<int:document_id>/', views.unpost_sale, name='unpost_sale'),
@@ -138,12 +142,9 @@ urlpatterns = [
     #===============================================================================================
 
     path ('noCashback/<int:identifier_id>', views.noCashback, name='noCashback'),
-    path ('sale_input_cash/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_cash, name='sale_input_cash'),
+   
     path ('delete_sale_input/<int:document_id>', views.delete_sale_input, name='delete_sale_input'),
-    path ('sale_input_credit/<int:identifier_id>/<int:client_id>', views.sale_input_credit, name='sale_input_credit'),
-
-    path ('sale_input_complex/<int:identifier_id>/<int:client_id>', views.sale_input_complex, name='sale_input_complex'),
-
+    
     #=============================================================================================
     path ('payment/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.payment, name='payment'),
     #=============================================================================================

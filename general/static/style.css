@@ -56,7 +56,7 @@ footer {
     /* border-radius:1rem; */
     /* border-color: black; */
     background-color: rgb(238, 240, 238);
-    overflow-y: scroll;
+    /* overflow: auto; */
    
 }
 

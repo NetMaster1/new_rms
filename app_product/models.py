@@ -23,10 +23,14 @@ class Document(models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)
-    sum = models.IntegerField(null=True)
+    supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
     base_doc = models.IntegerField(null=True)#link between different documents
     posted = models.BooleanField(default=False)
     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+    client = models.ForeignKey(Customer, null=True, on_delete=models.DO_NOTHING)
+    sum = models.IntegerField(null=True)
+    cashback_off=models.IntegerField(default=0)
+    sum_minus_cashback=models.IntegerField(null=True, blank=True)
 
     def __int__(self):
         return self.id
@@ -64,9 +68,9 @@ class Register(models.Model):
     voucher = models.ForeignKey(Voucher, null=True, on_delete=models.DO_NOTHING)
     expense = models.ForeignKey(Expense, null=True, on_delete=models.DO_NOTHING)
     sub_total = models.IntegerField(default=0)
-    cash_back_awarded = models.IntegerField(null=True, blank=True)
-    cash_back_paid = models.IntegerField(null=True, blank=True)
-    client_phone = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, null=True)
+    #cash_back_awarded = models.IntegerField(null=True, blank=True)
+    # cash_back_paid = models.IntegerField(null=True, blank=True)
+    # client_phone = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, null=True)
     new = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
 
@@ -172,7 +176,8 @@ class Transfer(models.Model):
 
 
 class RemainderHistory(models.Model):
-    number = models.IntegerField(default=0, null=True)#utility field for numbering rhos while displaying the at html page
+    #temporary utility field for numbering rhos while displaying the at change_sale_posted html page
+    number = models.IntegerField(default=0, null=True)
     created = models.DateTimeField(default=timezone.now, null=True)
     #updated = models.DateTimeField(auto_now=True)
     #editor = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='editor', null=True)
@@ -196,8 +201,6 @@ class RemainderHistory(models.Model):
     retail_price = models.IntegerField(default=0)
     update_check = models.BooleanField(default=False)
     status = models.BooleanField(default=False)  # "False" for Transfer(send) "True" for Transfer(receive)
-    client_phone = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, null=True)
-    cash_back_paid = models.IntegerField(null=True, blank=True)
     cash_back_awarded = models.IntegerField(null=True, blank=True)
 
     class Meta:
