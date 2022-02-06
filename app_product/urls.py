@@ -65,9 +65,9 @@ urlpatterns = [
     path ('list_sale', views.list_sale, name='list_sale'),
 
     path ('sale_input_cash/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_cash, name='sale_input_cash'),
-    path ('sale_input_card/<int:identifier_id>/<int:client_id>', views.sale_input_card, name='sale_input_card'),
+    path ('sale_input_card/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_card, name='sale_input_card'),
     path ('sale_input_credit/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_credit, name='sale_input_credit'),
-    path ('sale_input_complex/<int:identifier_id>/<int:client_id>', views.sale_input_complex, name='sale_input_complex'),
+    path ('sale_input_complex/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_complex, name='sale_input_complex'),
 
     path ('change_sale_posted/<int:document_id>/', views.change_sale_posted, name='change_sale_posted'),
     path ('change_sale_unposted/<int:document_id>/', views.change_sale_unposted, name='change_sale_unposted'),

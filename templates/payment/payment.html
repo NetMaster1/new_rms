@@ -114,10 +114,7 @@
 <div class="enterModalCredit">
     <div class="modal-content">
         <div class="modal-header">
-
-
             <h5 class="modal-title" id="exampleModalLabel">Оплата в кредит</h5>
-
             <div class="col-2">
                 <h5>Торговая точка: {{shop}}</h5>
             </div>
@@ -216,7 +213,7 @@
                     <!-- </div> -->
 
                     <div class="col-3" style="text-align:right">
-                        <button type="button" class="btn btn-secondary btn_close_cash"
+                        <button type="button" class="btn btn-secondary btn_close_credit"
                             data-bs-dismiss="modal">Закрыть</button>
                         <button type="submit" class="btn btn-secondary">Оплатить</button>
                     </div>
@@ -248,7 +245,7 @@
                 <button type="button" class="btn_close"></button>
             </div>
             <div class="modal-body">
-                <form action="{% url 'sale_input_card' identifier.id client.id %}" method="POST">
+                <form action="{% url 'sale_input_card' identifier.id client.id cashback_off %}" method="POST">
                     {% csrf_token %}
 
                     <div class='form-inline'>
@@ -340,7 +337,7 @@
                 <button type="button" class="btn_close"></button>
             </div>
             <div class="modal-body">
-                <form action="{% url 'sale_input_complex' identifier.id client.id %}" method="POST">
+                <form action="{% url 'sale_input_complex' identifier.id client.id cashback_off %}" method="POST">
                     {% csrf_token %}
 
                     <div class='form-inline'>
@@ -424,7 +421,7 @@
             </div>
         </div>
 </div>
-<!-- ==========================End of Modal Body For Paying Card====================================== -->
+<!-- ==========================End of Modal Body For Paying Complex====================================== -->
 
 <div class="row m-auto mt-2 mb-2">
     <a href="{% url 'close_without_save' identifier.id %}" class="btn btn-sm btn-outline-dark">
