@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import Document, Sale, Transfer, Revaluation, RemainderHistory, RemainderCurrent, Register, Identifier, AvPrice #Delivery, Recognition, SignOff, Returning,
+from . models import Document, Transfer, Revaluation, RemainderHistory, RemainderCurrent, Register, Identifier, AvPrice #Delivery, Recognition, SignOff, Returning,
 
 # class DeliveryAdmin(admin.ModelAdmin):
 #     list_display = ('id', 'created', 'supplier' ,'name', 'imei', 'shop', 'quantity', 'price', 'sub_total')
@@ -11,8 +11,8 @@ from . models import Document, Sale, Transfer, Revaluation, RemainderHistory, Re
 #     ordering = ('-created',)
 #     list_filter = ('imei',)
 
-class SaleAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created', 'category', 'name', 'imei', 'shop', 'quantity', 'price', 'sub_total', 'user', 'staff_bonus' )
+# class SaleAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'created', 'category', 'name', 'imei', 'shop', 'quantity', 'price', 'sub_total', 'user', 'staff_bonus' )
 
 class TransferAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop_sender', 'shop_receiver', 'quantity', 'price' )
@@ -51,14 +51,14 @@ class DocumentAdmin(admin.ModelAdmin):
     ordering = ('-created',)
 
 class RegisterAdmin(admin.ModelAdmin):
-    list_display = ('created', 'document', 'doc_type', 'shop_sender', 'shop_receiver', 'product', 'sub_total', 'identifier', 'new', 'deleted')
+    list_display = ('created', 'document', 'doc_type', 'product', 'sub_total', 'identifier', 'new', 'deleted')
 
 class IdentifierAdmin(admin.ModelAdmin):
     list_display = ('id', 'created')
 
 #admin.site.register(Delivery, DeliveryAdmin)
 #admin.site.register(Recognition, RecognitionAdmin)
-admin.site.register(Sale, SaleAdmin)
+#admin.site.register(Sale, SaleAdmin)
 admin.site.register(Transfer, TransferAdmin)
 #admin.site.register(SignOff, SignOffAdmin)
 #admin.site.register(Returning, ReturningAdmin)

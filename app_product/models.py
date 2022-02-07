@@ -22,7 +22,8 @@ class Document(models.Model):
     title = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     created = models.DateTimeField(default=timezone.now, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)
+    shop_sender = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name='shop_sender')
+    shop_receiver = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_receiver")
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
     base_doc = models.IntegerField(null=True)#link between different documents
     posted = models.BooleanField(default=False)
@@ -49,9 +50,9 @@ class Register(models.Model):
     # serves to pass the shop in sales/payment
     shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop")
     # serves to pass the shop in transfer/sign_off
-    shop_sender = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_sender")
+    #shop_sender = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_sender")
     # serves to pass the shop in delivery/transfer/return
-    shop_receiver = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_receiver")
+    #shop_receiver = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_receiver")
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
     product = models.ForeignKey(Product, null=True, on_delete=models.DO_NOTHING)
     imei=models.CharField(max_length=250, null=True)
@@ -98,40 +99,6 @@ class Revaluation(models.Model):
 
     # def sub_total(self):
     #     return self.price * self.quantity
-
-    def __int__(self):
-        return self.id
-
-
-class Sale(models.Model):
-    created = models.DateTimeField(default=timezone.now, null=True)
-    category = models.ForeignKey(
-        ProductCategory, null=True, on_delete=models.DO_NOTHING
-    )
-    date = models.DateTimeField(default=timezone.now, blank=True)
-    identifier = models.ForeignKey(
-        Identifier, null=True, blank=True, on_delete=models.DO_NOTHING
-    )
-    supplier = models.ForeignKey(
-        Supplier, null=True, blank=True, on_delete=models.DO_NOTHING
-    )
-    document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
-    name = models.CharField(max_length=250)
-    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-    imei = models.CharField(max_length=250)
-    price = models.DecimalField(default=0, max_digits=8, decimal_places=2)
-    quantity = models.IntegerField(default=0)
-    sub_total = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    staff_bonus = models.IntegerField(default=0)
-    user = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
-
-    class Meta:
-        # ordering = ('created',)  # sorting by date
-        verbose_name = "sale"
-        verbose_name_plural = "sales"
-
-    # def sub_total(self):
-    #     return int(self.price) * int(self.quantity)
 
     def __int__(self):
         return self.id

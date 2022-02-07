@@ -8,7 +8,7 @@ from app_product.models import (
     Product,
     RemainderHistory,
     RemainderCurrent,
-    Sale,
+    #Sale,
     Transfer,
     #Delivery,
     Document,

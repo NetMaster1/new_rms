@@ -7,7 +7,6 @@ from django.contrib.auth.models import User, Group
 from django.contrib import messages
 from django.contrib import messages, auth
 from django.contrib.auth import update_session_auth_hash, authenticate
-from app_product.models import RemainderHistory, Sale
 from app_reference.models import ProductCategory
 import numpy as np
 import datetime

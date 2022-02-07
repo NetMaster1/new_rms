@@ -9,7 +9,7 @@ from .models import (
     #Delivery,
     #Recognition,
     #SignOff,
-    Sale,
+    #Sale,
     Transfer,
     #Returning,
     Revaluation,
@@ -122,7 +122,7 @@ def sale_interface (request):
         #getting access of session_shop variable stored in session dictionnary
         session_shop=request.session['session_shop']
         shop=Shop.objects.get(id=session_shop)
-        queryset_list = Document.objects.filter(user=request.user, created__date=date, shop=shop).order_by("-created")
+        queryset_list = Document.objects.filter(user=request.user, created__date=date).order_by("-created")
         #queryset_list = Document.objects.filter(user=request.user, created__date=date.today()).order_by("-created")
         doc_types = DocumentType.objects.all()
         suppliers = Supplier.objects.all()
@@ -351,9 +351,7 @@ def sale(request, identifier_id):
             context = {
                 "identifier": identifier,
                 "registers": registers,
-                # "shops": shops,
                 "sum": sum,
-                #"register": register,
             }
             return render(request, "documents/sale.html", context)
         else:
@@ -430,7 +428,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 else:
                     document = Document.objects.create(
                         created=dateTime,
-                        shop=shop,
+                        shop_sender=shop,
                         title=doc_type,
                         user=request.user,
                         posted=True,
@@ -616,7 +614,7 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                 else:
                     document = Document.objects.create(
                         title=doc_type,
-                        shop=shop,
+                        shop_sender=shop,
                         user=request.user, 
                         created=dateTime,
                         posted=True,
@@ -775,7 +773,7 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                 else:
                     document = Document.objects.create(
                         title=doc_type,
-                        shop=shop,
+                        shop_sender=shop,
                         user=request.user, 
                         created=dateTime,
                         posted=True,
@@ -948,7 +946,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                 else:
                     document = Document.objects.create(
                         title=doc_type,
-                        shop=shop,
+                        shop_sender=shop,
                         user=request.user, 
                         created=dateTime,
                         posted=True,
@@ -1109,7 +1107,7 @@ def change_sale_posted(request, document_id):
         creator = document.user
         rhos = RemainderHistory.objects.filter(document=document)
         shops = Shop.objects.all()
-        shop_current = document.shop
+        shop = document.shop_sender
     
         numbers = rhos.count()
         for rho, i in zip(rhos, range(numbers)):
@@ -1121,7 +1119,7 @@ def change_sale_posted(request, document_id):
             "rhos": rhos,
             "document": document,
             "shops": shops,
-            "shop_current": shop_current,
+            "shop_current": shop,
             "cash": cash,
             "card": card,
             "credit": credit,
@@ -1139,7 +1137,7 @@ def change_sale_unposted (request, document_id):
     categories=ProductCategory.objects.all()
     registers=Register.objects.filter(document=document).exclude(deleted=True)
     temp_cash_reg=PaymentRegister.objects.get(document=document)
-    shop=document.shop
+    shop=document.shop_sender
     shops=Shop.objects.all()
     numbers = registers.count()
     document_datetime=document.created
@@ -1205,7 +1203,7 @@ def change_sale_unposted (request, document_id):
                         created=dateTime,
                         rho_type=doc_type,
                         user=document.user,
-                        shop=shop,
+                        shop_sender=shop,
                         product_id=product,
                         category=product.category,
                         imei=imeis[i],
@@ -1258,7 +1256,7 @@ def change_sale_unposted (request, document_id):
                 document.sum_minus_cashback-=document.sum-cashback_off
                 document.posted=True
                 document.created=dateTime
-                document.shop=shop
+                document.shop_sender=shop
                 document.save()
               
                 if cash > 0:
@@ -1376,7 +1374,7 @@ def unpost_sale (request, document_id):
     if request.user in group:
         # if request.method=='POST':
         rhos = RemainderHistory.objects.filter(document=document)
-        shop=document.shop
+        shop=document.shop_sender
         if Cash.objects.filter(document=document).exists():
             cash = Cash.objects.get(document=document)
         else:
@@ -2466,7 +2464,6 @@ def check_transfer(request, identifier_id):
                 else:
                     messages.error(request, "Данное наименование отсутствует на данном складе")
                     return redirect("transfer", identifier.id)
-
             product = Product.objects.get(imei=imei)
             if Register.objects.filter(identifier=identifier, product=product).exists():
                 register = Register.objects.get(identifier=identifier, product=product)
@@ -2494,10 +2491,15 @@ def check_transfer(request, identifier_id):
         return redirect("transfer", identifier.id)
 
 def check_transfer_unposted(request, document_id):
+    users = Group.objects.get(name='sales').user_set.all()
+    group = Group.objects.get(name='admin').user_set.all()
     shops = Shop.objects.all()
     document = Document.objects.get(id=document_id)
     registers = Register.objects.filter(document=document)
-    shop_sender = registers.first().shop_sender
+    for register in registers:
+        if register.deleted == True:
+            register.delete()
+    shop_sender = document.shop_sender
     if "imei_check" in request.GET:
         imei = request.GET["imei_check"]
         quantity = request.GET["quantity_input"]
@@ -2505,20 +2507,11 @@ def check_transfer_unposted(request, document_id):
         # shop = Shop.objects.get(id=shop)
         if Product.objects.filter(imei=imei).exists():
             if RemainderCurrent.objects.filter(imei=imei, shop=shop_sender).exists():
-                remainder_current = RemainderCurrent.objects.get(
-                    imei=imei, shop=shop_sender
-                )
+                remainder_current = RemainderCurrent.objects.get(imei=imei, shop=shop_sender)
                 if remainder_current.current_remainder >= int(quantity):
                     product = Product.objects.get(imei=imei)
-                    if Register.objects.filter(
-                        document=document, product=product
-                    ).exists():
-                        register = Register.objects.get(
-                            document=document, product=product
-                        )
-                        register.quantity += 1
-                        register.save()
-                        register.sub_total = remainder_current.retail_price
+                    if Register.objects.filter(document=document, product=product).exists():
+                        messages.error(request,"Вы уже ввели данное наименование. Запишите нужно кол-во в списке ниже",)
                         return redirect("change_transfer_unposted", document.id)
                     else:
                         register = Register.objects.create(
@@ -2528,9 +2521,8 @@ def check_transfer_unposted(request, document_id):
                             quantity=1,
                             new=True,
                         )
-                        # register.sub_total = (
-                        #     register.quantity * remainder_current.retail_price
-                        # )
+                        register.sub_total = register.quantity * remainder_current.retail_price
+                        register.save()
                         return redirect("change_transfer_unposted", document.id)
                 else:
                     messages.error(
@@ -2539,9 +2531,7 @@ def check_transfer_unposted(request, document_id):
                     )
                     return redirect("change_transfer_unposted", document.id)
             else:
-                messages.error(
-                    request, "Данное наименование отсутствует на данном складе"
-                )
+                messages.error(request, "Данное наименование отсутствует на данном складе")
                 return redirect("change_transfer_unposted", document.id)
         else:
             messages.error(request, "Данное наименование отсутствует в базе данных")
@@ -2568,6 +2558,7 @@ def delete_line_unposted_transfer(request, document_id, imei):
 def transfer_input(request, identifier_id):
     if request.user.is_authenticated:
         users = Group.objects.get(name='sales').user_set.all()
+        group = Group.objects.get(name='admin').user_set.all()
         identifier = Identifier.objects.get(id=identifier_id)
         registers = Register.objects.filter(identifier=identifier)
         doc_type = DocumentType.objects.get(name="Перемещение ТМЦ")
@@ -2584,68 +2575,376 @@ def transfer_input(request, identifier_id):
                 shop_sender = Shop.objects.get(name='ООС')
                 shop_receiver=request.session['session_shop']
                 shop_receiver=Shop.objects.get(id=shop_receiver)
-                dateTime=datetime.datetime.now()
             else:
                 shop_sender=request.POST['shop_sender']
                 shop_sender=Shop.objects.get(id=shop_sender)
                 shop_receiver = request.POST["shop_receiver"]
                 shop_receiver=Shop.objects.get(id=shop_receiver)
-                dateTime=request.POST.get('dateTime', False)
-                if dateTime:
-                    # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                    dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-                else:
-                    dateTime = datetime.datetime.now()
+            dateTime=request.POST.get('dateTime', False)
+            # if 'dateTime' in request.POST:
+            #     dateTime=request.POST['dateTime']
+            if dateTime:
+                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            else:
+                dateTime = datetime.datetime.now()
             if shop_sender == shop_receiver:
                 messages.error(request,"Документ не проведен. Выберите фирму получателя отличную от отправителя",)
                 return redirect("transfer", identifier.id)
-            if not imeis:
-                messages.error(request,"Вы не ввели ни одного наименования",)
-                return redirect("transfer", identifier.id)
+            #checking availability of items to sell
+            check_point = []
+            n = len(names)
+            if request.user in group: #admin group
+                for i in range(n):
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender).exists():
+                        remainder_history= RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender, created__lt=dateTime).latest('created')
+                        if remainder_history.current_remainder < int(quantities[i]):
+                                check_point.append(False)
+                        else:
+                            check_point.append(True)
+                    else:
+                        check_point.append(False)
             else:
-                if request.user in users:
-                    # checking availability
+                for i in range(n):
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
+                        remainder_current= RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
+                        if remainder_current.current_remainder < int(quantities[i]):
+                            check_point.append(False)
+                        else:
+                            check_point.append(True)
+                    else:
+                        check_point.append(False)
+            if False in check_point:
+                messages.error(request,"Документ не проведен. Одно или несколько наименование отсутствуют на балансе данной фирмы.",)
+                return redirect("transfer", identifier.id)
+            try:
+                if request.POST["post_check"]:
+                    post_check = True
+            except KeyError:
+                post_check = False
+            # posting the document
+            if post_check == True:
+                if imeis:
+                    #creating document
+                    document = Document.objects.create(
+                        created=dateTime,
+                        title=doc_type,
+                        user=request.user,
+                        posted=True,
+                        shop_sender=shop_sender,
+                        shop_receiver=shop_receiver,
+                    )
+                    sum = 0
+                    for i in range(n):
+                        product=Product.objects.get(imei=imeis[i])
+                        av_price=AvPrice.objects.get(imei=imeis[i])
+                        sum += int(prices[i]) * int(quantities[i])
+                        # checking shop_sender
+                        if RemainderHistory.objects.filter(
+                            imei=imeis[i], shop=shop_sender, created__lt=dateTime).exists():
+                            rho_before_latest = RemainderHistory.objects.filter(imei=imeis[i],
+                                shop=shop_sender,created__lt=dateTime).latest('created')
+                            remainder_current = RemainderCurrent.objects.get(shop=shop_sender, imei=imeis[i])
+                            remainder_current.current_remainder =rho_before_latest.current_remainder
+                            # remainder_current.av_price=remainder_history.av_price
+                            # remainder_current.total_av_price=remainder_history.sub_total
+                            remainder_current.save()
+                        else:
+                            if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
+                                remainder_current = RemainderCurrent.objects.get(
+                                    shop=shop_sender, imei=imeis[i])
+                                remainder_current.current_remainder = 0
+                                # remainder_current.av_price=0
+                                # remainder_current.total_av_price=0
+                                remainder_current.save()
+                            else:
+                                remainder_current = RemainderCurrent.objects.create(
+                                    imei=imeis[i],
+                                    name=names[i],
+                                    shop=shop_sender,
+                                    category=product.category,
+                                    current_remainder=0,
+                                )
+                        remainder_history = RemainderHistory.objects.create(
+                            created=dateTime,
+                            user=request.user,
+                            document=document,
+                            rho_type=document.title,
+                            shop=shop_sender,
+                            category=product.category,
+                            imei=imeis[i],
+                            name=names[i],
+                            av_price=av_price,
+                            retail_price=prices[i],
+                            pre_remainder=remainder_current.current_remainder,
+                            incoming_quantity=0,
+                            outgoing_quantity=quantities[i],
+                            current_remainder=remainder_current.current_remainder
+                            - int(quantities[i]),
+                            sub_total=int(prices[i]) * int(quantities[i]),
+                            status=False
+                        )
+                        remainder_current.current_remainder = remainder_history.current_remainder
+                        # remainder_current.av_price=remainder_history.av_price
+                        # remainder_current.total_av_price=remainder_history.sub_total
+                        remainder_current.save()
+                        # av_price_sender=remainder_history.av_price
+
+                        # checking docs after remainder_history for shop_sender
+                        if RemainderHistory.objects.filter(imei=imeis[i], 
+                            shop=shop_sender,created__gt=dateTime).exists():
+                            sequence_rhos_after = RemainderHistory.objects.filter(
+                                imei=imeis[i],
+                                shop=shop_sender,
+                                created__gt=dateTime,
+                            )
+                            sequence_rhos_after = sequence_rhos_after.all().order_by("created")
+                            for obj in sequence_rhos_after:
+                                obj.pre_remainder = (remainder_current.current_remainder)
+                                obj.current_remainder = (
+                                    remainder_current.current_remainder
+                                    + obj.incoming_quantity
+                                    - obj.outgoing_quantity
+                                )
+                                obj.save()
+                                remainder_current.current_remainder = (obj.current_remainder)
+                                remainder_current.save()
+
+                        # checking shop_receiver
+                        if RemainderHistory.objects.filter(
+                            imei=imeis[i], shop=shop_receiver, created__lt=dateTime).exists():
+                            rho_before_latest = RemainderHistory.objects.filter(imei=imeis[i],shop=shop_receiver, created__lt=dateTime,).latest('created')
+                            remainder_current = RemainderCurrent.objects.get(
+                                shop=shop_receiver, imei=imeis[i])
+                            remainder_current.current_remainder =rho_before_latest.current_remainder
+                            # remainder_current.av_price=remainder_history.av_price
+                            # remainder_current.total_av_price=remainder_history.sub_total
+                            remainder_current.save()
+                        else:
+                            if RemainderCurrent.objects.filter(
+                                imei=imeis[i], shop=shop_receiver).exists():
+                                remainder_current = RemainderCurrent.objects.get(
+                                    shop=shop_receiver, imei=imeis[i])
+                                remainder_current.current_remainder = 0
+                                # remainder_current.av_price=0
+                                # remainder_current.total_av_price=0
+                                remainder_current.save()
+                            else:
+                                remainder_current = RemainderCurrent.objects.create(
+                                    imei=imeis[i],
+                                    name=names[i],
+                                    category=product.category,
+                                    shop=shop_receiver,
+                                    current_remainder=0,
+                                )
+                        remainder_history = RemainderHistory.objects.create(
+                            created=dateTime,
+                            user=request.user,
+                            document=document,
+                            rho_type=document.title,
+                            shop=shop_receiver,
+                            category=product.category,
+                            imei=imeis[i],
+                            name=names[i],
+                            av_price=av_price,
+                            retail_price=prices[i],
+                            pre_remainder=remainder_current.current_remainder,
+                            incoming_quantity=quantities[i],
+                            outgoing_quantity=0,
+                            current_remainder=remainder_current.current_remainder
+                            + int(quantities[i]),
+                            status=True,
+                            sub_total=prices[i]*int(quantities[i]),
+                        )
+
+                        remainder_current.current_remainder =remainder_history.current_remainder
+                        remainder_current.retail_price = remainder_history.retail_price
+                        # remainder_current.total_av_price=remainder_history.sub_total
+                        remainder_current.save()
+
+                        # checking docs after remainder_history for shop_receiver
+                        if RemainderHistory.objects.filter(
+                            imei=imeis[i], shop=shop_receiver, created__gt=dateTime).exists():
+                            sequence_rhos_after = RemainderHistory.objects.filter(
+                                imei=imeis[i],
+                                shop=shop_receiver,
+                                created__gt=dateTime,
+                            )
+                            sequence_rhos_after = sequence_rhos_after.all().order_by("created")
+                            for obj in sequence_rhos_after:
+                                obj.pre_remainder = remainder_current.current_remainder
+                                obj.current_remainder = (
+                                    remainder_current.current_remainder
+                                    + obj.incoming_quantity
+                                    - obj.outgoing_quantity
+                                )
+                                obj.save()
+                                remainder_current.current_remainder = obj.current_remainder
+                                # remainder_current.total_av_price=obj.sub_total
+                                # remainder_current.av_price=obj.av_price
+                                remainder_current.save()
+                        
+                    document.sum = sum
+                    document.save()
+                    for register in registers:
+                        register.delete()
+                    identifier.delete()
+                    if request.user in users:
+                        return redirect ('sale_interface')
+                    else:
+                        return redirect("log")
+
+                        return redirect ('sale_interface')
+                else:
+                    messages.error(request, "Вы не ввели ни одного наименования.")
+                    return redirect("transfer", identifier.id)
+            else:
+                document = Document.objects.create(
+                    created=dateTime,
+                    title=doc_type,
+                    user=request.user,
+                    posted=False,
+                    shop_receiver=shop_receiver,
+                    shop_sender=shop_sender,
+                )
+                for i in range(n):
+                    sum = 0
+                    for i in range(n):
+                        product=Product.objects.get(imei=imeis[i])
+                        sum += int(prices[i]) * int(quantities[i])
+                        register = Register.objects.get(identifier=identifier, product=product)
+                        register.price = prices[i]
+                        register.quantity = quantities[i]
+                        register.sub_total = int(prices[i]) * int(quantities[i])
+                        register.document = document
+                        #register.shop_sender = shop_sender
+                        #register.shop_receiver = shop_receiver
+                        register.new = False
+                        register.identifier = None
+                        register.save()
+                        identifier.delete()
+                        document.sum = sum
+                        document.save()
+                        if request.user in users:
+                            return redirect ('sale_interface')
+                        else:
+                            return redirect("log")                
+        else:
+            return redirect("transfer", identifier.id)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+def change_transfer_posted(request, document_id):
+    users=Group.objects.get(name="sales").user_set.all()
+    document = Document.objects.get(id=document_id)
+    shop_sender=document.shop_sender
+    shop_receiver=document.shop_receiver
+    rhos=RemainderHistory.objects.filter(document=document).exclude(shop=shop_receiver)
+    dateTimee=document.created
+    document_datetime=document.created
+    document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
+    numbers = rhos.count()
+    for rho, i in zip(rhos, range(numbers)):
+        rho.number = i + 1
+        rho.save()
+ 
+    context = {
+        'rhos': rhos,
+        'dateTime': document_datetime,
+        "document": document,
+        'shop_receiver': shop_receiver,
+        'shop_sender': shop_sender,
+    }
+    return render(request, "documents/change_transfer_posted.html", context)
+
+def change_transfer_unposted(request, document_id):
+    if request.user.is_authenticated:
+        document = Document.objects.get(id=document_id)
+        registers = (
+            Register.objects.filter(document=document).exclude(deleted=True).order_by("created"))
+        dateTime=document.created
+        dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
+        shop_receiver=document.shop_receiver
+        shop_sender=document.shop_sender
+        shops = Shop.objects.all()
+        doc_type = DocumentType.objects.get(name="Перемещение ТМЦ")
+        numbers = registers.count()
+        for register, i in zip(registers, range(numbers)):
+            register.number = i + 1
+            register.save()
+        if request.method == "POST":
+            imeis = request.POST.getlist("imei", None)
+            names = request.POST.getlist("name", None)
+            prices = request.POST.getlist("price", None)
+            quantities = request.POST.getlist("quantity", None)
+            shop_sender = request.POST["shop_sender"]
+            shop_receiver = request.POST["shop_receiver"]
+            shop_sender = Shop.objects.get(id=shop_sender)
+            shop_receiver = Shop.objects.get(id=shop_receiver)
+            dateTime = request.POST["dateTime"]
+            if dateTime:
+                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            else:
+                dateTime = datetime.datetime.now()
+            if shop_sender == shop_receiver:
+                messages.error(request,"Документ не проведен. Выберите фирму получателя отличную от отправителя",)
+                return redirect("change_transfer_unposted", document.id)
+            else:
+                try:
+                    if request.POST["post_check"]:
+                        post_check = True
+                except KeyError:
+                    post_check = False
+                # posting transfer document
+                if post_check == True:
                     check_point = []
                     n = len(names)
                     for i in range(n):
-                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
-                            remainder_current_sender = RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
-                            if remainder_current_sender.current_remainder < int(quantities[i]):
+                        if RemainderCurrent.objects.filter(
+                            imei=imeis[i], shop=shop_sender
+                        ).exists():
+                            remainder_current_sender = RemainderCurrent.objects.get(
+                                imei=imeis[i], shop=shop_sender
+                            )
+                            if remainder_current_sender.current_remainder < int(
+                                quantities[i]
+                            ):
                                 check_point.append(False)
                             else:
                                 check_point.append(True)
                         else:
                             check_point.append(False)
                     if False in check_point:
-                        messages.error(request,"Документ не проведен. Одно или несколько наименование отсутствуют на балансе данной фирмы.",)
-                        return redirect("transfer", identifier.id)
-                    #creating document
-                    else:
-                        document = Document.objects.create(
-                            created=dateTime,
-                            title=doc_type,
-                            user=request.user,
-                            posted=True,
-                            shop=shop_receiver,
+                        messages.error(
+                            request,
+                            "Документ не проведен. Одно или несколько наименование отсутствуют на балансе данной фирмы.",
                         )
+                        return redirect("change_transfer_unposted", document.id)
+                    else:
+                        document.posted = True
+                        document.save()
                         sum = 0
                         for i in range(n):
                             product=Product.objects.get(imei=imeis[i])
                             sum += int(prices[i]) * int(quantities[i])
-
                             # checking shop_sender
                             if RemainderHistory.objects.filter(
                                 imei=imeis[i], shop=shop_sender, created__lt=dateTime).exists():
-                                sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i],
-                                    shop=shop_sender,created__lt=dateTime,)
+                                sequence_rhos_before = RemainderHistory.objects.filter(
+                                    imei=imeis[i], shop=shop_sender, created__lt=dateTime)
                                 remainder_history = sequence_rhos_before.latest("created")
-                                remainder_current = RemainderCurrent.objects.get(shop=shop_sender, imei=imeis[i])
-                                remainder_current.current_remainder =remainder_history.current_remainder
+                                remainder_current = RemainderCurrent.objects.get(
+                                    shop=shop_sender, imei=imeis[i])
+                                remainder_current.current_remainder = (
+                                    remainder_history.current_remainder)
                                 # remainder_current.av_price=remainder_history.av_price
                                 # remainder_current.total_av_price=remainder_history.sub_total
                                 remainder_current.save()
                             else:
-                                if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
+                                if RemainderCurrent.objects.filter(
+                                    imei=imeis[i], shop=shop_sender).exists():
                                     remainder_current = RemainderCurrent.objects.get(
                                         shop=shop_sender, imei=imeis[i])
                                     remainder_current.current_remainder = 0
@@ -2657,13 +2956,13 @@ def transfer_input(request, identifier_id):
                                         imei=imeis[i],
                                         name=names[i],
                                         shop=shop_sender,
-                                        category=product.category,
+                                        # av_price=0,
+                                        # total_av_price=0,
                                         current_remainder=0,
                                     )
 
                             remainder_history = RemainderHistory.objects.create(
                                 created=dateTime,
-                                user=request.user,
                                 document=document,
                                 rho_type=document.title,
                                 shop=shop_sender,
@@ -2688,45 +2987,54 @@ def transfer_input(request, identifier_id):
                             # av_price_sender=remainder_history.av_price
 
                             # checking docs after remainder_history for shop_sender
-                            if RemainderHistory.objects.filter(imei=imeis[i], 
-                                shop=shop_sender,created__gt=dateTime).exists():
+                            if RemainderHistory.objects.filter(
+                                imei=imeis[i], shop=shop_sender, created__gt=dateTime
+                            ).exists():
                                 sequence_rhos_after = RemainderHistory.objects.filter(
-                                    imei=imeis[i],
-                                    shop=shop_sender,
-                                    created__gt=dateTime,
+                                    imei=imeis[i], shop=shop_sender, created__gt=dateTime
                                 )
-                                sequence_rhos_after = sequence_rhos_after.all().order_by("created")
+                                sequence_rhos_after = sequence_rhos_after.all().order_by(
+                                    "created"
+                                )
                                 for obj in sequence_rhos_after:
-                                    obj.pre_remainder = (remainder_current.current_remainder)
+
+                                    obj.pre_remainder = remainder_current.current_remainder
                                     obj.current_remainder = (
                                         remainder_current.current_remainder
                                         + obj.incoming_quantity
                                         - obj.outgoing_quantity
                                     )
+
                                     obj.save()
-                                    remainder_current.current_remainder = (obj.current_remainder)
+                                    remainder_current.current_remainder = (
+                                        obj.current_remainder
+                                    )
                                     remainder_current.save()
 
                             # checking shop_receiver
                             if RemainderHistory.objects.filter(
-                                imei=imeis[i], shop=shop_receiver, created__lt=dateTime).exists():
+                                imei=imeis[i], shop=shop_receiver, created__lt=dateTime
+                            ).exists():
                                 sequence_rhos_after = RemainderHistory.objects.filter(
-                                    imei=imeis[i],
-                                    shop=shop_receiver,
-                                    created__lt=dateTime,
+                                    imei=imeis[i], shop=shop_receiver, created__lt=dateTime
                                 )
                                 remainder_history = sequence_rhos_after.latest("created")
                                 remainder_current = RemainderCurrent.objects.get(
-                                    shop=shop_receiver, imei=imeis[i])
-                                remainder_current.current_remainder =remainder_history.current_remainder
+                                    shop=shop_receiver, imei=imeis[i]
+                                )
+                                remainder_current.current_remainder = (
+                                    remainder_history.current_remainder
+                                )
                                 # remainder_current.av_price=remainder_history.av_price
                                 # remainder_current.total_av_price=remainder_history.sub_total
                                 remainder_current.save()
                             else:
                                 if RemainderCurrent.objects.filter(
-                                    imei=imeis[i], shop=shop_receiver).exists():
+                                    imei=imeis[i], shop=shop_receiver
+                                ).exists():
                                     remainder_current = RemainderCurrent.objects.get(
-                                        shop=shop_receiver, imei=imeis[i])
+                                        shop=shop_receiver, imei=imeis[i]
+                                    )
                                     remainder_current.current_remainder = 0
                                     # remainder_current.av_price=0
                                     # remainder_current.total_av_price=0
@@ -2735,7 +3043,6 @@ def transfer_input(request, identifier_id):
                                     remainder_current = RemainderCurrent.objects.create(
                                         imei=imeis[i],
                                         name=names[i],
-                                        category=product.category,
                                         shop=shop_receiver,
                                         # av_price=0,
                                         # total_av_price=0,
@@ -2743,7 +3050,6 @@ def transfer_input(request, identifier_id):
                                     )
                             remainder_history = RemainderHistory.objects.create(
                                 created=dateTime,
-                                user=request.user,
                                 document=document,
                                 rho_type=document.title,
                                 shop=shop_receiver,
@@ -2761,21 +3067,25 @@ def transfer_input(request, identifier_id):
                                 # av_price=(remainder_current.total_av_price+av_price_sender*int(quantities[i]))/(remainder_current.current_remainder+int(quantities[i]))
                             )
 
-                            remainder_current.current_remainder =remainder_history.current_remainder
+                            remainder_current.current_remainder = (
+                                remainder_history.current_remainder
+                            )
                             remainder_current.retail_price = remainder_history.retail_price
                             # remainder_current.total_av_price=remainder_history.sub_total
                             remainder_current.save()
 
                             # checking docs after remainder_history for shop_receiver
                             if RemainderHistory.objects.filter(
-                                imei=imeis[i], shop=shop_receiver, created__gt=dateTime).exists():
+                                imei=imeis[i], shop=shop_receiver, created__gt=dateTime
+                            ).exists():
                                 sequence_rhos_after = RemainderHistory.objects.filter(
-                                    imei=imeis[i],
-                                    shop=shop_receiver,
-                                    created__gt=dateTime,
+                                    imei=imeis[i], shop=shop_receiver, created__gt=dateTime
                                 )
-                                sequence_rhos_after = sequence_rhos_after.all().order_by("created")
+                                sequence_rhos_after = sequence_rhos_after.all().order_by(
+                                    "created"
+                                )
                                 for obj in sequence_rhos_after:
+
                                     obj.pre_remainder = remainder_current.current_remainder
                                     obj.current_remainder = (
                                         remainder_current.current_remainder
@@ -2783,864 +3093,62 @@ def transfer_input(request, identifier_id):
                                         - obj.outgoing_quantity
                                     )
                                     obj.save()
-                                    remainder_current.current_remainder = obj.current_remainder
+                                    remainder_current.current_remainder = (
+                                        obj.current_remainder
+                                    )
                                     # remainder_current.total_av_price=obj.sub_total
                                     # remainder_current.av_price=obj.av_price
                                     remainder_current.save()
-
                         document.sum = sum
                         document.save()
+                        registers = Register.objects.filter(document=document)
                         for register in registers:
                             register.delete()
-                        identifier.delete()
-                        return redirect ('sale_interface')
-                else:
-                    try:
-                        if request.POST["post_check"]:
-                            post_check = True
-                    except KeyError:
-                        post_check = False
-                     # posting transfer document
-                    if post_check == True:
-                        # checking availability
-                        check_point = []
-                        n = len(names)
-                        for i in range(n):
-                            if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
-                                remainder_current_sender = RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
-                                if remainder_current_sender.current_remainder < int(quantities[i]):
-                                    check_point.append(False)
-                                else:
-                                    check_point.append(True)
-                            else:
-                                check_point.append(False)
-                        if False in check_point:
-                            messages.error(request,"Документ не проведен. Одно или несколько наименование отсутствуют на балансе данной фирмы.",)
-                            return redirect("transfer", identifier.id)
-                        #creating document
-                        else:
-                            document = Document.objects.create(
-                                created=dateTime,
-                                title=doc_type,
-                                user=request.user,
-                                posted=True,
-                                shop=shop_receiver,
-                            )
-                            sum = 0
-                            for i in range(n):
-                                product=Product.objects.get(imei=imeis[i])
-                                sum += int(prices[i]) * int(quantities[i])
-
-                                # checking shop_sender
-                                if RemainderHistory.objects.filter(
-                                    imei=imeis[i], shop=shop_sender, created__lt=dateTime).exists():
-                                    sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i],
-                                        shop=shop_sender,created__lt=dateTime,)
-                                    remainder_history = sequence_rhos_before.latest("created")
-                                    remainder_current = RemainderCurrent.objects.get(shop=shop_sender, imei=imeis[i])
-                                    remainder_current.current_remainder =remainder_history.current_remainder
-                                    # remainder_current.av_price=remainder_history.av_price
-                                    # remainder_current.total_av_price=remainder_history.sub_total
-                                    remainder_current.save()
-                                else:
-                                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
-                                        remainder_current = RemainderCurrent.objects.get(
-                                            shop=shop_sender, imei=imeis[i])
-                                        remainder_current.current_remainder = 0
-                                        # remainder_current.av_price=0
-                                        # remainder_current.total_av_price=0
-                                        remainder_current.save()
-                                    else:
-                                        remainder_current = RemainderCurrent.objects.create(
-                                            imei=imeis[i],
-                                            name=names[i],
-                                            shop=shop_sender,
-                                            category=product.category,
-                                            current_remainder=0,
-                                        )
-
-                                remainder_history = RemainderHistory.objects.create(
-                                    created=dateTime,
-                                    document=document,
-                                    rho_type=document.title,
-                                    shop=shop_sender,
-                                    category=product.category,
-                                    imei=imeis[i],
-                                    name=names[i],
-                                    # av_price=remainder_current.av_price,
-                                    retail_price=prices[i],
-                                    pre_remainder=remainder_current.current_remainder,
-                                    incoming_quantity=0,
-                                    outgoing_quantity=quantities[i],
-                                    current_remainder=remainder_current.current_remainder
-                                    - int(quantities[i]),
-                                    # sub_total=remainder_current.av_price*(remainder_current.current_remainder-int(quantities[i]))
-                                )
-                                remainder_current.current_remainder = (
-                                    remainder_history.current_remainder
-                                )
-                                # remainder_current.av_price=remainder_history.av_price
-                                # remainder_current.total_av_price=remainder_history.sub_total
-                                remainder_current.save()
-                                # av_price_sender=remainder_history.av_price
-
-                                # checking docs after remainder_history for shop_sender
-                                if RemainderHistory.objects.filter(imei=imeis[i], 
-                                    shop=shop_sender,created__gt=dateTime).exists():
-                                    sequence_rhos_after = RemainderHistory.objects.filter(
-                                        imei=imeis[i],
-                                        shop=shop_sender,
-                                        created__gt=dateTime,
-                                    )
-                                    sequence_rhos_after = sequence_rhos_after.all().order_by("created")
-                                    for obj in sequence_rhos_after:
-                                        obj.pre_remainder = (remainder_current.current_remainder)
-                                        obj.current_remainder = (
-                                            remainder_current.current_remainder
-                                            + obj.incoming_quantity
-                                            - obj.outgoing_quantity
-                                        )
-                                        obj.save()
-                                        remainder_current.current_remainder = (obj.current_remainder)
-                                        remainder_current.save()
-
-                                # checking shop_receiver
-                                if RemainderHistory.objects.filter(
-                                    imei=imeis[i], shop=shop_receiver, created__lt=dateTime).exists():
-                                    sequence_rhos_after = RemainderHistory.objects.filter(
-                                        imei=imeis[i],
-                                        shop=shop_receiver,
-                                        created__lt=dateTime,
-                                    )
-                                    remainder_history = sequence_rhos_after.latest("created")
-                                    remainder_current = RemainderCurrent.objects.get(
-                                        shop=shop_receiver, imei=imeis[i])
-                                    remainder_current.current_remainder =remainder_history.current_remainder
-                                    # remainder_current.av_price=remainder_history.av_price
-                                    # remainder_current.total_av_price=remainder_history.sub_total
-                                    remainder_current.save()
-                                else:
-                                    if RemainderCurrent.objects.filter(
-                                        imei=imeis[i], shop=shop_receiver).exists():
-                                        remainder_current = RemainderCurrent.objects.get(
-                                            shop=shop_receiver, imei=imeis[i])
-                                        remainder_current.current_remainder = 0
-                                        # remainder_current.av_price=0
-                                        # remainder_current.total_av_price=0
-                                        remainder_current.save()
-                                    else:
-                                        remainder_current = RemainderCurrent.objects.create(
-                                            imei=imeis[i],
-                                            name=names[i],
-                                            category=product.category,
-                                            shop=shop_receiver,
-                                            # av_price=0,
-                                            # total_av_price=0,
-                                            current_remainder=0,
-                                        )
-                                remainder_history = RemainderHistory.objects.create(
-                                    created=dateTime,
-                                    document=document,
-                                    rho_type=document.title,
-                                    shop=shop_receiver,
-                                    category=product.category,
-                                    imei=imeis[i],
-                                    name=names[i],
-                                    retail_price=prices[i],
-                                    pre_remainder=remainder_current.current_remainder,
-                                    incoming_quantity=quantities[i],
-                                    outgoing_quantity=0,
-                                    current_remainder=remainder_current.current_remainder
-                                    + int(quantities[i]),
-                                    status=True
-                                    # sub_total=remainder_current.total_av_price+av_price_sender*int(quantities[i]),
-                                    # av_price=(remainder_current.total_av_price+av_price_sender*int(quantities[i]))/(remainder_current.current_remainder+int(quantities[i]))
-                                )
-
-                                remainder_current.current_remainder =remainder_history.current_remainder
-                                remainder_current.retail_price = remainder_history.retail_price
-                                # remainder_current.total_av_price=remainder_history.sub_total
-                                remainder_current.save()
-
-                                # checking docs after remainder_history for shop_receiver
-                                if RemainderHistory.objects.filter(
-                                    imei=imeis[i], shop=shop_receiver, created__gt=dateTime).exists():
-                                    sequence_rhos_after = RemainderHistory.objects.filter(
-                                        imei=imeis[i],
-                                        shop=shop_receiver,
-                                        created__gt=dateTime,
-                                    )
-                                    sequence_rhos_after = sequence_rhos_after.all().order_by("created")
-                                    for obj in sequence_rhos_after:
-                                        obj.pre_remainder = remainder_current.current_remainder
-                                        obj.current_remainder = (
-                                            remainder_current.current_remainder
-                                            + obj.incoming_quantity
-                                            - obj.outgoing_quantity
-                                        )
-                                        obj.save()
-                                        remainder_current.current_remainder = obj.current_remainder
-                                        # remainder_current.total_av_price=obj.sub_total
-                                        # remainder_current.av_price=obj.av_price
-                                        remainder_current.save()
-
-                            document.sum = sum
-                            document.save()
-                            for register in registers:
-                                register.delete()
-                            identifier.delete()
-                            return redirect ('log')
-             
-                    else:
-                        document = Document.objects.create(
-                            title=doc_type,
-                            user=request.user,
-                            created=dateTime,
-                            posted=False,
-                            shop=shop_receiver,
-                        )
-                        n = len(names)
-                        sum = 0
-                        for i in range(n):
-                            sum += int(prices[i]) * int(quantities[i])
-                            product = Product.objects.get(imei=imeis[i])
-                            register = Register.objects.get(
-                                identifier=identifier, product=product
-                            )
-                            register.price = prices[i]
-                            register.quantity = quantities[i]
-                            register.sub_total = int(prices[i]) * int(quantities[i])
-                            register.document = document
-                            register.shop_sender = shop_sender
-                            register.shop_receiver = shop_receiver
-                            register.new = False
-                            register.identifier = None
-                            register.save()
-                        identifier.delete()
-                        document.sum = sum
-                        document.save()
                         return redirect("log")
-    else:
-        auth.logout(request)
-        return redirect("login")
-
-def change_transfer_posted(request, document_id):
-    document = Document.objects.get(id=document_id)
-    shops = Shop.objects.all()
-    categories = ProductCategory.objects.all()
-    rhos = RemainderHistory.objects.filter(document=document)
-    if Register.objects.filter(document=document).exists():
-        registers = (
-            Register.objects.filter(document=document)
-            .exclude(deleted=True)
-            .order_by("created")
-        )
-    else:
-        for rho in rhos:
-            product = Product.objects.get(imei=rho.imei)
-            if Register.objects.filter(document=document, product=product).exists():
-                register = Register.objects.get(document=document, product=product)
-                try:
-                    if rho.status == False:
-                        register.shop_sender = rho.shop
-                    else:
-                        register.shop_receiver = rho.shop
-                except KeyError:
-                    if rho.status == True:
-                        register.shop_receiver = rho.shop
-                    else:
-                        register.shop_sender = rho.shop
-                register.save()
-            else:
-                # creating new register
-                if rho.status == False:
-                    register = Register.objects.create(
-                        shop_sender=rho.shop,
-                        product=product,
-                        quantity=rho.outgoing_quantity,
-                        price=rho.retail_price,
-                        document=document,
-                        sub_total=rho.retail_price * rho.outgoing_quantity,
-                    )
+                # saving unposted document
                 else:
-                    register = Register.objects.create(
-                        shop_receiver=rho.shop,
-                        product=product,
-                        quantity=rho.incoming_quantity,
-                        price=rho.retail_price,
-                        document=document,
-                        sub_total=rho.retail_price * rho.incoming_quantity,
-                    )
-        registers = Register.objects.filter(document=document).order_by("created")
-        numbers = registers.count()
-        for register, i in zip(registers, range(numbers)):
-            register.number = i + 1
-            register.save()
-    shop_sender_current = registers.first().shop_sender
-    shop_receiver_current = registers.first().shop_receiver
-
-    if request.method == "POST":
-        dateTime = request.POST["dateTime"]
-        shop_sender = request.POST["shop_sender"]
-        shop_sender_changed = Shop.objects.get(id=shop_sender)
-        shop_receiver = request.POST["shop_receiver"]
-        shop_receiver_changed = Shop.objects.get(id=shop_receiver)
-        imeis = request.POST.getlist("imei", None)
-        names = request.POST.getlist("name", None)
-        quantities = request.POST.getlist("quantity", None)
-        prices = request.POST.getlist("price", None)
-        sum = 0
-        n = len(names)
-        # checking if date has been changed
-        if dateTime:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-        else:
-            dateTime = document.created
-
-        for rho in rhos:
-            # changing docs for receiver_shop. It comes before sender_shop since we'll need av_prices of sender_shop
-            # deleting rho for shop_receiver_current
-            if RemainderHistory.objects.filter(imei=rho.imei, shop=shop_receiver_current, created__lt=rho.created).exists():
-                remainder_current = RemainderCurrent.objects.get(imei=rho.imei, shop=shop_receiver_current)
-                # rho_before=RemainderHistory.objects.filter(imei=rho.imei, shop=shop_receiver_current, created__lt=rho.created).latest('created')
-                rho_sequence_before = RemainderHistory.objects.filter(
-                    imei=rho.imei, shop=shop_receiver_current, created__lt=rho.created)
-                rho_before = rho_sequence_before.latest("created")
-                remainder_current.current_remainder = rho_before.current_remainder
-                # remainder_current.total_av_price=rho_before.sub_total
-                # remainder_current.av_price=rho_before.av_price
-                remainder_current.save()
-            else:
-                remainder_current = RemainderCurrent.objects.get(
-                    imei=rho.imei, shop=shop_receiver_current
-                )
-                remainder_current.current_remainder = 0
-                remainder_current.total_av_price = 0
-                remainder_current.av_price = 0
-                remainder_current.save()
-            if RemainderHistory.objects.filter(imei=rho.imei, shop=shop_receiver_current, created__gt=rho.created).exists():
-                sequence_rhos = RemainderHistory.objects.filter(
-                    imei=rho.imei, shop=shop_receiver_current, created__gt=rho.created)
-                for obj in sequence_rhos:
-                    obj.pre_remainder = remainder_current.current_remainder
-                    # obj.sub_total=remainder_current.total_av_price+obj.av_price*(obj.incoming_quantity - obj.outgoing_quantity)
-                    obj.current_remainder = (
-                        remainder_current.current_remainder
-                        + obj.incoming_quantity
-                        - obj.outgoing_quantity
-                    )
-                    # obj.av_price=obj.sub_total/obj.current_remainder
-                    obj.save()
-                    remainder_current.current_remainder = obj.current_remainder
-                    # remainder_current.total_av_price=obj.sub_total
-                    # remainder_current.av_price=obj.av_price
-                    remainder_current.save()
-            # deleting rho for shop_sender_current
-            if RemainderHistory.objects.filter(
-                imei=rho.imei, shop=shop_sender_current, created__lt=rho.created
-            ).exists():
-                remainder_current = RemainderCurrent.objects.get(
-                    imei=rho.imei, shop=shop_sender_current
-                )
-                rho_sequence_before = RemainderHistory.objects.filter(
-                    imei=rho.imei, shop=shop_sender_current, created__lt=rho.created
-                )
-                rho_before = rho_sequence_before.latest("created")
-                remainder_current.current_remainder = rho_before.current_remainder
-                # remainder_current.total_av_price=rho_before.sub_total
-                # remainder_current.av_price=rho_before.av_price
-                remainder_current.save()
-            else:
-                remainder_current = RemainderCurrent.objects.get(
-                    imei=rho.imei, shop=shop_sender_current
-                )
-                remainder_current.current_remainder = 0
-                # remainder_current.total_av_price=0
-                # remainder_current.av_price=0
-                remainder_current.save()
-            if RemainderHistory.objects.filter(
-                imei=rho.imei, shop=shop_sender_current, created__gt=rho.created
-            ).exists():
-                sequence_rhos = RemainderHistory.objects.filter(
-                    imei=rho.imei, shop=shop_sender_current, created__gt=rho.created
-                )
-                for obj in sequence_rhos:
-                    obj.pre_remainder = remainder_current.current_remainder
-                    # obj.sub_total=remainder_current.total_av_price+obj.av_price*(obj.incoming_quantity - obj.outgoing_quantity)
-                    obj.current_remainder = (
-                        remainder_current.current_remainder
-                        + obj.incoming_quantity
-                        - obj.outgoing_quantity
-                    )
-                    # obj.av_price=obj.sub_total/obj.current_remainder
-                    obj.save()
-                    remainder_current.current_remainder = obj.current_remainder
-                    # remainder_current.total_av_price=obj.sub_total
-                    # remainder_current.av_price=obj.av_price
-                    remainder_current.save()
-            rho.delete()
-
-        for i in range(n):
-            # creating new rho for chop_receiver_changed
-            if RemainderHistory.objects.filter(
-                imei=imeis[i], shop=shop_receiver_changed, created__lt=dateTime
-            ).exists():
-                rho_hist_objs_before = RemainderHistory.objects.filter(
-                    imei=imeis[i], shop=shop_receiver_changed, created__lt=dateTime
-                )
-                rho_hist_before = rho_hist_objs_before.latest("created")
-                remainder_current = RemainderCurrent.objects.get(
-                    imei=imeis[i], shop=shop_receiver_changed
-                )
-                remainder_current.current_remainder = rho_hist_before.current_remainder
-                # remainder_current.total_av_price=rho_hist_before.sub_total
-                # remainder_current.av_price=rho_hist_before.av_price
-                remainder_current.save()
-            else:
-                if RemainderCurrent.objects.filter(
-                    imei=imeis[i], shop=shop_receiver_changed
-                ).exists():
-                    remainder_current = RemainderCurrent.objects.get(
-                        imei=imeis[i], shop=shop_receiver_changed
-                    )
-                    remainder_current.current_remainder = 0
-                    remainder_current.total_av_price = 0
-                    # remainder_current.av_price=av_price
-                    remainder_current.save()
-                else:
-                    remainder_current = RemainderCurrent.objects.create(
-                        imei=imeis[i],
-                        shop=shop_receiver_changed,
-                        current_remainder=0,
-                        # total_av_price=0,
-                        # av_price=av_price,
-                        # retail_price=0
-                    )
-            rho_new = RemainderHistory.objects.create(
-                shop=shop_receiver_changed,
-                created=dateTime,
-                document=document,
-                name=names[i],
-                imei=imeis[i],
-                incoming_quantity=int(quantities[i]),
-                outgoing_quantity=0,
-                pre_remainder=remainder_current.current_remainder,
-                current_remainder=remainder_current.current_remainder
-                + int(quantities[i]),
-                retail_price=int(prices[i]),
-                status=True,
-                # sub_total=remainder_current.total_av_price+remainder_current.av_price*int(quantities[i]),
-                # av_price= (remainder_current.total_av_price+(int(quantities[i])*remainder_current.av_price))/(remainder_current.current_remainder+int(quantities[i]))
-            )
-            remainder_current.current_remainder = rho_new.current_remainder
-            # remainder_current.total_av_price=rho_new.sub_total
-            # remainder_current.av_price=rho_new.av_price
-            remainder_current.save()
-
-            if RemainderHistory.objects.filter(
-                imei=imeis[i], shop=shop_receiver_changed, created__gt=rho_new.created
-            ).exists():
-                sequence_rhos = RemainderHistory.objects.filter(
-                    imei=imeis[i],
-                    shop=shop_receiver_changed,
-                    created__gt=rho_new.created,
-                )
-                for obj in sequence_rhos:
-                    obj.pre_remainder = remainder_current.current_remainder
-                    # obj.sub_total=remainder_current.total_av_price+remainder_current.av_price*(obj.incoming_quantity - obj.outgoing_quantity)
-                    obj.current_remainder = (
-                        remainder_current.current_remainder
-                        + obj.incoming_quantity
-                        - obj.outgoing_quantity
-                    )
-                    # obj.av_price=obj.sub_total/obj.current_remainder
-                    obj.save()
-                    remainder_current.current_remainder = obj.current_remainder
-                    # remainder_current.total_av_price=obj.sub_total
-                    # remainder_current.av_price=obj.av_price
-                    remainder_current.save()
-
-            # creating new rho for shop_sender_changed
-            if RemainderHistory.objects.filter(
-                imei=imeis[i], shop=shop_sender_changed, created__lt=dateTime
-            ).exists():
-                rho_hist_objs_before = RemainderHistory.objects.filter(
-                    imei=imeis[i], shop=shop_sender_changed, created__lt=dateTime
-                )
-                rho_hist_before = rho_hist_objs_before.latest("created")
-                remainder_current = RemainderCurrent.objects.get(
-                    imei=imeis[i], shop=shop_sender_changed
-                )
-                # remainder_current=RemainderCurrent(imei=imeis[i], shop=shop_current)#creates a new object which we don't need
-                remainder_current.current_remainder = rho_hist_before.current_remainder
-                # remainder_current.total_av_price=rho_hist_before.sub_total
-                # remainder_current.av_price=rho_hist_before.av_price
-                remainder_current.save()
-            else:
-                if RemainderCurrent.objects.filter(
-                    imei=imeis[i], shop=shop_sender_changed
-                ).exists():
-                    remainder_current = RemainderCurrent.objects.get(
-                        imei=imeis[i], shop=shop_sender_changed
-                    )
-                    remainder_current.current_remainder = 0
-                    # remainder_current.total_av_price=0
-                    # remainder_current.av_price=av_price
-                    remainder_current.save()
-                else:
-                    remainder_current = RemainderCurrent.objects.create(
-                        imei=imeis[i],
-                        shop=shop_sender_changed,
-                        current_remainder=0,
-                        # total_av_price=0,
-                        # av_price=av_price,
-                        retail_price=0,
-                    )
-            rho_new = RemainderHistory.objects.create(
-                shop=shop_sender_changed,
-                created=dateTime,
-                document=document,
-                name=names[i],
-                imei=imeis[i],
-                incoming_quantity=0,
-                outgoing_quantity=int(quantities[i]),
-                pre_remainder=remainder_current.current_remainder,
-                current_remainder=remainder_current.current_remainder
-                + int(quantities[i]),
-                retail_price=int(prices[i]),
-                # sub_total=remainder_current.total_av_price+remainder_current.av_price*int(quantities[i]),
-                # av_price= (remainder_current.total_av_price+(int(quantities[i])*remainder_current.av_price))/(remainder_current.current_remainder+int(quantities[i]))
-            )
-            remainder_current.current_remainder = rho_new.current_remainder
-            # remainder_current.total_av_price=rho_new.sub_total
-            # remainder_current.av_price=rho_new.av_price
-            remainder_current.save()
-
-            if RemainderHistory.objects.filter(
-                imei=imeis[i], shop=shop_sender_changed, created__gt=rho_new.created
-            ).exists():
-                sequence_rhos = RemainderHistory.objects.filter(
-                    imei=imeis[i], shop=shop_sender_changed, created__gt=rho_new.created
-                )
-                for obj in sequence_rhos:
-                    obj.pre_remainder = remainder_current.current_remainder
-                    # obj.sub_total=remainder_current.total_av_price+remainder_current.av_price*(obj.incoming_quantity - obj.outgoing_quantity)
-                    obj.current_remainder = (
-                        remainder_current.current_remainder
-                        + obj.incoming_quantity
-                        - obj.outgoing_quantity
-                    )
-                    # obj.av_price=obj.sub_total/obj.current_remainder
-                    obj.save()
-                    remainder_current.current_remainder = obj.current_remainder
-                    # remainder_current.total_av_price=obj.sub_total
-                    # remainder_current.av_price=obj.av_price
-                    remainder_current.save()
-        document.sum = sum
-        document.created = dateTime
-        document.save()
-        registers = Register.objects.filter(document=document)
-        for register in registers:
-            register.delete()
-        return redirect("log")
-    else:
-        context = {
-            "document": document,
-            "registers": registers,
-            "shops": shops,
-        }
-        return render(request, "documents/change_transfer_posted.html", context)
-
-def change_transfer_unposted(request, document_id):
-    document = Document.objects.get(id=document_id)
-    registers = (
-        Register.objects.filter(document=document)
-        .exclude(deleted=True)
-        .order_by("created")
-    )
-    shops = Shop.objects.all()
-    categories = ProductCategory.objects.all()
-    doc_type = DocumentType.objects.get(name="Перемещение ТМЦ")
-    numbers = registers.count()
-    for register, i in zip(registers, range(numbers)):
-        register.number = i + 1
-        register.save()
-    if request.method == "POST":
-        imeis = request.POST.getlist("imei", None)
-        names = request.POST.getlist("name", None)
-        prices = request.POST.getlist("price", None)
-        quantities = request.POST.getlist("quantity", None)
-        shop_sender = request.POST["shop_sender"]
-        shop_receiver = request.POST["shop_receiver"]
-        dateTime = request.POST["dateTime"]
-        shop_sender = Shop.objects.get(id=shop_sender)
-        shop_receiver = Shop.objects.get(id=shop_receiver)
-        if dateTime:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-        else:
-            dateTime = datetime.now()
-        if shop_sender == shop_receiver:
-            messages.error(
-                request,
-                "Документ не проведен. Выберите фирму получателя отличную от отправителя",
-            )
-            return redirect("change_transfer_unposted", document.id)
-        else:
-            try:
-                if request.POST["post_check"]:
-                    post_check = True
-            except KeyError:
-                post_check = False
-            # posting transfer document
-            if post_check == True:
-                check_point = []
-                n = len(names)
-                for i in range(n):
-                    if RemainderCurrent.objects.filter(
-                        imei=imeis[i], shop=shop_sender
-                    ).exists():
-                        remainder_current_sender = RemainderCurrent.objects.get(
-                            imei=imeis[i], shop=shop_sender
-                        )
-                        if remainder_current_sender.current_remainder < int(
-                            quantities[i]
-                        ):
-                            check_point.append(False)
-                        else:
-                            check_point.append(True)
-                    else:
-                        check_point.append(False)
-                if False in check_point:
-                    messages.error(
-                        request,
-                        "Документ не проведен. Одно или несколько наименование отсутствуют на балансе данной фирмы.",
-                    )
-                    return redirect("change_transfer_unposted", document.id)
-                else:
-                    document.posted = True
-                    document.save()
+                    if Register.objects.filter(deleted=True).exists():
+                        deleted_registers = Register.objects.filter(deleted=True)
+                        for register in deleted_registers:
+                            register.delete()
+                    n = len(names)
                     sum = 0
                     for i in range(n):
-                        product=Product.objects.get(imei=imeis[i])
                         sum += int(prices[i]) * int(quantities[i])
-                        # checking shop_sender
-                        if RemainderHistory.objects.filter(
-                            imei=imeis[i], shop=shop_sender, created__lt=dateTime).exists():
-                            sequence_rhos_before = RemainderHistory.objects.filter(
-                                imei=imeis[i], shop=shop_sender, created__lt=dateTime)
-                            remainder_history = sequence_rhos_before.latest("created")
-                            remainder_current = RemainderCurrent.objects.get(
-                                shop=shop_sender, imei=imeis[i])
-                            remainder_current.current_remainder = (
-                                remainder_history.current_remainder)
-                            # remainder_current.av_price=remainder_history.av_price
-                            # remainder_current.total_av_price=remainder_history.sub_total
-                            remainder_current.save()
-                        else:
-                            if RemainderCurrent.objects.filter(
-                                imei=imeis[i], shop=shop_sender).exists():
-                                remainder_current = RemainderCurrent.objects.get(
-                                    shop=shop_sender, imei=imeis[i])
-                                remainder_current.current_remainder = 0
-                                # remainder_current.av_price=0
-                                # remainder_current.total_av_price=0
-                                remainder_current.save()
-                            else:
-                                remainder_current = RemainderCurrent.objects.create(
-                                    imei=imeis[i],
-                                    name=names[i],
-                                    shop=shop_sender,
-                                    # av_price=0,
-                                    # total_av_price=0,
-                                    current_remainder=0,
-                                )
-
-                        remainder_history = RemainderHistory.objects.create(
-                            created=dateTime,
-                            document=document,
-                            rho_type=document.title,
-                            shop=shop_sender,
-                            category=product.category,
-                            imei=imeis[i],
-                            name=names[i],
-                            # av_price=remainder_current.av_price,
-                            retail_price=prices[i],
-                            pre_remainder=remainder_current.current_remainder,
-                            incoming_quantity=0,
-                            outgoing_quantity=quantities[i],
-                            current_remainder=remainder_current.current_remainder
-                            - int(quantities[i]),
-                            # sub_total=remainder_current.av_price*(remainder_current.current_remainder-int(quantities[i]))
-                        )
-                        remainder_current.current_remainder = (
-                            remainder_history.current_remainder
-                        )
-                        # remainder_current.av_price=remainder_history.av_price
-                        # remainder_current.total_av_price=remainder_history.sub_total
-                        remainder_current.save()
-                        # av_price_sender=remainder_history.av_price
-
-                        # checking docs after remainder_history for shop_sender
-                        if RemainderHistory.objects.filter(
-                            imei=imeis[i], shop=shop_sender, created__gt=dateTime
-                        ).exists():
-                            sequence_rhos_after = RemainderHistory.objects.filter(
-                                imei=imeis[i], shop=shop_sender, created__gt=dateTime
-                            )
-                            sequence_rhos_after = sequence_rhos_after.all().order_by(
-                                "created"
-                            )
-                            for obj in sequence_rhos_after:
-
-                                obj.pre_remainder = remainder_current.current_remainder
-                                obj.current_remainder = (
-                                    remainder_current.current_remainder
-                                    + obj.incoming_quantity
-                                    - obj.outgoing_quantity
-                                )
-
-                                obj.save()
-                                remainder_current.current_remainder = (
-                                    obj.current_remainder
-                                )
-                                remainder_current.save()
-
-                        # checking shop_receiver
-                        if RemainderHistory.objects.filter(
-                            imei=imeis[i], shop=shop_receiver, created__lt=dateTime
-                        ).exists():
-                            sequence_rhos_after = RemainderHistory.objects.filter(
-                                imei=imeis[i], shop=shop_receiver, created__lt=dateTime
-                            )
-                            remainder_history = sequence_rhos_after.latest("created")
-                            remainder_current = RemainderCurrent.objects.get(
-                                shop=shop_receiver, imei=imeis[i]
-                            )
-                            remainder_current.current_remainder = (
-                                remainder_history.current_remainder
-                            )
-                            # remainder_current.av_price=remainder_history.av_price
-                            # remainder_current.total_av_price=remainder_history.sub_total
-                            remainder_current.save()
-                        else:
-                            if RemainderCurrent.objects.filter(
-                                imei=imeis[i], shop=shop_receiver
-                            ).exists():
-                                remainder_current = RemainderCurrent.objects.get(
-                                    shop=shop_receiver, imei=imeis[i]
-                                )
-                                remainder_current.current_remainder = 0
-                                # remainder_current.av_price=0
-                                # remainder_current.total_av_price=0
-                                remainder_current.save()
-                            else:
-                                remainder_current = RemainderCurrent.objects.create(
-                                    imei=imeis[i],
-                                    name=names[i],
-                                    shop=shop_receiver,
-                                    # av_price=0,
-                                    # total_av_price=0,
-                                    current_remainder=0,
-                                )
-                        remainder_history = RemainderHistory.objects.create(
-                            created=dateTime,
-                            document=document,
-                            rho_type=document.title,
-                            shop=shop_receiver,
-                            category=product.category,
-                            imei=imeis[i],
-                            name=names[i],
-                            retail_price=prices[i],
-                            pre_remainder=remainder_current.current_remainder,
-                            incoming_quantity=quantities[i],
-                            outgoing_quantity=0,
-                            current_remainder=remainder_current.current_remainder
-                            + int(quantities[i]),
-                            status=True
-                            # sub_total=remainder_current.total_av_price+av_price_sender*int(quantities[i]),
-                            # av_price=(remainder_current.total_av_price+av_price_sender*int(quantities[i]))/(remainder_current.current_remainder+int(quantities[i]))
-                        )
-
-                        remainder_current.current_remainder = (
-                            remainder_history.current_remainder
-                        )
-                        remainder_current.retail_price = remainder_history.retail_price
-                        # remainder_current.total_av_price=remainder_history.sub_total
-                        remainder_current.save()
-
-                        # checking docs after remainder_history for shop_receiver
-                        if RemainderHistory.objects.filter(
-                            imei=imeis[i], shop=shop_receiver, created__gt=dateTime
-                        ).exists():
-                            sequence_rhos_after = RemainderHistory.objects.filter(
-                                imei=imeis[i], shop=shop_receiver, created__gt=dateTime
-                            )
-                            sequence_rhos_after = sequence_rhos_after.all().order_by(
-                                "created"
-                            )
-                            for obj in sequence_rhos_after:
-
-                                obj.pre_remainder = remainder_current.current_remainder
-                                obj.current_remainder = (
-                                    remainder_current.current_remainder
-                                    + obj.incoming_quantity
-                                    - obj.outgoing_quantity
-                                )
-                                obj.save()
-                                remainder_current.current_remainder = (
-                                    obj.current_remainder
-                                )
-                                # remainder_current.total_av_price=obj.sub_total
-                                # remainder_current.av_price=obj.av_price
-                                remainder_current.save()
+                        product = Product.objects.get(imei=imeis[i])
+                        register = Register.objects.get(document=document, product=product)
+                        register.price = prices[i]
+                        register.quantity = quantities[i]
+                        register.sub_total = int(prices[i]) * int(quantities[i])
+                        register.document = document
+                        register.shop_sender = shop_sender
+                        register.shop_receiver = shop_receiver
+                        register.new = False
+                        register.save()
                     document.sum = sum
                     document.save()
-                    registers = Register.objects.filter(document=document)
-                    for register in registers:
-                        register.delete()
                     return redirect("log")
-            # saving unposted document
-            else:
-                if Register.objects.filter(deleted=True).exists():
-                    deleted_registers = Register.objects.filter(deleted=True)
-                    for register in deleted_registers:
-                        register.delete()
-                n = len(names)
-                sum = 0
-                for i in range(n):
-                    sum += int(prices[i]) * int(quantities[i])
-                    product = Product.objects.get(imei=imeis[i])
-                    register = Register.objects.get(document=document, product=product)
-                    register.price = prices[i]
-                    register.quantity = quantities[i]
-                    register.sub_total = int(prices[i]) * int(quantities[i])
-                    register.document = document
-                    register.shop_sender = shop_sender
-                    register.shop_receiver = shop_receiver
-                    register.new = False
-                    register.save()
-                document.sum = sum
-                document.save()
-                return redirect("log")
 
+        else:
+            context = {
+                "registers": registers,
+                "shops": shops,
+                "document": document,
+                "dateTime": dateTime,
+                'shop_receiver': shop_receiver,
+                'shop_sender': shop_sender,
+            }
+            return render(request, "documents/change_transfer_unposted.html", context)
     else:
-        context = {
-            "registers": registers,
-            "shops": shops,
-            "document": document,
-            "categories": categories,
-        }
-        return render(request, "documents/change_transfer_unposted.html", context)
+        auth.logout(request)
+        return redirect ('login')
 
 def unpost_transfer(request, document_id):
     document = Document.objects.get(id=document_id)
     rhos = RemainderHistory.objects.filter(document=document).order_by("created")
     for rho in rhos:
         if RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__lt=rho.created).exists():
-            sequence_rhos_before = RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__lt=rho.created)
-            rho_latest_before = sequence_rhos_before.latest("created")
+            rho_latest_before = RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__lt=rho.created).latest('created')
             remainder_current = RemainderCurrent.objects.get(shop=rho.shop, imei=rho.imei)
             remainder_current.current_remainder = rho_latest_before.current_remainder
             remainder_current.save()
@@ -3661,8 +3169,17 @@ def unpost_transfer(request, document_id):
                 obj.save()
                 remainder_current.current_remainder = obj.current_remainder
                 remainder_current.save()
+        if rho.status==True:
+            print(rho.rho_type)
+            product=Product.objects.get(imei=rho.imei)
+            register=Register.objects.create(
+                document=document,
+                price=rho.retail_price,
+                quantity=rho.incoming_quantity,
+                sub_total= rho.incoming_quantity * rho.retail_price,
+                product=product
+            )
         rho.delete()
-        # no need to create new registers since they have been created by 'change_transfer_posted'
     document.posted = False
     document.save()
     return redirect("log")
