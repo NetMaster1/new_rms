@@ -6,7 +6,7 @@
         <div class="page_location_posted">
             <div class="row m-2 pt-2">
                 <div class="col">
-                    <h3>Документ {{document.title}} # {{document.id}} (проведен) </h3>
+                    <h3>Документ {{document.title}} # {{document.id}} (проведен)</h3>
                 </div>
                 <!-- =====================Alert Messages Module=================== -->
                 <div class="container">
@@ -35,7 +35,7 @@
                             </div>
                             <div class="col">
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value="{{document.created}}">
+                                    value="{{dateTime}}"  readonly>
                             </div>
                         </div>
 
@@ -47,12 +47,14 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="shop" id="shop" class='form-control' required>
-                                    <option selected="true" value="{{registers.first.shop.id}}">
-                                        {{registers.first.shop.name}}</option>
+                                <select name="shop" id="shop" class='form-control' readonly>
+                                    <option selected="true" value="{{shop.id}}">
+                                        {{shop.name}}</option>
+
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
+
                                 </select>
                             </div>
                         </div>
@@ -83,31 +85,31 @@
                             </div>
                         </div>
 
-                        {% for register in registers %}
+                        {% for rho in rhos %}
                         <div class="row m-auto mb-1">
                             <div class="col-1">
                                 <input type="text" class='form-control' id="number" name="number"
-                                    value='{{register.number}}' readonly>
+                                    value='{{rho.number}}' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="text" class='form-control' id="imei" name="imei"
-                                    value='{{register.product.imei}}' readonly>
+                                    value='{{rho.imei}}' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="text" class='form-control' id="name" name="name"
-                                    value='{{register.product.name}}' readonly>
+                                    value='{{rho.name}}' readonly>
                             </div>
                             <div class="col-1">
                                 <input type="number" class='form-control' id="quantity" name="quantity"
-                                    value='{{register.quantity}}'>
+                                    value='{{rho.incoming_quantity}}'>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="price" name="price"
-                                    value='{{register.price}}' maxlength='50' required>
+                                    value='{{rho.retail_price}}' maxlength='50' required>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
-                                    value='{{register.sub_total}}' maxlength='50'>
+                                    value='{{rho.sub_total}}' maxlength='50'>
                             </div>
                         </div>
                         {% endfor %}

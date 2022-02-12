@@ -62,7 +62,7 @@
                                 </div>
                                 <div class="col">
                                     <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                        value="{{document.created}}">
+                                        value="{{dateTime}}">
                                 </div>
                             </div>
 
@@ -74,8 +74,8 @@
                                 </div>
                                 <div class="col">
                                     <select name="shop" id="shop" class='form-control' required>
-                                        <option selected="true" value="{{registers.first.shop.id}}">
-                                            {{registers.first.shop.name}}</option>
+                                        <option selected="true" value="{{shop.id}}">
+                                            {{shop.name}}</option>
                                         {% for shop in shops %}
                                         <option value="{{shop.id}}">{{shop.name}}</option>
                                         {% endfor %}

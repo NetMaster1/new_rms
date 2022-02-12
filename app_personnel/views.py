@@ -69,6 +69,25 @@ def shop_choice (request):
             }
             return render(request, 'personnel/shop_choice.html', context)
     else:
+        auth.logout(request)
+        return redirect('login')
+
+def shop_choice_signing_off (request):
+    group=Group.objects.get(name="admin").user_set.all()
+    if request.user in group:
+        shops=Shop.objects.all()
+        if request.method=='POST':
+            shop = request.POST["shop"]
+            request.session ["session_shop"]=shop
+            group=Group.objects.get(name="admin").user_set.all()
+            return redirect ('identifier_signing_off')
+        else:
+            context = {
+                'shops': shops
+            }
+            return render(request, 'personnel/shop_choice_signing_off.html', context)
+    else:
+        auth.logout(request)
         return redirect('login')
 
 def my_bonus(request):

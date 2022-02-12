@@ -21,9 +21,9 @@
         {% endfor%}
         {% endif%}
     </div>
-    <!-- ===================End of Alert Messages Module================ -->
+    <!-- ===================End of Alert Messages Module============== -->
 
-        <div class="col-6 border rounded p-3">
+        <div class="col-12 border rounded p-3">
             <form action="{% url 'check_return_unposted' document.id %}" method="POST" class='check_button'>
                 {% csrf_token %}
                 <div class="row m-1">
@@ -31,14 +31,19 @@
                         <input type="text" class='form-control' id="check_imei" name="imei" maxlength='50'
                             required placeholder="Введите IMEI">
                     </div>
-
+            
+            <!-- {% for group in request.user.groups.all %}
+            {% if group.name == 'admin' %}
                     <div class="col-4">
-                        <select name="shop" id="shop" class='form-control' required>
-                            {% for shop in shops %}
-                            <option value="{{shop.id}}">{{shop.name}}</option>
-                            {% endfor %}
-                        </select>
+                    <select name="shop" id="shop" class='form-control' required>
+                        <option selected="">Введите торговую точку</option>
+                        {% for shop in shops %}
+                        <option value="{{shop.id}}">{{shop.name}}</option>
+                        {% endfor %}
+                    </select>
                     </div>
+            {% endif %}
+            {% endfor %} -->
 
                     <div class="col-4">
                         <input type="submit" value="Внести наименование в документ"
@@ -62,8 +67,15 @@
                                 </label>
                             </div>
                             <div class="col">
+                            {% for group in request.user.groups.all %}
+                            {% if group.name == 'admin' %}
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value="{{document.created}}">
+                                    value="{{document_datetime}}">
+                            {% else %}
+                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
+                                    value="{{document_datetime}}" readonly>
+                            {% endif%}
+                            {% endfor %}
                             </div>
                         </div>
 
@@ -75,15 +87,29 @@
                                     <h5>Фирма получатель</h5>
                                 </label>
                             </div>
+                            {% for group in request.user.groups.all %}
+                            {% if group.name == 'admin' %}
                             <div class="col">
                                 <select name="shop" id="shop" class='form-control' required>
-                                    <option selected="true" value="{{registers.first.shop.id}}">
-                                        {{registers.first.shop.name}}</option>
+                                    <option selected="true" value="{{shop.id}}">
+                                        {{shop.name}}</option>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
                                 </select>
                             </div>
+                            {% else %}
+                            <div class="col">
+                                <select name="shop" id="shop" class='form-control' required readonly>
+                                    <option selected="true" value="{{shop.id}}">
+                                        {{shop.name}}</option>
+                                    <!-- {% for shop in shops %}
+                                    <option value="{{shop.id}}">{{shop.name}}</option>
+                                    {% endfor %} -->
+                                </select>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
                         </div>
 
 
@@ -151,6 +177,10 @@
                                 <input type="submit" value="Сохранить"
                                     class="btn btn-sm btn-block btn-outline-dark">
                             </div>
+
+                {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
+            
                             <div class="col-2">
                                 <label for="post_check"> С проведением </label>
                                 <input type="checkbox" id="post_check" name="post_check" value='checked'>
@@ -158,14 +188,17 @@
                     </form>
 
                     <div class="col-3">
-                        <a href="{% url 'close_unposted_document' document.id %}">
-                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage">
-                        </a>
-                    </div>
-                    
-                    <div class="col-3">
                         <a href="{% url 'delete_unposted_document' document.id %}">
                             <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        </a>
+                    </div>
+                {% endif %}
+                {% endfor %}
+
+
+                    <div class="col-3">
+                        <a href="{% url 'close_unposted_document' document.id %}">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage">
                         </a>
                     </div>
                 </div>

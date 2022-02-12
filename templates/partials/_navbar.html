@@ -87,7 +87,7 @@
                     <li><a class="dropdown-item" href="{% url 'identifier_recognition' %}">Оприходование ТМЦ</a></li>
                         
                     <li><a class="dropdown-item" href="{% url 'identifier_transfer' %}">Перемещение ТМЦ</a></li>
-                    <li><a class="dropdown-item" href="{% url 'identifier_signing_off' %}">Списание ТМЦ</a></li>
+                    <li><a class="dropdown-item" href="{% url 'shop_choice_signing_off' %}">Списание ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'identifier_revaluation' %}">Переоценка ТМЦ</a></li>
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}

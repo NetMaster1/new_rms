@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<div class="container mt-5 mb-5 pt-5">
+   
+        <!-- Alerts ========================== -->
+        {% include 'partials/_alerts.html' %}
+        <!-- ========================================== -->
+<div class="shop_choice_page">
+<div class="shop_choice_form border rounded">
+    <div class="col m-3">
+        <form action="#" method='POST'>
+            {% csrf_token %}
+
+                <div class="form-row mb-2">
+                <select name="shop" id="shop" class='form-control' required>
+                    <option value="">Выберите ТТ, с которой производится списание</option>
+                    {% for shop in shops %}
+                    <option value="{{shop.id}}">{{shop.name}}</option>
+                    {% endfor %}
+                </select>
+                </div>
+<!--        
+                {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
+
+                <div class="row mt-3">
+                <label for="dateTIme">Не выбирайте дату, если хотите совершить продажу текущим временем</label>
+                </div>
+
+                <div class="form-row">
+                    <div class="col">
+                        <input type="datetime-local" class='form-control' id="datеTime" name="datеTime"><br>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor%} -->
+
+            <div class="row m-auto mb-2">
+                <input type="submit" value="Выбрать" class="btn btn-outline-dark btn-block"> 
+            </div>
+
+
+            <div class="row m-auto mb-2">
+
+    {% for group in request.user.groups.all %}
+    {% if group.name == 'admin' %}
+            <a href="{% url 'log' %}" class="btn btn-block btn-outline-dark">
+                Закрыть
+            </a>
+    {% else %}
+            <a href="{% url 'login' %}" class="btn btn-block btn-outline-dark">
+                Закрыть
+            </a>
+    {% endif %}
+    {% endfor %}
+
+
+
+            </div>
+        
+
+        </form>
+    </div>
+</div>
+</div>
+</div>
+
+
+{% endblock %}
