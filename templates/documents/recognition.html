@@ -34,7 +34,7 @@
                                 <input type="text" class='form-control' id="check_imei" name="check_imei" maxlength='50' required placeholder="Введите IMEI">
 
                                 
-                                        <div class="form-row">
+                                        <!-- <div class="form-row">
                                             <div class="col">
                                                 <select name="shop" id="shop" class='form-control' required>
                                                     <option value="">Введите фирму-получателя</option>
@@ -43,7 +43,7 @@
                                                     {% endfor %}
                                                 </select>
                                             </div>
-                                        </div>
+                                        </div> -->
                                 </div>
                         
                             <div class="col-6">
@@ -81,10 +81,12 @@
                                             <label for="category">Вид ТМЦ</label>
                                         </div>
                                         <div class="col">
-                                            <select name="category" id="category" class='form-control' required>
-                                                {% for category in categories %}
-                                                <option value="{{category.id}}">{{category.name}}</option>
-                                                {% endfor %}
+                                                <select name="category" id="category" class='form-control' required>
+                                                    <option value="">Выберите категорию</option>
+                                                    {% for category in categories %}
+                                                    <option value="{{category.id}}">{{category.name}}</option>
+                                                    {% endfor %}
+                                                </select>
                                             </select>
                                         </div>
                                     </div>
@@ -118,8 +120,7 @@
                     <form action="{% url 'recognition_input' identifier.id %}" method="POST" >
                         {% csrf_token %}
 
-                        {% for group in request.user.groups.all %}
-                        {% if group.name == 'admin' %}
+                     
                         <div class="form-row">
                             <div class="col-2">
                                 <label for="date">Дата</label>
@@ -128,11 +129,7 @@
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today'><br>
                             </div>
                         </div>
-                        {% else %}
-                        <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today' hidden>
-                        {% endif %}
-                        {% endfor %}
-
+                      
                         <div class="form-row">
                             <div class="col-3">
                                 <label for="shop">
@@ -140,9 +137,12 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="shop" id="sho" class='form-control' required readonly>
-                                    <option value="{{registers.first.shop.id}}">{{registers.first.shop.name}}</option>
-                                </select>
+                                <select name="shop" id="shop" class='form-control' required>
+                                    <option value="">Введите фирму-получателя</option>
+                                    {% for shop in shops %}
+                                    <option value="{{shop.id}}">{{shop.name}}</option>
+                                    {% endfor %}
+                                    </select>
 
                             </div>
                         </div>

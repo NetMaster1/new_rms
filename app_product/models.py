@@ -161,11 +161,11 @@ class RemainderHistory(models.Model):
     sub_total = models.IntegerField(default=0)  # av_price*current_remainder
     wholesale_price = models.IntegerField(default=0, null=True)
     av_price = models.IntegerField(default=0, null=True)
+    retail_price = models.IntegerField(default=0)
     pre_remainder = models.IntegerField(default=0)
     incoming_quantity = models.IntegerField(null=True)
     outgoing_quantity = models.IntegerField(null=True)
     current_remainder = models.IntegerField(default=0)
-    retail_price = models.IntegerField(default=0)
     update_check = models.BooleanField(default=False)
     status = models.BooleanField(default=False)  # "False" for Transfer(send) "True" for Transfer(receive)
     cash_back_awarded = models.IntegerField(null=True, blank=True)

@@ -4,6 +4,7 @@
 
     <div class="container">
         <div class="page_location_unposted">
+
             <div class="row m-2 pt-2">
                 <div class="col">
                     <h3>Изменить непроведенный документ {{document.title}} # {{document.id}}</h3>
@@ -32,23 +33,21 @@
                                     required placeholder="Введите IMEI">
                             </div>
 
-                            <div class="col-4">
+                            <!-- <div class="col-4">
                                 <select name="shop" id="shop" class='form-control' required>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
                                 </select>
-                            </div>
-                        </div>
-                        <div class="row m-1">
+                            </div> -->
+                        
                             <div class="col-4">
                                 <input type="submit" value="Внести наименование в документ"
                                     class="btn btn-sm btn-outline-dark">
                             </div>
-                        </div>
                     </form>
                 </div>
-
+            </div>
                 <!-- ==============================Modal Trigger================== -->
                 <div class="col-6 border rounded p-3">
                     <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
@@ -122,8 +121,7 @@
                                     </label>
                                 </div>
                                 <div class="col">
-                                    <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                        value="{{document.created}}">
+                                    <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value="{{dateTime}}">
                                 </div>
                             </div>
 
@@ -135,8 +133,8 @@
                                 </div>
                                 <div class="col">
                                     <select name="shop" id="shop" class='form-control' required>
-                                        <option selected="true" value="{{registers.first.shop.id}}">
-                                            {{registers.first.shop.name}}</option>
+                                        <option selected="true" value="{{shop.id}}">
+                                            {{shop.name}}</option>
                                         {% for shop in shops %}
                                         <option value="{{shop.id}}">{{shop.name}}</option>
                                         {% endfor %}
