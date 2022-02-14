@@ -32,8 +32,7 @@
                     <form action="{% url 'change_cash_off_salary_unposted' document.id  %}" method="POST">
                         {% csrf_token %}
 
-                        {% for group in request.user.groups.all %}
-                        {% if group.name == 'admin' %}
+                    
                         <div class="form-row m-2">
                             <div class="col-3">
                                 <label for="date">
@@ -42,11 +41,10 @@
                             </div>
                             <div class="col">
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value='today'>
+                                    value='{{dateTime}}'>
                             </div>
                         </div>
-                        {% endif %}
-                        {% endfor %}
+                      
 
 
                         <div class="form-row m-2">
@@ -100,15 +98,21 @@
                         </div>
 
                         <div class="row m-2 p-2">
+                            {% for group in request.user.groups.all %}
+                            {% if group.name == 'admin' %}
                             <div class="col-1">
                                 <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
                             </div>
 
-                            {% for group in request.user.groups.all %}
-                            {% if group.name == 'admin' %}
                             <div class="col-2">
                                 <label for="post_check"> С проведением </label>
-                                <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                                <input type="checkbox" id="post_check" name="post_check">
+                            </div>
+
+                            <div class="col-3">
+                                <a href="{% url 'delete_unposted_document' document.id %}">
+                                    <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                                </a>
                             </div>
                             {% endif %}
                             {% endfor %}
@@ -123,11 +127,6 @@
                         </a>
                     </div>
 
-                    <div class="col-3">
-                        <a href="{% url 'delete_unposted_document' document.id %}">
-                            <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
-                        </a>
-                    </div>
                 </div>
 
             </div>

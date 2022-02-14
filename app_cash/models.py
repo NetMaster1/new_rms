@@ -22,7 +22,7 @@ class Cash (models.Model):
     cash_receiver= models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, related_name='cash_receiver')
     cash_off_reason = models.ForeignKey(Expense, on_delete=models.DO_NOTHING, null=True)
     cash_in_reason = models.ForeignKey(Voucher, on_delete=models.DO_NOTHING, null=True)
-    sender = models.BooleanField(default=False)
+    sender = models.BooleanField(default=False)#True fo cho from shop_sender
 
     def __int__(self):
         return self.id

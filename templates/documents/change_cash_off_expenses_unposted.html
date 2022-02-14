@@ -41,8 +41,7 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value='today'>
+                            <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='{{dateTime}}'>
                             </div>
                         </div>
                         {% endif %}
@@ -59,8 +58,8 @@
                                 <select name="shop" id="shop" class='form-control' required>
                                     <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
                                     <!-- <option value="">Выберите торговую точку</option> -->
-                                    <option selected="true" value="{{register.shop_sender.id}}">
-                                        {{register.shop_sender.name}}</option>
+                                    <option selected="true" value="{{document.shop_sender.id}}">
+                                        {{document.shop_sender.name}}</option>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
@@ -95,7 +94,7 @@
                             </div>
                             <div class="col">
                                 <input type="number" class='form-control' id="sum" name="sum"
-                                    value='{{register.sub_total}}' required>
+                                    value='{{document.sum}}' required>
                             </div>
                         </div>
 

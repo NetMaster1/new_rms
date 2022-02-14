@@ -177,10 +177,9 @@
 
         {% elif document.title.name == 'Перемещение денег' %}
         {% if document.posted == True %}
-        <a href="{% url 'change_cash_movement_posted' document.id %}">{{document.title}}
-        {{document.id}}</a>
+        <a href="{% url 'change_cash_movement_posted' document.id %}">{{document.title}} #{{document.id}}</a>
         {% else %}
-        <a href="{% url 'change_cash_movement_unposted' document.id %}"> {{document.title}}{{document.id}}</a>
+        <a href="{% url 'change_cash_movement_unposted' document.id %}"> {{document.title}} #{{document.id}}</a>
         {% endif %}
         
         {% elif document.title.name == 'Инвентаризация ТМЦ' %}

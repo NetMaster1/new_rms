@@ -7,6 +7,7 @@
             <div class="row m-2 pt-2">
                 <div class="col">
                     <h3>Перемещение денежных средств</h3>
+                    Для членов группы 'sales' перемещение ден. средств производится с точки, на которой работает работник, на ООС текущим временем. Члены группы 'admin' могут указывать точки и время.
                 </div>
             </div>
             <!-- =====================Alert Messages Module=================== -->
@@ -104,6 +105,9 @@
                                 <label for="post_check"> С проведением </label>
                                 <input type="checkbox" id="post_check" name="post_check" value='checked'>
                             </div>
+                            {% else %}
+                            <input type="checkbox" id="post_check" name="post_check" value='checked' checked hidden>
+
                             {% endif %}
                             {% endfor %}
                     </form>

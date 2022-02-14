@@ -52,13 +52,13 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="shop" id="shop" class='form-control' required>
+                                <select name="shop" id="shop" class='form-control' readonly>
                                     <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
                                     <!-- <option value="">Выберите торговую точку</option> -->
                                     <option selected="true" value="{{cho.shop.id}}">{{cho.shop.name}}</option>
-                                    {% for shop in shops %}
+                                    <!-- {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
-                                    {% endfor %}
+                                    {% endfor %} -->
                                 </select>
                             </div>
                         </div>
@@ -70,13 +70,13 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="user" id="user" class='form-control' required>
+                                <select name="user" id="user" class='form-control' readonly>
                                     <!-- <option selected="true" disabled="disabled">Выберите получателя</option> -->
                                     <!-- <option value="">Выберите получателяу</option> -->
                                     <option selected="true" value="{{cho.cash_receiver.id}}">{{cho.cash_receiver.last_name}}</option>
-                                    {% for user in users %}
+                                    <!-- {% for user in users %}
                                     <option value="{{user.id}}">{{user.last_name}}</option>
-                                    {% endfor %}
+                                    {% endfor %} -->
                                 </select>
                             </div>
                         </div>
@@ -88,7 +88,7 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <input type="number" class='form-control' id="sum" name="sum" value="{{cho.cash_out}}" required>
+                                <input type="number" class='form-control' id="sum" name="sum" value="{{cho.cash_out}}" readonly>
                             </div>
                         </div>
 

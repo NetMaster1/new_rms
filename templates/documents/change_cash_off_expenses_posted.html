@@ -32,8 +32,7 @@
                     <form action="{% url 'change_cash_off_expenses_posted' document.id %}" method="POST">
                         {% csrf_token %}
 
-                        {% for group in request.user.groups.all %}
-                        {% if group.name == 'admin' %}
+                    
                         <div class="form-row m-2">
                             <div class="col-3">
                                 <label for="date">
@@ -41,11 +40,10 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today'>
+                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='{{dateTime}}' readonly>
                             </div>
                         </div>
-                        {% endif %}
-                        {% endfor %}
+                   
 
 
                         <div class="form-row m-2">
@@ -55,13 +53,13 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="shop" id="shop" class='form-control' required>
+                                <select name="shop" id="shop" class='form-control' readonly>
                                     <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
                                     <!-- <option value="">Выберите торговую точку</option> -->
                                     <option selected="true" value="{{cho.shop.id}}">{{cho.shop.name}}</option>
-                                    {% for shop in shops %}
+                                    <!-- {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
-                                    {% endfor %}
+                                    {% endfor %} -->
                                 </select>
                             </div>
                         </div>
@@ -73,14 +71,14 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="expense" id="expense" class='form-control' required>
+                                <select name="expense" id="expense" class='form-control' readonly>
                                     <!-- <option selected="true" disabled="disabled">Выберите получателя</option> -->
                                     <!-- <option value="">Выберите операцию-основание</option> -->
                                     <option selected="true" value="{{cho.cash_off_reason.id}}">
                                         {{cho.cash_off_reason.name}}</option>
-                                    {% for expense in expenses %}
+                                    <!-- {% for expense in expenses %}
                                     <option value="{{expense.id}}">{{expense.name}}</option>
-                                    {% endfor %}
+                                    {% endfor %} -->
                                 </select>
                             </div>
                         </div>
@@ -93,7 +91,7 @@
                             </div>
                             <div class="col">
                                 <input type="number" class='form-control' id="sum" name="sum" value='{{cho.cash_out}}'
-                                    required>
+                                    readonly>
                             </div>
                         </div>
 <!-- 

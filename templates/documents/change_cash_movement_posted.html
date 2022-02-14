@@ -6,7 +6,7 @@
 
             <div class="row m-2 pt-2">
                 <div class="col">
-                    <h3>Перемещение денежных средств</h3>
+                    <h3>Перемещение денежных средств (Проведено)</h3>
                 </div>
             </div>
             <!-- =====================Alert Messages Module=================== -->
@@ -32,8 +32,7 @@
                     <form action="{% url 'change_cash_movement_posted' document.id %}" method="POST">
                         {% csrf_token %}
 
-                        {% for group in request.user.groups.all %}
-                        {% if group.name == 'admin' %}
+                     
                         <div class="form-row m-2">
                             <div class="col-3">
                                 <label for="date">
@@ -42,11 +41,10 @@
                             </div>
                             <div class="col">
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value='{{dateTime}}'>
+                                    value='{{dateTime}}' readonly>
                             </div>
                         </div>
-                        {% endif %}
-                        {% endfor %}
+                     
 
 
                         <div class="form-row m-2">
@@ -56,7 +54,7 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="shop_cash_sender" id="shop_cash_sender" class='form-control' required>
+                                <select name="shop_cash_sender" id="shop_cash_sender" class='form-control' readonly>
                                     <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
                                     <!-- <option value="">Выберите торговую точку</option> -->
                                     <option selected="true" value="{{document.cash_set.first.shop.id}}">{{document.cash_set.first.shop.name}}</option>
@@ -74,7 +72,7 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="shop_cash_receiver" id="shop_cash_receiver" class='form-control' required>
+                                <select name="shop_cash_receiver" id="shop_cash_receiver" class='form-control' readonly>
                                     <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
                                     <!-- <option value="">Выберите торговую точку</option> -->
                                     <option selected="true" value="{{document.cash_set.last.shop.id}}">{{document.cash_set.last.shop.name}}</option>
@@ -94,7 +92,7 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <input type="number" class='form-control' id="sum" name="sum" value='{{document.sum}}'required>
+                                <input type="number" class='form-control' id="sum" name="sum" value='{{document.sum}}'readonly>
                             </div>
                         </div>
 
