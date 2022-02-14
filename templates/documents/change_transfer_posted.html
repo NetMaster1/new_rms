@@ -40,7 +40,7 @@
                             </div>
                             <div class="col">
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value='{{dateTime}}'><br>
+                                    value='{{dateTime}}' readonly><br>
                             </div>
                         </div>
 
@@ -51,7 +51,7 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="shop_sender" id="shop_sender" class='form-control' required>
+                                <select name="shop_sender" id="shop_sender" class='form-control' readonly>
                                     <option selected="true" value="{{shop_sender.id}}">{{shop_sender.name}}</option>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
@@ -67,7 +67,7 @@
                                 </label>
                             </div>
                             <div class="col">
-                                <select name="shop_receiver" id="shop_receiver" class='form-control' required>
+                                <select name="shop_receiver" id="shop_receiver" class='form-control' readonly>
                                     <option selected="true" value="{{document.shop_receiver.id}}">
                                     {{document.shop_receiver.name}}</option>
 
@@ -119,7 +119,7 @@
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="quantity" name="quantity"
-                                    value='{{rho.outgoing_quantity}}' required>
+                                    value='{{rho.outgoing_quantity}}' readonly>
                             </div>
                             <div class="col-2">
                                 <input type="number" class='form-control' id="price" name="price"
@@ -142,19 +142,19 @@
                             </div> -->
                     </form>
 
-                    <div class="col-3">
+                    <div class="col-2">
                         <a href="{% url 'unpost_transfer' document.id %}">
                             <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
             
-                    <div class="col-3">
+                    <div class="col-2">
                         <a href="{% url 'log' %}">
                             <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
 
-                    <div class="col-3">
+                    <div class="col-2">
                         <a href="{% url 'DownloadPDF' document.id %}">
                             <input type="button" value="Вывести на печать" class="btn btn-sm btn-block btn-outline-dark clear_storage ">
                         </a>

@@ -79,8 +79,8 @@ def shop_choice_signing_off (request):
         if request.method=='POST':
             shop = request.POST["shop"]
             request.session ["session_shop"]=shop
-            group=Group.objects.get(name="admin").user_set.all()
             return redirect ('identifier_signing_off')
+         
         else:
             context = {
                 'shops': shops

@@ -8,7 +8,7 @@
     <div class="row m-2 pt-2">
         <div class="col">
             <h3>Пeремещение ТМЦ</h3>
-            Для членов группы 'sales' перемещение производится по умолчанию с ООС на точку, указанную при входе в систему. Если наименование с данным IMEI уже есть на точке, в поле цена проставляется текущая розничная цена. При вводе цены, отличной от текущей, текущая цена изменяется.
+            Для членов группы 'sales' перемещение производится по умолчанию с ООС на точку, указанную при входе в систему. При вводе розничной цены, отличной от той, которая хранится в CurrentRemainder, розничная цена изменяется на введенную.
         </div>
     </div>
     <!-- =====================Alert Messages Module=================== -->
@@ -34,9 +34,9 @@
                 <div class="col-3">
                     <input type="text" class='form-control' id="check_imei" name="check_imei" maxlength='50' required placeholder='Введите IMEI'>
                 </div>
-                <div class="col-3">
+                <!-- <div class="col-3">
                     <input type="number" class='form-control' id="quantity" name="quantity"  required value=1>
-                </div>
+                </div> -->
 
                 <!-- <div class="col-4">
                 <select name="shop" id="shop" class='form-control' required>
@@ -145,7 +145,7 @@
                 {% endfor %}
 
 
-                <div class="row m-auto mt-3">
+        <div class="row m-auto mt-3">
                     <div class="col-1">
                     <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
                 </div>
@@ -154,6 +154,10 @@
                 <div class="col-2">
                     <label for="post_check"> С проведением </label>
                     <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                </div>
+                {% else %}
+                    <div class="col-2">
+                    <input type="checkbox" id="post_check" name="post_check" checked hidden>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -169,8 +173,8 @@
                         <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storage">
                     </a>
                 </div>
-            </div>
         </div>
+    </div>
     </div>
 </div>
 </div>

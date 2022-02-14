@@ -73,12 +73,12 @@
                                     </label>
                                 </div>
                                 <div class="col">
-                                    <select name="shop" id="shop" class='form-control' required>
+                                    <select name="shop" id="shop" class='form-control' readonly>
                                         <option selected="true" value="{{shop.id}}">
                                             {{shop.name}}</option>
-                                        {% for shop in shops %}
+                                        <!-- {% for shop in shops %}
                                         <option value="{{shop.id}}">{{shop.name}}</option>
-                                        {% endfor %}
+                                        {% endfor %} -->
                                     </select>
                                 </div>
                             </div>
