@@ -140,17 +140,24 @@ def sale_interface (request):
         return redirect ('login')
 
 def search(request):
+    users=Group.objects.get(name="sales").user_set.all()
     if request.method == "POST":
         keyword = request.POST["keyword"]
-        session_shop=request.session['session_shop']
-	    #session_shop=request.session.get['session_shop']
-        shop=Shop.objects.get(id=session_shop)
-
-        if RemainderCurrent.objects.filter(shop=shop, name__icontains=keyword, current_remainder__gt=0).exists():
-            remainders=RemainderCurrent.objects.filter(name__icontains=keyword, shop=shop)
+        if request.user in users:
+            session_shop=request.session['session_shop']
+            #session_shop=request.session.get['session_shop']
+            shop=Shop.objects.get(id=session_shop)
+            if RemainderCurrent.objects.filter(shop=shop, name__icontains=keyword, current_remainder__gt=0).exists():
+                remainders=RemainderCurrent.objects.filter(name__icontains=keyword, shop=shop, current_remainder__gt=0)
+            else:
+                messages.error(request, "УУУУУПС. Такое наименование не найдено")
+                return redirect("search")
         else:
-            messages.error(request, "УУУУУПС. Такое наименование не найдено")
-            return redirect("search")
+            if RemainderCurrent.objects.filter(name__icontains=keyword, current_remainder__gt=0).exists():
+                remainders=RemainderCurrent.objects.filter(name__icontains=keyword, current_remainder__gt=0)
+            else:
+                messages.error(request, "УУУУУПС. Такое наименование не найдено")
+                return redirect("search")
 
         context = {"remainders": remainders}
         return render(request, "documents/search_results.html", context)

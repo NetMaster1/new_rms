@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="hide">
+<!-- <div class="hide"> -->
     <div class="container">
         <div class="page_location">
             <div class="border rounded p-3">
@@ -61,7 +61,7 @@
                         <input type="submit" value="Применить" class="btn btn-block btn-outline-dark">
                         </div>
                         <div class="row m-1">
-                        <a href="{% url 'close_report' %}"  class="btn btn-block btn-outline-dark">
+                        <a href="{% url 'close_remainder_report' %}"  class="btn btn-block btn-outline-dark">
                            Закрыть  
                         </a>
                         </div>
@@ -88,24 +88,25 @@
         </div>
         {% for arr in array %}
         <div class="row m-auto">
-            <div class="col-2">{{arr.imei}}</div>
+            <!-- <div class="col-2">{{arr.imei}}</div> -->
+            <div class="col-2">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{arr.imei}}">
+                    {{arr.imei}}
+                </a>
+            </div>
+        
             <div class="col-2">{{arr.name}}</div>
             <div class="col-2">{{arr.current_remainder}}</div>
             <div class="col-2">{{arr.retail_price}}</div>
         </div>
-        {% endfor %}
+       
 
-        {% for remainder in qs %}
-        <div class="row m-auto">
+      
 
-            <div class="col-2">
-                <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{remainder.imei}}">
-                    {{remainder.imei}}
-                </a>
-            </div>
+          
 <!-- =======================Document Bootstrap Modal================================= -->
-<div class="modal fade" id="modal_{{remainder.imei}}" tabindex="-1" aria-labelledby="exampleModalLabel"
-    aria-hidden="true" class="ModalLogHide">
+<div class="modal fade" id="modal_{{arr.imei}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"
+    class="ModalLogHide">
     <!-- <div class="ModalLogHide"> -->
     <div class="modal-dialog">
         <div class="modal-content">
@@ -114,7 +115,8 @@
                 <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
             <div class="modal-body">
-                <form action="{% url 'update_retail_price' remainder.imei shop.id %}" method="POST">
+
+                <form action="{% url 'update_retail_price' arr.imei shop.id category.id%}" method="POST">
                     {% csrf_token %}
 
                     <div class="form-row">
@@ -130,7 +132,7 @@
                             
                             <select name="category" id="category" class='form-control' readonly>
                                 <!-- <option selected="true" disabled="disabled">Выберите поставщика</option> -->
-                                <option value="{{item.category.id}}">{{remainder.category}}</option>
+                                <option value="{{arr.category.id}}">{{arr.category.name}}</option>
                                 <!-- {% for category in categories %}
                                 <option value="{{category.id}}">{{category.name}}</option>
                                 {% endfor %} -->
@@ -139,17 +141,17 @@
                     </div>
                     <div class="form-group">
                         <label for="name">Наименование:</label>
-                        <input class='form-control' type="text" id="name" name="name" value='{{remainder.name}}' readonly>
+                        <input class='form-control' type="text" id="name" name="name" value='{{arr.name}}' readonly>
                     </div>
 
                     <div class="form-group">
                         <label for="name">IMEI:</label>
-                        <input class='form-control' type="text" id="imei" name="imei" value='{{remainder.imei}}' readonly>
+                        <input class='form-control' type="text" id="imei" name="imei" value='{{arr.imei}}' readonly>
                     </div>
 
                     <div class="form-group">
                         <label for="name">Розничная цена:</label>
-                        <input class='form-control' type="number" id="retail_price" name="retail_price" value='{{remainder.retail_price}}'>
+                        <input class='form-control' type="number" id="retail_price" name="retail_price" value='{{arr.retail_price}}'>
                     </div>
             </div>
 
@@ -162,18 +164,18 @@
         </div>
     </div>
 </div>
+
+{% endfor %}
 <!-- ============================End of Document Bootstrap Modal======================================= -->
-            <div class="col-2">{{remainder.name}}</div>
-            <div class="col-2">{{remainder.current_remainder}}</div>
-            <div class="col-2">{{remainder.retail_price}}</div>
+        
         </div>
-        {% endfor %}
-
-    </div>
+      
 
 </div>
+
 </div>
 </div>
+<!-- </div> -->
 
 <script>
 

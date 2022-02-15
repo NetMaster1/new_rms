@@ -1,3 +1,4 @@
+from ssl import create_default_context
 from app_personnel.models import BonusAccount, Salary
 from django.db.models import query
 from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product
@@ -223,14 +224,21 @@ def reports(request):
 
 def close_report(request):
     users = Group.objects.get(name='sales').user_set.all()
-    if ReportTemp.objects.filter(existance_check=True).exists():
-        reports_temp=ReportTemp.objects.all()
-        for obj in reports_temp:
-            obj.delete()
     if ReportTempId.objects.filter(existance_check=True).exists():
         report_ids_temp=ReportTempId.objects.all()
         for obj in report_ids_temp:
             obj.delete()
+    if ReportTemp.objects.filter(existance_check=True).exists():
+        reports_temp=ReportTemp.objects.all()
+        for obj in reports_temp:
+            obj.delete()
+    if request.user in users:
+        return redirect ('sale_interface')
+    else:
+        return redirect("log")
+
+def close_remainder_report(request):
+    users = Group.objects.get(name='sales').user_set.all()
     if request.user in users:
         return redirect ('sale_interface')
     else:
@@ -412,56 +420,53 @@ def delivery_report(request):
 #=======================================================
 def remainder_report(request):
     if request.user.is_authenticated:
+        users=Group.objects.get(name="sales").user_set.all()
+        group=Group.objects.get(name="admin").user_set.all()
         categories = ProductCategory.objects.all()
-        products=Product.objects.all()
         shops = Shop.objects.all()
         if request.method == "POST":
-            if Group.objects.filter(name='admin').exists():
-                group= Group.objects.get(name='admin').user_set.all()
-                if request.user in group:
-                    shop=request.POST["shop"]
-                    shop=Shop.objects.get(id=shop)
-                    date = request.POST["date"]
-                    if date:
-                        date=datetime.datetime.strptime(date, "%Y-%m-%d")
-                    else:
-                        date=datetime.date.today()
-                    #date is given as 2022-01-28 00:00:00 (start of the day). To make it the end of the day
-                    #we add 1 day to 2022-01-28 00:00:00. By doing so we include all the documents issued during the current date
-                    # tdelta=datetime.timedelta(seconds=86399)
-                    tdelta_1=datetime.timedelta(days=1)
-                    date= (date+tdelta_1)
-                else:
-                    session_shop=request.session['session_shop']
-                    #session_shop=request.session.get['session_shop']
-                    shop=Shop.objects.get(id=session_shop)
-                    date=datetime.date.today()
-                    tdelta_1=datetime.timedelta(days=1)
-                    date= (date+tdelta_1)
-                    
             category = request.POST["category"]
             category=ProductCategory.objects.get(id=category)
-           
-            array=[]
-            if RemainderHistory.objects.filter(shop=shop, category=category, current_remainder__gt=0, created__lte=date):
-                queryset_list=RemainderHistory.objects.filter(shop=shop, category=category, current_remainder__gt=0, created__lte=date)
+            if request.user in group:
+                shop=request.POST["shop"]
+                shop=Shop.objects.get(id=shop)
+                date=request.POST.get('date', False)
+                if date:
+                    # converting HTML date format (2021-07-08) to django format (2021-07-10 01:05:00)
+                    date = datetime.datetime.strptime(date, "%Y-%m-%d")
+                else:
+                    date = datetime.date.today()
+                #date is given as 2022-01-28 00:00:00 (start of the day). To make it the end of the day
+                #we add 1 day to 2022-01-28 00:00:00. By doing so we include all the documents issued during the current date
+                # tdelta=datetime.timedelta(seconds=86399)
+                tdelta_1=datetime.timedelta(days=1)
+                date= (date+tdelta_1)
             else:
-                messages.error(request,"Данная категория отсутствует на данном складе.",)
-                return redirect('remainder_report')
-            for product in products:
-                if queryset_list.filter(imei=product.imei, shop=shop).exists():
-                    queryset=queryset_list.filter(imei=product.imei, shop=shop)
-                    rho = queryset.latest("created")
-                    array.append(rho)
-                    context = {
-                        'date': date,
-                        'shop': shop,
-                        'array': array,
-                        "shops": shops,
-                        "categories": categories,
-                        "category": category
-                    }
-                    return render(request, "reports/remainder_report.html", context)
+                session_shop=request.session['session_shop']
+                #session_shop=request.session.get['session_shop']
+                shop=Shop.objects.get(id=session_shop)
+                date=datetime.date.today()
+                tdelta_1=datetime.timedelta(days=1)
+                date= (date+tdelta_1)
+                    
+            array=[]
+            #products=Product.objects.filter(category=category)
+            remainders=RemainderCurrent.objects.filter(category=category, shop=shop)
+            for remainder in remainders:
+                imei=remainder.imei
+                if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+                    rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
+                    if rho.current_remainder > 0:
+                        array.append(rho)
+            context = {
+                'date': date,
+                'shop': shop,
+                'array': array,
+                "shops": shops,
+                "categories": categories,
+                "category": category
+            }
+            return render(request, "reports/remainder_report.html", context)
         
         else:
             context = {
@@ -496,7 +501,7 @@ def remainder_list (request, shop_id, category_id):
     }
     return render (request, 'reports/remainder_report_output.html', context)
 
-def update_retail_price (request, imei, shop, category):
+def update_retail_price (request, imei, shop, category_id):
     shop=Shop.objects.get(id=shop)
     category=ProductCategory.objects.get(id=category)
     if request.method == "POST":

@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     path ('', views.reports, name='reports'),
     path ('close_report', views.close_report, name='close_report'),
+    path ('close_remainder_report', views.close_remainder_report, name='close_remainder_report'),
     #path ('close_report_dynamic/<int:report_id>', views.close_report_dynamic, name='close_report_dynamic'),
     path ('save_in_excel', views.save_in_excel, name='save_in_excel'),
     path ('sale_report', views.sale_report, name='sale_report'),
