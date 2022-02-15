@@ -112,7 +112,7 @@ urlpatterns = [
     path ('revaluation/<int:identifier_id>', views.revaluation, name='revaluation'),
     path ('revaluation_input/<int:identifier_id>', views.revaluation_input, name='revaluation_input'),
     path ('delete_line_revaluation/<int:imei>/<int:identifier_id>/<shop_id>', views.delete_line_revaluation, name='delete_line_revaluation'),
-
+    #======================================================================================
     path ('open_document/<int:document_id>', views.open_document, name='open_document'),
     path ('close_without_save/<int:identifier_id>', views.close_without_save, name='close_without_save'),
     # ==================================================================================

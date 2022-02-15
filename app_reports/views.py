@@ -9,7 +9,7 @@ from app_product.models import (
     RemainderHistory,
     RemainderCurrent,
     #Sale,
-    Transfer,
+    #Transfer,
     #Delivery,
     Document,
 )

@@ -118,28 +118,28 @@ class CashOff(models.Model):
         return self.id
 
 
-class Transfer(models.Model):
-    created = models.DateTimeField(default=timezone.now, null=True)
-    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
-    name = models.CharField(max_length=250)
-    shop_sender = models.ForeignKey(
-        Shop, related_name="sender_shop", on_delete=models.DO_NOTHING
-    )
-    shop_receiver = models.ForeignKey(
-        Shop, related_name="receiver_shop", on_delete=models.DO_NOTHING
-    )
-    imei = models.CharField(max_length=250)
-    price = models.IntegerField(default=0)  # counter
-    quantity = models.IntegerField(default=0)
-    sub_total = models.IntegerField(default=0)
+# class Transfer(models.Model):
+#     created = models.DateTimeField(default=timezone.now, null=True)
+#     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
+#     name = models.CharField(max_length=250)
+#     shop_sender = models.ForeignKey(
+#         Shop, related_name="sender_shop", on_delete=models.DO_NOTHING
+#     )
+#     shop_receiver = models.ForeignKey(
+#         Shop, related_name="receiver_shop", on_delete=models.DO_NOTHING
+#     )
+#     imei = models.CharField(max_length=250)
+#     price = models.IntegerField(default=0)  # counter
+#     quantity = models.IntegerField(default=0)
+#     sub_total = models.IntegerField(default=0)
 
-    class Meta:
-        # ordering = ('created',)  # sorting by date
-        verbose_name = "transfer"
-        verbose_name_plural = "transfers"
+#     class Meta:
+#         # ordering = ('created',)  # sorting by date
+#         verbose_name = "transfer"
+#         verbose_name_plural = "transfers"
 
-    def __int__(self):
-        return self.id
+#     def __int__(self):
+#         return self.id
 
 
 class RemainderHistory(models.Model):

@@ -10,7 +10,7 @@ from .models import (
     #Recognition,
     #SignOff,
     #Sale,
-    Transfer,
+    #Transfer,
     #Returning,
     Revaluation,
     RemainderHistory,
@@ -4089,7 +4089,6 @@ def change_signing_off_unposted (request, document_id):
         auth.logout(request)
         return redirect("login")
 
-
 def unpost_signing_off (request, document_id):
     document = Document.objects.get(id=document_id)
     shop=document.shop_sender
@@ -4141,7 +4140,6 @@ def unpost_signing_off (request, document_id):
     document.posted = False
     document.save()
     return redirect("log")
-
 # ================================================================================================
 def identifier_return(request):
     if request.user.is_authenticated:
@@ -4762,7 +4760,6 @@ def identifier_revaluation(request):
 
 def check_revaluation(request, identifier_id):
     # shops = Shop.objects.all()
-    categories = ProductCategory.objects.all()
     identifier = Identifier.objects.get(id=identifier_id)
     #registers = Register.objects.filter(identifier=identifier)
     # if 'imei' in request.GET:
@@ -4784,7 +4781,7 @@ def check_revaluation(request, identifier_id):
                 return redirect("revaluation", identifier.id)
             else:
                 register = Register.objects.create(
-                    shop=shop, 
+                    #shop=shop, 
                     identifier=identifier, 
                     product=product,
                     current_price=retail_price
@@ -4793,9 +4790,6 @@ def check_revaluation(request, identifier_id):
         else:
             messages.error(request,"Данное наименование отсутствует на данном складе. Вы не можете переоценить его.",)
             return redirect("revaluation", identifier.id)
-
-def check_revaluating_posted (request, document_id):
-    pass
 
 def check_revaluating_unposted (request, document_id):
     pass
@@ -4823,9 +4817,6 @@ def delete_line_revaluation(request, imei, identifier_id, shop_id):
     return redirect("revaluation", identifier.id)
 
 def delete_line_revaluation_unposted (request, imei, document_id):
-    pass
-
-def delete_line_revaluation_posted (request, imei, document_id):
     pass
 
 def clear_revaluation(request, identifier_id):
@@ -5443,369 +5434,267 @@ def unpost_cash_off_expenses (request, document_id):
 
 #===============================================================================================
 def cash_receipt(request):
-    vouchers = Voucher.objects.all()
-    contributors=Contributor.objects.all()
-    shops = Shop.objects.all()
-    users=Group.objects.get(name='sales').user_set.all()
-    if request.method == "POST":
-        doc_type = DocumentType.objects.get(name="ПКО")
-        shop = request.POST["shop"]
-        shop = Shop.objects.get(id=shop)
-        dateTime = request.POST["dateTime"]
-        voucher = request.POST["voucher"]
-        voucher = Voucher.objects.get(id=voucher)
-        contributor = request.POST["contributor"]
-        contributor = Contributor.objects.get(id=contributor)
-        sum = request.POST["sum"]
-        sum = int(sum)
-        if dateTime:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-        else:
-            dateTime = datetime.now()
-        try:
-            if request.POST["post_check"]:
-                post_check = True
-        except KeyError:
-            post_check = False
-            # posting transfer document
-        if post_check == True:
-            if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
-                chos = Cash.objects.filter(shop=shop, created__lt=dateTime)
-                cho_before = chos.latest("created")  # cash history object
-                cash_remainder = CashRemainder.objects.get(shop=shop)
-                cash_remainder.remainder = cho_before.current_remainder
-                cash_remainder.save()
+    group=Group.objects.get(name="admin").user_set.all()
+    if request.user in group:   
+        vouchers = Voucher.objects.all()
+        contributors=Contributor.objects.all()
+        shops = Shop.objects.all()
+        users=Group.objects.get(name='sales').user_set.all()
+        if request.method == "POST":
+            doc_type = DocumentType.objects.get(name="ПКО")
+            shop = request.POST["shop"]
+            shop = Shop.objects.get(id=shop)
+            voucher = request.POST["voucher"]
+            voucher = Voucher.objects.get(id=voucher)
+            contributor = request.POST["contributor"]
+            contributor = Contributor.objects.get(id=contributor)
+            sum = request.POST["sum"]
+            sum = int(sum)
+            dateTime=request.POST.get('dateTime', False)
+            if dateTime:
+                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
             else:
-                if CashRemainder.objects.filter(shop=shop).exists():
+                dateTime = datetime.datetime.now()
+            try:
+                if request.POST["post_check"]:
+                    post_check = True
+            except KeyError:
+                post_check = False
+            # posting cash receipt document
+            if post_check == True:
+                if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
+                    cho_latest_before = Cash.objects.filter(shop=shop, created__lt=dateTime).latest('created')
                     cash_remainder = CashRemainder.objects.get(shop=shop)
-                    cash_remainder.remainder = 0
+                    cash_remainder.remainder = cho_latest_before.current_remainder
                     cash_remainder.save()
                 else:
-                    cash_remainder = CashRemainder.objects.create(shop=shop, remainder=0)
-            document = Document.objects.create(
-                title=doc_type, 
-                user=request.user, 
-                created=dateTime,
-                posted=True
-            )
-            cash = Cash.objects.create(
-                shop=shop,
-                created=dateTime,
-                document=document,
-                cho_type=doc_type,
-                user=request.user,
-                cash_contributor=contributor,
-                cash_in_reason=voucher,
-                pre_remainder=cash_remainder.remainder,
-                cash_in=sum,
-                current_remainder=cash_remainder.remainder + sum,
-            )
-            cash_remainder.remainder = cash.current_remainder
-            cash_remainder.save()
-            if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
-                sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created)
-                sequence_chos_after = sequence_chos_after.all().order_by("created")
-                for obj in sequence_chos_after:
-                    obj.pre_remainder = cash_remainder.remainder
-                    obj.current_remainder = cash_remainder.remainder + obj.cash_in - obj.cash_out
-                    obj.save()
-                    cash_remainder.remainder = obj.current_remainder
-                    cash_remainder.save()
-            # end of operations with cash
-            document.sum = sum
-            document.save()
-            if request.user in users:
-                return redirect ('sale_interface')
+                    if CashRemainder.objects.filter(shop=shop).exists():
+                        cash_remainder = CashRemainder.objects.get(shop=shop)
+                        cash_remainder.remainder = 0
+                        cash_remainder.save()
+                    else:
+                        cash_remainder = CashRemainder.objects.create(shop=shop, remainder=0)
+                document = Document.objects.create(
+                    title=doc_type, 
+                    shop_receiver=shop,
+                    user=request.user, 
+                    created=dateTime,
+                    posted=True
+                )
+                cash = Cash.objects.create(
+                    shop=shop,
+                    created=dateTime,
+                    document=document,
+                    cho_type=doc_type,
+                    user=request.user,
+                    cash_contributor=contributor,
+                    cash_in_reason=voucher,
+                    pre_remainder=cash_remainder.remainder,
+                    cash_in=sum,
+                    current_remainder=cash_remainder.remainder + sum,
+                )
+                cash_remainder.remainder = cash.current_remainder
+                cash_remainder.save()
+                if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
+                    sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created)
+                    sequence_chos_after = sequence_chos_after.all().order_by("created")
+                    for obj in sequence_chos_after:
+                        obj.pre_remainder = cash_remainder.remainder
+                        obj.current_remainder = cash_remainder.remainder + obj.cash_in - obj.cash_out
+                        obj.save()
+                        cash_remainder.remainder = obj.current_remainder
+                        cash_remainder.save()
+                # end of operations with cash
+                document.sum = sum
+                document.save()
+                if request.user in users:
+                    return redirect ('sale_interface')
+                else:
+                    return redirect("log")
             else:
-                return redirect("log")
-        else:
-            document = Document.objects.create(
-                title=doc_type, 
-                user=request.user, 
-                created=dateTime, 
-                posted=False
-            )
-            register = Register.objects.create(
-                shop_receiver=shop,
-                document=document,
-                sub_total=sum,
-                voucher=voucher,
-                contributor=contributor
-            )
-            document.sum=sum
-            document.save()
-            if request.user in users:
-                return redirect ('sale_interface')
-            else:
-                return redirect("log")
+                document = Document.objects.create(
+                    shop_receiver=shop,
+                    title=doc_type, 
+                    user=request.user, 
+                    created=dateTime, 
+                    posted=False
+                )
+                register = Register.objects.create(
+                    document=document,
+                    sub_total=sum,
+                    voucher=voucher,
+                    contributor=contributor
+                )
+                document.sum=sum
+                document.save()
+                if request.user in users:
+                    return redirect ('sale_interface')
+                else:
+                    return redirect("log")
 
-    context = {
-        "vouchers": vouchers,
-        "contributors": contributors,
-        "shops": shops,
-    }
-    return render(request, "documents/cash_receipt.html", context)
+        context = {
+            "vouchers": vouchers,
+            "contributors": contributors,
+            "shops": shops,
+        }
+        return render(request, "documents/cash_receipt.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
 
 def change_cash_receipt_posted(request, document_id):
     document = Document.objects.get(id=document_id)
-    contributors = Contributor.objects.all()
-    vouchers = Voucher.objects.all()
-    users = User.objects.all()
-    shops = Shop.objects.all()
+    dateTime=document.created
+    dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
     cho = Cash.objects.get(document=document)
-    if request.method == "POST":
-        dateTime = request.POST["dateTime"]
-        shop = request.POST["shop"]
-        shop = Shop.objects.get(id=shop)
-        voucher = request.POST["voucher"]
-        voucher = Voucher.objects.get(id=voucher)
-        contributor = request.POST["contributor"]
-        contributor = Contributor.objects.get(id=contributor)
-        sum = request.POST["sum"]
-        sum = int(sum)
-        if dateTime:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-        else:
-            dateTime = datetime.now()
-        # =========================Deleting existing CHO============================
-        if Cash.objects.filter(shop=cho.shop, created__lt=cho.created).exists():
-            chos_before = Cash.objects.filter(shop=cho.shop, created__lt=cho.created)
-            cho_latest_before = chos_before.latest("created")
-            if CashRemainder.objects.filter(shop=cho.shop).exists():
-                cash_remainder = CashRemainder.objects.get(shop=cho.shop)
-                cash_remainder.remainder = cho_latest_before.current_remainder
-                cash_remainder.save()
-            else:
-                cash_remainder = CashRemainder.objects.create(
-                    shop=cho.shop, 
-                    remainder=0
-                )
-        else:
-            if CashRemainder.objects.filter(shop=cho.shop).exists():
-                cash_remainder = CashRemainder.objects.get(shop=cho.shop)
-                cash_remainder.remainder = 0
-                cash_remainder.save()
-            else:
-                cash_remainder = CashRemainder.objects.create(
-                    shop=cho.shop, remainder=0
-                )
-        if Cash.objects.filter(shop=cho.shop, created__gt=cho.created).exists():
-            chos_after = Cash.objects.filter(
-                shop=cho.shop, created__gt=cho.created
-            ).order_by("created")
-            for obj in chos_after:
-                obj.pre_remainder = cash_remainder.remainder
-                obj.current_remainder = (
-                    cash_remainder.remainder + obj.cash_in - obj.cash_out
-                )
-                obj.save()
-                cash_remainder.remainder = obj.current_remainder
-                cash_remainder.save()
-
-        # ====================New CHO=========================
-        if Cash.objects.filter(shop=shop, created__lt=dateTime).exclude(document=document).exists():
-            chos_before = Cash.objects.filter(shop=shop, created__lt=dateTime).exclude(document=document)
-            cho_latest_before = chos_before.latest("created")
-            if CashRemainder.objects.filter(shop=shop).exists():
-                cash_remainder = CashRemainder.objects.get(shop=shop)
-                cash_remainder.remainder = cho_latest_before.current_remainder
-                cash_remainder.save()
-            else:
-                cash_remainder = CashRemainder.objects.create(shop=shop, remainder=0)
-        else:
-            if CashRemainder.objects.filter(shop=shop).exists():
-                cash_remainder = CashRemainder.objects.get(shop=shop)
-                cash_remainder.remainder = 0
-                cash_remainder.save()
-            else:
-                cash_remainder = CashRemainder.objects.create(
-                    shop=shop, 
-                    remainder=0
-                )
-        new_cho = Cash.objects.create(
-            shop=shop,
-            created=dateTime,
-            document=document,
-            user=request.user,
-            cash_in_reason=voucher,
-            cash_contributor=contributor,
-            pre_remainder=cash_remainder.remainder,
-            cash_in=sum,
-            current_remainder=cash_remainder.remainder + sum,
-        )
-        cash_remainder.remainder = new_cho.current_remainder
-        cash_remainder.save()
-        if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
-            sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=dateTime)
-            sequence_chos_after = sequence_chos_after.all().order_by("created")
-            for obj in sequence_chos_after:
-                obj.pre_remainder = cash_remainder.remainder
-                obj.current_remainder = (
-                    cash_remainder.remainder + obj.cash_in - obj.cash_out
-                )
-                obj.save()
-                cash_remainder.remainder = obj.current_remainder
-                cash_remainder.save()
-            # end of operations with cash
-        cho.delete()
-        document.sum = sum
-        document.creted = dateTime
-        document.save()
-        return redirect("log")
-
     context = {
         "document": document,
         "cho": cho,
-        "shops": shops,
-        "contributors": contributors,
-        "vouchers": vouchers,
-        "users": users,
+        'dateTime': dateTime
     }
     return render(request, "documents/change_cash_receipt_posted.html", context)
 
 def change_cash_receipt_unposted (request, document_id):
-    document = Document.objects.get(id=document_id)
-    vouchers = Voucher.objects.all()
-    contributors=Contributor.objects.all()
-    users = Group.objects.get(name='sales').user_set.all()
-    shops = Shop.objects.all()
-    register = Register.objects.get(document=document)
-    if request.method == "POST":
-        doc_type = DocumentType.objects.get(name="ПКО")
-        shop = request.POST["shop"]
-        shop = Shop.objects.get(id=shop)
-        dateTime = request.POST["dateTime"]
-        voucher = request.POST["voucher"]
-        voucher = Voucher.objects.get(id=voucher)
-        contributor = request.POST["contributor"]
-        contributor = Contributor.objects.get(id=contributor)
-        sum = request.POST["sum"]
-        sum = int(sum)
-        if dateTime:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-        else:
-            dateTime = datetime.now()
-        try:
-            if request.POST["post_check"]:
-                post_check = True
-        except KeyError:
-            post_check = False
-            # posting transfer document
-        if post_check == True:
-            if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
-                chos = Cash.objects.filter(shop=shop, created__lt=dateTime)
-                cho_before = chos.latest("created")  # cash history object
-                cash_remainder = CashRemainder.objects.get(shop=shop)
-                cash_remainder.remainder = cho_before.current_remainder
-                cash_remainder.save()
+    group=Group.objects.get(name="admin").user_set.all()
+    if request.user in group: 
+        document = Document.objects.get(id=document_id)
+        dateTime=document.created
+        dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
+        vouchers = Voucher.objects.all()
+        contributors=Contributor.objects.all()
+        shops = Shop.objects.all()
+        register = Register.objects.get(document=document)
+        if request.method == "POST":
+            doc_type = DocumentType.objects.get(name="ПКО")
+            shop = request.POST["shop"]
+            shop = Shop.objects.get(id=shop)
+            dateTime = request.POST["dateTime"]
+            voucher = request.POST["voucher"]
+            voucher = Voucher.objects.get(id=voucher)
+            contributor = request.POST["contributor"]
+            contributor = Contributor.objects.get(id=contributor)
+            sum = request.POST["sum"]
+            sum = int(sum)
+            if dateTime:
+                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
             else:
-                if CashRemainder.objects.filter(shop=shop).exists():
+                dateTime = datetime.datetime.now()
+            try:
+                if request.POST["post_check"]:
+                    post_check = True
+            except KeyError:
+                post_check = False
+                # posting transfer document
+            if post_check == True:
+                if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
+                    cho_latest_before = Cash.objects.filter(shop=shop, created__lt=dateTime).latest('created')
                     cash_remainder = CashRemainder.objects.get(shop=shop)
-                    cash_remainder.remainder = 0
+                    cash_remainder.remainder = cho_latest_before.current_remainder
                     cash_remainder.save()
                 else:
-                    cash_remainder = CashRemainder.objects.create(shop=shop, remainder=0)
+                    if CashRemainder.objects.filter(shop=shop).exists():
+                        cash_remainder = CashRemainder.objects.get(shop=shop)
+                        cash_remainder.remainder = 0
+                        cash_remainder.save()
+                    else:
+                        cash_remainder = CashRemainder.objects.create(shop=shop, remainder=0)
 
-            cash = Cash.objects.create(
-                shop=shop,
-                created=dateTime,
-                document=document,
-                cho_type=doc_type,
-                user=request.user,
-                cash_contributor=contributor,
-                cash_in_reason=voucher,
-                pre_remainder=cash_remainder.remainder,
-                cash_in=sum,
-                current_remainder=cash_remainder.remainder + sum,
-            )
-            cash_remainder.remainder = cash.current_remainder
-            cash_remainder.save()
-            if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
-                sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created)
-                sequence_chos_after = sequence_chos_after.all().order_by("created")
-                for obj in sequence_chos_after:
-                    obj.pre_remainder = cash_remainder.remainder
-                    obj.current_remainder = cash_remainder.remainder + obj.cash_in - obj.cash_out
-                    obj.save()
-                    cash_remainder.remainder = obj.current_remainder
-                    cash_remainder.save()
-            # end of operations with cash
-            document.sum = sum
-            document.posted=True
-            document.save()
-            register.delete()
-            if request.user in users:
-                return redirect ('sale_interface')
+                cash = Cash.objects.create(
+                    shop=shop,
+                    created=dateTime,
+                    document=document,
+                    cho_type=doc_type,
+                    user=request.user,
+                    cash_contributor=contributor,
+                    cash_in_reason=voucher,
+                    pre_remainder=cash_remainder.remainder,
+                    cash_in=sum,
+                    current_remainder=cash_remainder.remainder + sum,
+                )
+                cash_remainder.remainder = cash.current_remainder
+                cash_remainder.save()
+                if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
+                    sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created)
+                    sequence_chos_after = sequence_chos_after.all().order_by("created")
+                    for obj in sequence_chos_after:
+                        obj.pre_remainder = cash_remainder.remainder
+                        obj.current_remainder = cash_remainder.remainder + obj.cash_in - obj.cash_out
+                        obj.save()
+                        cash_remainder.remainder = obj.current_remainder
+                        cash_remainder.save()
+                # end of operations with cash
+                document.sum = sum
+                document.created=dateTime
+                document.shop_receiver=shop
+                document.posted=True
+                document.save()
+                register.delete()
+                return redirect("log")
             else:
+                register.sub_total=sum
+                register.voucher=voucher
+                register.contributor=contributor
+                register.save()
+                document.sum = sum
+                document.created=dateTime
+                document.shop_receiver=shop
+                document.save()
                 return redirect("log")
         else:
-            register.shop_receiver=shop
-            register.sub_total=sum
-            register.voucher=voucher
-            register.contributor=contributor
-            register.save()
-            document.sum=sum
-            document.save()
-            if request.user in users:
-                return redirect ('sale_interface')
-            else:
-                return redirect("log")
+            context = {
+                "document": document,
+                "register": register,
+                "shops": shops,
+                "vouchers": vouchers,
+                "contributors": contributors,
+                'dateTime': dateTime,
+            }
+            return render(request, "documents/change_cash_receipt_unposted.html", context)
     else:
-        context = {
-            "document": document,
-            "register": register,
-            "shops": shops,
-            "vouchers": vouchers,
-            "contributors": contributors
-        }
-        return render(request, "documents/change_cash_receipt_unposted.html", context)
+        auth.logout(request)
+        return redirect("login")
 
 def unpost_cash_receipt (request, document_id):
-    users=Group.objects.get(name="sales").user_set.all()
-    document=Document.objects.get(id=document_id)
-    vouchers = Voucher.objects.all()
-    contributors=Contributor.objects.all()
-    shops = Shop.objects.all()
-    cho = Cash.objects.get(document=document)
-    register=Register.objects.create(
-        shop_receiver=cho.shop,
-        document=document,
-        sub_total=document.sum,
-        voucher=cho.cash_in_reason,
-        contributor=cho.cash_contributor
-    )
-    if Cash.objects.filter(shop=cho.shop, created__lt=cho.created).exists():
-        chos = Cash.objects.filter(shop=cho.shop, created__lt=cho.created)
-        cho_before = chos.latest("created")  # cash history object
-        cash_remainder = CashRemainder.objects.get(shop=cho.shop)
-        cash_remainder.remainder = cho_before.current_remainder
-        cash_remainder.save()
-    else:
-        if CashRemainder.objects.filter(shop=cho.shop).exists():
+    group=Group.objects.get(name="admin").user_set.all()
+    if request.user in group: 
+        document=Document.objects.get(id=document_id)
+        cho = Cash.objects.get(document=document)
+        if Cash.objects.filter(shop=cho.shop, created__lt=cho.created).exists():
+            cho_latest_before = Cash.objects.filter(shop=cho.shop, created__lt=cho.created).latest('created')
             cash_remainder = CashRemainder.objects.get(shop=cho.shop)
-            cash_remainder.remainder = 0
+            cash_remainder.remainder = cho_latest_before.current_remainder
             cash_remainder.save()
         else:
-            cash_remainder = CashRemainder.objects.create(shop=cho.shop, remainder=0)
-    if Cash.objects.filter(shop=cho.shop, created__gt=cho.created).exists():
-        sequence_chos_after = Cash.objects.filter(shop=cho.shop, created__gt=cho.created)
-        sequence_chos_after = sequence_chos_after.all().order_by("created")
-        for obj in sequence_chos_after:
-            obj.pre_remainder = cash_remainder.remainder
-            obj.current_remainder = cash_remainder.remainder + obj.cash_in - obj.cash_out
-            obj.save()
-            cash_remainder.remainder = obj.current_remainder
-            cash_remainder.save()
-    cho.delete()
-    document.posted=False
-    document.save()
-    if request.user in users:
-        return redirect("sale_interface")
-    else:
+            if CashRemainder.objects.filter(shop=cho.shop).exists():
+                cash_remainder = CashRemainder.objects.get(shop=cho.shop)
+                cash_remainder.remainder = 0
+                cash_remainder.save()
+            else:
+                cash_remainder = CashRemainder.objects.create(shop=cho.shop, remainder=0)
+        if Cash.objects.filter(shop=cho.shop, created__gt=cho.created).exists():
+            sequence_chos_after = Cash.objects.filter(shop=cho.shop, created__gt=cho.created)
+            sequence_chos_after = sequence_chos_after.all().order_by("created")
+            for obj in sequence_chos_after:
+                obj.pre_remainder = cash_remainder.remainder
+                obj.current_remainder = cash_remainder.remainder + obj.cash_in - obj.cash_out
+                obj.save()
+                cash_remainder.remainder = obj.current_remainder
+                cash_remainder.save()
+        register=Register.objects.create(
+            document=document,
+            sub_total=document.sum,
+            voucher=cho.cash_in_reason,
+            contributor=cho.cash_contributor
+        )
+        cho.delete()
+        document.posted=False
+        document.save()
         return redirect ('log')
+    else:
+        auth.logout(request)
+        return redirect("login")
     
 #==========================================================================================================
 

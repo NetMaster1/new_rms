@@ -32,8 +32,7 @@
                     <form action="{% url 'change_cash_receipt_unposted' document.id %}" method="POST">
                         {% csrf_token %}
 
-                        {% for group in request.user.groups.all %}
-                        {% if group.name == 'admin' %}
+                   
                         <div class="form-row m-2">
                             <div class="col-3">
                                 <label for="date">
@@ -42,11 +41,10 @@
                             </div>
                             <div class="col">
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
-                                    value='today'>
+                                    value='{{dateTime}}'>
                             </div>
                         </div>
-                        {% endif %}
-                        {% endfor %}
+                     
 
 
                         <div class="form-row m-2">
@@ -59,7 +57,7 @@
                                 <select name="shop" id="shop" class='form-control' required>
                                     <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
                                     <!-- <option value="">Выберите торговую точку</option> -->
-                                    <option selected="true" value="{{register.shop_receiver.id}}">{{register.shop_receiver.name}}</option>
+                                    <option selected="true" value="{{document.shop_receiver.id}}">{{document.shop_receiver.name}}</option>
                                     {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
