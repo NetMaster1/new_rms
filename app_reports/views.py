@@ -4,14 +4,12 @@ from django.db.models import query
 from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product
 from app_cash.models import Cash, Credit, Card
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages, auth
 from django.contrib.auth.models import User, Group
 from app_product.models import (
     Product,
     RemainderHistory,
     RemainderCurrent,
-    #Sale,
-    #Transfer,
-    #Delivery,
     Document,
 )
 from .models import ReportTemp, ReportTempId, DailySaleRep, MonthlyBonus, SaleReport
@@ -24,7 +22,6 @@ from datetime import datetime, date
 from openpyxl.workbook import Workbook
 from django.http import HttpResponse, JsonResponse
 import datetime
-
 
 # Create your views here.
 
@@ -448,7 +445,7 @@ def remainder_report(request):
                 date=datetime.date.today()
                 tdelta_1=datetime.timedelta(days=1)
                 date= (date+tdelta_1)
-                    
+
             array=[]
             #products=Product.objects.filter(category=category)
             remainders=RemainderCurrent.objects.filter(category=category, shop=shop)
@@ -462,12 +459,14 @@ def remainder_report(request):
                 'date': date,
                 'shop': shop,
                 'array': array,
-                "shops": shops,
-                "categories": categories,
-                "category": category
+                "category": category,
+                'categories': categories,
+                'shops': shops
             }
-            return render(request, "reports/remainder_report.html", context)
-        
+
+
+            return redirect ('remainder_report_output', shop.id, category.id)   
+            #return render (request, 'reports/remainder_report.html', context)   
         else:
             context = {
                 "shops": shops,
@@ -475,7 +474,88 @@ def remainder_report(request):
             }
             return render(request, "reports/remainder_report.html", context)
     else:
-        return redirect ('login')
+        auth.logout(request)
+        return redirect("login")
+
+
+def remainder_report_output(request, shop_id, category_id):
+    if request.user.is_authenticated:
+        date=datetime.date.today()
+        tdelta_1=datetime.timedelta(days=1)
+        date= (date+tdelta_1)
+        shop=Shop.objects.get(id=shop_id)
+        category=ProductCategory.objects.get(id=category_id)
+        array=[]
+        #products=Product.objects.filter(category=category)
+        remainders=RemainderCurrent.objects.filter(category=category, shop=shop)
+        for remainder in remainders:
+            imei=remainder.imei
+            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+                rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
+                if rho.current_remainder > 0:
+                    array.append(rho)
+        context = {
+            'date': date,
+            'shop': shop,
+            'array': array,
+            "category": category
+        }
+        return render(request, "reports/remainder_report_output.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+def update_retail_price (request):
+    group=Group.objects.get(name="admin").user_set.all()
+    doc_type = DocumentType.objects.get(name="Переоценка ТМЦ")
+    dateTime=datetime.datetime.now()
+    if request.user in group:
+        if request.method == "POST":
+            imei=request.POST['imei']
+            retail_price=request.POST['retail_price']
+            shop=request.POST['shop']
+            shop=Shop.objects.get(name=shop)
+
+            category=request.POST['category']
+            category=ProductCategory.objects.get(name=category)
+
+            product=Product.objects.get(imei=imei)
+            remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
+            remainder_current.retail_price=retail_price
+            remainder_current.save()
+            document=Document.objects.create(
+                created=dateTime,
+                title=doc_type,
+                user=request.user,
+                posted=True,
+            )
+        
+            rho_latest_before=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lt=dateTime).latest('created')
+            rho=RemainderHistory.objects.create (
+                document=document,
+                created=document.created,
+                rho_type=doc_type,
+                user=request.user,
+                shop=shop,
+                product_id=product,
+                category=product.category,
+                imei=imei,
+                name=product.name,
+                retail_price=retail_price,
+                pre_remainder=rho_latest_before.pre_remainder,
+                incoming_quantity=0,
+                outgoing_quantity=0,
+                current_remainder=rho_latest_before.current_remainder
+            )
+            #rho.sub_total=rho.current_remainder*rho.retail_price
+            #return redirect ('remainder_list', shop.id , category.id )
+            return redirect ('remainder_report_output', shop.id, category.id)
+        
+
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 
 def remainder_list (request, shop_id, category_id):
     shop=Shop.objects.get(id=shop_id)
@@ -500,24 +580,6 @@ def remainder_list (request, shop_id, category_id):
         'category': category
     }
     return render (request, 'reports/remainder_report_output.html', context)
-
-def update_retail_price (request, imei, shop, category_id):
-    shop=Shop.objects.get(id=shop)
-    category=ProductCategory.objects.get(id=category)
-    if request.method == "POST":
-        product=Product.objects.get(imei=imei)
-        #shop = request.POST["shop"]
-        #imei = request.POST["imei"]
-        #category = request.POST["category"]
-        #category=ProductCategory.objects.get(id=category)
-        #product.name=name
-        #product.category=category
-        #product.imei=imei
-        retail_price=request.POST['retail_price']
-        remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
-        remainder_current.retail_price=retail_price
-        remainder_current.save()
-        return redirect ('remainder_list', shop.id, category.id)
 
 #======================================================================
 
