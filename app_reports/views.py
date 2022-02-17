@@ -427,44 +427,42 @@ def remainder_report(request):
             if request.user in group:
                 shop=request.POST["shop"]
                 shop=Shop.objects.get(id=shop)
-                date=request.POST.get('date', False)
-                if date:
-                    # converting HTML date format (2021-07-08) to django format (2021-07-10 01:05:00)
-                    date = datetime.datetime.strptime(date, "%Y-%m-%d")
-                else:
-                    date = datetime.date.today()
-                #date is given as 2022-01-28 00:00:00 (start of the day). To make it the end of the day
-                #we add 1 day to 2022-01-28 00:00:00. By doing so we include all the documents issued during the current date
-                # tdelta=datetime.timedelta(seconds=86399)
-                tdelta_1=datetime.timedelta(days=1)
-                date= (date+tdelta_1)
-            else:
-                session_shop=request.session['session_shop']
-                #session_shop=request.session.get['session_shop']
-                shop=Shop.objects.get(id=session_shop)
-                date=datetime.date.today()
-                tdelta_1=datetime.timedelta(days=1)
-                date= (date+tdelta_1)
+            #     date=request.POST.get('date', False)
+            #     if date:
+            #         # converting HTML date format (2021-07-08) to django format (2021-07-10 01:05:00)
+            #         date = datetime.datetime.strptime(date, "%Y-%m-%d")
+            #     else:
+            #         date = datetime.date.today()
+            #     #date is given as 2022-01-28 00:00:00 (start of the day). To make it the end of the day
+            #     #we add 1 day to 2022-01-28 00:00:00. By doing so we include all the documents issued during the current date
+            #     # tdelta=datetime.timedelta(seconds=86399)
+            #     tdelta_1=datetime.timedelta(days=1)
+            #     date= (date+tdelta_1)
+            # else:
+            #     session_shop=request.session['session_shop']
+            #     #session_shop=request.session.get['session_shop']
+            #     shop=Shop.objects.get(id=session_shop)
+            #     date=datetime.date.today()
+            #     tdelta_1=datetime.timedelta(days=1)
+            #     date= (date+tdelta_1)
 
-            array=[]
-            #products=Product.objects.filter(category=category)
-            remainders=RemainderCurrent.objects.filter(category=category, shop=shop)
-            for remainder in remainders:
-                imei=remainder.imei
-                if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
-                    rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
-                    if rho.current_remainder > 0:
-                        array.append(rho)
-            context = {
-                'date': date,
-                'shop': shop,
-                'array': array,
-                "category": category,
-                'categories': categories,
-                'shops': shops
-            }
-
-
+            # array=[]
+            # #products=Product.objects.filter(category=category)
+            # products=Product.objects.filter(category=category)
+            # for product in products:
+            #     imei=product.imei
+            #     if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+            #         rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
+            #         if rho.current_remainder > 0:
+            #             array.append(rho)
+            # context = {
+            #     'date': date,
+            #     'shop': shop,
+            #     'array': array,
+            #     "category": category,
+            #     'categories': categories,
+            #     'shops': shops
+            # }
             return redirect ('remainder_report_output', shop.id, category.id)   
             #return render (request, 'reports/remainder_report.html', context)   
         else:
@@ -477,7 +475,6 @@ def remainder_report(request):
         auth.logout(request)
         return redirect("login")
 
-
 def remainder_report_output(request, shop_id, category_id):
     if request.user.is_authenticated:
         date=datetime.date.today()
@@ -487,9 +484,9 @@ def remainder_report_output(request, shop_id, category_id):
         category=ProductCategory.objects.get(id=category_id)
         array=[]
         #products=Product.objects.filter(category=category)
-        remainders=RemainderCurrent.objects.filter(category=category, shop=shop)
-        for remainder in remainders:
-            imei=remainder.imei
+        products=Product.objects.filter(category=category)
+        for product in products:
+            imei=product.imei
             if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
                 rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
                 if rho.current_remainder > 0:
@@ -520,16 +517,15 @@ def update_retail_price (request):
             category=ProductCategory.objects.get(name=category)
 
             product=Product.objects.get(imei=imei)
-            remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
-            remainder_current.retail_price=retail_price
-            remainder_current.save()
+            # remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
+            # remainder_current.retail_price=retail_price
+            # remainder_current.save()
             document=Document.objects.create(
                 created=dateTime,
                 title=doc_type,
                 user=request.user,
                 posted=True,
             )
-        
             rho_latest_before=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lt=dateTime).latest('created')
             rho=RemainderHistory.objects.create (
                 document=document,
@@ -550,8 +546,6 @@ def update_retail_price (request):
             #rho.sub_total=rho.current_remainder*rho.retail_price
             #return redirect ('remainder_list', shop.id , category.id )
             return redirect ('remainder_report_output', shop.id, category.id)
-        
-
     else:
         auth.logout(request)
         return redirect("login")
