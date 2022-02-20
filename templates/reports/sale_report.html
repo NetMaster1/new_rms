@@ -96,7 +96,9 @@
 <div class="log border rounded">
         <div class="row m-auto">
         <div class="col-3">Всего продано на сумму:</div>
+        <div class="col-2"></div>
         <div class="col-2">{{av_sum}} руб.</div>
+        <div class="col-2">{{sum}} руб.</div>
         <div class="col-2">{{sum}} руб.</div>
         </div>
         
@@ -106,6 +108,7 @@
         <div class="col-2"><h5>Количество</h5></div>
         <div class="col-2"><h5>Себестоимость</h5></div>
         <div class="col-2"><h5>Сумма продаж</h5></div>
+        <div class="col-2"><h5>Прибыль</h5></div>
     </div>
 
 
@@ -115,6 +118,7 @@
 <div class="col-2">{{item.quantity}}</div>
 <div class="col-2">{{item.av_sum}}</div>
 <div class="col-2">{{item.retail_sum}}</div>
+<div class="col-2">{{item.margin}}</div>
 
 </div>
 {%endfor%}

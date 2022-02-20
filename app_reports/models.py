@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from app_reference.models import ProductCategory, Supplier, Product
+from app_reference.models import ProductCategory, Supplier, Product, Shop
 
 # import datetime
 from datetime import datetime, date
@@ -46,17 +46,24 @@ class ReportTemp (models.Model):
         return self.id
 
 class DailySaleRep (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    created = models.CharField(max_length=50, null=True)
     shop = models.CharField(max_length=50, null=True)
+    #shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)
+    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
+    sum = models.IntegerField(default=0)
     opening_balance = models.IntegerField(null=True)
-    smarphones = models.IntegerField(null=True)
+    smartphones = models.IntegerField(null=True)
     accessories = models.IntegerField(null=True)
     sim_cards = models.IntegerField(null=True)
+    pay_cards = models.IntegerField(null=True)
     phones = models.IntegerField(null=True)
     iphone = models.IntegerField(null=True)
     insuranсе = models.IntegerField(null=True)
     wink = models.IntegerField(null=True)
     services = models.IntegerField(null=True)
-    sub_total = models.IntegerField(null=True)
+    net_sales = models.IntegerField(null=True)
+    #sub_total = models.IntegerField(null=True)
     credit = models.IntegerField(null=True)
     card = models.IntegerField(null=True)
     salary = models.IntegerField(null=True)
@@ -69,7 +76,7 @@ class DailySaleRep (models.Model):
         #return "{} - {} - {}".format(self.name, self.end_remainder)
         return self.id
 
-    # def sub_total(self):
+    #def sub_total(self):
     #     return self.price * self.quantity
 
 class MonthlyBonus (models.Model):
@@ -99,6 +106,7 @@ class SaleReport (models.Model):
     av_sum = models.IntegerField(default=0)
     quantity = models.IntegerField(default=0)
     retail_sum = models.IntegerField(default=0)
+    margin = models.IntegerField(default=0)
 
     def __int__(self):
         return self.id

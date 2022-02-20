@@ -8,9 +8,7 @@ from app_clients.models import Customer
 from datetime import datetime, date
 from django.utils import timezone
 
-
 # import pytz
-
 
 # Create your models here.
 class Identifier(models.Model):
@@ -68,7 +66,7 @@ class Register(models.Model):
     cash_receiver = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
     voucher = models.ForeignKey(Voucher, null=True, on_delete=models.DO_NOTHING)
     expense = models.ForeignKey(Expense, null=True, on_delete=models.DO_NOTHING)
-    sub_total = models.IntegerField(default=0)
+    sub_total = models.BigIntegerField(default=0)
     #cash_back_awarded = models.IntegerField(null=True, blank=True)
     # cash_back_paid = models.IntegerField(null=True, blank=True)
     # client_phone = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, null=True)
@@ -103,7 +101,6 @@ class Revaluation(models.Model):
     def __int__(self):
         return self.id
 
-
 class CashOff(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
     created = models.DateTimeField(default=timezone.now, null=True)
@@ -116,31 +113,6 @@ class CashOff(models.Model):
 
     def __int__(self):
         return self.id
-
-
-# class Transfer(models.Model):
-#     created = models.DateTimeField(default=timezone.now, null=True)
-#     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
-#     name = models.CharField(max_length=250)
-#     shop_sender = models.ForeignKey(
-#         Shop, related_name="sender_shop", on_delete=models.DO_NOTHING
-#     )
-#     shop_receiver = models.ForeignKey(
-#         Shop, related_name="receiver_shop", on_delete=models.DO_NOTHING
-#     )
-#     imei = models.CharField(max_length=250)
-#     price = models.IntegerField(default=0)  # counter
-#     quantity = models.IntegerField(default=0)
-#     sub_total = models.IntegerField(default=0)
-
-#     class Meta:
-#         # ordering = ('created',)  # sorting by date
-#         verbose_name = "transfer"
-#         verbose_name_plural = "transfers"
-
-#     def __int__(self):
-#         return self.id
-
 
 class RemainderHistory(models.Model):
     #temporary utility field for numbering rhos while displaying the at change_sale_posted html page
@@ -165,7 +137,7 @@ class RemainderHistory(models.Model):
     pre_remainder = models.IntegerField(default=0)
     incoming_quantity = models.IntegerField(null=True)
     outgoing_quantity = models.IntegerField(null=True)
-    current_remainder = models.IntegerField(default=0)
+    current_remainder = models.BigIntegerField(default=0)
     update_check = models.BooleanField(default=False)
     status = models.BooleanField(default=False)  # "False" for Transfer(send) "True" for Transfer(receive)
     cash_back_awarded = models.IntegerField(null=True, blank=True)

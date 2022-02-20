@@ -22,7 +22,7 @@ class Cash (models.Model):
     cash_receiver= models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, related_name='cash_receiver')
     cash_off_reason = models.ForeignKey(Expense, on_delete=models.DO_NOTHING, null=True)
     cash_in_reason = models.ForeignKey(Voucher, on_delete=models.DO_NOTHING, null=True)
-    sender = models.BooleanField(default=False)#True fo cho from shop_sender
+    sender = models.BooleanField(default=False)#True for cho from shop_sender
 
     def __int__(self):
         return self.id
@@ -37,7 +37,7 @@ class CashRemainder(models.Model):
    
 
 class Credit (models.Model):
-    created = models.DateField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
@@ -47,7 +47,7 @@ class Credit (models.Model):
         return self.id
 
 class Card (models.Model):
-    created = models.DateField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
