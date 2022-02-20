@@ -47,11 +47,11 @@ class ReportTemp (models.Model):
 
 class DailySaleRep (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
-    created = models.CharField(max_length=50, null=True)
     shop = models.CharField(max_length=50, null=True)
+    created = models.CharField(max_length=50, null=True)
     #shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)
-    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
-    sum = models.IntegerField(default=0)
+    #category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
+    #sum = models.IntegerField(default=0)
     opening_balance = models.IntegerField(null=True)
     smartphones = models.IntegerField(null=True)
     accessories = models.IntegerField(null=True)
@@ -107,6 +107,19 @@ class SaleReport (models.Model):
     quantity = models.IntegerField(default=0)
     retail_sum = models.IntegerField(default=0)
     margin = models.IntegerField(default=0)
+
+    def __int__(self):
+        return self.id
+
+class PayCardReport (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    shop = models.CharField(max_length=50, null=True)
+    created = models.CharField(max_length=50, null=True)
+    product = models.CharField(max_length=50, null=True)
+    pre_remainder = models.IntegerField(default=0)
+    incoming_quantity = models.IntegerField(default=0)
+    outgoing_quantity = models.IntegerField(default=0)
+    current_remainder = models.IntegerField(default=0)
 
     def __int__(self):
         return self.id

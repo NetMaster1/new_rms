@@ -13,7 +13,7 @@ from app_product.models import (
     RemainderCurrent,
     Document,
 )
-from .models import ReportTemp, ReportTempId, DailySaleRep, MonthlyBonus, SaleReport
+from .models import ReportTemp, ReportTempId, DailySaleRep, MonthlyBonus, SaleReport,PayCardReport
 from app_clients.models import Customer
 from .models import ProductHistory
 from django.contrib import messages
@@ -39,26 +39,10 @@ def save_in_excel_daily_rep(request):
         else:
             date = datetime.date.today()
         dateTime=date.strftime('%Y-%m-%d')
-        # tdelta=datetime.timedelta(days=1)
-        # previous_date=date-tdelta
-
-        shop_titles=[]#list for displaying shop names (columns)
-        for i in shops:
-            shop_titles.append(i.name)
-     #====================================================
-        titles=['Shop', 'opeining_balance']#list for displaying categories (rows)
-        for category in categories:
-            titles.append(category.name)
-        titles.append('sub_totals')
-        titles.append('final_balance')
-
+     
         report_id=ReportTempId.objects.create()
         for shop in shops:
-            #dict=[new_key]=new_value #adding new pair (key, value) to python dictionnary
-            shop_row=[]
-            shop_row.append(shop.name)
-            shop_row.append('opening_balance')
-
+            shop_row=[]#list for storing retail values for each category/shop for further placing in model
             for category in categories:
                 rhos=RemainderHistory.objects.filter(shop=shop, category=category, created__date=date, rho_type=doc_type)
                 sum=0
@@ -119,22 +103,20 @@ def save_in_excel_daily_rep(request):
             else:
                 prev_day_cash_remainder=0
             #================================================
-
-            
             daily_rep=DailySaleRep.objects.create(
                 report_id=report_id,
                 created=dateTime,
                 shop = shop.name,
                 opening_balance=prev_day_cash_remainder,
-                smartphones = shop_row[2],
-                accessories = shop_row[3],
-                sim_cards = shop_row[4],
-                phones = shop_row[5],
-                iphone = shop_row[6],
-                insuranсе = shop_row[7],
-                wink = shop_row[8],
-                services = shop_row[9],
-                pay_cards = shop_row[10],
+                smartphones = shop_row[0],
+                accessories = shop_row[1],
+                sim_cards = shop_row[2],
+                phones = shop_row[3],
+                iphone = shop_row[4],
+                insuranсе = shop_row[5],
+                wink = shop_row[6],
+                services = shop_row[7],
+                pay_cards = shop_row[8],
                 credit=credit_sum,
                 card=card_sum,
                 salary=salary_sum,
@@ -143,79 +125,106 @@ def save_in_excel_daily_rep(request):
                 cash_move=cash_move_sum,
             )
             daily_rep.net_sales = daily_rep.smartphones + daily_rep.accessories + daily_rep.sim_cards + daily_rep.phones + daily_rep.iphone + daily_rep.insuranсе + daily_rep.wink + daily_rep.services + daily_rep.pay_cards
-
             daily_rep.final_balance= daily_rep.opening_balance + daily_rep.net_sales - daily_rep.credit - daily_rep.salary - daily_rep.card - daily_rep.expenses - daily_rep.return_sum - daily_rep.cash_move
-
-            
-
             daily_rep.save()
 
-
-          
-        qs=DailySaleRep.objects.filter(report_id=report_id).exclude(shop='ООС').values()
+        qs=DailySaleRep.objects.filter(report_id=report_id).exclude(shop='ООС').order_by('shop').values()
         # n=qs.count()
-        # print(n)
         data=pd.DataFrame(qs)
         data=data.drop('report_id_id', 1)#deleting 'report_id' column
-        data=data.drop('category_id', 1)#deleting 'report_id' column
-        data=data.drop('sum', 1)#deleting 'report_id' column
+        #data=data.drop('row_name', 0)#deleting a row
        
-        # print(data)
-        #data=pd.read_csv('data.txt')
-        #data_1=data.read_csv('data.txt', header = None)
-        #data.columns =['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
-        
         data.set_index('id', inplace=True)
-        data.set_index('shop', inplace=True)
-        #data.set_index('shop', inplace=True, drop=False)
+        data.set_index('shop', inplace=True)#sets column as titles for rows & deletes from the body of df
+        #data.set_index('shop', inplace=True, drop=False)#set column as titles for rows & leaves it in the df
         print(data)
-        data_2=data.loc['Дзержинск': 'Городец', 'accessories': 'iphone']
-        # print(data_2)
-        data_3=data.loc['Правдинск', 'accessories']
-        # print(data_3)
-        data_4=data.loc[:,'accessories']
-        # print(data_4)
-        # print(list(data_4))
+
         data=data.T #transposing the dataframe
-        # print(data)
         #data=data_t.T #transposing backwards
-        #data=data_t
-        #print(data_t)
-        #data_t['totals']=[]
-
         data.to_excel('D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx')
-
         registers=DailySaleRep.objects.all()
         for register in registers:
-            register.delete()
-            
-        # response=HttpResponse(content_type='application/ms-excel')
-        # response['Content-Disposition'] = 'attachment; filename=Expenses' +  str(datetime.datetime.now())+'.xls'
-        # wb = xlwt.Workbook(encoding ='uft-8')
-        # ws=wb.add_sheet('Expenses')
-        # row_num = 0
-        # font_style=xlwt.XFStyle()
-        # font_style.font.bold=True
-
-        # columns = ['Amount', 'Description', 'Category', 'Date']
-        # for col_num in range(len(columns)):
-        #     ws.write(row_num, col_num, columns[col_num], font_style)
+            register.delete() 
         
-        # font_style = xlwt.XFStyle()
-
-        # rows = Expenses.objects.filter(owner=request.user).values_list('amount','description','category','date')
-
-        # for row in rows:
-        #     row_num+=1
-        #     for col_num in range(len(row)):
-        #         ws.write(row_num, col_num, row[col_num], font_style)
-
-        # wb.save(response)
         context = {
             'data': data.to_html(),
         }
         return render (request, 'reports/sample.html', context)
-        #return HttpResponse(title)
+
+def save_in_excel (request):
+    pass
+
+def daily_report (request):
+    
+    return render (request, 'reports/daily_sales.html')
+
+def daily_pay_card_rep (request):
+    shops=Shop.objects.all()
+    if request.method == "POST":
+        date=request.POST.get('date', False)
+        if date:
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        else:
+            date = datetime.date.today()
+        tdelta=datetime.timedelta(days=1)
+        next_date=date+tdelta
+        print(date)
+        print(next_date)
+        dateTime=date.strftime('%Y-%m-%d')
+        product=Product.objects.get(imei=2626)
+        report_id=ReportTempId.objects.create()
+        #========================================================
+        for shop in shops:
+            if RemainderHistory.objects.filter(imei=product.imei, created__date=date, shop=shop).exists():
+                rhos=RemainderHistory.objects.filter(imei=product.imei, created__date=date, shop=shop)
+                incoming_sum=0
+                outgoing_sum=0
+                for rho in rhos:
+                    incoming_sum+=rho.incoming_quantity
+                    outgoing_sum+=rho.outgoing_quantity
+            else:
+                incoming_sum=0
+                outgoing_sum=0
+        #=======================================================
+            if RemainderHistory.objects.filter(imei=product.imei, created__lt=date, shop=shop).exists():
+                rho=RemainderHistory.objects.filter(imei=product.imei, created__lt=date, shop=shop).latest('created')
+                pre_remainder=rho.current_remainder
+            else:
+                pre_remainder=0
+        #==========================================================================
+            if RemainderHistory.objects.filter(imei=product.imei, created__lt=next_date, shop=shop).exists():
+                rhos=RemainderHistory.objects.filter(imei=product.imei, created__lt=next_date, shop=shop)
+                rho=RemainderHistory.objects.filter(imei=product.imei, created__lt=next_date, shop=shop).latest('created')
+                current_remainder=rho.current_remainder
+            else:
+                current_remainder=0  
+        #=========================================================
+            pay_card_rep=PayCardReport.objects.create(
+                report_id=report_id,
+                shop=shop,
+                created=dateTime,
+                product=product,
+                pre_remainder=pre_remainder,
+                incoming_quantity=incoming_sum,
+                outgoing_quantity=outgoing_sum,
+                current_remainder=current_remainder    
+            )
+        qs=PayCardReport.objects.filter(report_id=report_id).order_by('shop').values()
+        data=pd.DataFrame(qs)
+        data=data.drop('report_id_id', 1)#deleting 'report_id' column
+        data=data.drop('product', 1)#deleting 'report_id' column
+        data.set_index('id', inplace=True)
+        data.set_index('shop', inplace=True)#sets column as titles for rows & deletes 
+        data=data.T #transposing the dataframe
+        print(data)
+        context = {
+            'data': data.to_html(),
+        }
+        return render (request, 'reports/daily_pay_card_rep.html', context)
+    else:
+        return render (request, 'reports/daily_pay_card_rep.html')
+
 
 def reports(request):
     return render(request, "reports/reports.html")
@@ -332,75 +341,6 @@ def sale_report(request):
             "users": users,
         }
         return render(request, "reports/sale_report.html", context)
-
-def daily_sales (request):
-    categories = ProductCategory.objects.all()
-    shops = Shop.objects.all()
-    doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
-    if request.method == "POST":
-        date=request.POST.get('date', False)
-        if date:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            date = datetime.datetime.strptime(date, "%Y-%m-%d")
-        else:
-            date = datetime.date.today()
-        rhos=RemainderHistory.objects.filter(rho_type=doc_type, created__date=date)
-        # shops_dict={}
-        # for shop in shops:
-        #     rhos=rhos.filter(shop=shop)
-        #     categories_dict={}
-        #     for category in categories:
-        #         sum=0
-        #         rhos_1=rhos.filter(category=category)
-        #         for rho in rhos_1:
-        #             sum+=rho.retail_price
-        #         categories_dict[category]=sum
-        #     shops_dict[shop]=categories_dict
-        # context = {
-        #     'shops_dict': shops_dict,
-        # }
-        # return render (request, 'reports/daily_sales.html', context)
-
-        temp_id=ReportTempId.objects.create()
-        for category in categories:
-            for shop in shops:
-                rhos_1=rhos.filter(category=category, shop=shop)
-                accumulated_sum=0
-                for rho in rhos_1:
-                    accumulated_sum+= rho.retail_price
-                item=DailySaleRep.objects.create(
-                    report_id=temp_id,
-                    shop=shop,
-                    category=category,
-                    sum=accumulated_sum
-                )
-        #daily_rep=DailySaleRep.objects.filter(report_id=temp_id)
-        #daily_rep=DailySaleRep.objects.filter(report_id=temp_id).values_list()
-        #=============================================
-        # daily_rep=DailySaleRep.objects.filter(report_id=temp_id).values()
-        # data=pd.DataFrame(daily_rep)
-        #=============================================
-        # daily_rep=DailySaleRep.objects.filter(report_id=temp_id)
-        # query = daily_rep.values("shop", "category", "sum")
-        # data=pd.DataFrame.from_records(query)
-        #==============================================
-        #print(data.shape)
-        #print(data)
-        #data.to_excel("C:/Users/NetUser/Daily_report.xlsx", index=False)
-
-        #df1=pd.read_excel("C:/Users/NetUser/Feb_17.xlsx")
-        #print(df1)
-        context = {
-            # 'items': items,
-            'df': data.to_html(),
-            'describe': data.describe().to_html(),
-            'shops': shops,
-            'categories': categories,
-            'rhos': rhos
-        }
-        return render (request, 'reports/daily_sales.html', context)
-    else:
-        return render (request, 'reports/daily_sales.html')
 
 def delivery_report(request):
     categories = ProductCategory.objects.all()

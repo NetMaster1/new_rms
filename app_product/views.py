@@ -2465,6 +2465,7 @@ def transfer_input(request, identifier_id):
                         rho = RemainderHistory.objects.create(
                             created=dateTime,
                             document=document,
+                            user=request.user,
                             rho_type=document.title,
                             shop=shop_receiver,
                             category=product.category,
@@ -2635,6 +2636,7 @@ def change_transfer_unposted(request, document_id):
                         rho = RemainderHistory.objects.create(
                             created=dateTime,
                             document=document,
+                            user=document.user,
                             rho_type=document.title,
                             shop=shop_sender,
                             category=product.category,
@@ -2653,7 +2655,7 @@ def change_transfer_unposted(request, document_id):
                             rho.pre_remainder=rho_latest_before.current_remainder
                         else:
                             rho.pre_remainder=0
-                        rho.current_remainder=rho.pre_remainder+int(quantities[i])
+                        rho.current_remainder=rho.pre_remainder-int(quantities[i])
                         rho.save()
                         # checking docs after remainder_history for shop_sender
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender, created__gt=dateTime).exists():
@@ -2673,6 +2675,7 @@ def change_transfer_unposted(request, document_id):
                         # creating rho for shop_receiver
                         rho = RemainderHistory.objects.create(
                             created=dateTime,
+                            user=document.user,
                             document=document,
                             rho_type=document.title,
                             shop=shop_receiver,

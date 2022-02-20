@@ -6,9 +6,15 @@ urlpatterns = [
     path ('close_report', views.close_report, name='close_report'),
     path ('close_remainder_report', views.close_remainder_report, name='close_remainder_report'),
     #path ('close_report_dynamic/<int:report_id>', views.close_report_dynamic, name='close_report_dynamic'),
+
+    path ('save_in_excel', views.save_in_excel, name='save_in_excel'),
     path ('save_in_excel_daily_rep', views.save_in_excel_daily_rep, name='save_in_excel_daily_rep'),
+    #path ('save_in_excel_remainder_rep', views.save_in_excel_remainder_rep, name='save_in_excel_remainder_rep'),
     path ('sale_report', views.sale_report, name='sale_report'),
-    path ('daily_sales', views.daily_sales, name='daily_sales'),
+
+    path ('daily_report', views.daily_report, name='daily_report'),
+    path ('daily_pay_card_rep', views.daily_pay_card_rep, name='daily_pay_card_rep'),
+
     path ('delivery_report', views.delivery_report, name='delivery_report'),
     path ('remainder_report', views.remainder_report, name='remainder_report'),
     path ('remainder_report_output/<int:shop_id>/<int:category_id>', views.remainder_report_output, name='remainder_report_output'),

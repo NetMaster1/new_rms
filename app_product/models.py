@@ -126,7 +126,7 @@ class RemainderHistory(models.Model):
     rho_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
     supplier = models.ForeignKey(Supplier, null=True, blank=True, on_delete=models.DO_NOTHING)
-    product_id = models.ForeignKey(Product, on_delete=models.DO_NOTHING, null=True)
+    product_id = models.ForeignKey(Product, blank=True, on_delete=models.DO_NOTHING, null=True)
     name = models.CharField(max_length=250)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
     imei = models.CharField(max_length=250)
