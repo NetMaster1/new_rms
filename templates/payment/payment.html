@@ -247,6 +247,20 @@
             <div class="modal-body">
                 <form action="{% url 'sale_input_card' identifier.id client.id cashback_off %}" method="POST">
                     {% csrf_token %}
+                    {% for group in request.user.groups.all %}
+                    {% if group.name == 'admin' %}
+                    
+                    <div class="row">
+                        <h5>Не вносите дату и время, если хотите провести продажу текущим временем</h5>
+                    </div>
+                    <div class="form-row">
+                        <div class="col">
+                            <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"><br>
+                        </div>
+                    </div>
+                    
+                    {% endif %}
+                    {% endfor %}
 
                     <div class='form-inline'>
                         <div class="row m-2">
@@ -339,6 +353,20 @@
             <div class="modal-body">
                 <form action="{% url 'sale_input_complex' identifier.id client.id cashback_off %}" method="POST">
                     {% csrf_token %}
+                {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
+                
+                <div class="row">
+                    <h5>Не вносите дату и время, если хотите провести продажу текущим временем</h5>
+                </div>
+                <div class="form-row">
+                    <div class="col">
+                        <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"><br>
+                    </div>
+                </div>
+                
+                {% endif %}
+                {% endfor %}
 
                     <div class='form-inline'>
                         <div class="row m-2">

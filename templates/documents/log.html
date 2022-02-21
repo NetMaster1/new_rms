@@ -209,16 +209,11 @@
         <div class="col-3 m-auto">
             
     {% if document.title.name == 'Поступление ТМЦ' %}
-    {{document.shop}}
+    {{document.shop_receiver}}
    
-
     {% elif document.title.name == 'Перемещение ТМЦ' %}
-        {% if document.posted == True %}
-        C {{document.remainderhistory_set.first.shop}} на {{document.remainderhistory_set.last.shop}} 
-        {% else %}
-        С {{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}}
-        {% endif %}
-
+        C {{document.shop_sender}} на {{document.shop_receiver}} 
+    
     {% elif document.title.name == 'Возврат ТМЦ' %}
         {{document.shop_receiver}}
 
@@ -226,28 +221,23 @@
         {{document.shop_receiver}}
 
     {% elif document.title.name == 'Списание ТМЦ' %}
-        {{document.shop}}
+        {{document.shop_sender}}
 
     {% elif document.title.name == 'Продажа ТМЦ' %}
-        {{document.shop}}
+        {{document.shop_sender}}
         
     {% elif document.title.name == 'РКО (хоз.расходы)' %}
-       {{document.shop}}
+       {{document.shop_sender}}
 
     {% elif document.title.name == 'ПКО' %}
-        {{document.shop}}
+        {{document.shop_receiver}}
 
     {% elif document.title.name == 'РКО (зарплата)' %}
-        {{document.shop}}
+        {{document.shop_sender}}
 
     {% elif document.title.name == 'Перемещение денег' %}
-        {% if document.posted == True %}
-        C {{document.cash_set.first.shop}} на
-        {{document.cash_set.last.shop}}
-        {% else %}
-        C {{document.register_set.first.shop_sender}} на {{document.register_set.first.shop_receiver}}
-        {% endif %}
-
+        C {{document.shop_sender}} на {{document.shop_receiver}}
+      
     {% elif document.title.name == 'Инвентаризация ТМЦ' %}
         {{document.shop}}
     {% endif %}

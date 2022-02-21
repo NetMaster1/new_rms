@@ -19,7 +19,7 @@ from .models import (
     RemainderCurrent,
     AvPrice,
 )
-from app_cash.models import CashRemainder, Cash, Credit, Card, PaymentRegister
+from app_cash.models import Cash, Credit, Card, PaymentRegister #CashRemainder
 
 from app_reference.models import (
     Shop,
@@ -31,7 +31,7 @@ from app_reference.models import (
     Voucher,
     Contributor,
 )
-from app_cash.models import Cash, CashRemainder, Credit, Card
+from app_cash.models import Cash, Credit, Card #CashRemainder
 from app_cashback.models import Cashback
 from django.contrib.auth.models import User, Group
 from django.contrib import messages, auth
@@ -40,7 +40,6 @@ from django.contrib import messages
 import decimal
 import random
 import pandas
-
 import datetime
 import pytz
 from django.http import HttpResponse
@@ -48,72 +47,73 @@ from django.views import View
 from twilio.rest import Client
 from .utils import render_to_pdf
 import xhtml2pdf.pisa as pisa
+from django.db.models import Q
 
 # Create your views here.
 
 def log(request):
-    #year=datetime.datetime.now().year
-    #queryset_list = Document.objects.filter(created__year=year).order_by("-created")
-    #month=datetime.datetime.now().month
-    #queryset_list = Document.objects.filter(created__month=month).order_by("-created")
-    #date=datetime.datetime.now()
-    month=datetime.datetime.now().month
-    year=datetime.datetime.now().year
-    queryset_list = Document.objects.filter(created__year=year, created__month=month).order_by("-created")
-    doc_types = DocumentType.objects.all()
-    users = User.objects.all()
-    suppliers = Supplier.objects.all()
-    shops = Shop.objects.all()
-    if request.method == "POST":
-        shop = request.POST['shop']
-        start_date = request.POST["start_date"]
-        end_date = request.POST["end_date"]
-        user = request.POST["user"]
-        supplier = request.POST["supplier"]
-        doc_type = request.POST["doc_type"]
-        queryset_list=Document.objects.all()
-        if start_date:
-            queryset_list = queryset_list.filter(created__gte=start_date)
-        if end_date:
-            queryset_list = queryset_list.filter(created__lte=end_date)
-        if doc_type:
-            doc_type = DocumentType.objects.get(id=doc_type)
-            queryset_list = queryset_list.filter(title=doc_type)
-        if shop:
-            shop=Shop.objects.get(id=shop)
-            queryset_list = queryset_list.filter(shop=shop)
-        if user:
-            queryset_list = queryset_list.filter(user=user)
-        if supplier:
-            doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
-            queryset_list = queryset_list.filter(title=doc_type)
-            supplier = Supplier.objects.get(id=supplier)
-            new_list = []
-            for item in queryset_list:
-                if item.remainderhistory_set.first().supplier == supplier:
-                    new_list.append(item)
-            queryset_list = new_list
-            print(queryset_list)
-        # if Q(start_date) | Q(end_date):
-        #     queryset_list = queryset_list.filter(created__range=(start_date, end_date))
-        context = {
-            "queryset_list": queryset_list,
-            "doc_types": doc_types,
-            "users": users,
-            "suppliers": suppliers,
-            "shops": shops,
-        }
-        return render(request, "documents/log.html", context)
+    if request.user.is_authenticated:
+        month=datetime.datetime.now().month
+        year=datetime.datetime.now().year
+        queryset_list = Document.objects.filter(created__year=year, created__month=month).order_by("-created")
+        doc_types = DocumentType.objects.all()
+        users = User.objects.all()
+        suppliers = Supplier.objects.all()
+        shops = Shop.objects.all()
+        if request.method == "POST":
+            shop = request.POST['shop']
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            user = request.POST["user"]
+            supplier = request.POST["supplier"]
+            doc_type = request.POST["doc_type"]
+            # queryset_list=Document.objects.all()
+            if start_date:
+                queryset_list = queryset_list.filter(created__gte=start_date)
+            if end_date:
+                queryset_list = queryset_list.filter(created__lte=end_date)
+            if doc_type:
+                doc_type = DocumentType.objects.get(id=doc_type)
+                queryset_list = queryset_list.filter(title=doc_type)
+            if shop:
+                shop=Shop.objects.get(id=shop)
+                queryset_list = queryset_list.filter(Q(shop_sender=shop) | Q(shop_receiver=shop))
+            if user:
+                queryset_list = queryset_list.filter(user=user)
+            if supplier:
+                doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
+                queryset_list = queryset_list.filter(title=doc_type)
+                supplier = Supplier.objects.get(id=supplier)
+                new_list = []
+                for item in queryset_list:
+                    if item.remainderhistory_set.first().supplier == supplier:
+                        new_list.append(item)
+                queryset_list = new_list
+                print(queryset_list)
+            # if Q(start_date) | Q(end_date):
+            #     queryset_list = queryset_list.filter(created__range=(start_date, end_date))
+            context = {
+                "queryset_list": queryset_list,
+                "doc_types": doc_types,
+                "users": users,
+                "suppliers": suppliers,
+                "shops": shops,
+            }
+            return render(request, "documents/log.html", context)
 
+        else:
+            context = {
+                "queryset_list": queryset_list,
+                "doc_types": doc_types,
+                "users": users,
+                "suppliers": suppliers,
+                "shops": shops,
+            }
+            return render(request, "documents/log.html", context)
     else:
-        context = {
-            "queryset_list": queryset_list,
-            "doc_types": doc_types,
-            "users": users,
-            "suppliers": suppliers,
-            "shops": shops,
-        }
-        return render(request, "documents/log.html", context)
+        auth.logout(request)
+        return redirect("login")
+
 
 def sale_interface (request):
     if request.user.is_authenticated:
@@ -500,6 +500,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 cash_remainder = 0
             cho = Cash.objects.create(
                 shop=shop,
+                cho_type=doc_type,
                 created=document.created,
                 document=document,
                 user=request.user,
@@ -509,7 +510,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             )
             if Cash.objects.filter(shop=shop, created__gt=document.created).exists():
                 sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
-                cash_remainder=cho.cash_remainder
+                cash_remainder=cho.current_remainder
                 for obj in sequence_chos_after:
                     obj.pre_remainder = cash_remainder
                     obj.current_remainder = (
@@ -920,6 +921,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                     cash_remainder = 0
                 cho = Cash.objects.create(
                     shop=shop,
+                    cho_type=doc_type,
                     created=document.created,
                     document=document,
                     user=request.user,
@@ -945,11 +947,13 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                 card = Card.objects.create(
                     shop=shop, 
                     document=document,
+                    created=dateTime,
                     user=request.user, 
                     sum=card)
             if credit >0:
                 credit = Credit.objects.create(
-                    shop=shop, 
+                    shop=shop,
+                    created=dateTime,
                     document=document, 
                     user=request.user, 
                     sum=credit
@@ -1143,37 +1147,30 @@ def change_sale_unposted (request, document_id):
                         cash_pre_remainder = cho_before_latest.current_remainder
                     else:
                         cash_pre_remainder = 0
-                    cash = Cash.objects.create(
+                    cho = Cash.objects.create(
                         shop=shop,
                         created=dateTime,
+                        cho_type=doc_type,
                         document=document,
                         user=document.user,
                         pre_remainder=cash_pre_remainder,
                         cash_in=cash,
                         current_remainder=cash_pre_remainder + cash,
                     )
-                    if CashRemainder.objects.filter(shop=shop).exists():
-                        cash_remainder = CashRemainder.objects.get(shop=shop)
-                    else:
-                        cash_remainder = CashRemainder.objects.create(
-                            shop=shop, 
-                            remainder=0
-                        )
-                    cash_remainder.remainder = cash.current_remainder
-                    cash_remainder.save()
                     if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
-                        sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created)
-                        sequence_chos_after = sequence_chos_after.all().order_by("created")
+                        sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
+                        cash_remainder=cho.current_remainder
                         for obj in sequence_chos_after:
-                            obj.pre_remainder = cash_remainder.remainder
+                            obj.pre_remainder = cash_remainder
                             obj.current_remainder = (
-                                cash_remainder.remainder + obj.cash_in - obj.cash_out
+                                cash_remainder + obj.cash_in - obj.cash_out
                             )
                             obj.save()
-                            cash_remainder.remainder = obj.current_remainder
+                            cash_remainder = obj.current_remainder
                 if credit > 0:
                     credit = Credit.objects.create(
                         user=document.user,
+                        created=dateTime,
                         document=document,
                         shop=shop,
                         sum=credit
@@ -1181,6 +1178,7 @@ def change_sale_unposted (request, document_id):
                 if card >0:
                     card=Card.objects.create(
                         user=document.user,
+                        created=dateTime,
                         document=document,
                         shop=shop,
                         sum=card
@@ -4842,7 +4840,7 @@ def cash_off_expenses(request):
                 )
                 if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
                     sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
-                    cash_remainder=cho.cash_remainder
+                    cash_remainder=cho.current_remainder
                     for obj in sequence_chos_after:
                         obj.pre_remainder = cash_remainder
                         obj.current_remainder = (
@@ -4942,7 +4940,7 @@ def change_cash_off_expenses_unposted (request, document_id):
                 cash_off_reason=expense,
                 pre_remainder=cash_remainder,
                 cash_out=sum,
-                current_remainder=cash_remainder.remainder - sum,
+                current_remainder=cash_remainder - sum,
             )
             if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
                 sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
@@ -5060,7 +5058,7 @@ def cash_receipt(request):
                     cash_in_reason=voucher,
                     pre_remainder=cash_remainder,
                     cash_in=sum,
-                    current_remainder=cash_remainder.remainder + sum,
+                    current_remainder=cash_remainder + sum,
                 )
                 if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
                     sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
@@ -5315,6 +5313,7 @@ def cash_movement(request):
                             - obj.cash_out
                             )
                         obj.save()
+                        cash_remainder = obj.current_remainder
                 # SHOP RECEIVER OPERATIONS
                 if Cash.objects.filter(shop=shop_cash_receiver, created__lt=dateTime).exists():
                     cho_latest_before = Cash.objects.filter(shop=shop_cash_receiver, created__lt=dateTime).latest('created')

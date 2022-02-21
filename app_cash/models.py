@@ -28,16 +28,16 @@ class Cash (models.Model):
         return self.id
 
 #model used to store current cash remainder at shop
-class CashRemainder(models.Model):
-    remainder=models.IntegerField(default=0)
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
+# class CashRemainder(models.Model):
+#     remainder=models.IntegerField(default=0)
+#     shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
     
-    def __int__(self):
-        return self.remainder
+#     def __int__(self):
+#         return self.remainder
    
 
 class Credit (models.Model):
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(default=timezone.now, null=True)
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
@@ -47,7 +47,7 @@ class Credit (models.Model):
         return self.id
 
 class Card (models.Model):
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(default=timezone.now, null=True)
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
