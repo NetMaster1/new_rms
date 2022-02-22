@@ -1854,9 +1854,9 @@ def delivery_input(request, identifier_id):
             if dateTime:
                 #getting date/time values from HTML form as a string in format as follows: '2021-07-08T01:05'
                 #receiver current time & take number of seconds & microseconds
-                currentTime=datetime.datetime.now()               
+                currentTime=datetime.datetime.now()              
                 seconds=currentTime.second
-                #if number of seconds is less that 10, concatenate is with 0 in front of it & get for example '03' instead of '3'
+                #if number of seconds is less that 10, concatenate is with 0 in front of it & get for example '03' instead of '3' we might wanna do the same with microseconds
                 if seconds < 10:
                     seconds=str(seconds)
                     seconds='%s%s' % ('0', seconds)
