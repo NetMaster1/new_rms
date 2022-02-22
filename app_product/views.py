@@ -3,15 +3,10 @@ from django.http import request
 from app_product.admin import RemainderHistoryAdmin
 from app_clients.models import Customer
 from app_personnel.models import BonusAccount
+from app_error.models import ErrorLog
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import (
     Document,
-    #Delivery,
-    #Recognition,
-    #SignOff,
-    #Sale,
-    #Transfer,
-    #Returning,
     Revaluation,
     RemainderHistory,
     Register,
@@ -19,8 +14,7 @@ from .models import (
     RemainderCurrent,
     AvPrice,
 )
-from app_cash.models import Cash, Credit, Card, PaymentRegister #CashRemainder
-
+from app_cash.models import Cash, Credit, Card, PaymentRegister
 from app_reference.models import (
     Shop,
     Supplier,
@@ -1850,18 +1844,33 @@ def delivery_input(request, identifier_id):
         if request.method == "POST":
             shop = request.POST["shop"]
             shop = Shop.objects.get(id=shop)
-            dateTime = request.POST["dateTime"]
             # category=request.POST['category']
             imeis = request.POST.getlist("imei", None)
             names = request.POST.getlist("name", None)
             quantities = request.POST.getlist("quantity", None)
             prices = request.POST.getlist("price", None)
             sub_totals = request.POST.getlist("sub_total", None)
+            dateTime=request.POST.get('dateTime', False)
             if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #getting date/time values from HTML form as a string in format as follows: '2021-07-08T01:05'
+                #receiver current time & take number of seconds & microseconds
+                currentTime=datetime.datetime.now()               
+                seconds=currentTime.second
+                #if number of seconds is less that 10, concatenate is with 0 in front of it & get for example '03' instead of '3'
+                if seconds < 10:
+                    seconds=str(seconds)
+                    seconds='%s%s' % ('0', seconds)
+                microsecond=currentTime.microsecond
+                microseconds=str(microsecond)
+                #concatenate the date/time in str formant with number of seconds & microseconds & create a string as follows: '2021-07-08T01:05:03.34567'
+                dateTime='%s%s%s%s%s' % (dateTime, ':', seconds, '.', microseconds)
+                # converting dateTime in str format (2021-07-08T01:05:03.34567) to django format (2021-07-10 01:05:03.34567)
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M:%S.%f")
+                #we do this since without additional formatting django model receive datetime in the format as follows:  '2021-07-10 01:05:00' which is inacceptable for processing rhos based of creation date.
             else:
+                #this value does not require formatting since it comes as '2021-07-10 01:05:03.34567' as it is
                 dateTime = datetime.datetime.now()
+                #we also could created timedelta in seconds from current time & add this timedelta to 'datetime' class value before storing it in django model
             try:
                 supplier = request.POST["supplier"]
             except:
@@ -1892,42 +1901,34 @@ def delivery_input(request, identifier_id):
                     for i in range(n):
                         # checking rhos before
                         product = Product.objects.get(imei=imeis[i])
+                        # creating remainder_history
+                        rho = RemainderHistory.objects.create(
+                            document=document,
+                            user=request.user,
+                            rho_type=document.title,
+                            created=dateTime,
+                            shop=shop,
+                            category=product.category,
+                            supplier=supplier,
+                            imei=imeis[i],
+                            name=names[i],
+                            #pre_remainder= rho_latest_before.current_remainder,
+                            incoming_quantity=quantities[i],
+                            outgoing_quantity=0,
+                            #current_remainder=rho_latest_before.current_remainder + int(quantities[i]),
+                            wholesale_price=int(prices[i]),
+                            sub_total=int(int(quantities[i]) * int(prices[i])),
+                        )
+                        print('================')
+                        print(rho.created)
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                             rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
-                            # creating remainder_history
-                            rho = RemainderHistory.objects.create(
-                                document=document,
-                                rho_type=document.title,
-                                created=dateTime,
-                                shop=shop,
-                                category=product.category,
-                                supplier=supplier,
-                                imei=imeis[i],
-                                name=names[i],
-                                pre_remainder= rho_latest_before.current_remainder,
-                                incoming_quantity=quantities[i],
-                                outgoing_quantity=0,
-                                current_remainder=rho_latest_before.current_remainder + int(quantities[i]),
-                                wholesale_price=int(prices[i]),
-                                sub_total=int(int(quantities[i]) * int(prices[i])),
-                            )
+                            rho.pre_remainder=rho_latest_before.current_remainder
+                            rho.current_remainder=rho_latest_before.current_remainder + int(quantities[i])  
                         else:
-                            rho = RemainderHistory.objects.create(
-                                document=document,
-                                rho_type=document.title,
-                                created=dateTime,
-                                shop=shop,
-                                category=product.category,
-                                supplier=supplier,
-                                imei=imeis[i],
-                                name=names[i],
-                                pre_remainder=0,
-                                incoming_quantity=quantities[i],
-                                outgoing_quantity=0,
-                                current_remainder=quantities[i],
-                                wholesale_price=int(prices[i]),
-                                sub_total=int(int(quantities[i]) * int(prices[i])),
-                            )
+                            rho.pre_remainder=0
+                            rho.current_remainder= int(quantities[i])
+                        rho.save()
                         document_sum+=rho.sub_total
                         if AvPrice.objects.filter(imei=imeis[i]).exists():
                             av_price_obj = AvPrice.objects.get(imei=imeis[i])
@@ -1944,18 +1945,18 @@ def delivery_input(request, identifier_id):
                                 av_price=int(prices[i]),
                             )
                         # checking docs after remainder_history
-                        if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
+                        if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=dateTime).exists():
                             remainder=rho.current_remainder
-                            sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).order_by('created')
+                            sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=dateTime).order_by('created')
                             for obj in sequence_rhos_after:
                                 obj.pre_remainder = remainder
                                 obj.current_remainder = (
-                                    remainder
-                                    + obj.incoming_quantity
+                                    remainder 
+                                    + obj.incoming_quantity 
                                     - obj.outgoing_quantity
                                 )
                                 obj.save()
-                                remainder=obj.current_remainder
+                                remainder = obj.current_remainder
                     document.sum = document_sum
                     document.save()
                     register = Register.objects.get(identifier=identifier, product=product)
@@ -4299,14 +4300,15 @@ def unpost_return(request, document_id):
         #checking rhos before
         if RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__lt=rho.created).exists():
             rho_latest_before = RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__lt=rho.created).latest('created')
-            cash_remainder=rho_latest_before.current_remainder
+            pre_remainder=rho_latest_before.current_remainder
         else:
-            cash_remainder=0
+            pre_remainder=0
         #checking rhos after
         if RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__gt=rho.created).exists():
             sequence_rhos_after = RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__gt=rho.created).order_by('created')
+            remainder=pre_remainder
             for obj in sequence_rhos_after:
-                obj.pre_remainder = cash_remainder
+                obj.pre_remainder = remainder
                 obj.current_remainder = (
                     remainder
                     + obj.incoming_quantity
@@ -4333,16 +4335,16 @@ def unpost_return(request, document_id):
     cho = Cash.objects.get(document=document)
     if Cash.objects.filter(shop=cho.shop, created__lt=cho.created).exists():
         cho_latest_before = Cash.objects.filter(shop=cho.shop, created__lt=cho.created).latest('created')
-        cash_remainder_before = cho_latest_before.current_remainder
+        pre_cash_remainder = cho_latest_before.current_remainder
     else:
-        cash_remainder_before = 0
+        pre_cash_remainder = 0
     if Cash.objects.filter(shop=cho.shop, created__gt=cho.created).exists():
-        cash_remainder=cash_remainder_before
-        sequence_chos_after = Cash.objects.filter(shop=cho.shop, created__gt=cho.created).oreder_by('created')
+        sequence_chos_after = Cash.objects.filter(shop=cho.shop, created__gt=cho.created).order_by('created')
+        cash_remainder=pre_cash_remainder
         for obj in sequence_chos_after:
             obj.pre_remainder = cash_remainder
             obj.current_remainder = (
-                cash_remainder.remainder + obj.cash_in - obj.cash_out
+                cash_remainder + obj.cash_in - obj.cash_out
             )
             obj.save()
             cash_remainder= obj.current_remainder

@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'app_cashback',
     'app_personnel',
     'app_reports',
-    'app_finance'
+    'app_finance',
+    'app_error'
   
 ]
 

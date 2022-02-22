@@ -117,8 +117,11 @@ class CashOff(models.Model):
 class RemainderHistory(models.Model):
     #temporary utility field for numbering rhos while displaying the at change_sale_posted html page
     number = models.IntegerField(default=0, null=True)
+    #number = models.IntegerField(default=0, required=False, read_only=True)#just an example
     created = models.DateTimeField(default=timezone.now, null=True)
-    #updated = models.DateTimeField(auto_now=True)
+    #created = models.DateTimeField(format='%Y-%m-%dT%H:%M:%S', default=timezone.now, null=True)
+    #created = serializers.DateTimeField(format='iso-8601', required=False, read_only=True)
+    updated = models.DateTimeField(auto_now_add=True, null=True)
     #editor = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='editor', null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)
