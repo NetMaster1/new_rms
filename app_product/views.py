@@ -1757,12 +1757,6 @@ def delivery(request, identifier_id):
     suppliers = Supplier.objects.all()
     shop=Shop.objects.get(name='ООС')
     #shops = Shop.objects.all()
-    #dateTime operations: changing server time to Moscow timezone & changing dateTime format to string
-    # dateTime=datetime.datetime.now(tz=pytz.UTC)#return Greenwich time
-    # dateTime=dateTime.astimezone(pytz.timezone('US/Mountain'))#changes Greenwich current time to local
-    dateTime=datetime.datetime.now()
-    dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
-    #End of time operations
     registers = Register.objects.filter(identifier=identifier).order_by("created")
     numbers = registers.count()
     for register, i in zip(registers, range(numbers)):
@@ -1774,7 +1768,6 @@ def delivery(request, identifier_id):
         "suppliers": suppliers,
         "shop": shop,
         "registers": registers,
-        "dateTime": dateTime,
     }
     return render(request, "documents/delivery.html", context)
 
@@ -1850,27 +1843,25 @@ def delivery_input(request, identifier_id):
             quantities = request.POST.getlist("quantity", None)
             prices = request.POST.getlist("price", None)
             sub_totals = request.POST.getlist("sub_total", None)
+            #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
-                #getting date/time values from HTML form as a string in format as follows: '2021-07-08T01:05'
-                #receiver current time & take number of seconds & microseconds
-                currentTime=datetime.datetime.now()              
-                seconds=currentTime.second
-                #if number of seconds is less that 10, concatenate is with 0 in front of it & get for example '03' instead of '3' we might wanna do the same with microseconds
-                if seconds < 10:
-                    seconds=str(seconds)
-                    seconds='%s%s' % ('0', seconds)
-                microsecond=currentTime.microsecond
-                microseconds=str(microsecond)
-                #concatenate the date/time in str formant with number of seconds & microseconds & create a string as follows: '2021-07-08T01:05:03.34567'
-                dateTime='%s%s%s%s%s' % (dateTime, ':', seconds, '.', microseconds)
-                # converting dateTime in str format (2021-07-08T01:05:03.34567) to django format (2021-07-10 01:05:03.34567)
-                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M:%S.%f")
-                #we do this since without additional formatting django model receive datetime in the format as follows:  '2021-07-10 01:05:00' which is inacceptable for processing rhos based of creation date.
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
             else:
-                #this value does not require formatting since it comes as '2021-07-10 01:05:03.34567' as it is
-                dateTime = datetime.datetime.now()
-                #we also could created timedelta in seconds from current time & add this timedelta to 'datetime' class value before storing it in django model
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             try:
                 supplier = request.POST["supplier"]
             except:
@@ -1885,114 +1876,111 @@ def delivery_input(request, identifier_id):
             if not imeis:
                 messages.error(request, "Вы не ввели ни одного наименования.")
                 return redirect("delivery", identifier.id)
-            else:
             # posting delivery document
-                if post_check == True:
-                    document = Document.objects.create(
-                        title=doc_type, 
-                        shop_receiver=shop,
-                        user=request.user, 
-                        created=dateTime, 
-                        posted=True,
-                        supplier=supplier
-                    )
-                    n = len(names)
-                    document_sum = 0
-                    for i in range(n):
-                        # checking rhos before
-                        product = Product.objects.get(imei=imeis[i])
-                        # creating remainder_history
-                        rho = RemainderHistory.objects.create(
-                            document=document,
-                            user=request.user,
-                            rho_type=document.title,
-                            created=dateTime,
-                            shop=shop,
-                            category=product.category,
-                            supplier=supplier,
-                            imei=imeis[i],
-                            name=names[i],
-                            #pre_remainder= rho_latest_before.current_remainder,
-                            incoming_quantity=quantities[i],
-                            outgoing_quantity=0,
-                            #current_remainder=rho_latest_before.current_remainder + int(quantities[i]),
-                            wholesale_price=int(prices[i]),
-                            sub_total=int(int(quantities[i]) * int(prices[i])),
-                        )
-                        print('================')
-                        print(rho.created)
-                        if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
-                            rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
-                            rho.pre_remainder=rho_latest_before.current_remainder
-                            rho.current_remainder=rho_latest_before.current_remainder + int(quantities[i])  
-                        else:
-                            rho.pre_remainder=0
-                            rho.current_remainder= int(quantities[i])
-                        rho.save()
-                        document_sum+=rho.sub_total
-                        if AvPrice.objects.filter(imei=imeis[i]).exists():
-                            av_price_obj = AvPrice.objects.get(imei=imeis[i])
-                            av_price_obj.current_remainder += int(quantities[i])
-                            av_price_obj.sum += int(quantities[i]) * int(prices[i])
-                            av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
-                            av_price_obj.save()
-                        else:
-                            av_price_obj = AvPrice.objects.create(
-                                name=names[i],
-                                imei=imeis[i],
-                                current_remainder=int(quantities[i]),
-                                sum=int(quantities[i]) * int(prices[i]),
-                                av_price=int(prices[i]),
-                            )
-                        # checking docs after remainder_history
-                        if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=dateTime).exists():
-                            remainder=rho.current_remainder
-                            sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=dateTime).order_by('created')
-                            for obj in sequence_rhos_after:
-                                obj.pre_remainder = remainder
-                                obj.current_remainder = (
-                                    remainder 
-                                    + obj.incoming_quantity 
-                                    - obj.outgoing_quantity
-                                )
-                                obj.save()
-                                remainder = obj.current_remainder
-                    document.sum = document_sum
-                    document.save()
-                    register = Register.objects.get(identifier=identifier, product=product)
-                    register.delete()
-                    identifier.delete()
-                    return redirect("log")
-                # saving uposted delivery document
-                else:
-                    document = Document.objects.create(
-                        title=doc_type,
-                        shop_receiver=shop,
-                        user=request.user, 
-                        created=dateTime, 
-                        posted=False,
+            if post_check == True:
+                document = Document.objects.create(
+                    title=doc_type, 
+                    shop_receiver=shop,
+                    user=request.user, 
+                    created=dateTime, 
+                    posted=True,
+                    supplier=supplier
+                )
+                n = len(names)
+                document_sum = 0
+                for i in range(n):
+                    # checking rhos before
+                    product = Product.objects.get(imei=imeis[i])
+                    # creating remainder_history
+                    rho = RemainderHistory.objects.create(
+                        document=document,
+                        user=request.user,
+                        rho_type=document.title,
+                        created=dateTime,
+                        shop=shop,
+                        category=product.category,
                         supplier=supplier,
+                        imei=imeis[i],
+                        name=names[i],
+                        #pre_remainder= rho_latest_before.current_remainder,
+                        incoming_quantity=quantities[i],
+                        outgoing_quantity=0,
+                        #current_remainder=rho_latest_before.current_remainder + int(quantities[i]),
+                        wholesale_price=int(prices[i]),
+                        sub_total=int(int(quantities[i]) * int(prices[i])),
                     )
-                    n = len(names)
-                    document_sum = 0
-                    for i in range(n):
-                        product = Product.objects.get(imei=imeis[i])
-                        register = Register.objects.get(
-                            identifier=identifier, product=product
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
+                        rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
+                        rho.pre_remainder=rho_latest_before.current_remainder
+                        rho.current_remainder=rho_latest_before.current_remainder + int(quantities[i])  
+                    else:
+                        rho.pre_remainder=0
+                        rho.current_remainder= int(quantities[i])
+                    rho.save()
+                    document_sum+=rho.sub_total
+                    if AvPrice.objects.filter(imei=imeis[i]).exists():
+                        av_price_obj = AvPrice.objects.get(imei=imeis[i])
+                        av_price_obj.current_remainder += int(quantities[i])
+                        av_price_obj.sum += int(quantities[i]) * int(prices[i])
+                        av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                        av_price_obj.save()
+                    else:
+                        av_price_obj = AvPrice.objects.create(
+                            name=names[i],
+                            imei=imeis[i],
+                            current_remainder=int(quantities[i]),
+                            sum=int(quantities[i]) * int(prices[i]),
+                            av_price=int(prices[i]),
                         )
-                        register.price = prices[i]
-                        register.quantity = quantities[i]
-                        register.sub_total = sub_totals[i]
-                        register.document = document
-                        register.supplier = supplier
-                        register.identifier = None
-                        register.sub_total = int(prices[i]) * int(quantities[i])
-                        register.save()
-                        document_sum += int(register.sub_total)
-                    document.sum = document_sum
-                    document.save()
-                    identifier.delete()
-                    return redirect("log")
+                    # checking docs after remainder_history
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=dateTime).exists():
+                        remainder=rho.current_remainder
+                        sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=dateTime).order_by('created')
+                        for obj in sequence_rhos_after:
+                            obj.pre_remainder = remainder
+                            obj.current_remainder = (
+                                remainder 
+                                + obj.incoming_quantity 
+                                - obj.outgoing_quantity
+                            )
+                            obj.save()
+                            remainder = obj.current_remainder
+                document.sum = document_sum
+                document.save()
+                register = Register.objects.get(identifier=identifier, product=product)
+                register.delete()
+                identifier.delete()
+                return redirect("log")
+            # saving uposted delivery document
+            else:
+                document = Document.objects.create(
+                    title=doc_type,
+                    shop_receiver=shop,
+                    user=request.user, 
+                    created=dateTime, 
+                    posted=False,
+                    supplier=supplier,
+                )
+                n = len(names)
+                document_sum = 0
+                for i in range(n):
+                    product = Product.objects.get(imei=imeis[i])
+                    register = Register.objects.get(
+                        identifier=identifier, product=product
+                    )
+                    register.price = prices[i]
+                    register.quantity = quantities[i]
+                    register.sub_total = sub_totals[i]
+                    register.document = document
+                    register.supplier = supplier
+                    register.identifier = None
+                    register.sub_total = int(prices[i]) * int(quantities[i])
+                    register.save()
+                    document_sum += int(register.sub_total)
+                document.sum = document_sum
+                document.save()
+                identifier.delete()
+                return redirect("log")
     else:
         auth.logout(request)
         return redirect("login")
