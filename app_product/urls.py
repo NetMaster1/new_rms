@@ -9,6 +9,8 @@ urlpatterns = [
     path ('delete_unposted_document/<int:document_id>', views.delete_unposted_document, name='delete_unposted_document'),
     path ('log', views.log, name='log'),
     path ('close_log', views.close_log, name='close_log'),
+    #==================Remainde Input=====================================
+    path ('remainder_input', views.remainder_input, name='remainder_input'),
     
     # ==================Delivery========================
     path ('delivery_auto', views.delivery_auto, name='delivery_auto'),
@@ -62,7 +64,7 @@ urlpatterns = [
     path ('sale/<int:identifier_id>', views.sale, name='sale'),
     path ('delete_line_sale/<int:imei>/<int:identifier_id>', views.delete_line_sale, name='delete_line_sale'),
     path ('clear_sale/<int:identifier_id>', views.clear_sale, name='clear_sale'),
-    path ('list_sale', views.list_sale, name='list_sale'),
+    # path ('list_sale', views.list_sale, name='list_sale'),
 
     path ('sale_input_cash/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_cash, name='sale_input_cash'),
     path ('sale_input_card/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.sale_input_card, name='sale_input_card'),

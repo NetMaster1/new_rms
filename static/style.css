@@ -94,6 +94,8 @@
 }
 
 .log {
+    /* display: block;
+    height: 25rem;  */
     margin-top: 1rem;
     margin-bottom: 1rem;
     padding: 0.5rem;
@@ -101,6 +103,8 @@
     border-radius:1rem;
     /* border-color: black; */
     background-color: lightgrey;
+    /* overflow-x: scroll;
+    overflow: auto; */
    
 }
 

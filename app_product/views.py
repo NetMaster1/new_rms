@@ -42,14 +42,21 @@ from twilio.rest import Client
 from .utils import render_to_pdf
 import xhtml2pdf.pisa as pisa
 from django.db.models import Q
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 
 # Create your views here.
 
 def log(request):
-    if request.user.is_authenticated:
+    group=Group.objects.get(name="admin").user_set.all()
+    if request.user in group:
         month=datetime.datetime.now().month
         year=datetime.datetime.now().year
         queryset_list = Document.objects.filter(created__year=year, created__month=month).order_by("-created")
+        #============paginator module=================
+        paginator = Paginator(queryset_list, 25)
+        page = request.GET.get('page')
+        paged_queryset_list = paginator.get_page(page)
+        #=============end of paginator module===============
         doc_types = DocumentType.objects.all()
         users = User.objects.all()
         suppliers = Supplier.objects.all()
@@ -97,7 +104,7 @@ def log(request):
 
         else:
             context = {
-                "queryset_list": queryset_list,
+                "queryset_list": paged_queryset_list,
                 "doc_types": doc_types,
                 "users": users,
                 "suppliers": suppliers,
@@ -107,7 +114,6 @@ def log(request):
     else:
         auth.logout(request)
         return redirect("login")
-
 
 def sale_interface (request):
     if request.user.is_authenticated:
@@ -287,6 +293,121 @@ def open_document(request, document_id):
     context = {"document": document, "documents": documents}
     return render(request, "documents/open_document.html", context)
 
+#===============================================================================
+def remainder_input (request):
+    group=Group.objects.get(name="admin").user_set.all()
+    if request.user in group:
+        shops=Shop.objects.all()
+        categories=ProductCategory.objects.all()
+        doc_type = DocumentType.objects.get(name="Ввод остатков ТМЦ")
+        if request.method == "POST":
+            file = request.FILES["file_name"]
+            shop = request.POST["shop"]
+            shop=Shop.objects.get(id=shop)
+            category = request.POST["category"]
+            category=ProductCategory.objects.get(id=category)
+            dateTime = request.POST["dateTime"]
+            # converting dateTime in str format (2021-07-08T01:05) to django format ()
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+            #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+            #==================End of time module================================
+            # df1 = pandas.read_excel('Delivery_21_06_21.xlsx')
+            df1 = pandas.read_excel(file)
+            cycle = len(df1)#returns number of rows
+            document = Document.objects.create(
+                shop_receiver=shop,
+                created=dateTime, 
+                user=request.user, 
+                title=doc_type,
+                posted=True
+            )
+            document_sum = 0
+            for i in range(cycle):
+                row = df1.iloc[i]#reads rows of excel file one by one
+                try:
+                    product=Product.objects.get(imei=row.Imei)
+                except Product.DoesNotExist:
+                    product = Product.objects.create(
+                        imei=row.Imei, 
+                        category=category, 
+                        name=row.Title
+                    )
+                product = Product.objects.get(imei=row.Imei)
+                # checking docs before remainder_history
+                if RemainderHistory.objects.filter(imei=row.Imei, shop=row.shop, created__lt=dateTime).exists():
+                    rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).latest('created)')
+                    pre_remainder=rho_latest_before.current_remainder
+                else:
+                    pre_remainder=0
+                # creating remainder_history
+                rho = RemainderHistory.objects.create(
+                    document=document,
+                    rho_type=document.title,
+                    created=dateTime,
+                    shop=shop,
+                    category=product.category,
+                    product_id=product,
+                    imei=product.imei,
+                    name=product.name,
+                    pre_remainder=pre_remainder,
+                    incoming_quantity=row.Quantity,
+                    outgoing_quantity=0,
+                    current_remainder=pre_remainder + int(row.Quantity),
+                    retail_price=int(row.Price),
+                    sub_total=int(row.Price) * int(row.Quantity),
+                )
+                document_sum += int(rho.sub_total)
+
+                if AvPrice.objects.filter(imei=row.Imei).exists():
+                    av_price_obj = AvPrice.objects.get(imei=row.Imei)
+                    av_price_obj.current_remainder += int(row.Quantity)
+                    av_price_obj.sum += int(row.Quantity) * int(row.Price)
+                    av_price_obj.av_price = int(av_price_obj.sum) / int(av_price_obj.current_remainder)
+                    av_price_obj.save()
+                else:
+                    av_price_obj = AvPrice.objects.create(
+                        name=row.Title,
+                        imei=row.Imei,
+                        current_remainder=int(row.Quantity),
+                        sum=int(row.Quantity) * int(row.Price),
+                        av_price=int(row.Price),
+                    )
+                # checking docs after remainder_history
+                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__gt=dateTime).exists():
+                    sequence_rhos_after = RemainderHistory.objects.filter(
+                        imei=row.Imei, shop=shop, created__gt=dateTime)
+                    sequence_rhos_after = sequence_rhos_after.all().order_by("created")
+                    pre_remainder=rho.current_remainder
+                    for obj in sequence_rhos_after:
+                        obj.pre_remainder = pre_remainder
+                        obj.current_remainder = (
+                            pre_remainder
+                            + obj.incoming_quantity
+                            - obj.outgoing_quantity
+                        )
+                        obj.save()
+                        pre_remainder = obj.current_remainder
+            document.sum = document_sum
+            document.save()
+            return redirect("log")
+        context = {
+            'shops': shops,
+            'categories': categories
+        }
+        return render(request, "documents/remainder_input.html", context)
+
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 # ================================Sale Operations=================================
 def identifier_sale(request):
     if request.user.is_authenticated:
@@ -391,14 +512,25 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             sub_totals = request.POST.getlist("sub_total", None)
             session_shop=request.session['session_shop']
             shop=Shop.objects.get(id=session_shop)
+            #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
-            # if 'dateTime' in request.POST:
-            #     dateTime=request.POST['dateTime']
             if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
             else:
-                dateTime = datetime.datetime.now()
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             #checking availability of items to sell
             if not imeis:
                 messages.error(request,  'Вы не ввели ни одного наименования')
@@ -544,14 +676,25 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
             sub_totals = request.POST.getlist("sub_total", None)
             session_shop=request.session['session_shop']
             shop=Shop.objects.get(id=session_shop)
+            #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
-            # if 'dateTime' in request.POST:
-            #     dateTime=request.POST['dateTime']
             if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
             else:
-                dateTime = datetime.datetime.now()
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             #checking availability of items to sell
             if not imeis:
                 messages.error(request,  'Вы не ввели ни одного наименования')
@@ -674,14 +817,25 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
             prices = request.POST.getlist("price", None)
             session_shop=request.session['session_shop']
             shop=Shop.objects.get(id=session_shop)
+            #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
-            # if 'dateTime' in request.POST:
-            #     dateTime=request.POST['dateTime']
             if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
             else:
-                dateTime = datetime.datetime.now()
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             #checking availability of items to sell
             if not imeis:
                 messages.error(request,  'Вы не ввели ни одного наименования')
@@ -811,14 +965,25 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
             sub_totals = request.POST.getlist("sub_total", None)
             session_shop=request.session['session_shop']
             shop=Shop.objects.get(id=session_shop)
+            #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
-            # if 'dateTime' in request.POST:
-            #     dateTime=request.POST['dateTime']
             if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
             else:
-                dateTime = datetime.datetime.now()
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             #checking availability of items to sell
             if not imeis:
                 messages.error(request,  'Вы не ввели ни одного наименования')
@@ -1031,12 +1196,19 @@ def change_sale_unposted (request, document_id):
             credit=int(credit)
             card = request.POST["card"]
             card=int(card)
-            dateTime=request.POST.get('dateTime', False)
-            if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-            else:
-                dateTime = datetime.datetime.now()
+            #===================DateTime module for Change Unposted===============================
+            dateTime=request.POST['dateTime']
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+            #============End of DateTime module for change unposted=======================
             try:
                 if request.POST["post_check"]:
                     post_check = True
@@ -1592,50 +1764,24 @@ def delivery_auto(request):
         )
         document_sum = 0
         for i in range(cycle):
-            row = df1.iloc[i]
-            print(row.Imei)
+            row = df1.iloc[i]#reads each row of the df1 one by one
             try:
                 Product.objects.get(imei=row.Imei)
             except Product.DoesNotExist:
-                if row.Imei:
-                    product = Product.objects.create(
-                        imei=row.Imei, 
-                        category=category, 
-                        name=row.Title
-                    )
-                else:
-                    messages.error(request, "Оооопс, в строке таблицы остуствует IMEI")
-                    return redirect("delivery_auto")
+                product = Product.objects.create(
+                    imei=row.Imei, 
+                    category=category, 
+                    name=row.Title
+                )
                 product = Product.objects.get(imei=row.Imei)
             # checking docs before remainder_history
             if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).exists():
-                sequence_rhos_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime)
-                remainder_history = sequence_rhos_before.latest("created")
-                remainder_current = RemainderCurrent.objects.get(shop=shop, imei=row.Imei)
-                remainder_current.current_remainder =remainder_history.current_remainder
-                # remainder_current.av_price=remainder_history.av_price
-                # remainder_current.total_av_price=remainder_history.sub_total
-                remainder_current.save()
+                rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).latest('created')
+                pre_remainder=rho_latest_before.current_remainder
             else:
-                if RemainderCurrent.objects.filter(imei=row.Imei, shop=shop).exists():
-                    remainder_current = RemainderCurrent.objects.get(imei=row.Imei, shop=shop)
-                    remainder_current.current_remainder = 0
-                    # remainder_current.av_price=0
-                    # remainder_current.total_av_price=0
-                    remainder_current.save()
-                else:
-                    remainder_current = RemainderCurrent.objects.create(
-                        # updated=dateTime,
-                        shop=shop,
-                        imei=row.Imei,
-                        name=row.Title,
-                        category=category,
-                        current_remainder=0,
-                        # av_price=0,
-                        # total_av_price=0
-                    )
+                pre_remainder=0
             # creating remainder_history
-            remainder_history = RemainderHistory.objects.create(
+            rho = RemainderHistory.objects.create(
                 document=document,
                 rho_type=document.title,
                 created=dateTime,
@@ -1647,17 +1793,14 @@ def delivery_auto(request):
                 imei=product.imei,
                 #name=row.Title,
                 name=product.name,
-                pre_remainder=remainder_current.current_remainder,
+                pre_remainder=pre_remainder,
                 incoming_quantity=row.Quantity,
                 outgoing_quantity=0,
-                current_remainder=remainder_current.current_remainder+ int(row.Quantity),
+                current_remainder=pre_remainder + int(row.Quantity),
                 wholesale_price=int(row.Price),
                 sub_total=int(row.Price) * int(row.Quantity),
             )
-            document_sum += int(remainder_history.sub_total)
-            remainder_current.current_remainder = remainder_history.current_remainder
-            remainder_current.save()
-
+            document_sum += int(rho.sub_total)
             if AvPrice.objects.filter(imei=row.Imei).exists():
                 av_price_obj = AvPrice.objects.get(imei=row.Imei)
                 av_price_obj.current_remainder += int(row.Quantity)
@@ -1677,21 +1820,19 @@ def delivery_auto(request):
                 sequence_rhos_after = RemainderHistory.objects.filter(
                     imei=row.Imei, shop=shop, created__gt=dateTime)
                 sequence_rhos_after = sequence_rhos_after.all().order_by("created")
+                pre_remainder=rho.current_remainder
                 for obj in sequence_rhos_after:
-                    obj.pre_remainder = remainder_current.current_remainder
+                    obj.pre_remainder = pre_remainder
                     obj.current_remainder = (
-                        remainder_current.current_remainder
+                        pre_remainder
                         + obj.incoming_quantity
                         - obj.outgoing_quantity
                     )
                     obj.save()
-                    remainder_current.current_remainder = obj.current_remainder
-                    remainder_current.save()
-
+                    pre_remainder = obj.current_remainder
         document.sum = document_sum
         document.save()
         return redirect("log")
-
     context = {
         "shops": shops,
         "suppliers": suppliers, 
@@ -2030,9 +2171,19 @@ def change_delivery_unposted(request, document_id):
             shop = Shop.objects.get(id=shop)
             supplier=request.POST['supplier']
             supplier=Supplier.objects.get(id=supplier)
+            #=============DateTime change unposted module=====================
             dateTime = request.POST["dateTime"]
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00) 
             dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+            #===========End of DateTime change unposted module
             imeis = request.POST.getlist("imei", None)
             names = request.POST.getlist("name", None)
             quantities = request.POST.getlist("quantity", None)
@@ -2142,6 +2293,9 @@ def change_delivery_unposted(request, document_id):
                         register.save()
                         document_sum += int(register.sub_total)
                     document.sum = document_sum
+                    document.created=dateTime
+                    document.shop_receiver=shop
+                    document.supplier=supplier
                     document.save()
                     return redirect("log")
         else:
@@ -2368,14 +2522,25 @@ def transfer_input(request, identifier_id):
                 shop_sender=Shop.objects.get(id=shop_sender)
                 shop_receiver = request.POST["shop_receiver"]
                 shop_receiver=Shop.objects.get(id=shop_receiver)
+           #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
-            # if 'dateTime' in request.POST:
-            #     dateTime=request.POST['dateTime']
             if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
             else:
-                dateTime = datetime.datetime.now()
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             if shop_sender == shop_receiver:
                 messages.error(request,"Документ не проведен.Выберите фирму получателя отличную от отправителя")
                 return redirect("transfer", identifier.id)
@@ -2576,12 +2741,19 @@ def change_transfer_unposted(request, document_id):
             shop_receiver = request.POST["shop_receiver"]
             shop_sender = Shop.objects.get(id=shop_sender)
             shop_receiver = Shop.objects.get(id=shop_receiver)
+            #=============DateTime change unposted module=====================
             dateTime = request.POST["dateTime"]
-            if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-            else:
-                dateTime = datetime.datetime.now()
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00) 
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+            #===========End of DateTime change unposted module
             if shop_sender == shop_receiver:
                 messages.error(request,"Документ не проведен. Выберите фирму получателя отличную от отправителя",)
                 return redirect("change_transfer_unposted", document.id)
@@ -2903,12 +3075,25 @@ def recognition_input(request, identifier_id):
             quantities = request.POST.getlist("quantity", None)
             prices = request.POST.getlist("price", None)
             sub_totals = request.POST.getlist("sub_total", None)
+            #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
             else:
-                dateTime = datetime.datetime.now()
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             try:
                 if request.POST["post_check"]:
                     post_check = True
@@ -3073,11 +3258,19 @@ def change_recognition_unposted(request, document_id):
             sub_totals = request.POST.getlist("sub_total", None)
             shop = Shop.objects.get(id=shop)
             # category=ProductCategory.objects.get(id=category)
-            if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-            else:
-                dateTime = datetime.datetime.now()
+            #=============DateTime change unposted module=====================
+            dateTime = request.POST["dateTime"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00) 
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+            #===========End of DateTime change unposted module
             try:
                 if request.POST["post_check"]:
                     post_check = True
@@ -3442,12 +3635,25 @@ def signing_off_input(request, identifier_id):
             quantities = request.POST.getlist("quantity", None)
             prices=request.POST.getlist('price', None)
             sub_totals=request.POST.getlist('sub_total', None)
+            #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
             else:
-                dateTime = datetime.datetime.now()
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             try:
                 if request.POST["post_check"]:
                     post_check = True
@@ -3665,14 +3871,24 @@ def change_signing_off_unposted (request, document_id):
         if request.method=='POST':
             shop = request.POST["shop"]
             shop = Shop.objects.get(id=shop)
-            dateTime = request.POST["dateTime"]
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
             imeis = request.POST.getlist("imei", None)
             names = request.POST.getlist("name", None)
             quantities = request.POST.getlist("quantity", None)
             prices = request.POST.getlist("price", None)
             sub_totals = request.POST.getlist("sub_total", None)
+            #=============DateTime change unposted module=====================
+            dateTime = request.POST["dateTime"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00) 
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+            #===========End of DateTime change unposted module
             try:
                 if request.POST["post_check"]:
                     post_check = True
@@ -3745,6 +3961,7 @@ def change_signing_off_unposted (request, document_id):
                 document.posted = True
                 document.sum=document_sum
                 document.created=dateTime
+                document.shop_sender=shop
                 document.save()
                 registers = Register.objects.filter(document=document)
                 for register in registers:
@@ -3766,6 +3983,7 @@ def change_signing_off_unposted (request, document_id):
                     document_sum+=int(register.sub_total)
                 document.sum = document_sum
                 document.created=dateTime
+                document.shop_sender=shop
                 document.save()
             return redirect("log")
         
@@ -3956,12 +4174,25 @@ def return_input(request, identifier_id):
             else:
                 shop=request.POST['shop']
                 shop=Shop.objects.get(id=shop)
+           #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
             else:
-                dateTime = datetime.datetime.now()   
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             imeis = request.POST.getlist("imei", None)
             names = request.POST.getlist("name", None)
             quantities = request.POST.getlist("quantity", None)
@@ -4122,11 +4353,19 @@ def change_return_unposted(request, document_id):
         quantities = request.POST.getlist("quantity", None)
         prices = request.POST.getlist("price", None)
         sub_totals = request.POST.getlist("sub_total", None)
-        if dateTime:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-        else:
-            dateTime = datetime.datetime.now()
+        #=============DateTime change unposted module=====================
+        dateTime = request.POST["dateTime"]
+        # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00) 
+        dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+        #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+        current_dt=datetime.datetime.now()
+        mics=current_dt.microsecond
+        tdelta_1=datetime.timedelta(microseconds=mics)
+        secs=current_dt.second
+        tdelta_2=datetime.timedelta(seconds=secs)
+        tdelta_3=tdelta_1+tdelta_2
+        dateTime=dateTime+tdelta_3
+        #===========End of DateTime change unposted module
         try:
             if request.POST["post_check"]:
                 post_check = True
@@ -4339,24 +4578,24 @@ def unpost_return(request, document_id):
     cho.delete()
     return redirect("log")
 #===============================================================================================
-def list_sale(request):
-    shops = Shop.objects.all()
-    if request.method == "POST":
-        shop = request.POST["shop"]
-        shop = Shop.objects.get(id=shop)
-        imei = request.POST["IMEI"]
-        start_date = request.POST["start_date"]
-        end_date = request.POST["end_date"]
-        sales = Sale.objects.filter(imei=imei, shop=shop)
-        if start_date:
-            sales = sales.filter(created__gte=start_date)
-        if end_date:
-            sales = sales.filter(created__lte=end_date)
-        context = {"sales": sales, "shops": shops}
-        return render(request, "documents/list_sale.html", context)
+# def list_sale(request):
+#     shops = Shop.objects.all()
+#     if request.method == "POST":
+#         shop = request.POST["shop"]
+#         shop = Shop.objects.get(id=shop)
+#         imei = request.POST["IMEI"]
+#         start_date = request.POST["start_date"]
+#         end_date = request.POST["end_date"]
+#         sales = Sale.objects.filter(imei=imei, shop=shop)
+#         if start_date:
+#             sales = sales.filter(created__gte=start_date)
+#         if end_date:
+#             sales = sales.filter(created__lte=end_date)
+#         context = {"sales": sales, "shops": shops}
+#         return render(request, "documents/list_sale.html", context)
 
-    context = {"shops": shops}
-    return render(request, "documents/list_sale.html", context)
+#     context = {"shops": shops}
+#     return render(request, "documents/list_sale.html", context)
 #=================================================================================================
 def identifier_revaluation(request):
     if request.user.is_authenticated:
@@ -4439,7 +4678,6 @@ def revaluation_input(request, identifier_id):
     doc_type = DocumentType.objects.get(name="Переоценка ТМЦ")
     if request.method == "POST":
         shop = request.POST["shop"]
-        dateTime = request.POST["dateTime"]
         # category=request.POST['category']
         imeis = request.POST.getlist("imei", None)
         names = request.POST.getlist("name", None)
@@ -4448,6 +4686,25 @@ def revaluation_input(request, identifier_id):
         # prices_current=request.POST.getlist('price_current', None)
         prices_new = request.POST.getlist("price_new", None)
         # shop=Shop.objects.get(id=shop)
+        #==============Time Module=========================================
+        dateTime=request.POST.get('dateTime', False)
+        if dateTime:
+            # converting dateTime in str format (2021-07-08T01:05) to django format ()
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+        else:
+            tdelta=datetime.timedelta(hours=3)
+            dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+            dateTime=dT_utcnow+tdelta
+            #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+            #==================End of time module================================
         if imeis:
             if dateTime:
                 # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
@@ -4539,20 +4796,32 @@ def cash_off_salary(request):
             if request.user in users_sales:
                 session_shop=request.session['session_shop']
                 shop=Shop.objects.get(id=session_shop)
-                dateTime=datetime.datetime.now()
             else:
                 shop=request.POST['shop']
                 shop=Shop.objects.get(id=shop)
-                dateTime=request.POST.get('dateTime', False)
-                if dateTime:
-                    # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                    dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-                else:
-                    dateTime = datetime.datetime.now()
             cash_receiver = request.POST["cash_receiver"]
             cash_receiver=User.objects.get(id=cash_receiver)
             sum = request.POST["sum"]
             sum = int(sum)
+            #==============Time Module=========================================
+            dateTime=request.POST.get('dateTime', False)
+            if dateTime:
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
+            else:
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             try:
                 if request.POST["post_check"]:
                     post_check = True
@@ -4664,10 +4933,21 @@ def change_cash_off_salary_unposted (request, document_id):
         cash_receiver = request.POST["cash_receiver"]
         cash_receiver=User.objects.get(id=cash_receiver)
         shop = Shop.objects.get(id=shop)
-        dateTime = request.POST["dateTime"]
-        dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
         sum = request.POST["sum"]
         sum = int(sum)
+        #=============DateTime change unposted module=====================
+        dateTime = request.POST["dateTime"]
+        # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00) 
+        dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+        #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+        current_dt=datetime.datetime.now()
+        mics=current_dt.microsecond
+        tdelta_1=datetime.timedelta(microseconds=mics)
+        secs=current_dt.second
+        tdelta_2=datetime.timedelta(seconds=secs)
+        tdelta_3=tdelta_1+tdelta_2
+        dateTime=dateTime+tdelta_3
+        #===========End of DateTime change unposted module
         try:
             if request.POST["post_check"]:
                 post_check = True
@@ -4777,22 +5057,33 @@ def cash_off_expenses(request):
             if request.user in users:
                 session_shop=request.session['session_shop']
                 shop=Shop.objects.get(id=session_shop)
-                dateTime=datetime.datetime.now()
             else:
                 shop=request.POST['shop']
                 shop=Shop.objects.get(id=shop)
-                dateTime=request.POST.get('dateTime', False)
-                if dateTime:
-                    # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                    dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-                else:
-                    dateTime = datetime.datetime.now()
             doc_type = DocumentType.objects.get(name="РКО (хоз.расходы)")
-           
             expense = request.POST["expense"]
             expense = Expense.objects.get(id=expense)
             sum = request.POST["sum"]
             sum = int(sum)
+            #==============Time Module=========================================
+            dateTime=request.POST.get('dateTime', False)
+            if dateTime:
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
+            else:
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             try:
                 if request.POST["post_check"]:
                     post_check = True
@@ -4898,12 +5189,23 @@ def change_cash_off_expenses_unposted (request, document_id):
         doc_type = DocumentType.objects.get(name="РКО (хоз.расходы)")
         shop = request.POST["shop"]
         shop = Shop.objects.get(id=shop)
-        dateTime = request.POST["dateTime"]
-        dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
         expense = request.POST ["expense"]
         expense = Expense.objects.get(id=expense)
         sum = request.POST["sum"]
         sum = int(sum)
+        #=============DateTime change unposted module=====================
+        dateTime = request.POST["dateTime"]
+        # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00) 
+        dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+        #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+        current_dt=datetime.datetime.now()
+        mics=current_dt.microsecond
+        tdelta_1=datetime.timedelta(microseconds=mics)
+        secs=current_dt.second
+        tdelta_2=datetime.timedelta(seconds=secs)
+        tdelta_3=tdelta_1+tdelta_2
+        dateTime=dateTime+tdelta_3
+        #===========End of DateTime change unposted module  
         try:
             if request.POST["post_check"]:
                 post_check = True
@@ -5013,12 +5315,25 @@ def cash_receipt(request):
             contributor = Contributor.objects.get(id=contributor)
             sum = request.POST["sum"]
             sum = int(sum)
+            #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
             else:
-                dateTime = datetime.datetime.now()
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             try:
                 if request.POST["post_check"]:
                     post_check = True
@@ -5121,19 +5436,25 @@ def change_cash_receipt_unposted (request, document_id):
         if request.method == "POST":
             doc_type = DocumentType.objects.get(name="ПКО")
             shop = request.POST["shop"]
-            shop = Shop.objects.get(id=shop)
-            dateTime = request.POST["dateTime"]
             voucher = request.POST["voucher"]
             voucher = Voucher.objects.get(id=voucher)
             contributor = request.POST["contributor"]
             contributor = Contributor.objects.get(id=contributor)
             sum = request.POST["sum"]
             sum = int(sum)
-            if dateTime:
-                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-            else:
-                dateTime = datetime.datetime.now()
+            #=============DateTime change unposted module=====================
+            dateTime = request.POST["dateTime"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00) 
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+            #===========End of DateTime change unposted module
             try:
                 if request.POST["post_check"]:
                     post_check = True
@@ -5170,6 +5491,8 @@ def change_cash_receipt_unposted (request, document_id):
                 document.sum = sum
                 document.created=dateTime
                 document.shop_receiver=shop
+                register.voucher=voucher
+                register.contributor=contributor
                 document.posted=True
                 document.save()
                 register.delete()
@@ -5242,19 +5565,32 @@ def cash_movement(request):
                 session_shop=request.session['session_shop']
                 shop_cash_sender=Shop.objects.get(id=session_shop)
                 shop_cash_receiver=Shop.objects.get(name='ООС')
-                dateTime=datetime.datetime.now()
             else:
                 shop_cash_sender = request.POST["shop_cash_sender"]
                 shop_cash_sender = Shop.objects.get(id=shop_cash_sender)
                 shop_cash_receiver = request.POST["shop_сash_receiver"]
                 shop_cash_receiver = Shop.objects.get(id=shop_cash_receiver)
-                dateTime=request.POST.get('dateTime', False)
-                if dateTime:
-                    dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-                else:
-                    dateTime=datetime.datetime.now()
             sum = request.POST["sum"]
             sum = int(sum)
+            #==============Time Module=========================================
+            dateTime=request.POST.get('dateTime', False)
+            if dateTime:
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
+            else:
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             try:
                 if request.POST["post_check"]:
                     post_check = True
@@ -5378,13 +5714,25 @@ def change_cash_movement_unposted (request, document_id):
     doc_type = DocumentType.objects.get(name="Перемещение денег")
     shops = Shop.objects.all()
     if request.method == "POST":
-        dateTime = request.POST["dateTime"]
         shop_cash_sender = request.POST["shop_cash_sender"]
         shop_cash_sender = Shop.objects.get(id=shop_cash_sender)
         shop_cash_receiver = request.POST["shop_cash_receiver"]
         shop_cash_receiver = Shop.objects.get(id=shop_cash_receiver)
         sum = request.POST["sum"]
         sum = int(sum)
+        #=============DateTime change unposted module=====================
+        dateTime = request.POST["dateTime"]
+        # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00) 
+        dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+        #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+        current_dt=datetime.datetime.now()
+        mics=current_dt.microsecond
+        tdelta_1=datetime.timedelta(microseconds=mics)
+        secs=current_dt.second
+        tdelta_2=datetime.timedelta(seconds=secs)
+        tdelta_3=tdelta_1+tdelta_2
+        dateTime=dateTime+tdelta_3
+        #===========End of DateTime change unposted module
         try:
             if request.POST["post_check"]:
                 post_check = True
@@ -5517,36 +5865,38 @@ def inventory(request, identifier_id):
         shop = Shop.objects.get(id=shop)
         category = request.POST["category"]
         category = ProductCategory.objects.get(id=category)
-        dateTime = request.POST["dateTime"]
+       #==============Time Module=========================================
+        dateTime=request.POST.get('dateTime', False)
         if dateTime:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            # converting dateTime in str format (2021-07-08T01:05) to django format ()
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
         else:
-            dateTime = datetime.now()
-        if dateTime == datetime.now():
-            remainder_currents=RemainderCurrent.objects.filter(category=category, shop=shop)
-            for obj in remainder_currents:
-                register=Register.objects.create(
-                    identifier=identifier,
-                    shop=shop,
-                    name=obj.name,
-                    imei=obj.imei,
-                    quantity=obj.current_remainder,
-                    price=obj.retail_price
-                )
-        else:
-            remainder_currents=RemainderCurrent.objects.filter(category=category, shop=shop)
-            for obj in remainder_currents:
-                sequence_rhos_before = RemainderHistory.objects.filter(imei=obj.imei, shop=shop, created__lt=dateTime)
-                remainder_history = sequence_rhos_before.latest("created")
-                register=Register.objects.create(
-                    identifier=identifier,
-                    shop=shop,
-                    name=remainder_history.name,
-                    imei=remainder_history.imei,
-                    quantity=remainder_history.current_remainder,
-                    price=remainder_history.retail_price
-                )
+            tdelta=datetime.timedelta(hours=3)
+            dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+            dateTime=dT_utcnow+tdelta
+            #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+            #==================End of time module================================
+
+        products=Product.objects.filter(category=category)
+        for obj in products:
+            sequence_rhos_before = RemainderHistory.objects.filter(imei=obj.imei, shop=shop, created__lt=dateTime)
+            remainder_history = sequence_rhos_before.latest("created")
+            register=Register.objects.create(
+                identifier=identifier,
+                shop=shop,
+                name=remainder_history.name,
+                imei=remainder_history.imei,
+                quantity=remainder_history.current_remainder,
+                price=remainder_history.retail_price
+            )
         registers=Register.objects.filter(identifier=identifier)
         сontext = {
             "registers": registers, 
