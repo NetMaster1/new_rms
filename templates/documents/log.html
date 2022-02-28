@@ -6,18 +6,14 @@
 <div class="container">
     <!-- <div class="page-location"> -->
 
-    <div class="log border rounded">
-        <div class="row">
+        <div class="row mt-1">
             <h3>Журнал документов</h3>
         </div>
-    </div> 
-
+    
     <div class="log border rounded">
             <form action="{% url 'log' %}" method="POST">
                 {% csrf_token %}
-     
-            <div class="row form-row mt-2">
-    
+            <div class="row form-row mt-1">
                     <div class="col-2">
                         <input type="date" id='start_date' name="start_date" class='form-control'>
                     </div>
@@ -32,7 +28,6 @@
                         {% endfor %}
                     </select>
                 </div>
-        
                 <div class="col-2">
                     <select name="supplier" id="supplier" class='form-control'>
                         <option value="">Выберите поставщика</option>
@@ -41,7 +36,6 @@
                         {% endfor %}
                     </select>
                 </div>
-
                 <div class="col-2">
                     <select name="shop" id="shop" class='form-control'>
                         <option value="">Выберите торговую точку</option>
@@ -50,7 +44,6 @@
                         {% endfor %}
                     </select>
                 </div>
-        
                 <div class="col-2">
                     <select name="user" id="user" class='form-control'>
                         <option value="">Выберите автора</option>
@@ -60,7 +53,6 @@
                     </select>
                 </div>
             </div>
-        
            <div class="row mt-2 mb-2">
                         <div class="col-2">
                             <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark form-control">
@@ -77,31 +69,29 @@
             </form>      
     </div>
 
-<div class="log border rounded">
-
-    <div class="row mt-3">
+<div class="log border rounded overflow-scroll" style="height:40rem" >
+    <div class="row m-auto">
         <div class="col-1 m-auto">
             <h4>Статус</h4>
         </div>
         <div class="col-2 m-auto">
             <h4>Дата</h4>
         </div>
-        <div class="col-2 m-auto">
+        <div class="col-3 m-auto">
             <h4>Документ</h4>
         </div>
-        <div class="col-1 m-auto">
+        <div class="col-2 m-auto">
             <h4>Сумма</h4>
         </div>
-        <div class="col-3 m-auto">
-            <h4>Доп. информация</h4>
+        <div class="col-2 m-auto">
+            <h4>Инфо</h4>
         </div>
         <div class="col-2 m-auto">
             <h4>Автор</h4>
         </div>
     </div>
-    
-
-<div class="row">
+    <hr>
+ 
 {% for document in queryset_list %}
 <div class="row">
         <div class="col-1 m-auto">
@@ -118,7 +108,7 @@
         </div>
 
 
-    <div class="col-2 m-auto">
+    <div class="col-3 m-auto">
     {% if document.title.name == 'Поступление ТМЦ' %}
             {% if document.posted == True %}
         <a href="{% url 'change_delivery_posted' document.id %}">{{document.title}} #{{document.id}}</a>
@@ -200,13 +190,13 @@
      
 
        <!-- ============================Document Sum Column============================================ -->
-        <div class="col-1 m-auto">
+        <div class="col-2 m-auto">
             {{document.sum}} руб.
         </div>
 
 
         <!-- ==============================Document Additional Info======================================== -->
-        <div class="col-3 m-auto">
+        <div class="col-2 m-auto">
             
     {% if document.title.name == 'Поступление ТМЦ' %}
     {{document.shop_receiver}}
@@ -246,10 +236,53 @@
         <!-- =========================== Creator Column==================================== -->
         <div class="col-2 m-auto">{{document.user.first_name}} {{document.user.last_name}}</div>
 </div>
+
 {% endfor %}
+
 </div>
-               
+
+<!-- ========================Pagination  module=============================== -->
+<div class="row mt-1">
+    <div class="col-5 m-auto">
+    {% if queryset_list.has_other_pages %}
+    <ul class="pagination">
+        {% if queryset_list.has_previous %}
+        <li class="page-item">
+            <a href="?page={{1}}" class="page-link">В начало</a>
+        </li>
+        <li class="page-item">
+            <a href="?page={{queryset_list.previous_page_number}}" class="page-link">&laquo;</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link">&laquo;</a>
+        </li>
+        {% endif %}
+        {% for i in queryset_list.paginator.page_range%}
+        {% if queryset_list.number == i %}
+        <li class="page-item active">
+            <a class="page-link">{{i}}</a>
+        </li>
+        {% elif i > queryset_list.number|add:'-3' and i < queryset_list.number|add:'3' %} <li class="page-item">
+            <a class='page-link' href="?page={{i}}" class="page-link">{{i}}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if queryset_list.has_next %}
+            <li class="page-item">
+                <a href="?page={{queryset_list.next_page_number}}" class="page-link">&raquo;</a>
+            </li>
+            <li class="page-item">
+                <a href="?page={{queryset_list.paginator.num_pages}}" class="page-link">В конец</a>
+            </li>
+            {% endif %}
+    </ul>
+    {% endif %}
 </div>
+</div>
+<!-- ==============================End of pagination module============================ -->
+
+
 
 </div>
 {% endblock %}
