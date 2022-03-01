@@ -22,28 +22,40 @@
 </head>
 
 <body>
-    <h1>ООО Ритейл ИНН 5257173237</h1>
+    <h1>ООО Ритейл <br>
+    ИНН 5257173237 <br>
+    Документ: Перемещение ТМЦ №{{document.id}} <br>
+    {{document.created}}</body></h1>
+
+
     <table style="width:100%">
         <tr>
             <th>#</th>
             <th>Наименование</th>
             <th>IMEI</th>
-            <th>Кол-во</th>
-            <th>Цена</th>
-            <th>Сумма</th>
+            <th>Кол-во, шт.</th>
+            <th>Цена, руб.</th>
+            <th>Сумма, руб.</th>
         </tr>
-        <tr>{{document.created}}</tr>
-        {% for register in registers %}
+       
+        {% for rho in rhos %}
         <tr>
-            <td>{{register.number}}</td>
-            <td>{{register.product.name}}</td>
-            <td>{{register.product.imei}}</td>
-            <td>{{register.quantity}}</td>
-            <td>{{register.price}}</td>
-            <td>{{register.sub_total}}</td>
+            <td>{{rho.number}}</td>
+            <td>{{rho.name}}</td>
+            <td>{{rho.imei}}</td>
+            <td>{{rho.incoming_quantity}}</td>
+            <td>{{rho.retail_price}}</td>
+            <td>{{rho.sub_total}}</td>
         </tr>
         {% endfor %}
-
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>{{total_sum}} руб.</td>
+        </tr>
     </table>
 
     <br><br>
