@@ -342,7 +342,7 @@ def remainder_input (request):
                     )
                 product = Product.objects.get(imei=row.Imei)
                 # checking docs before remainder_history
-                if RemainderHistory.objects.filter(imei=row.Imei, shop=row.shop, created__lt=dateTime).exists():
+                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).exists():
                     rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).latest('created)')
                     pre_remainder=rho_latest_before.current_remainder
                 else:
@@ -6439,7 +6439,14 @@ class DownloadPDF(View):
     # def get(self, request, *args, **kwargs):
     def get(self, request, document_id):
         document=Document.objects.get(id=document_id)
-        registers=Register.objects.filter(document=document)
+        rhos=RemainderHistory.objects.filter(document=document, status = True)
+        total_sum=0
+        numbers = rhos.count()
+        for rho, i in zip(rhos, range(numbers)):
+            rho.number = i + 1
+            rho.save()
+            total_sum+=rho.sub_total
+        rhos=RemainderHistory.objects.filter(document=document, status = True) 
         # invoice = OrderItem.objects.filter(order=pk)
         # order = Order.objects.get(id=pk)
         # new_total = 0.00
@@ -6449,8 +6456,9 @@ class DownloadPDF(View):
         #     new_total += line_total
         #     counter += item.quantity
         data = {
-            'registers': registers,
-            'document': document
+            'rhos': rhos,
+            'document': document,
+            'total_sum': total_sum,
         }
         pdf = render_to_pdf('pdf_transfer.html', data)
         response = HttpResponse(pdf, content_type='application/pdf')
