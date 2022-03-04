@@ -20,9 +20,11 @@ from django.contrib import messages
 import pandas as pd
 import xlwt
 from datetime import datetime, date
-from openpyxl.workbook import Workbook
+#from openpyxl.workbook import Workbook
+from openpyxl import Workbook, load_workbook
 from django.http import HttpResponse, JsonResponse
 import datetime
+import pytz
 
 # Create your views here.
 
@@ -151,98 +153,32 @@ def save_in_excel_daily_rep(request):
         }
         return render (request, 'reports/sample.html', context)
 
-def save_in_excel (request):
-    pass
-
 def daily_report (request):
     
     return render (request, 'reports/daily_sales.html')
-
-def daily_pay_card_rep (request):
-    shops=Shop.objects.all()
-    if request.method == "POST":
-        date=request.POST.get('date', False)
-        if date:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            date = datetime.datetime.strptime(date, "%Y-%m-%d")
-        else:
-            date = datetime.date.today()
-        tdelta=datetime.timedelta(days=1)
-        next_date=date+tdelta
-        print(date)
-        print(next_date)
-        dateTime=date.strftime('%Y-%m-%d')
-        product=Product.objects.get(imei=2626)
-        report_id=ReportTempId.objects.create()
-        #========================================================
-        for shop in shops:
-            if RemainderHistory.objects.filter(imei=product.imei, created__date=date, shop=shop).exists():
-                rhos=RemainderHistory.objects.filter(imei=product.imei, created__date=date, shop=shop)
-                incoming_sum=0
-                outgoing_sum=0
-                for rho in rhos:
-                    incoming_sum+=rho.incoming_quantity
-                    outgoing_sum+=rho.outgoing_quantity
-            else:
-                incoming_sum=0
-                outgoing_sum=0
-        #=======================================================
-            if RemainderHistory.objects.filter(imei=product.imei, created__lt=date, shop=shop).exists():
-                rho=RemainderHistory.objects.filter(imei=product.imei, created__lt=date, shop=shop).latest('created')
-                pre_remainder=rho.current_remainder
-            else:
-                pre_remainder=0
-        #==========================================================================
-            if RemainderHistory.objects.filter(imei=product.imei, created__lt=next_date, shop=shop).exists():
-                rhos=RemainderHistory.objects.filter(imei=product.imei, created__lt=next_date, shop=shop)
-                rho=RemainderHistory.objects.filter(imei=product.imei, created__lt=next_date, shop=shop).latest('created')
-                current_remainder=rho.current_remainder
-            else:
-                current_remainder=0  
-        #=========================================================
-            pay_card_rep=PayCardReport.objects.create(
-                report_id=report_id,
-                shop=shop,
-                created=dateTime,
-                product=product,
-                pre_remainder=pre_remainder,
-                incoming_quantity=incoming_sum,
-                outgoing_quantity=outgoing_sum,
-                current_remainder=current_remainder    
-            )
-        qs=PayCardReport.objects.filter(report_id=report_id).order_by('shop').values()
-        data=pd.DataFrame(qs)
-        data=data.drop('report_id_id', 1)#deleting 'report_id' column
-        data=data.drop('product', 1)#deleting 'report_id' column
-        data.set_index('id', inplace=True)
-        data.set_index('shop', inplace=True)#sets column as titles for rows & deletes 
-        data=data.T #transposing the dataframe
-        print(data)
-        context = {
-            'data': data.to_html(),
-        }
-        return render (request, 'reports/daily_pay_card_rep.html', context)
-    else:
-        return render (request, 'reports/daily_pay_card_rep.html')
+#===============================================================
 
 
-def reports(request):
-    return render(request, "reports/reports.html")
 
 def close_report(request):
-    users = Group.objects.get(name='sales').user_set.all()
-    if ReportTempId.objects.filter(existance_check=True).exists():
-        report_ids_temp=ReportTempId.objects.all()
-        for obj in report_ids_temp:
-            obj.delete()
-    if ReportTemp.objects.filter(existance_check=True).exists():
-        reports_temp=ReportTemp.objects.all()
-        for obj in reports_temp:
-            obj.delete()
-    if request.user in users:
-        return redirect ('sale_interface')
+    if request.user.is_authenticated:
+        users = Group.objects.get(name='sales').user_set.all()
+        if ReportTempId.objects.filter(existance_check=True).exists():
+            report_ids_temp=ReportTempId.objects.all()
+            for obj in report_ids_temp:
+                obj.delete()
+        if ReportTemp.objects.filter(existance_check=True).exists():
+            reports_temp=ReportTemp.objects.all()
+            for obj in reports_temp:
+                obj.delete()
+        if request.user in users:
+            return redirect ('sale_interface')
+        else:
+            return redirect("log")
     else:
-        return redirect("log")
+        auth.logout(request)
+        return redirect("login")
+
 
 def close_remainder_report(request):
     users = Group.objects.get(name='sales').user_set.all()
@@ -390,44 +326,19 @@ def remainder_report(request):
             if request.user in group:
                 shop=request.POST["shop"]
                 shop=Shop.objects.get(id=shop)
-            #     date=request.POST.get('date', False)
-            #     if date:
-            #         # converting HTML date format (2021-07-08) to django format (2021-07-10 01:05:00)
-            #         date = datetime.datetime.strptime(date, "%Y-%m-%d")
-            #     else:
-            #         date = datetime.date.today()
-            #     #date is given as 2022-01-28 00:00:00 (start of the day). To make it the end of the day
-            #     #we add 1 day to 2022-01-28 00:00:00. By doing so we include all the documents issued during the current date
-            #     # tdelta=datetime.timedelta(seconds=86399)
-            #     tdelta_1=datetime.timedelta(days=1)
-            #     date= (date+tdelta_1)
-            # else:
-            #     session_shop=request.session['session_shop']
-            #     #session_shop=request.session.get['session_shop']
-            #     shop=Shop.objects.get(id=session_shop)
-            #     date=datetime.date.today()
-            #     tdelta_1=datetime.timedelta(days=1)
-            #     date= (date+tdelta_1)
-
-            # array=[]
-            # #products=Product.objects.filter(category=category)
-            # products=Product.objects.filter(category=category)
-            # for product in products:
-            #     imei=product.imei
-            #     if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
-            #         rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
-            #         if rho.current_remainder > 0:
-            #             array.append(rho)
-            # context = {
-            #     'date': date,
-            #     'shop': shop,
-            #     'array': array,
-            #     "category": category,
-            #     'categories': categories,
-            #     'shops': shops
-            # }
-            return redirect ('remainder_report_output', shop.id, category.id)   
-            #return render (request, 'reports/remainder_report.html', context)   
+            else:
+                session_shop=request.session['session_shop']
+                shop=Shop.objects.get(id=session_shop)
+            #==============Time Module=========================================
+            date=request.POST.get('date', False)
+            if date:
+                date=date
+                date = datetime.datetime.strptime(date, "%Y-%m-%d")
+            else:
+                date=datetime.date.today()
+            tdelta_1=datetime.timedelta(days=1)
+            date= (date+tdelta_1)
+            return redirect ('remainder_report_output', shop.id, category.id, date)     
         else:
             context = {
                 "shops": shops,
@@ -438,15 +349,52 @@ def remainder_report(request):
         auth.logout(request)
         return redirect("login")
 
-def remainder_report_output(request, shop_id, category_id):
+def remainder_report_excel(request, shop_id, category_id, date):
+    users=Group.objects.get(name="sales").user_set.all()
     if request.user.is_authenticated:
-        date=datetime.date.today()
-        tdelta_1=datetime.timedelta(days=1)
-        date= (date+tdelta_1)
+        date=date
+        shop=Shop.objects.get(id=shop_id)
+        category=ProductCategory.objects.get(id=category_id)
+        products=Product.objects.filter(category=category)
+        report_id=ReportTempId.objects.create()
+        for product in products:
+            imei=product.imei
+            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+                rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
+                if rho.current_remainder > 0:
+                    if shop.retail==True:
+                        price=rho.retail_price
+                    else:
+                        price=rho.wholesale_price
+                    report=ReportTemp.objects.create(
+                        report_id=report_id,
+                        name=rho.name,
+                        imei=rho.imei,
+                        end_remainder=rho.current_remainder,
+                        price=price
+                    )
+        report_query=ReportTemp.objects.filter(report_id=report_id)
+        query = report_query.values("name", "imei", "end_remainder", "price")
+        data=pd.DataFrame.from_records(query)
+        data.to_excel("C:/Users/NetUser/RemainderReport.xlsx", index=False)
+
+        for i in report_query:
+            i.delete()
+        report_id.delete()
+        if request.user in users:
+            return redirect ('sale_interface')
+        else:
+            return redirect("log")
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+def remainder_report_output(request, shop_id, category_id, date):
+    if request.user.is_authenticated:
+        date=date
         shop=Shop.objects.get(id=shop_id)
         category=ProductCategory.objects.get(id=category_id)
         array=[]
-        #products=Product.objects.filter(category=category)
         products=Product.objects.filter(category=category)
         for product in products:
             imei=product.imei
@@ -522,8 +470,6 @@ def remainder_list (request, shop_id, category_id):
     print('##########################')
     print(remainders)
     print('##########################')
-
-
     df=pd.DataFrame(remainders)
     print(df.shape)#displays the number of rows & columns
     print('##########################')
@@ -538,7 +484,6 @@ def remainder_list (request, shop_id, category_id):
     return render (request, 'reports/remainder_report_output.html', context)
 
 #======================================================================
-
 def remainder_report_dynamic(request):
     products=Product.objects.all()
     categories = ProductCategory.objects.all()
@@ -626,6 +571,190 @@ def item_report(request):
             return render(request, "reports/item_report.html")
     else:
         return redirect ('login')
+#====================================================================
+def cash_report(request):
+    shops = Shop.objects.all()
+    queryset_list = Cash.objects.all()
+    context = {
+        "queryset_list": queryset_list, 
+        "shops": shops}
+
+    return render(request, "reports/cash_report.html", context)
+
+def credit_report(request):
+    shops=Shop.objects.all()
+    credits=Credit.objects.all()
+    users=User.objects.all()
+    if request.method == "POST":
+        date_start = request.POST["date_start"]
+        date_end = request.POST["date_end"]
+        shop = request.POST["shop"]
+        user = request.POST["user"]
+    
+    context = {
+        'shops': shops,
+        'users': users
+    }
+    return render(request, 'reports/credit_report.html', context)
+
+def card_report(request):
+    shops=Shop.objects.all()
+    cards=Card.objects.all()
+    users=User.objects.all()
+    if request.method == "POST":
+        date_start = request.POST["date_start"]
+        date_end = request.POST["date_end"]
+        shop = request.POST["shop"]
+        user = request.POST["user"]
+    context = {
+        'shops': shops,
+        'users': users
+    }
+    return render(request, 'reports/card_report.html', context)
+
+def daily_pay_card_rep (request):
+    shops=Shop.objects.all()
+    if request.method == "POST":
+        date=request.POST.get('date', False)
+        if date:
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        else:
+            date = datetime.date.today()
+        tdelta=datetime.timedelta(days=1)
+        next_date=date+tdelta
+        print(date)
+        print(next_date)
+        dateTime=date.strftime('%Y-%m-%d')
+        product=Product.objects.get(imei=2626)
+        report_id=ReportTempId.objects.create()
+        #========================================================
+        for shop in shops:
+            if RemainderHistory.objects.filter(imei=product.imei, created__date=date, shop=shop).exists():
+                rhos=RemainderHistory.objects.filter(imei=product.imei, created__date=date, shop=shop)
+                incoming_sum=0
+                outgoing_sum=0
+                for rho in rhos:
+                    incoming_sum+=rho.incoming_quantity
+                    outgoing_sum+=rho.outgoing_quantity
+            else:
+                incoming_sum=0
+                outgoing_sum=0
+        #=======================================================
+            if RemainderHistory.objects.filter(imei=product.imei, created__lt=date, shop=shop).exists():
+                rho=RemainderHistory.objects.filter(imei=product.imei, created__lt=date, shop=shop).latest('created')
+                pre_remainder=rho.current_remainder
+            else:
+                pre_remainder=0
+        #==========================================================================
+            if RemainderHistory.objects.filter(imei=product.imei, created__lt=next_date, shop=shop).exists():
+                rhos=RemainderHistory.objects.filter(imei=product.imei, created__lt=next_date, shop=shop)
+                rho=RemainderHistory.objects.filter(imei=product.imei, created__lt=next_date, shop=shop).latest('created')
+                current_remainder=rho.current_remainder
+            else:
+                current_remainder=0  
+        #=========================================================
+            pay_card_rep=PayCardReport.objects.create(
+                report_id=report_id,
+                shop=shop,
+                created=dateTime,
+                product=product,
+                pre_remainder=pre_remainder,
+                incoming_quantity=incoming_sum,
+                outgoing_quantity=outgoing_sum,
+                current_remainder=current_remainder    
+            )
+        qs=PayCardReport.objects.filter(report_id=report_id).order_by('shop').values()
+        data=pd.DataFrame(qs)
+        data=data.drop('report_id_id', 1)#deleting 'report_id' column
+        data=data.drop('product', 1)#deleting 'report_id' column
+        data.set_index('id', inplace=True)
+        data.set_index('shop', inplace=True)#sets column as titles for rows & deletes 
+        data=data.T #transposing the dataframe
+        print(data)
+        context = {
+            'data': data.to_html(),
+        }
+        return render (request, 'reports/daily_pay_card_rep.html', context)
+    else:
+        return render (request, 'reports/daily_pay_card_rep.html')
+#=====================================================================
+def salary_report (request):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            print(start_date)
+            end_date = request.POST["end_date"]
+            print(end_date)
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            tdelta=datetime.timedelta(days=1)
+            end_date=end_date+tdelta
+            print(start_date)
+            print(end_date)
+            arr=[]
+            users=User.objects.all()
+            for user in users:
+                dict={}
+                sum=0
+                qs=user.cash_receiver.filter(created__gte=start_date, created__lte=end_date)
+                for item in qs:
+                    sum+=int(item.cash_out)
+                dict[user]=sum
+                arr.append(dict)
+            context = {
+                'arr': arr
+            }
+            return render (request, 'reports/salary_report.html', context)
+        else:
+            return render (request, 'reports/salary_report.html')
+    else:
+        return redirect ('login')
+
+def bonus_report_excel (request):
+    users = User.objects.all()
+    categories=ProductCategory.objects.all()
+    doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+   
+    #start_date = request.POST["start_date"]
+    # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+    #start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
+    #end_date = request.POST["end_date"]
+    #end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
+    rhos=RemainderHistory.objects.filter(rho_type=doc_type)
+
+    #=======================Saving in Excel==============================================
+    wb=Workbook()
+    ws=wb.active
+    ws.title="Bonus"
+   
+    #====================================End of Saving in Excel==========================
+
+    #=====================================Array Version==========================================
+    starting_row=2
+    for user in users:
+        ws.cell(row=starting_row, column=1).value = user.last_name
+        
+        starting_column=2
+        for category in categories:
+            ws.cell(column=starting_column, row=1).value = category.name
+            
+            if rhos.filter(user=user, category=category).exists():
+                rhos=rhos.filter(user=user, category=category)
+                sales=0
+                for rho in rhos:
+                    sales+=rho.retail_price*rho.outgoing_quantity*category.bonus_percent
+            else:
+                sales=0
+
+            ws.cell(column=starting_column, row=starting_row).value = sales
+            starting_column+=1
+        starting_row+=1
+                
+    wb.save('names.xlsx')
+
+    return redirect ('log')
 
 def bonus_report(request):
     users = User.objects.all()
@@ -721,124 +850,3 @@ def bonus_report(request):
         #'users': users
     }
     return render(request, "reports/bonus_report.html", context)
-
-def bonus_report_excel (request):
-    users = User.objects.all()
-    categories=ProductCategory.objects.all()
-    doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
-   
-    #start_date = request.POST["start_date"]
-    # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-    #start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
-    #end_date = request.POST["end_date"]
-    #end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
-    rhos=RemainderHistory.objects.filter(rho_type=doc_type)
-
-    #=======================Saving in Excel==============================================
-    wb=Workbook()
-    ws=wb.active
-    ws.title="Bonus"
-   
-    #====================================End of Saving in Excel==========================
-
-    #=====================================Array Version==========================================
-    starting_row=2
-    for user in users:
-        ws.cell(row=starting_row, column=1).value = user.last_name
-        
-        starting_column=2
-        for category in categories:
-            ws.cell(column=starting_column, row=1).value = category.name
-            
-            if rhos.filter(user=user, category=category).exists():
-                rhos=rhos.filter(user=user, category=category)
-                sales=0
-                for rho in rhos:
-                    sales+=rho.retail_price*rho.outgoing_quantity*category.bonus_percent
-            else:
-                sales=0
-
-            ws.cell(column=starting_column, row=starting_row).value = sales
-            starting_column+=1
-        starting_row+=1
-                
-    wb.save('names.xlsx')
-
-    return redirect ('log')
-
-def cash_report(request):
-    shops = Shop.objects.all()
-    queryset_list = Cash.objects.all()
-    context = {
-        "queryset_list": queryset_list, 
-        "shops": shops}
-
-    return render(request, "reports/cash_report.html", context)
-
-def card_report(request):
-    shops=Shop.objects.all()
-    cards=Card.objects.all()
-    users=User.objects.all()
-    if request.method == "POST":
-        date_start = request.POST["date_start"]
-        date_end = request.POST["date_end"]
-        shop = request.POST["shop"]
-        user = request.POST["user"]
-        
-    
-    context = {
-        'shops': shops,
-        'users': users
-    }
-    return render(request, 'reports/card_report.html', context)
-
-def credit_report(request):
-    shops=Shop.objects.all()
-    credits=Credit.objects.all()
-    users=User.objects.all()
-    if request.method == "POST":
-        date_start = request.POST["date_start"]
-        date_end = request.POST["date_end"]
-        shop = request.POST["shop"]
-        user = request.POST["user"]
-    
-    context = {
-        'shops': shops,
-        'users': users
-    }
-    return render(request, 'reports/credit_report.html', context)
-
-def salary_report (request):
-    if request.user.is_authenticated:
-        if request.method == "POST":
-            start_date = request.POST["start_date"]
-            print(start_date)
-            end_date = request.POST["end_date"]
-            print(end_date)
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-            tdelta=datetime.timedelta(days=1)
-            end_date=end_date+tdelta
-            print(start_date)
-            print(end_date)
-            arr=[]
-            users=User.objects.all()
-            for user in users:
-                dict={}
-                sum=0
-                qs=user.cash_receiver.filter(created__gte=start_date, created__lte=end_date)
-                for item in qs:
-                    sum+=int(item.cash_out)
-                dict[user]=sum
-                arr.append(dict)
-            context = {
-                'arr': arr
-            }
-            return render (request, 'reports/salary_report.html', context)
-        else:
-            return render (request, 'reports/salary_report.html')
-    else:
-        return redirect ('login')
-
-

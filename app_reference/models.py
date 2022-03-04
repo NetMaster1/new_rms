@@ -34,7 +34,7 @@ class DocumentType (models.Model):
     name = models.CharField(max_length=250)
 
     class Meta:
-        verbose_name='document'
+        verbose_name='documentType'
     def __str__(self):
         return self.name
 

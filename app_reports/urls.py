@@ -2,14 +2,13 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path ('', views.reports, name='reports'),
+
     path ('close_report', views.close_report, name='close_report'),
     path ('close_remainder_report', views.close_remainder_report, name='close_remainder_report'),
     #path ('close_report_dynamic/<int:report_id>', views.close_report_dynamic, name='close_report_dynamic'),
 
-    path ('save_in_excel', views.save_in_excel, name='save_in_excel'),
     path ('save_in_excel_daily_rep', views.save_in_excel_daily_rep, name='save_in_excel_daily_rep'),
-    #path ('save_in_excel_remainder_rep', views.save_in_excel_remainder_rep, name='save_in_excel_remainder_rep'),
+    path ('remainder_report_excel/<int:shop_id>/<int:category_id>/<date>', views.remainder_report_excel, name='remainder_report_excel'),
     path ('sale_report', views.sale_report, name='sale_report'),
 
     path ('daily_report', views.daily_report, name='daily_report'),
@@ -17,7 +16,7 @@ urlpatterns = [
 
     path ('delivery_report', views.delivery_report, name='delivery_report'),
     path ('remainder_report', views.remainder_report, name='remainder_report'),
-    path ('remainder_report_output/<int:shop_id>/<int:category_id>', views.remainder_report_output, name='remainder_report_output'),
+    path ('remainder_report_output/<int:shop_id>/<int:category_id>/<date>', views.remainder_report_output, name='remainder_report_output'),
     path ('remainder_list/<int:shop_id>/<int:category_id>', views.remainder_list, name='remainder_list'),
     
     path ('remainder_report_dynamic)', views.remainder_report_dynamic, name='remainder_report_dynamic'),
