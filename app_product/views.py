@@ -7,7 +7,6 @@ from app_error.models import ErrorLog
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import (
     Document,
-    Revaluation,
     RemainderHistory,
     Register,
     Identifier,
@@ -450,11 +449,15 @@ def check_sale(request, identifier_id):
                             sub_total=quantity * rho_latest_before.retail_price,
                         )
                         return redirect("sale", identifier.id)
-              
+
+                else:
+                    messages.error(request, "Данное наименование отсутствует на данной торговой точке")
+                    return redirect("sale", identifier.id)
             else:
                 messages.error(request, "Данное наименование для продажи отсутствует в базе данных")
                 return redirect("sale", identifier.id)
     else:
+        auth.logout(request)
         return redirect ('login')
 
 def sale(request, identifier_id):

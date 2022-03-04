@@ -37,6 +37,7 @@ class ReportTemp (models.Model):
     imei = models.CharField(max_length=50, null=True)
     quantity_in = models.IntegerField(null=True)
     quantity_out = models.IntegerField(null=True)
+    price = models.IntegerField(null=True)
     initial_remainder = models.IntegerField(null=True)
     end_remainder = models.IntegerField(null=True)
     existance_check = models.BooleanField(default=True)#service mark
