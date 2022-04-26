@@ -18,13 +18,16 @@ from app_clients.models import Customer
 from .models import ProductHistory
 from django.contrib import messages
 import pandas as pd
-import xlwt
 from datetime import datetime, date
-#from openpyxl.workbook import Workbook
+import xlwt
+import openpyxl
 from openpyxl import Workbook, load_workbook
+import xlwings as xw
+#import pro
 from django.http import HttpResponse, JsonResponse
 import datetime
 import pytz
+import os
 
 # Create your views here.
 
@@ -158,8 +161,6 @@ def daily_report (request):
     return render (request, 'reports/daily_sales.html')
 #===============================================================
 
-
-
 def close_report(request):
     if request.user.is_authenticated:
         users = Group.objects.get(name='sales').user_set.all()
@@ -178,7 +179,6 @@ def close_report(request):
     else:
         auth.logout(request)
         return redirect("login")
-
 
 def close_remainder_report(request):
     users = Group.objects.get(name='sales').user_set.all()
@@ -373,18 +373,47 @@ def remainder_report_excel(request, shop_id, category_id, date):
                         end_remainder=rho.current_remainder,
                         price=price
                     )
+        #report_query=ReportTemp.objects.filter(report_id=report_id)
+        #query = report_query.values("name", "imei", "end_remainder", "price")
+        #data=pd.DataFrame.from_records(query)
+        #data.to_excel(f'RemainderReport_{date}.xlsx', index=False)
+        #data.to_excel('RemainderReport.xlsx', index=False)
+
+        response=HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename=Remainder_' + \
+            str(datetime.date.today())+'.xls'
+
+        wb=xlwt.Workbook(encoding='utf-8')
+        ws=wb.add_sheet('Remainder')
+
+        #sheet header in the first row
+        row_num = 0
+        font_style=xlwt.XFStyle()
+      
+        columns = ['Name', 'IMEI', "Quantity", 'Price']
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num, columns[col_num], font_style)
+
+        #sheet body, remaining rows
+        font_style=xlwt.XFStyle()
         report_query=ReportTemp.objects.filter(report_id=report_id)
-        query = report_query.values("name", "imei", "end_remainder", "price")
-        data=pd.DataFrame.from_records(query)
-        data.to_excel("C:/Users/NetUser/RemainderReport.xlsx", index=False)
 
         for i in report_query:
             i.delete()
         report_id.delete()
-        if request.user in users:
-            return redirect ('sale_interface')
-        else:
-            return redirect("log")
+
+        query = report_query.values_list("name", "imei", "end_remainder", "price")
+        for row in query:
+            row_num +=1
+            for col_num in range(len(row)):
+                ws.write(row_num,col_num, str(row[col_num]), font_style)
+        wb.save(response)
+        return response
+
+        # if request.user in users:
+        #     return redirect ('sale_interface')
+        # else:
+        #     return redirect("log")
     else:
         auth.logout(request)
         return redirect("login")
@@ -456,7 +485,7 @@ def update_retail_price (request):
             )
             #rho.sub_total=rho.current_remainder*rho.retail_price
             #return redirect ('remainder_list', shop.id , category.id )
-            return redirect ('remainder_report_output', shop.id, category.id)
+            return redirect ('remainder_report_output', shop.id, category.id, dateTime)
     else:
         auth.logout(request)
         return redirect("login")

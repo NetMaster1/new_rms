@@ -5,6 +5,7 @@ from app_clients.models import Customer
 from app_personnel.models import BonusAccount
 from app_error.models import ErrorLog
 from django.shortcuts import render, redirect, get_object_or_404
+from .smsc_api import *
 from .models import (
     Document,
     RemainderHistory,
@@ -42,6 +43,7 @@ from .utils import render_to_pdf
 import xhtml2pdf.pisa as pisa
 from django.db.models import Q
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+
 
 # Create your views here.
 
@@ -306,7 +308,7 @@ def remainder_input (request):
             category = request.POST["category"]
             category=ProductCategory.objects.get(id=category)
             dateTime = request.POST["dateTime"]
-            # converting dateTime in str format (2021-07-08T01:05) to django format ()
+            # converting dateTime from str format (2021-07-08T01:05) to django format ()
             dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
             #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
             current_dt=datetime.datetime.now()
@@ -335,6 +337,7 @@ def remainder_input (request):
                     product=Product.objects.get(imei=row.Imei)
                 except Product.DoesNotExist:
                     product = Product.objects.create(
+                        created=dateTime,
                         imei=row.Imei, 
                         category=category, 
                         name=row.Title
@@ -1656,15 +1659,22 @@ def security_code(request, identifier_id, client_id):
         # transforming every integer into string
         code_string = "".join(str(i) for i in security_code)  
         print(code_string)
+
+        #==================SMSC API===========================
+        smsc=SMSC()
+        r=smsc.send_sms('79200711112', 'Тестовое сообщение', sender='sms')
+        #r = smsc.send_sms("79200711112", "http://smsc.ru\nSMSC.RU", query="maxsms=3")
+        #===============================================
+
         # ===========Twilio API==================
-        account_sid = "ACb9a5209252abd7219e19a812f8108acc"
-        auth_token = ""
-        client_twilio = Client(account_sid, auth_token)
-        message = client_twilio.messages.create(
-            body=code_string, 
-            from_="+16624993114", 
-            to="+79200711112"
-        )
+        #account_sid = "ACb9a5209252abd7219e19a812f8108acc"
+        #auth_token = ""
+        #client_twilio = Client(account_sid, auth_token)
+        #message = client_twilio.messages.create(
+        #    body=code_string, 
+        #    from_="+16624993114", 
+        #    to="+79200711112"
+        #)
         # ================================
         context = {
             "identifier": identifier,
@@ -2960,8 +2970,8 @@ def identifier_recognition(request):
         return redirect("login")
 
 def check_recognition(request, identifier_id):
-    users=Group.objects.get(name="admin").user_set.all()
-    if request.user in users:
+    #users=Group.objects.get(name="admin").user_set.all()
+    if request.user.is_authenticated:
         categories = ProductCategory.objects.all()
         identifier = Identifier.objects.get(id=identifier_id)
         # if 'imei' in request.GET:
@@ -2993,6 +3003,25 @@ def check_recognition(request, identifier_id):
         auth.logout(request)
         return redirect("login")
 
+def enter_new_product_recognition(request, identifier_id):
+    identifier = Identifier.objects.get(id=identifier_id)
+    if request.method == "POST":
+        name = request.POST["name"]
+        imei = request.POST["imei"]
+        category = request.POST["category"]
+        category = ProductCategory.objects.get(id=category)
+        if Product.objects.filter(imei=imei).exists():
+            messages.error(
+                request,
+                "Наименование в базу данных не введено, так как IMEI не является уникальным",
+            )
+            return redirect("recognition", identifier.id)
+        else:
+            product = Product.objects.create(name=name, imei=imei, category=category)
+            return redirect("recognition", identifier.id)
+    else:
+        return redirect("recognition", identifier.id)
+
 def check_recognition_unposted (request, document_id):
     users=Group.objects.get(name="admin").user_set.all()
     if request.user in users:
@@ -3019,8 +3048,7 @@ def check_recognition_unposted (request, document_id):
             return redirect("change_recognition_unposted", document.id)
         else:
             messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
-            return redirect("change_recognition_unposted", document.id)
-           
+            return redirect("change_recognition_unposted", document.id)       
     else:
         auth.logout(request)
         return redirect("login")
@@ -3065,38 +3093,46 @@ def clear_recognition(request, identifier_id):
     return redirect("recognition", identifier.id)
 
 def recognition_input(request, identifier_id):
-    users=Group.objects.get(name="admin").user_set.all()
-    if request.user in users:
+    if request.user.is_authenticated:
+        users=Group.objects.get(name="admin").user_set.all()
+        group=Group.objects.get(name="sales").user_set.all()
         identifier = Identifier.objects.get(id=identifier_id)
         registers = Register.objects.filter(identifier=identifier)
         doc_type = DocumentType.objects.get(name="Оприходование ТМЦ")
         if request.method == "POST":
-            shop = request.POST["shop"]
-            shop = Shop.objects.get(id=shop)
+            if request.user in users:
+                shop = request.POST["shop"]
+                shop = Shop.objects.get(id=shop)
+                #==============Time Module=========================================
+                dateTime=request.POST.get('dateTime', False)
+                if dateTime:
+                    # converting dateTime in str format (2021-07-08T01:05) to django format ()
+                    dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                    #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                    current_dt=datetime.datetime.now()
+                    mics=current_dt.microsecond
+                    tdelta_1=datetime.timedelta(microseconds=mics)
+                    secs=current_dt.second
+                    tdelta_2=datetime.timedelta(seconds=secs)
+                    tdelta_3=tdelta_1+tdelta_2
+                    dateTime=dateTime+tdelta_3
+                else:
+                    tdelta=datetime.timedelta(hours=3)
+                    dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                    dateTime=dT_utcnow+tdelta
+                    #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                    #==================End of time module================================
+            else:
+                session_shop=request.session['session_shop']
+                shop=Shop.objects.get(id=session_shop)
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
             imeis = request.POST.getlist("imei", None)
             names = request.POST.getlist("name", None)
             quantities = request.POST.getlist("quantity", None)
             prices = request.POST.getlist("price", None)
             sub_totals = request.POST.getlist("sub_total", None)
-            #==============Time Module=========================================
-            dateTime=request.POST.get('dateTime', False)
-            if dateTime:
-                # converting dateTime in str format (2021-07-08T01:05) to django format ()
-                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
-                current_dt=datetime.datetime.now()
-                mics=current_dt.microsecond
-                tdelta_1=datetime.timedelta(microseconds=mics)
-                secs=current_dt.second
-                tdelta_2=datetime.timedelta(seconds=secs)
-                tdelta_3=tdelta_1+tdelta_2
-                dateTime=dateTime+tdelta_3
-            else:
-                tdelta=datetime.timedelta(hours=3)
-                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
-                dateTime=dT_utcnow+tdelta
-                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
-                #==================End of time module================================
             try:
                 if request.POST["post_check"]:
                     post_check = True
@@ -3175,8 +3211,13 @@ def recognition_input(request, identifier_id):
                             remainder = obj.current_remainder
                 for register in registers:
                     register.delete()
+                identifier.delete()
                 document.sum=document_sum
                 document.save()
+                if request.user in group:
+                    return redirect ('sale_interface')
+                else:
+                    return redirect("log")
             else:
                 document = Document.objects.create(
                     title=doc_type, 
@@ -3198,10 +3239,13 @@ def recognition_input(request, identifier_id):
                     register.sub_total = int(prices[i]) * int(quantities[i])
                     register.save()
                     document_sum+=int(register.sub_total)
-            document.sum = document_sum
-            document.save()
-            identifier.delete()
-            return redirect ('log')
+                document.sum = document_sum
+                document.save()
+                identifier.delete()
+                if request.user in group:
+                    return redirect ('sale_interface')
+                else:
+                    return redirect("log")    
     else:
         auth.logout(request)
         return redirect("login")
