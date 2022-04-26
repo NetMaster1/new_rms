@@ -11,7 +11,8 @@ from app_reference.models import ProductCategory
 import numpy as np
 import datetime
 
-
+# def index (request):
+#     return render (request, 'index.html')
 
 def personnel (request):
     return render(request, 'personnel/personnel.html')

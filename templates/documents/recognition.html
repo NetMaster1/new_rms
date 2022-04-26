@@ -74,7 +74,7 @@
                                 <!-- <button type="button" class="btn_close"></button> -->
                             </div>
                             <div class="modal-body">
-                                <form action="{% url 'enter_new_product' identifier.id %}" method="POST">
+                                <form action="{% url 'enter_new_product_recognition' identifier.id %}" method="POST">
                                     {% csrf_token %}
 
                                     <div class="form-row">
@@ -121,7 +121,8 @@
                     <form action="{% url 'recognition_input' identifier.id %}" method="POST" >
                         {% csrf_token %}
 
-                     
+                    {% for group in request.user.groups.all %}
+                    {% if group.name == 'admin' %}
                         <div class="form-row">
                             <div class="col-2">
                                 <label for="date">Дата</label>
@@ -130,7 +131,7 @@
                                 <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='today'><br>
                             </div>
                         </div>
-                      
+
                         <div class="form-row">
                             <div class="col-3">
                                 <label for="shop">
@@ -144,9 +145,11 @@
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %}
                                     </select>
-
                             </div>
                         </div>
+                    {% endif %}
+                    {% endfor %}
+
 
                         <div class='form-inline'>
                             <div class="row m-1">
@@ -205,15 +208,20 @@
                         {% endfor %}
 
 
-                        <div class="row m-auto mt-3 ">
-                            <div class="col-1">
-                                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
-                            </div>
+                <div class="row m-auto mt-3 ">
+                    <div class="col-1">
+                        <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                    </div>
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}
                     <div class="col-2">
                         <label for="post_check"> С проведением </label>
-                        <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                        <input type="checkbox" id="post_check" name="post_check">
+                    </div>
+                    {% else %}
+                    <div class="col-2">
+                        <label for="post_check"> С проведением </label>
+                        <input type="checkbox" id="post_check" name="post_check" checked>
                     </div>
                     {% endif %}
                     {% endfor %}
@@ -231,6 +239,7 @@
                         </a>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -267,12 +276,7 @@
         enterDeliveryModal.classList.remove('openModal')
     }
 
-    //saving "Shop_receiver select option" from switching to default when updating the page
-    //================================================================================================
-    shop.addEventListener('change', e => {
-        choice = shop.value;
-        sessionStorage.setItem('shop', choice);
-    })
+    
 
 
 
@@ -364,6 +368,13 @@
     //    sessionStorage.clear();
     //})
 
+
+    //saving "Shop_receiver select option" from switching to default when updating the page
+    //================================================================================================
+    shop.addEventListener('change', e => {
+        choice = shop.value;
+        sessionStorage.setItem('shop', choice);
+    })
 
     console.log('End of the script')
 </script>

@@ -30,5 +30,6 @@ urlpatterns = [
 
     #path ('update_retail_price/<int:imei>/<int:shop_id>/<int:category_id>', views.update_retail_price, name='update_retail_price'),
     path ('update_retail_price', views.update_retail_price, name='update_retail_price'),
+    
 
 ]

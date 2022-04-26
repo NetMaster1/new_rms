@@ -32,6 +32,7 @@ urlpatterns = [
     # ======================Recognition=========================
     path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),
     path ('check_recognition/<int:identifier_id>', views.check_recognition, name='check_recognition'),
+    path ('enter_new_product_recognition/<int:identifier_id>', views.enter_new_product_recognition, name='enter_new_product_recognition'),
     path ('check_recognition_unposted/<int:document_id>', views.check_recognition_unposted, name='check_recognition_unposted'),
 
     path ('clear_recognition/<int:identifier_id>', views.clear_recognition, name='clear_recognition'),
