@@ -398,10 +398,6 @@ def remainder_report_excel(request, shop_id, category_id, date):
         font_style=xlwt.XFStyle()
         report_query=ReportTemp.objects.filter(report_id=report_id)
 
-        for i in report_query:
-            i.delete()
-        report_id.delete()
-
         query = report_query.values_list("name", "imei", "end_remainder", "price")
         for row in query:
             row_num +=1
@@ -410,6 +406,10 @@ def remainder_report_excel(request, shop_id, category_id, date):
         wb.save(response)
         return response
 
+
+        for i in report_query:
+            i.delete()
+        report_id.delete()
         # if request.user in users:
         #     return redirect ('sale_interface')
         # else:
