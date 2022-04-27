@@ -26,7 +26,7 @@ class RemainderHistoryAdmin(admin.ModelAdmin):
 
 class AvPriceAdmin(admin.ModelAdmin):
     list_display = ('updated', 'name', 'imei', 'current_remainder', 'av_price', 'sum')  
-    #list_filter = ('imei',)
+    list_filter = ('name',)
 
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'time_seconds', 'title' , 'user', 'sum', 'base_doc')

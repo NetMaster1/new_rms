@@ -143,24 +143,38 @@ def sale_interface (request):
 def search(request):
     users=Group.objects.get(name="sales").user_set.all()
     if request.method == "POST":
+        remainders_array = []
         keyword = request.POST["keyword"]
         if request.user in users:
             session_shop=request.session['session_shop']
             #session_shop=request.session.get['session_shop']
             shop=Shop.objects.get(id=session_shop)
-            if RemainderCurrent.objects.filter(shop=shop, name__icontains=keyword, current_remainder__gt=0).exists():
-                remainders=RemainderCurrent.objects.filter(name__icontains=keyword, shop=shop, current_remainder__gt=0)
+            if RemainderHistory.objects.filter(shop=shop, name__icontains=keyword).exists():
+                remainders=RemainderHistory.objects.filter(name__icontains=keyword, shop=shop).latest('created')
+                if remainders.current_remainder > 0:
+                    remainders=RemainderHistory.objects.filter(name__icontains=keyword, shop=shop).latest('created')
+                else:
+                    messages.error(request, "УУУУУПС. Данный товар закончился")
+                    return redirect("search")
             else:
                 messages.error(request, "УУУУУПС. Такое наименование не найдено")
                 return redirect("search")
         else:
-            if RemainderCurrent.objects.filter(name__icontains=keyword, current_remainder__gt=0).exists():
-                remainders=RemainderCurrent.objects.filter(name__icontains=keyword, current_remainder__gt=0)
-            else:
+            shops=Shop.objects.all()
+            for shop in shops:
+                if RemainderHistory.objects.filter(shop=shop, name__icontains=keyword).exists():
+                    remainders=RemainderHistory.objects.filter(shop=shop, name__icontains=keyword).latest('created')
+                    if remainders.current_remainder > 0:
+                        remainders=RemainderHistory.objects.filter(shop=shop, name__icontains=keyword).latest('created')
+                        remainders_array.append(remainders)
+            if len(remainders_array) == 0:
                 messages.error(request, "УУУУУПС. Такое наименование не найдено")
                 return redirect("search")
-
-        context = {"remainders": remainders}
+               
+        context = {
+                "remainders": remainders,
+                "remainders_array": remainders_array
+                }
         return render(request, "documents/search_results.html", context)
 
     else:
@@ -1455,7 +1469,7 @@ def unpost_sale (request, document_id):
                     remainder = obj.current_remainder
             product=Product.objects.get(imei=rho.imei)
             #correcting av_price model
-            av_price_item=AvPrice.objects.get(name=rho.name)
+            av_price_item=AvPrice.objects.get(imei=rho.imei)
             av_price_item.current_remainder=av_price_item.current_remainder + rho.outgoing_quantity
             av_price_item.sum=av_price_item.current_remainder*rho.av_price
             av_price_item.save()

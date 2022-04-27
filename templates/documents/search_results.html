@@ -29,25 +29,53 @@
             </div>
 
         <div class="col m-2">
-                {% for remainder in remainders %}
+                
+            {% for group in request.user.groups.all %}
+            {% if group.name == 'sales' %}
                 <div class="row mt-1 mb-1 ">
                     <div class="col-3">
-                        {{remainder.shop}}
+                        {{remainders.shop}}
                     </div>
                     <div class="col-3">
-                        {{remainder.name}}
+                        {{remainders.name}}
                     </div>
                     <div class="col-2">
-                        {{remainder.imei}}
+                        {{remainders.imei}}
                     </div>
                     <div class="col-2">
-                        {{remainder.current_remainder}}
+                        {{remainders.current_remainder}}
                     </div>
                     <div class="col-2">
-                    {{remainder.retail_price}}
+                    {{remainders.retail_price}}
                     </div>
                 </div>
-                {% endfor %}
+
+                {% else %}
+
+                    {% for item in remainders_array%}
+                        <div class="row mt-1 mb-1 ">
+                            <div class="col-3">
+                                {{item.shop}}
+                            </div>
+                            <div class="col-3">
+                                {{item.name}}
+                            </div>
+                            <div class="col-2">
+                                {{item.imei}}
+                            </div>
+                            <div class="col-2">
+                                {{item.current_remainder}}
+                            </div>
+                            <div class="col-2">
+                                {{item.retail_price}}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+            {% endif %}
+            {% endfor %}
+
+              
 
         
         {%for group in request.user.groups.all%}
