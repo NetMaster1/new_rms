@@ -1,3 +1,13 @@
+a {
+    text-decoration: none;
+}
+
+footer {
+    bottom: 0;
+    position: fixed;
+    width: 100%;
+}
+
 .hide {      
     /* display: block; */
     /* display: none; */
@@ -8,9 +18,50 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     overflow-y: scroll;
-    /* opacity: 0; */
+    opacity: 100%;
     /* visibility: visible;
     visibility: hidden; */
+}
+
+.sale-interface {
+    background-image: url("/static/img/dollar.jpg");
+    position: fixed;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* opacity: 40%; */
+    overflow-y: scroll;
+}
+
+.menu {
+    margin: auto;
+    margin-top: 2rem;
+    width: 80%;
+    visibility: visible;
+    /* padding: 1rem; */
+    /* border-width: 1px; */
+    /* border-radius:1rem; */
+    /* border-color: black; */
+    background-color: rgb(238, 240, 238);
+    /* position: sticky */
+}
+
+
+.log {
+    margin: auto;
+    margin-top: 1rem;
+    max-height: 100%;
+   
+    /* border-width: 1px; */
+    /* border-radius:1rem; */
+    /* border-color: black; */
+    background-color: rgb(238, 240, 238);
+    /* overflow: auto; */
+   
+}
+
+.modal_new {
+    background-color: white;
 }
 
 .page_location {
@@ -29,6 +80,75 @@
     background-color: white;
     /* overflow-y: scroll; */
     /* overflow-y: auto; */
+}
+
+.payment_choice {
+    /*margin: auto;
+    /* display: block; */
+    margin-top: 3rem;
+    /*margin-bottom: 1rem;
+    /* border-style: solid;
+    border-width: 5px;
+    border-color: red; */
+    /* border: solid 5px red; */
+    border-radius: 0.5%;
+    /* position: absolute; */
+    width: 50%;
+    height: 100%;
+    background-color: white;
+    /* overflow-y: scroll; */
+    /* overflow-y: auto; */
+}
+
+.shop_choice_page {
+    display: block;
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.shop_choice_form {
+    display: block;
+    position: fixed;
+    top: 10rem;
+    left: 40rem;
+    width: 30%;
+    height: 20%;
+    background-color: rgb(238, 240, 238);
+}
+
+.modal-search {
+    display: block;
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-search-form {
+    display: block;
+    position: fixed;
+    top: 10rem;
+    left: 40rem;
+    width: 30%;
+    min-height: 20%;
+    background-color: rgb(238, 240, 238);
+}
+
+.modal-search-results {
+    display: block;
+    position: fixed;
+    top: 5rem;
+    left: 10rem;
+    width: 50%;
+    min-height: 18%;
+    background-color: rgb(238, 240, 238);
+    text-align: center;
 }
 
 .page_location_posted{
@@ -82,32 +202,6 @@
     /* overflow-y: auto; */
 }
 
-
-.menu {
-    margin-top: 1rem;
-    padding: 1rem;
-    /* border-width: 1px; */
-    border-radius:1rem;
-    /* border-color: black; */
-    background-color: lightgrey;
-    position: sticky
-}
-
-.log {
-    /* display: block;
-    height: 25rem;  */
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    padding: 0.5rem;
-    /* border-width: 1px; */
-    border-radius:1rem;
-    /* border-color: black; */
-    background-color: lightgrey;
-    /* overflow-x: scroll;
-    overflow: auto; */
-   
-}
-
 /* ===================== Delivery Page Modal for Entering New Product========================= */
 .enterDeliveryModal {
     display: none;
@@ -119,7 +213,7 @@
     /* top: 70mm;
     right: 0mm; */
 }
-/* ====================End of Delivery Page Modalfor Entering New Product ======================= */
+/* ====================End of Delivery Page Modal for Entering New Product ======================= */
 
 
 /* ===========================Sale Page Modal for Entering client's phone for cashback================== */
@@ -130,6 +224,23 @@
 .enterCashbackModal.openModal {
     display: block;
     position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* overflow-y: scroll; */
+    /* opacity: 0; */
+}
+
+.modal-content-cash-back {
+    display: block;
+    position: fixed;
+    top: 2rem;
+    left: 25rem;
+    width: 30%;
+    height: 22%;
+    background-color: rgb(238, 240, 238);
 }
 /* ===========================Sale Page Modal for Entering client's phone for cashback================== */
 
@@ -140,8 +251,26 @@
 .enterModalCashbackNewClient.openModal {
     display: block;
     position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
 }
-/* =========================== End Sale Page Modal for Entering client's phone for cashback================== */
+
+.modal-content-new-client {
+    display: block;
+    position: fixed;
+    top: 2rem;
+    left: 25rem;
+    width: 30%;
+    height: 35%;
+    background-color: rgb(238, 240, 238);
+}
+
+
+
+/* =================== End Sale Page Modal for Entering client's phone for cashback================== */
 
 /* ====================== Payment Page Modal for Paying in cash ==================================== */
 .enterModalCash {
@@ -151,8 +280,23 @@
 .enterModalCash.openModal {
     display: block;
     position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
 }
-/* ====================== End of Payment Page Modal for Paying in cash ==================================== */
+
+
+.modal-content {
+    display: block;
+    width: 60%;
+    min-height: 280px;
+    margin: auto;
+    margin-top: 2rem;
+}
+
+/* ==================== End of Payment Page Modal for Paying in cash ==================================== */
 
 /* ====================== Payment Page Modal for Credits ==================================== */
 .enterModalCredit {
@@ -162,7 +306,13 @@
 .enterModalCredit.openModal {
     display: block;
     position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
 }
+
 /* ====================== End of Payment Page Modal for Credits ==================================== */
 
 /* ====================== Payment Page Modal for Cards ==================================== */
@@ -173,6 +323,11 @@
 .enterModalCard.openModal {
     display: block;
     position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 /* ====================== End of Payment Page Modal for Cards ==================================== */
 
@@ -184,8 +339,13 @@
 .enterModalComplex.openModal {
     display: block;
     position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
 }
-/* ====================== End of Payment Page Modal for Complex payment ==================================== */
+/* ==================== End of Payment Page Modal for Complex payment ==================================== */
 
 
 

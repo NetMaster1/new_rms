@@ -4,7 +4,7 @@ SECRET_KEY = 'django-insecure-r4mqhl#nt7-joaq(9x_h3n&s62xq3qa)#&^kphc7!-jkga)gw6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [ 'e-rms.ru', 'www.e-rms.ru']
+ALLOWED_HOSTS = [ '127.0.0.1','e-rms.ru', 'www.e-rms.ru']
 
 DATABASES = {
     'default': {

@@ -22,7 +22,7 @@ from datetime import datetime, date
 import xlwt
 import openpyxl
 from openpyxl import Workbook, load_workbook
-import xlwings as xw
+#import xlwings as xw
 #import pro
 from django.http import HttpResponse, JsonResponse
 import datetime
