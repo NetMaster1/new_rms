@@ -18,7 +18,7 @@ from app_clients.models import Customer
 from .models import ProductHistory
 from django.contrib import messages
 import pandas as pd
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import xlwt
 import openpyxl
 from openpyxl import Workbook, load_workbook
@@ -28,6 +28,8 @@ from django.http import HttpResponse, JsonResponse
 import datetime
 import pytz
 import os
+from django.db.models import Q
+
 
 # Create your views here.
 
@@ -197,16 +199,21 @@ def sale_report(request):
         doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
         queryset_list = RemainderHistory.objects.filter(rho_type=doc_type)
         sum = 0
-        category = request.POST["category"]
-        shop = request.POST["shop"]
+        #category = request.POST["category"]
+        category=request.POST.get('category', False)
+        if category:
+            category=ProductCategory.objects.get(id=category)
+        shop=request.POST.get('shop', False)
         if shop:
             shop=Shop.objects.get(id=shop)
-        supplier = request.POST["supplier"]
+        supplier=request.POST.get('supplier', False)
         if supplier:
             supplier=Supplier.objects.get(id=supplier)
-        user = request.POST["user"]
-        start_date = request.POST["start_date"]
-        end_date = request.POST["end_date"]
+        user=request.POST.get('user', False)
+        if user:
+            user=User.objects.get(id=user)
+        start_date=request.POST.get('start_date', False)
+        end_date=request.POST.get('end_date', False)
         
         if category:
             queryset_list = queryset_list.filter(category=category)
@@ -218,55 +225,23 @@ def sale_report(request):
             queryset_list = queryset_list.filter(user=user)
             user=user
         # if Q(start_date) | Q(end_date):
-        #     queryset_list = queryset_list.filter(created__range=(start_date, end_date))
+        #     queryset_list = queryset_list.filter(created__range=[start_date, end_date])
         if start_date:
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
             queryset_list = queryset_list.filter(created__gte=start_date)
         if end_date:
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta (days=1)
             queryset_list = queryset_list.filter(created__lte=end_date)
 
-        report_id=ReportTempId.objects.create()
-        products=Product.objects.filter(category=category)
-        for product in products:
-            av_sum=0
-            quantity=0
-            sum=0
-            margin=0
-            rhos=queryset_list.filter(imei=product.imei)
-            for rho in rhos:
-                av_sum+=rho.av_price
-                quantity+=rho.outgoing_quantity
-                sum += rho.sub_total
-            if quantity!=0:
-                sale_rep_row=SaleReport.objects.create(
-                    report_id=report_id,
-                    product = product.name,
-                    av_sum = av_sum,
-                    quantity = quantity,
-                    retail_sum = sum,
-                    margin=sum-av_sum
-                )
-        sale_report=SaleReport.objects.filter(report_id=report_id)
-        for item in sale_report:
-            sum+=item.retail_sum
-            av_sum+=item.av_sum
-            margin+=item.margin
-
-        query = sale_report.values(
-            "product", "av_sum", "quantity", "retail_sum", "margin"
-        )
-        data=pd.DataFrame.from_records(query)
-        # data = pd.DataFrame(query)
-        #indicate the directory where the file will be uploaded to
-        data.to_excel("C:/Users/NetUser/Sale_report.xlsx", index=False)
-        #content=myfile.read()
         context = {
+            "queryset_list": queryset_list,
             "categories": categories,
             "shops": shops,
             'suppliers': suppliers,
             "users": users,
-            "sum": sum,
-            'av_sum': av_sum,
-            'sale_report': sale_report,
+            
+           
         }
         return render(request, "reports/sale_report.html", context)
     else:

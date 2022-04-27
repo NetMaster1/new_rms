@@ -81,13 +81,13 @@
                 </a>
                 </div>
                 </div>
-                <!-- <div class="col-2">
-                        <a href="{% url 'save_in_excel' %}">
+                <div class="col-2">
+                        <a href="#">
                             <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
                             Сохранить в Excel 
                             </button>
                         </a>
-                </div> -->
+                </div>
                 </form>
         </div>
     </div>
@@ -112,13 +112,13 @@
     </div>
 
 
-{% for item in sale_report%}
+{% for item in queryset_list %}
 <div class="row m-auto">
-<div class="col-3">{{item.product}}</div>
-<div class="col-2">{{item.quantity}}</div>
-<div class="col-2">{{item.av_sum}}</div>
-<div class="col-2">{{item.retail_sum}}</div>
-<div class="col-2">{{item.margin}}</div>
+<div class="col-3">{{item.name}}</div>
+<div class="col-2">{{item.outgoing_quantity}}</div>
+<div class="col-2">{{item.av_price}}</div>
+<div class="col-2">{{item.retail_price}}</div>
+
 
 </div>
 {%endfor%}
