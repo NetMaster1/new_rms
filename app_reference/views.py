@@ -84,5 +84,5 @@ def clients (request):
     context = {
         'clients': clients
     }
-    return render (request, 'reference/payment.html', context)
+    return render (request, 'reference/clients.html', context)
 

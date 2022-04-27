@@ -35,6 +35,7 @@ import decimal
 import random
 import pandas
 import datetime
+from datetime import date, timedelta
 import pytz
 from django.http import HttpResponse
 from django.views import View
@@ -71,8 +72,11 @@ def log(request):
             doc_type = request.POST["doc_type"]
             # queryset_list=Document.objects.all()
             if start_date:
+                start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
                 queryset_list = queryset_list.filter(created__gte=start_date)
             if end_date:
+                end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+                end_date = end_date + timedelta (days=1)
                 queryset_list = queryset_list.filter(created__lte=end_date)
             if doc_type:
                 doc_type = DocumentType.objects.get(id=doc_type)
@@ -91,9 +95,7 @@ def log(request):
                     if item.remainderhistory_set.first().supplier == supplier:
                         new_list.append(item)
                 queryset_list = new_list
-                print(queryset_list)
-            # if Q(start_date) | Q(end_date):
-            #     queryset_list = queryset_list.filter(created__range=(start_date, end_date))
+            
             context = {
                 "queryset_list": queryset_list,
                 "doc_types": doc_types,
