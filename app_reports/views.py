@@ -257,35 +257,35 @@ def save_in_excel_daily_rep(request):
         wb.save(response)
         return response
 
-        qs = (
-            DailySaleRep.objects.filter(report_id=report_id)
-            .exclude(shop="ООС")
-            .order_by("shop")
-            .values()
-        )
-        # n=qs.count()
-        data = pd.DataFrame(qs)
-        data = data.drop("report_id_id", 1)  # deleting 'report_id' column
-        # data=data.drop('row_name', 0)#deleting a row
+        # qs = (
+        #     DailySaleRep.objects.filter(report_id=report_id)
+        #     .exclude(shop="ООС")
+        #     .order_by("shop")
+        #     .values()
+        # )
+        # # n=qs.count()
+        # data = pd.DataFrame(qs)
+        # data = data.drop("report_id_id", 1)  # deleting 'report_id' column
+        # # data=data.drop('row_name', 0)#deleting a row
 
-        data.set_index("id", inplace=True)
-        data.set_index(
-            "shop", inplace=True
-        )  # sets column as titles for rows & deletes from the body of df
-        # data.set_index('shop', inplace=True, drop=False)#set column as titles for rows & leaves it in the df
-        print(data)
+        # data.set_index("id", inplace=True)
+        # data.set_index(
+        #     "shop", inplace=True
+        # )  # sets column as titles for rows & deletes from the body of df
+        # # data.set_index('shop', inplace=True, drop=False)#set column as titles for rows & leaves it in the df
+        # print(data)
 
-        data = data.T  # transposing the dataframe
-        # data=data_t.T #transposing backwards
-        data.to_excel("D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx")
-        registers = DailySaleRep.objects.all()
-        for register in registers:
-            register.delete()
+        # data = data.T  # transposing the dataframe
+        # # data=data_t.T #transposing backwards
+        # data.to_excel("D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx")
+        # registers = DailySaleRep.objects.all()
+        # for register in registers:
+        #     register.delete()
 
-        context = {
-            "data": data.to_html(),
-        }
-        return render(request, "reports/sample.html", context)
+        # context = {
+        #     "data": data.to_html(),
+        # }
+        # return render(request, "reports/sample.html", context)
 
 
 def daily_report(request):
@@ -422,7 +422,6 @@ def delivery_report(request):
         }
     return render(request, "reports/delivery_report.html", context)
 
-
 # =======================================================
 def remainder_report(request):
     if request.user.is_authenticated:
@@ -538,15 +537,11 @@ def remainder_report_output(request, shop_id, category_id, date):
         shop = Shop.objects.get(id=shop_id)
         category = ProductCategory.objects.get(id=category_id)
         array = []
-        products = Product.objects.filter(category=category)
+        products = Product.objects.filter(category=category).order_by('name')#order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
         for product in products:
             imei = product.imei
-            if RemainderHistory.objects.filter(
-                shop=shop, imei=imei, created__lte=date
-            ).exists():
-                rho = RemainderHistory.objects.filter(
-                    shop=shop, imei=imei, created__lte=date
-                ).latest("created")
+            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+                rho = RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest("created")
                 if rho.current_remainder > 0:
                     array.append(rho)
         context = {"date": date, "shop": shop, "array": array, "category": category}
@@ -554,7 +549,6 @@ def remainder_report_output(request, shop_id, category_id, date):
     else:
         auth.logout(request)
         return redirect("login")
-
 
 def update_retail_price(request):
     group = Group.objects.get(name="admin").user_set.all()
@@ -633,7 +627,6 @@ def remainder_list(request, shop_id, category_id):
         "category": category,
     }
     return render(request, "reports/remainder_report_output.html", context)
-
 
 # ======================================================================
 def remainder_report_dynamic(request):
@@ -734,8 +727,8 @@ def item_report(request):
         else:
             return render(request, "reports/item_report.html")
     else:
+        auth.logout(request)
         return redirect("login")
-
 
 # ====================================================================
 def cash_report(request):
@@ -744,7 +737,6 @@ def cash_report(request):
     context = {"queryset_list": queryset_list, "shops": shops}
 
     return render(request, "reports/cash_report.html", context)
-
 
 def credit_report(request):
     shops = Shop.objects.all()
@@ -759,7 +751,6 @@ def credit_report(request):
     context = {"shops": shops, "users": users}
     return render(request, "reports/credit_report.html", context)
 
-
 def card_report(request):
     shops = Shop.objects.all()
     cards = Card.objects.all()
@@ -771,7 +762,6 @@ def card_report(request):
         user = request.POST["user"]
     context = {"shops": shops, "users": users}
     return render(request, "reports/card_report.html", context)
-
 
 def daily_pay_card_rep(request):
     shops = Shop.objects.all()
@@ -854,7 +844,6 @@ def daily_pay_card_rep(request):
     else:
         return render(request, "reports/daily_pay_card_rep.html")
 
-
 # =====================================================================
 def salary_report(request):
     if request.user.is_authenticated:
@@ -888,7 +877,6 @@ def salary_report(request):
             return render(request, "reports/salary_report.html")
     else:
         return redirect("login")
-
 
 def bonus_report_excel(request):
     users = User.objects.all()
@@ -937,7 +925,6 @@ def bonus_report_excel(request):
     wb.save("names.xlsx")
 
     return redirect("log")
-
 
 def bonus_report(request):
     users = User.objects.all()
