@@ -222,7 +222,38 @@ def save_in_excel_daily_rep(request):
             ws.write(row_num, col_num, query_list.sim_cards, font_style)
             row_num+=1
             ws.write(row_num, col_num, query_list.phones, font_style)
-            col_num=col_num+1
+            row_num+=1
+            ws.write(row_num, col_num, query_list.iphone, font_style)
+            row_num+=1
+            ws.write(row_num, col_num, query_list.insuranсе, font_style)
+            row_num+=1
+            ws.write(row_num, col_num, query_list.wink, font_style)
+            row_num+=1
+            ws.write(row_num, col_num, query_list.services, font_style)
+            row_num+=1
+            ws.write(row_num, col_num, query_list.pay_cards, font_style)
+            row_num+=1
+            ws.write(row_num, col_num, query_list.credit, font_style)
+            row_num+=1
+            ws.write(row_num, col_num, query_list.card, font_style)
+            row_num+=1
+            ws.write(row_num, col_num, query_list.salary, font_style)
+            row_num+=1
+            ws.write(row_num, col_num, query_list.expenses, font_style)
+            row_num+=1
+            ws.write(row_num, col_num, query_list.return_sum, font_style)
+            row_num+=1
+            ws.write(row_num, col_num, query_list.cash_move, font_style)
+            row_num+=1
+            ws.write(row_num, col_num, query_list.final_balance, font_style)
+            col_num+=1
+
+        criteria_list = ["opening_balance", "smartphones", "accessories", 'sim_cards', 'phones', 'iphone', 'insuranсе', 'wink', 'services', 'pay_cards', 'credit', 'card', 'salary', 'expenses', 'return_sum', 'cash_move', 'final_balance']
+        row_num=1
+        for i in criteria_list:
+            ws.write(row_num, 0, i, font_style)
+            row_num=row_num+1
+
         wb.save(response)
         return response
 
