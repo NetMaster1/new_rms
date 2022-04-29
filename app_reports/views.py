@@ -287,11 +287,8 @@ def save_in_excel_daily_rep(request):
         # }
         # return render(request, "reports/sample.html", context)
 
-
 def daily_report(request):
-
-    return render(request, "reports/daily_sales.html")
-
+    return render(request, "reports/daily_report.html")
 
 # ===============================================================
 
@@ -314,14 +311,12 @@ def close_report(request):
         auth.logout(request)
         return redirect("login")
 
-
 def close_remainder_report(request):
     users = Group.objects.get(name="sales").user_set.all()
     if request.user in users:
         return redirect("sale_interface")
     else:
         return redirect("log")
-
 
 def sale_report(request):
     categories = ProductCategory.objects.all()
@@ -331,7 +326,7 @@ def sale_report(request):
     users = User.objects.all()
     if request.method == "POST":
         doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
-        queryset_list = RemainderHistory.objects.filter(rho_type=doc_type)
+        queryset_list = RemainderHistory.objects.filter(rho_type=doc_type).order_by('name')
         sum = 0
         # category = request.POST["category"]
         category = request.POST.get("category", False)
@@ -367,6 +362,16 @@ def sale_report(request):
             end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
             end_date = end_date + timedelta(days=1)
             queryset_list = queryset_list.filter(created__lte=end_date)
+            report_id = ReportTempId.objects.create()
+            for qs in queryset_list:
+                sale_rep=SaleReport.objects.create(
+                     report_id=report_id,
+                     product=qs.name,
+                     quantity=qs.outgoig_quantity,
+                     av_sum=qs.av_price,
+                     retail_price=qs.retail_price
+                     #margin
+                )
 
         context = {
             "queryset_list": queryset_list,
@@ -600,7 +605,6 @@ def update_retail_price(request):
         auth.logout(request)
         return redirect("login")
 
-
 # ==========================================================
 def remainder_list(request, shop_id, category_id):
     shop = Shop.objects.get(id=shop_id)
@@ -699,7 +703,6 @@ def remainder_report_dynamic(request):
     }
     return render(request, "reports/remainder_report_dynamic.html", context)
 
-
 def item_report(request):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -735,7 +738,6 @@ def cash_report(request):
     shops = Shop.objects.all()
     queryset_list = Cash.objects.all()
     context = {"queryset_list": queryset_list, "shops": shops}
-
     return render(request, "reports/cash_report.html", context)
 
 def credit_report(request):

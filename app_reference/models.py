@@ -30,6 +30,14 @@ class ProductCategory (models.Model):
     def __str__(self):
         return self.name
 
+class Services (models.Model):
+    name = models.CharField(max_length=250)
+    retail_price = models.IntegerField(default=0, null=True)
+    bonus_percent=models.DecimalField(max_digits=3, decimal_places=2)
+
+    def __str__(self):
+        return self.name
+
 class DocumentType (models.Model):
     name = models.CharField(max_length=250)
 

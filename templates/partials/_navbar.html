@@ -38,8 +38,6 @@
             {% endif %}
             {% endfor %}
 
-
-
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false">
@@ -94,11 +92,12 @@
                     {% if group.name == 'admin' %}
                     <li><a class="dropdown-item" href="{% url 'shop_choice' %}">Продажа ТМЦ</a></li>
                     {% else %}
+                   
                     <li><a class="dropdown-item" href="{% url 'identifier_sale' %}">Продажа ТМЦ</a></li>
                     {% endif %}
                     {% endfor %}
 
-
+                    <li><a class="dropdown-item" href="{% url 'identifier_service' %}">Оказание услуг</a></li>
                     <li><a class="dropdown-item" href="{% url 'identifier_return' %}">Возврат ТМЦ</a></li>
                   
                     <li><a class="dropdown-item" href="{% url 'cash_off_salary' %}">Выплата заработной платы</a></li>
@@ -135,6 +134,7 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                     <li><a class="dropdown-item" href="{% url 'identifier_sale' %}">Продажа ТМЦ</a></li>
+                    <li><a class="dropdown-item" href="{% url 'identifier_service' %}">Оказание услуг</a></li>
                     <li><a class="dropdown-item" href="{% url 'identifier_return' %}">Возврат ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'identifier_transfer' %}">Перемещение ТМЦ</a>
                     <li><a class="dropdown-item" href="{% url 'identifier_recognition' %}">Оприходование ТМЦ</a>

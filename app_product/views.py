@@ -20,6 +20,7 @@ from app_reference.models import (
     Supplier,
     Product,
     ProductCategory,
+    Services,
     DocumentType,
     Expense,
     Voucher,
@@ -1582,6 +1583,59 @@ def delete_sale_input(request, document_id):
         document.delete()
         return redirect ('log')
     return redirect ('login')
+
+#==================================Services ===================================================
+def identifier_service (request):
+    if request.user.is_authenticated:
+        identifier = Identifier.objects.create()
+        return redirect("service", identifier.id)
+    else:
+        return redirect("login")
+
+def service(request, identifier_id):
+    if request.user.is_authenticated:
+        services=Services.objects.all()
+        identifier = Identifier.objects.get(id=identifier_id)
+        shops = Shop.objects.all()
+        sum = 0
+        if Register.objects.filter(identifier=identifier).exists():
+            registers = Register.objects.filter(identifier=identifier)
+            numbers = registers.count()
+            for register, i in zip(registers, range(numbers)):
+                register.number = i + 1
+                sum+=register.sub_total
+                register.save()
+                
+            context = {
+                "identifier": identifier,
+                "registers": registers,
+                "sum": sum,
+            }
+            return render(request, "documents/service.html", context)
+        else:
+            context = {
+            "identifier": identifier,
+            "shops": shops,
+            'services': services
+            }
+            return render(request, "documents/service.html", context)
+    else:
+        return redirect("login")
+
+def check_service(request, identifier_id):
+    identifier=Identifier.objects.get(id=identifier_id)
+    users=Group.objects.get(name="sales").user_set.all()
+    services=Services.objects.all()
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            service = request.POST["service"]
+            register = Register.objects.create(
+                
+            )
+            return redirect("sale", identifier.id)
+    else:
+        auth.logout(request)
+        return redirect ('login')
 
 # ================================Payment Operations=============================================
 def payment(request, identifier_id, client_id, cashback_off):

@@ -80,6 +80,11 @@ urlpatterns = [
     path ('delete_line_change_sale_unposted/<int:document_id>/<int:imei>', views.delete_line_change_sale_unposted, name='delete_line_change_sale_unposted'),
     path ('sale_interface', views.sale_interface, name='sale_interface'),
 
+    #==============================Services============================
+    path ('identifier_service', views.identifier_service, name='identifier_service'),
+    path ('service/<int:identifier_id>', views.service, name='service'), 
+    path ('check_service/<int:identifier_id>', views.check_service, name='check_service'),
+
     # ==============================Return====================================
     path ('identifier_return', views.identifier_return, name='identifier_return'),
     path ('return_doc/<int:identifier_id>', views.return_doc, name='return_doc'),
