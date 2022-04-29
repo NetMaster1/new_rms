@@ -396,7 +396,7 @@ def sale_report(request):
                     product=qs.name,
                     quantity=qs.outgoing_quantity,
                     av_sum=qs.av_price,
-                    retail_price=qs.retail_price
+                    retail_sum=qs.retail_price
                     # margin
                 )
 
