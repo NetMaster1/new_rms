@@ -150,6 +150,12 @@ class RemainderHistory(models.Model):
     #     verbose_name = 'RemainderHistory'
     #     verbose_name_plural = 'remainders'
 
+    def retail_sum_outgoing(self):
+        return self.retail_price * self.outgoing_quantity
+
+    def retail_sum_incoming(self):
+        return self.retail_price * self.incoming_quantity
+
     def __int__(self):
         return self.id
 
