@@ -19,10 +19,10 @@
                 <input type="text" name="imei" placeholder="IMEI">
             </div> -->
                     <div class="col-2">
-                        <input type="date" id='start_date' name="start_date">
+                        <input type="date" id='start_date' name="start_date" required>
                     </div>
                     <div class="col-2">
-                        <input type="date" id='end_date' name="end_date">
+                        <input type="date" id='end_date' name="end_date" required>
                     </div>
                
                     <div class="col-2">
@@ -59,13 +59,7 @@
                                 class="btn btn-sm btn-block btn-outline-dark">
                         </a>
                     </div>
-                    <!-- <div class="col-2">
-                        <a href="{% url 'save_in_excel' %}">
-                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
-                            Сохранить в Excel 
-                            </button>
-                        </a>
-                </div> -->
+             
             </form>
         </div>
     </div>
@@ -80,29 +74,29 @@
         <div class="row">
 
             <div class="col-2">
-                <h5>Наименование</h5>
+                <h5>Дата</h5>
             </div>
             <div class="col-2">
-                <h5>Количество</h5>
-            </div>
-            <div class="col-2">
-                <h5>Цена</h5>
-            </div>
-            <div class="col-2">
-                <h5>Сумма</h5>
+                <h5>Документ</h5>
             </div>
             <div class="col-2">
                 <h5>Продавец</h5>
             </div>
+            <div class="col-2">
+                <h5>Торговая точка</h5>
+            </div>
+            <div class="col-2">
+                <h5>Сумма</h5>
+            </div>
 
         </div>
-        {% for item in queryset_list %}
+        {% for item in credit_report %}
         <div class="row m-auto">
-            <div class="col-2">{{item.name}}</div>
-            <div class="col-2">{{item.quantity}}</div>
-            <div class="col-2">{{item.price}}</div>
-            <div class="col-2">{{item.sub_total}}</div>
+            <div class="col-2">{{item.created}}</div>
+            <div class="col-2">{{item.document}}</div>
             <div class="col-2">{{item.user}}</div>
+            <div class="col-2">{{item.shop}}</div>
+            <div class="col-2">{{item.sum}}</div>
         </div>
         {% endfor %}
     </div>
