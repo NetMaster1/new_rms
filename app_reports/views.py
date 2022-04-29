@@ -38,7 +38,6 @@ import pytz
 import os
 from django.db.models import Q
 
-
 # Create your views here.
 
 
@@ -58,11 +57,14 @@ def save_in_excel_daily_rep(request):
 
         report_id = ReportTempId.objects.create()
         for shop in shops:
-            shop_row = [] # list for storing retail values for each category/shop for further placing in model
+            shop_row = (
+                []
+            )  # list for storing retail values for each category/shop for further placing in model
             for category in categories:
                 sum = 0
                 if RemainderHistory.objects.filter(
-                    shop=shop, category=category, created__date=date, rho_type=doc_type).exists():
+                    shop=shop, category=category, created__date=date, rho_type=doc_type
+                ).exists():
                     rhos = RemainderHistory.objects.filter(
                         shop=shop,
                         category=category,
@@ -184,7 +186,7 @@ def save_in_excel_daily_rep(request):
                 - daily_rep.cash_move
             )
             daily_rep.save()
-        
+
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (
             "attachment; filename=DailRep_" + str(date) + ".xls"
@@ -202,57 +204,75 @@ def save_in_excel_daily_rep(request):
         for shop in shops:
             columns.append(shop.name)
         for col_num in range(len(columns)):
-            ws.write(row_num, col_num+1, columns[col_num], font_style)
-       
+            ws.write(row_num, col_num + 1, columns[col_num], font_style)
+
         # sheet body, remaining rows
         font_style = xlwt.XFStyle()
         daily_rep = DailySaleRep.objects.filter(report_id=report_id)
-       
-        col_num=1
+
+        col_num = 1
         for shop in shops:
             query_list = daily_rep.get(shop=shop.name)
             # query = query_list.values_list("opening_balance", "smartphones", "accessories", 'sim_cards', 'phones', 'iphone', 'insuranсе', 'wink', 'services', 'pay_cards', 'credit', 'card', 'salary', 'expenses', 'return_sum', 'cash_move', 'final_balance')
-            row_num=1
+            row_num = 1
             ws.write(row_num, col_num, query_list.opening_balance, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.smartphones, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.accessories, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.sim_cards, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.phones, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.iphone, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.insuranсе, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.wink, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.services, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.pay_cards, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.credit, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.card, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.salary, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.expenses, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.return_sum, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.cash_move, font_style)
-            row_num+=1
+            row_num += 1
             ws.write(row_num, col_num, query_list.final_balance, font_style)
-            col_num+=1
+            col_num += 1
 
-        criteria_list = ["opening_balance", "smartphones", "accessories", 'sim_cards', 'phones', 'iphone', 'insuranсе', 'wink', 'services', 'pay_cards', 'credit', 'card', 'salary', 'expenses', 'return_sum', 'cash_move', 'final_balance']
-        row_num=1
+        criteria_list = [
+            "opening_balance",
+            "smartphones",
+            "accessories",
+            "sim_cards",
+            "phones",
+            "iphone",
+            "insuranсе",
+            "wink",
+            "services",
+            "pay_cards",
+            "credit",
+            "card",
+            "salary",
+            "expenses",
+            "return_sum",
+            "cash_move",
+            "final_balance",
+        ]
+        row_num = 1
         for i in criteria_list:
             ws.write(row_num, 0, i, font_style)
-            row_num=row_num+1
+            row_num = row_num + 1
 
         wb.save(response)
         return response
@@ -287,10 +307,13 @@ def save_in_excel_daily_rep(request):
         # }
         # return render(request, "reports/sample.html", context)
 
+
 def daily_report(request):
     return render(request, "reports/daily_report.html")
 
+
 # ===============================================================
+
 
 def close_report(request):
     if request.user.is_authenticated:
@@ -311,12 +334,14 @@ def close_report(request):
         auth.logout(request)
         return redirect("login")
 
+
 def close_remainder_report(request):
     users = Group.objects.get(name="sales").user_set.all()
     if request.user in users:
         return redirect("sale_interface")
     else:
         return redirect("log")
+
 
 def sale_report(request):
     categories = ProductCategory.objects.all()
@@ -326,7 +351,9 @@ def sale_report(request):
     users = User.objects.all()
     if request.method == "POST":
         doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
-        queryset_list = RemainderHistory.objects.filter(rho_type=doc_type).order_by('name')
+        queryset_list = RemainderHistory.objects.filter(rho_type=doc_type).order_by(
+            "name"
+        )
         sum = 0
         # category = request.POST["category"]
         category = request.POST.get("category", False)
@@ -364,13 +391,13 @@ def sale_report(request):
             queryset_list = queryset_list.filter(created__lte=end_date)
             report_id = ReportTempId.objects.create()
             for qs in queryset_list:
-                sale_rep=SaleReport.objects.create(
-                     report_id=report_id,
-                     product=qs.name,
-                     quantity=qs.outgoig_quantity,
-                     av_sum=qs.av_price,
-                     retail_price=qs.retail_price
-                     #margin
+                sale_rep = SaleReport.objects.create(
+                    report_id=report_id,
+                    product=qs.name,
+                    quantity=qs.outgoing_quantity,
+                    av_sum=qs.av_price,
+                    retail_price=qs.retail_price
+                    # margin
                 )
 
         context = {
@@ -389,6 +416,7 @@ def sale_report(request):
             "users": users,
         }
         return render(request, "reports/sale_report.html", context)
+
 
 def delivery_report(request):
     categories = ProductCategory.objects.all()
@@ -426,6 +454,7 @@ def delivery_report(request):
         }
     return render(request, "reports/delivery_report.html", context)
 
+
 # =======================================================
 def remainder_report(request):
     if request.user.is_authenticated:
@@ -461,6 +490,7 @@ def remainder_report(request):
     else:
         auth.logout(request)
         return redirect("login")
+
 
 def remainder_report_excel(request, shop_id, category_id, date):
     users = Group.objects.get(name="sales").user_set.all()
@@ -516,7 +546,7 @@ def remainder_report_excel(request, shop_id, category_id, date):
         font_style = xlwt.XFStyle()
         report_query = ReportTemp.objects.filter(report_id=report_id)
         query = report_query.values_list("name", "imei", "end_remainder", "price")
-       
+
         for row in query:
             row_num += 1
             for col_num in range(len(row)):
@@ -535,17 +565,24 @@ def remainder_report_excel(request, shop_id, category_id, date):
         auth.logout(request)
         return redirect("login")
 
+
 def remainder_report_output(request, shop_id, category_id, date):
     if request.user.is_authenticated:
         date = date
         shop = Shop.objects.get(id=shop_id)
         category = ProductCategory.objects.get(id=category_id)
         array = []
-        products = Product.objects.filter(category=category).order_by('name')#order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        products = Product.objects.filter(category=category).order_by(
+            "name"
+        )  # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
         for product in products:
             imei = product.imei
-            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
-                rho = RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest("created")
+            if RemainderHistory.objects.filter(
+                shop=shop, imei=imei, created__lte=date
+            ).exists():
+                rho = RemainderHistory.objects.filter(
+                    shop=shop, imei=imei, created__lte=date
+                ).latest("created")
                 if rho.current_remainder > 0:
                     array.append(rho)
         context = {"date": date, "shop": shop, "array": array, "category": category}
@@ -553,6 +590,7 @@ def remainder_report_output(request, shop_id, category_id, date):
     else:
         auth.logout(request)
         return redirect("login")
+
 
 def update_retail_price(request):
     group = Group.objects.get(name="admin").user_set.all()
@@ -604,6 +642,7 @@ def update_retail_price(request):
         auth.logout(request)
         return redirect("login")
 
+
 # ==========================================================
 def remainder_list(request, shop_id, category_id):
     shop = Shop.objects.get(id=shop_id)
@@ -630,6 +669,7 @@ def remainder_list(request, shop_id, category_id):
         "category": category,
     }
     return render(request, "reports/remainder_report_output.html", context)
+
 
 # ======================================================================
 def remainder_report_dynamic(request):
@@ -702,6 +742,7 @@ def remainder_report_dynamic(request):
     }
     return render(request, "reports/remainder_report_dynamic.html", context)
 
+
 def item_report(request):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -732,6 +773,7 @@ def item_report(request):
         auth.logout(request)
         return redirect("login")
 
+
 # ====================================================================
 def cash_report(request):
     shops = Shop.objects.all()
@@ -739,18 +781,36 @@ def cash_report(request):
     context = {"queryset_list": queryset_list, "shops": shops}
     return render(request, "reports/cash_report.html", context)
 
+
 def credit_report(request):
     shops = Shop.objects.all()
     credits = Credit.objects.all()
     users = User.objects.all()
     if request.method == "POST":
-        date_start = request.POST["date_start"]
-        date_end = request.POST["date_end"]
-        shop = request.POST["shop"]
-        user = request.POST["user"]
+        start_date = request.POST["start_date"]
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = request.POST["end_date"]
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = end_date + timedelta(days=1)
+        shop = request.POST.get("shop", False)
+        if shop:
+            shop = Shop.objects.get(id=shop)
+        user = request.POST.get("user", False)
+        if user:
+            user = User.objects.get(id=user)
+        credit_report = Credit.objects.filter(
+            created__gte=start_date, created__lte=end_date
+        )
+        if shop:
+            credit_report = credit_report.filter(shop=shop)
+        if user:
+            credit_report = credit_report.filter(user=user)
+        context = {"shops": shops, "users": users, "credit_report": credit_report}
+        return render(request, "reports/credit_report.html", context)
 
     context = {"shops": shops, "users": users}
     return render(request, "reports/credit_report.html", context)
+
 
 def card_report(request):
     shops = Shop.objects.all()
@@ -768,17 +828,19 @@ def card_report(request):
         user = request.POST.get("user", False)
         if user:
             user = User.objects.get(id=user)
-        card_report=Card.objects.filter(created__gte=start_date, created__lte=end_date)
+        card_report = Card.objects.filter(
+            created__gte=start_date, created__lte=end_date
+        )
         if shop:
             card_report = card_report.filter(shop=shop)
         if user:
             card_report = card_report.filter(user=user)
-       
-
-        
+        context = {"shops": shops, "users": users, "card_report": card_report}
+        return render(request, "reports/card_report.html", context)
 
     context = {"shops": shops, "users": users}
     return render(request, "reports/card_report.html", context)
+
 
 def daily_pay_card_rep(request):
     shops = Shop.objects.all()
@@ -861,6 +923,7 @@ def daily_pay_card_rep(request):
     else:
         return render(request, "reports/daily_pay_card_rep.html")
 
+
 # =====================================================================
 def salary_report(request):
     if request.user.is_authenticated:
@@ -894,6 +957,7 @@ def salary_report(request):
             return render(request, "reports/salary_report.html")
     else:
         return redirect("login")
+
 
 def bonus_report_excel(request):
     users = User.objects.all()
@@ -942,6 +1006,7 @@ def bonus_report_excel(request):
     wb.save("names.xlsx")
 
     return redirect("log")
+
 
 def bonus_report(request):
     users = User.objects.all()
