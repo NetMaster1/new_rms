@@ -63,8 +63,7 @@ def save_in_excel_daily_rep(request):
             for category in categories:
                 sum = 0
                 if RemainderHistory.objects.filter(
-                    shop=shop, category=category, created__date=date, rho_type=doc_type
-                ).exists():
+                    shop=shop, category=category, created__date=date, rho_type=doc_type).exists():
                     rhos = RemainderHistory.objects.filter(
                         shop=shop,
                         category=category,
@@ -72,7 +71,7 @@ def save_in_excel_daily_rep(request):
                         rho_type=doc_type,
                     )
                     for rho in rhos:
-                        sum += rho.retail_price
+                        sum += rho.retail_sum_outgoing()
                 shop_row.append(sum)
             # ===================================================================================
 
