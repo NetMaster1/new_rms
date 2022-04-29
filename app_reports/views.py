@@ -390,7 +390,6 @@ def sale_report(request):
         }
         return render(request, "reports/sale_report.html", context)
 
-
 def delivery_report(request):
     categories = ProductCategory.objects.all()
     suppliers = Supplier.objects.all()
@@ -758,10 +757,26 @@ def card_report(request):
     cards = Card.objects.all()
     users = User.objects.all()
     if request.method == "POST":
-        date_start = request.POST["date_start"]
-        date_end = request.POST["date_end"]
-        shop = request.POST["shop"]
-        user = request.POST["user"]
+        start_date = request.POST["start_date"]
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = request.POST["end_date"]
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = end_date + timedelta(days=1)
+        shop = request.POST.get("shop", False)
+        if shop:
+            shop = Shop.objects.get(id=shop)
+        user = request.POST.get("user", False)
+        if user:
+            user = User.objects.get(id=user)
+        card_report=Card.objects.filter(created__gte=start_date, created__lte=end_date)
+        if shop:
+            card_report = card_report.filter(shop=shop)
+        if user:
+            card_report = card_report.filter(user=user)
+       
+
+        
+
     context = {"shops": shops, "users": users}
     return render(request, "reports/card_report.html", context)
 

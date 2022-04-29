@@ -3448,7 +3448,10 @@ def change_recognition_unposted(request, document_id):
                                 remainder = obj.current_remainder
                         av_price=AvPrice.objects.get(imei=imeis[i])
                         av_price.current_remainder+=int(quantities[i])
-                        av_price.av_price = av_price.sum / av_price.current_remainder
+                        if av_price.av_price == 0:
+                            av_price.av_price=0
+                        else:
+                            av_price.av_price = av_price.sum / av_price.current_remainder
                         av_price.save()
 
                     document.sum=document_sum

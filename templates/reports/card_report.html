@@ -11,7 +11,7 @@
         </div>
 
         <div class="menu">
-            <form action="{% url 'credit_report' %}" method="POST">
+            <form action="{% url 'card_report' %}" method="POST">
                 {% csrf_token %}
 
                 <div class="row form-row m-auto">
@@ -19,10 +19,10 @@
                 <input type="text" name="imei" placeholder="IMEI">
             </div> -->
                     <div class="col-2">
-                        <input type="date" id='start_date' name="start_date">
+                        <input type="date" id='start_date' name="start_date" required>
                     </div>
                     <div class="col-2">
-                        <input type="date" id='end_date' name="end_date">
+                        <input type="date" id='end_date' name="end_date" required>
                     </div>
 
                     <div class="col-2">
