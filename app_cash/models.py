@@ -27,6 +27,8 @@ class Cash (models.Model):
     def __int__(self):
         return self.id
 
+   
+
 #model used to store current cash remainder at shop
 # class CashRemainder(models.Model):
 #     remainder=models.IntegerField(default=0)
