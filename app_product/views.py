@@ -1292,7 +1292,7 @@ def change_sale_unposted (request, document_id):
                     )
                     document_sum+=rho.sub_total
                     #checking rhos after
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=rho.created).exists():
                         remainder=rho.current_remainder
                         sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).order_by('created')
                         for obj in sequence_rhos_after:
@@ -1347,7 +1347,7 @@ def change_sale_unposted (request, document_id):
                         current_remainder=cash_pre_remainder + cash,
                     )
                     if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
-                        sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
+                        sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=cho.created).order_by('created')
                         cash_remainder=cho.current_remainder
                         for obj in sequence_chos_after:
                             obj.pre_remainder = cash_remainder
@@ -5748,7 +5748,7 @@ def cash_movement(request):
                     current_remainder=cash_remainder - sum,
                     sender=True
                 )
-                if Cash.objects.filter(shop=shop_cash_sender, created__gt=dateTime).exists():
+                if Cash.objects.filter(shop=shop_cash_sender, created__gt=cho.created).exists():
                     sequence_chos_after = Cash.objects.filter(shop=shop_cash_sender, created__gt=document.created).order_by('created')
                     cash_remainder=cho.current_remainder
                     for obj in sequence_chos_after:
@@ -5776,7 +5776,7 @@ def cash_movement(request):
                     cash_in=sum,
                     current_remainder=cash_remainder + sum,
                 )
-                if Cash.objects.filter(shop=shop_cash_receiver, created__gt=dateTime).exists():
+                if Cash.objects.filter(shop=shop_cash_receiver, created__gt=cho.created).exists():
                     sequence_chos_after = Cash.objects.filter(shop=shop_cash_receiver, created__gt=document.created).order_by('created')
                     cash_remainder=cho.current_remainder
                     sequence_chos_after = sequence_chos_after.all().order_by("created")
