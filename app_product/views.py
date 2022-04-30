@@ -362,7 +362,7 @@ def remainder_input (request):
                 product = Product.objects.get(imei=row.Imei)
                 # checking docs before remainder_history
                 if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).exists():
-                    rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).latest('created)')
+                    rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).latest('created)'
                     pre_remainder=rho_latest_before.current_remainder
                 else:
                     pre_remainder=0
