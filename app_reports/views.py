@@ -135,9 +135,7 @@ def save_in_excel_daily_rep(request):
                 credit_sum = 0
             # =======================Calculating opening balance for each shop======================
             if Cash.objects.filter(created__lt=date, shop=shop).exists():
-                prev_day_cho = Cash.objects.filter(created__lt=date, shop=shop).latest(
-                    "created"
-                )
+                prev_day_cho = Cash.objects.filter(created__lt=date, shop=shop).latest("created")
                 prev_day_cash_remainder = prev_day_cho.current_remainder
             else:
                 prev_day_cash_remainder = 0
