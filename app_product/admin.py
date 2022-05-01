@@ -5,7 +5,7 @@ from . models import Document, RemainderHistory, Register, Identifier, AvPrice
 #     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop')
 
 class RemainderHistoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'time_seconds', 'document', 'rho_type', 'status', 'shop', 'category', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'retail_price', 'user', 'inventory_doc') 
+    list_display = ('id', 'time_seconds', 'document', 'rho_type', 'status', 'shop', 'category', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'av_price', 'retail_price', 'user', 'inventory_doc') 
     list_filter = ('shop', 'rho_type')
     ordering = ('-created',)
     list_per_page=50
