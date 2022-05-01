@@ -20,6 +20,9 @@ class Shop (models.Model):
     sale_k=models.IntegerField(default=1)
     retail = models.BooleanField(default=True)#mark for retail shops
 
+    class Meta:
+        ordering = ('name',)  # sorting by name
+
     def __str__(self):
         return self.name
 
