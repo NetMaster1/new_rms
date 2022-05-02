@@ -32,27 +32,30 @@
                 
             {% for group in request.user.groups.all %}
             {% if group.name == 'sales' %}
+
+            {% for item in remainders_array_final %}
                 <div class="row mt-1 mb-1 ">
                     <div class="col-3">
-                        {{remainders.shop}}
+                        {{item.shop}}
                     </div>
                     <div class="col-3">
-                        {{remainders.name}}
+                        {{item.name}}
                     </div>
                     <div class="col-2">
-                        {{remainders.imei}}
+                        {{item.imei}}
                     </div>
                     <div class="col-2">
-                        {{remainders.current_remainder}}
+                        {{item.current_remainder}}
                     </div>
                     <div class="col-2">
-                    {{remainders.retail_price}}
+                    {{item.retail_price}}
                     </div>
                 </div>
+            {% endfor %}
 
                 {% else %}
 
-                    {% for item in remainders_array%}
+                    {% for item in remainders%}
                         <div class="row mt-1 mb-1 ">
                             <div class="col-3">
                                 {{item.shop}}
