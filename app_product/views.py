@@ -54,7 +54,7 @@ def log(request):
     if request.user in group:
         month=datetime.datetime.now().month
         year=datetime.datetime.now().year
-        queryset_list = Document.objects.filter(created__year=year, created__month=month).order_by("-created")
+        queryset_list = Document.objects.filter(created__year=year, created__year=year).order_by("-created")
         #============paginator module=================
         paginator = Paginator(queryset_list, 25)
         page = request.GET.get('page')
@@ -5253,7 +5253,7 @@ def cash_off_expenses(request):
                     current_remainder=cash_remainder - sum,
                 )
                 if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
-                    sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
+                    sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=cho.created).order_by('created')
                     cash_remainder=cho.current_remainder
                     for obj in sequence_chos_after:
                         obj.pre_remainder = cash_remainder
@@ -5367,8 +5367,8 @@ def change_cash_off_expenses_unposted (request, document_id):
                 cash_out=sum,
                 current_remainder=cash_remainder - sum,
             )
-            if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
-                sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
+            if Cash.objects.filter(shop=shop, created__gt=cho.created).exists():
+                sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=cho.created).order_by('created')
                 cash_remainder=cho.current_remainder
                 for obj in sequence_chos_after:
                     obj.pre_remainder = cash_remainder
@@ -5499,7 +5499,7 @@ def cash_receipt(request):
                     current_remainder=cash_remainder + sum,
                 )
                 if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
-                    sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
+                    sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=cho.created).order_by('created')
                     cash_remainder=cho.current_remainder
                     for obj in sequence_chos_after:
                         obj.pre_remainder = cash_remainder
@@ -5612,8 +5612,8 @@ def change_cash_receipt_unposted (request, document_id):
                     cash_in=sum,
                     current_remainder=cash_remainder + sum,
                 )
-                if Cash.objects.filter(shop=shop, created__gt=dateTime).exists():
-                    sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
+                if Cash.objects.filter(shop=shop, created__gt=cho.created).exists():
+                    sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=cho.created).order_by('created')
                     cash_remainder=cho.current_remainder
                     for obj in sequence_chos_after:
                         obj.pre_remainder = cash_remainder
