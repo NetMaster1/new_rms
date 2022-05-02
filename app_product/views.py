@@ -4994,7 +4994,7 @@ def cash_off_salary(request):
                 if Cash.objects.filter(shop=shop, created__gt=cho.created).exists():
                     sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=cho.created
                     ).order_by('created')
-                        cash_remainder=cho.current_remainder
+                    cash_remainder=cho.current_remainder
                     for obj in sequence_chos_after:
                         obj.pre_remainder = cash_remainder
                         obj.current_remainder = (
