@@ -147,21 +147,26 @@ def search(request):
     users=Group.objects.get(name="sales").user_set.all()
     if request.method == "POST":
         remainders_array = []
+        remainders_array_final = []
         keyword = request.POST["keyword"]
         if request.user in users:
             session_shop=request.session['session_shop']
             #session_shop=request.session.get['session_shop']
             shop=Shop.objects.get(id=session_shop)
-            if RemainderHistory.objects.filter(shop=shop, name__icontains=keyword).exists():
-                remainders=RemainderHistory.objects.filter(name__icontains=keyword, shop=shop).latest('created')
-                if remainders.current_remainder > 0:
-                    remainders=RemainderHistory.objects.filter(name__icontains=keyword, shop=shop).latest('created')
-                else:
-                    messages.error(request, "УУУУУПС. Данный товар закончился")
-                    return redirect("search")
+            if RemainderHistory.objects.filter(shop=shop, name__icontains=keyword, current_remainder__gt=0).exists():
+                remainders=RemainderHistory.objects.filter(name__icontains=keyword, shop=shop, current_remainder__gt=0)
+                for remainder in remainders:
+                    remainders_array.append(remainder.imei)
+
+                remainders_array = set(remainders_array)
+                for i in remainders_array:
+                    remainder=RemainderHistory.objects.filter(shop=shop, imei=i).latest('created')
+                    remainders_array_final.append(remainder)
             else:
                 messages.error(request, "УУУУУПС. Такое наименование не найдено")
                 return redirect("search")
+
+
         else:
             shops=Shop.objects.all()
             for shop in shops:
@@ -176,7 +181,7 @@ def search(request):
                
         context = {
                 "remainders": remainders,
-                "remainders_array": remainders_array
+                "remainders_array_final": remainders_array_final
                 }
         return render(request, "documents/search_results.html", context)
 
