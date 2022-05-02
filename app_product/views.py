@@ -366,6 +366,22 @@ def remainder_input (request):
                     pre_remainder=rho_latest_before.current_remainder
                 else:
                     pre_remainder=0
+                #=============Calculating av_price========================
+                if AvPrice.objects.filter(imei=row.Imei).exists():
+                    av_price_obj = AvPrice.objects.get(imei=row.Imei)
+                    av_price_obj.current_remainder += int(row.Quantity)
+                    av_price_obj.sum += int(row.Quantity) * int(row.Av_price)
+                    av_price_obj.av_price = int(av_price_obj.sum) / int(av_price_obj.current_remainder)
+                    av_price_obj.save()
+                else:
+                    av_price_obj = AvPrice.objects.create(
+                        name=row.Title,
+                        imei=row.Imei,
+                        current_remainder=int(row.Quantity),
+                        sum=int(row.Quantity) * int(row.Av_price),
+                        av_price=int(row.Av_price),
+                    )
+
                 # creating remainder_history
                 rho = RemainderHistory.objects.create(
                     document=document,
@@ -380,25 +396,12 @@ def remainder_input (request):
                     incoming_quantity=row.Quantity,
                     outgoing_quantity=0,
                     current_remainder=pre_remainder + int(row.Quantity),
+                    av_price=int(row.Av_price),
                     retail_price=int(row.Price),
                     sub_total=int(row.Price) * int(row.Quantity),
                 )
                 document_sum += int(rho.sub_total)
 
-                if AvPrice.objects.filter(imei=row.Imei).exists():
-                    av_price_obj = AvPrice.objects.get(imei=row.Imei)
-                    av_price_obj.current_remainder += int(row.Quantity)
-                    av_price_obj.sum += int(row.Quantity) * int(row.Price)
-                    av_price_obj.av_price = int(av_price_obj.sum) / int(av_price_obj.current_remainder)
-                    av_price_obj.save()
-                else:
-                    av_price_obj = AvPrice.objects.create(
-                        name=row.Title,
-                        imei=row.Imei,
-                        current_remainder=int(row.Quantity),
-                        sum=int(row.Quantity) * int(row.Price),
-                        av_price=int(row.Price),
-                    )
                 # checking docs after remainder_history
                 if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__gt=rho.created).exists():
                     sequence_rhos_after = RemainderHistory.objects.filter(
