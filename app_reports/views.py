@@ -73,8 +73,6 @@ def save_in_excel_daily_rep(request):
                     for rho in rhos:
                         sum += rho.retail_sum_outgoing()
                 shop_row.append(sum)
-                print('=============')
-                print(len(shop_row))
             # ===================================================================================
 
             expenses_type = DocumentType.objects.get(name="РКО (хоз.расходы)")
