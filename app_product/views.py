@@ -54,7 +54,7 @@ def log(request):
     if request.user in group:
         month=datetime.datetime.now().month
         year=datetime.datetime.now().year
-        queryset_list = Document.objects.filter(created__year=year, created__year=year).order_by("-created")
+        queryset_list = Document.objects.filter(created__year=year).order_by("-created")
         #============paginator module=================
         paginator = Paginator(queryset_list, 25)
         page = request.GET.get('page')
@@ -66,18 +66,22 @@ def log(request):
         shops = Shop.objects.all()
         if request.method == "POST":
             shop = request.POST['shop']
-            start_date = request.POST["start_date"]
-            end_date = request.POST["end_date"]
+            #start_date = request.POST["start_date"]
+            start_date = request.POST.get("start_date", False)
+            if start_date:
+                start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            #end_date = request.POST["end_date"]
+            end_date = request.POST.get("end_date", False)
+            if end_date:
+                end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+                end_date = end_date + timedelta (days=1)
             user = request.POST["user"]
             supplier = request.POST["supplier"]
             doc_type = request.POST["doc_type"]
             # queryset_list=Document.objects.all()
             if start_date:
-                start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
                 queryset_list = queryset_list.filter(created__gte=start_date)
             if end_date:
-                end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-                end_date = end_date + timedelta (days=1)
                 queryset_list = queryset_list.filter(created__lte=end_date)
             if doc_type:
                 doc_type = DocumentType.objects.get(id=doc_type)
