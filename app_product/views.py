@@ -1839,11 +1839,17 @@ def no_cashback_off(request, identifier_id, client_id):
 # ====================================Delivery Operations==============================================
 def delivery_auto(request):
     shops = Shop.objects.all()
+    shop_default=Shop.objects.get(name='ООС')
     suppliers = Supplier.objects.all()
     categories = ProductCategory.objects.all()
     doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
     if request.method == "POST":
-        dateTime = request.POST["dateTime"]
+        dateTime=request.POST.get('dateTime', False)
+        if dateTime:
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+        else:
+            dateTime = datetime.datetime.now()
         shop = request.POST["shop"]
         shop = Shop.objects.get(id=shop)
         try:
@@ -1859,11 +1865,7 @@ def delivery_auto(request):
             messages.error(request, "Введите категорию.")
             return redirect("delivery_auto")
         file = request.FILES["file_name"]
-        if dateTime:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-        else:
-            dateTime = datetime.datetime.now()
+        
         # print(file)
         # df1 = pandas.read_excel('Delivery_21_06_21.xlsx')
         df1 = pandas.read_excel(file)
@@ -1887,8 +1889,8 @@ def delivery_auto(request):
                 )
                 product = Product.objects.get(imei=row.Imei)
             # checking docs before remainder_history
-            if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).exists():
-                rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).latest('created')
+            if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=document.created).exists():
+                rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=document.created).latest('created')
                 pre_remainder=rho_latest_before.current_remainder
             else:
                 pre_remainder=0
@@ -1914,24 +1916,22 @@ def delivery_auto(request):
             )
             document_sum += int(rho.sub_total)
             if AvPrice.objects.filter(imei=row.Imei).exists():
-                av_price_obj = AvPrice.objects.get(imei=row.Imei)
+                av_price_obj = AvPrice.objects.get(imei=product.imei)
                 av_price_obj.current_remainder += int(row.Quantity)
                 av_price_obj.sum += int(row.Quantity) * int(row.Price)
                 av_price_obj.av_price = int(av_price_obj.sum) / int(av_price_obj.current_remainder)
                 av_price_obj.save()
             else:
                 av_price_obj = AvPrice.objects.create(
-                    name=row.Title,
-                    imei=row.Imei,
+                    name=product.name,
+                    imei=product.imei,
                     current_remainder=int(row.Quantity),
                     sum=int(row.Quantity) * int(row.Price),
                     av_price=int(row.Price),
                 )
             # checking docs after remainder_history
-            if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__gt=dateTime).exists():
-                sequence_rhos_after = RemainderHistory.objects.filter(
-                    imei=row.Imei, shop=shop, created__gt=dateTime)
-                sequence_rhos_after = sequence_rhos_after.all().order_by("created")
+            if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__gt=rho.created).exists():
+                sequence_rhos_after = RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__gt=rho.created).order_by('created')
                 pre_remainder=rho.current_remainder
                 for obj in sequence_rhos_after:
                     obj.pre_remainder = pre_remainder
@@ -1947,8 +1947,9 @@ def delivery_auto(request):
         return redirect("log")
     context = {
         "shops": shops,
+        'shop_default': shop_default,
         "suppliers": suppliers, 
-        "categories": categories
+        "categories": categories,
         }
     return render(request, "documents/delivery_auto.html", context)
 
@@ -2703,7 +2704,7 @@ def transfer_input(request, identifier_id):
                             category=product.category,
                             imei=imeis[i],
                             name=names[i],
-                            #av_price=av_price,
+                            av_price=av_price.av_price,
                             retail_price=prices[i],
                             pre_remainder=rho_latest_before.current_remainder,
                             incoming_quantity=0,
@@ -2713,9 +2714,9 @@ def transfer_input(request, identifier_id):
                             status=False
                         )
                         # checking docs after remainder_history for shop_sender
-                        if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender,created__gt=dateTime).exists():
+                        if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender,created__gt=rho.created).exists():
                             remainder=rho.current_remainder
-                            sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i],shop=shop_sender,created__gt=dateTime).order_by('created')
+                            sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i],shop=shop_sender,created__gt=rho.created).order_by('created')
                             for obj in sequence_rhos_after:
                                 obj.pre_remainder = remainder
                                 obj.current_remainder = (
@@ -2741,18 +2742,18 @@ def transfer_input(request, identifier_id):
                             status=True,
                             sub_total=int(prices[i])*int(quantities[i])
                         )
-                        #checking docs before for shop_sender
-                        if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_receiver, created__lt=dateTime).exists():
-                            rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop_receiver, created__lt=dateTime).latest('created')
+                        #checking docs before for shop_receiver
+                        if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_receiver, created__lt=rho.created).exists():
+                            rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop_receiver, created__lt=rho.created).latest('created')
                             rho.pre_remainder=rho_latest_before.current_remainder
                         else:
                             rho.pre_remainder=0
                         rho.current_remainder=rho.pre_remainder+int(quantities[i])
                         rho.save()
                         # checking docs after remainder_history for shop_receiver
-                        if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_receiver, created__gt=dateTime).exists():
+                        if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_receiver, created__gt=rho.created).exists():
                             remainder=rho.current_remainder
-                            sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i],shop=shop_receiver,created__gt=dateTime).order_by('created')
+                            sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i],shop=shop_receiver,created__gt=rho.created).order_by('created')
                             for obj in sequence_rhos_after:
                                 obj.pre_remainder = remainder
                                 obj.current_remainder = (
@@ -3060,6 +3061,147 @@ def unpost_transfer(request, document_id):
     document.save()
     return redirect("log")
 
+def transfer_auto (request):
+    group=Group.objects.get(name="admin").user_set.all()
+    if request.user in group:
+        shops=Shop.objects.all()
+        doc_type = DocumentType.objects.get(name="Перемещение ТМЦ")
+        if request.method == "POST":
+            file = request.FILES["file_name"]
+            shop_sender = request.POST["shop_sender"]
+            shop_sender=Shop.objects.get(id=shop_sender)
+            shop_receiver = request.POST["shop_receiver"]
+            shop_receiver=Shop.objects.get(id=shop_receiver)
+            if shop_sender == shop_receiver:
+                messages.error(request,"Документ не проведен.Выберите фирму получателя отличную от отправителя")
+                return redirect("transfer_auto")
+            dateTime = request.POST["dateTime"]
+            # converting dateTime from str format (2021-07-08T01:05) to django format ()
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+            #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+            #==================End of time module================================
+            # df1 = pandas.read_excel('Delivery_21_06_21.xlsx')
+            df1 = pandas.read_excel(file)
+            cycle = len(df1)#returns number of rows
+            #checking availabiltiy of items to avoid saving only a portion of document
+            for i in range(cycle):
+                row = df1.iloc[i]#reads rows of excel file one by one
+                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop_sender, created__lt=dateTime).exists():
+                    remainder_history= RemainderHistory.objects.filter(imei=row.Imei, shop=shop_sender, created__lt=dateTime).latest('created')
+                    if remainder_history.current_remainder < int(row.Quantity):
+                        #check_point.append(False)
+                        string=f'Документ не проведеден. Товар с IMEI {row.Imei} отсутствует на балансе фирмы.'
+                        messages.error(request,  string)
+                        return redirect("transfer_auto")
+                else:
+                    string=f'Документ не проведеден. Товар с IMEI {row.Imei} отсутствует на балансе фирмы.'
+                    messages.error(request,  string)
+                    return redirect("transfer_auto")
+            document = Document.objects.create(
+                created=dateTime,
+                title=doc_type,
+                user=request.user,
+                posted=True,
+                shop_sender=shop_sender,
+                shop_receiver=shop_receiver,
+            )
+            document_sum = 0
+            for i in range(cycle):
+                row = df1.iloc[i]#reads rows of excel file one by one
+                product=Product.objects.get(imei=row.Imei)
+                av_price=AvPrice.objects.get(imei=row.Imei)
+                document_sum+=int(row.Quantity) * int(row.Retail_price)
+                # checking shop_sender
+                rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei,shop=shop_sender,created__lt=document.created).latest('created')
+
+                rho = RemainderHistory.objects.create (
+                    created=document.created,
+                    user=request.user,
+                    document=document,
+                    rho_type=document.title,
+                    shop=shop_sender,
+                    category=product.category,
+                    imei=row.Imei,
+                    name=product.name,
+                    av_price=av_price.av_price,
+                    retail_price=row.Retail_price,
+                    pre_remainder=rho_latest_before.current_remainder,
+                    incoming_quantity=0,
+                    outgoing_quantity=row.Quantity,
+                    current_remainder=rho_latest_before.current_remainder- int(row.Quantity),
+                    sub_total=int(row.Retail_price) * int(row.Quantity),
+                    status=False,
+                    )
+                # checking docs after remainder_history for shop_sender
+                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop_sender, created__gt=rho.created).exists():
+                    remainder=rho.current_remainder
+                    sequence_rhos_after = RemainderHistory.objects.filter(imei=row.Imei,shop=shop_sender,created__gt=rho.created).order_by('created')
+                    for obj in sequence_rhos_after:
+                        obj.pre_remainder = remainder
+                        obj.current_remainder = (
+                            remainder
+                            + obj.incoming_quantity
+                            - obj.outgoing_quantity
+                        )
+                        obj.save()
+                        remainder = obj.current_remainder
+                #checking docs before for shop_receiver
+                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop_receiver, created__lt=document.created).exists():
+                    rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop_receiver, created__lt=document.created).latest('created')
+                    pre_remainder=rho_latest_before.current_remainder
+                else:
+                    pre_remainder=0
+                rho = RemainderHistory.objects.create(
+                    created=document.created,
+                    document=document,
+                    user=request.user,
+                    rho_type=document.title,
+                    shop=shop_receiver,
+                    category=product.category,
+                    imei=row.Imei,
+                    name=product.name,
+                    retail_price=row.Retail_price,
+                    pre_remainder=pre_remainder,
+                    current_remainder=pre_remainder+int(row.Quantity),
+                    incoming_quantity=int(row.Quantity),
+                    outgoing_quantity=0,
+                    status=True,
+                    sub_total=int(row.Quantity)*int(row.Retail_price)
+                )
+                # checking docs after remainder_history for shop_receiver
+                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop_receiver, created__gt=rho.created).exists():
+                    remainder=rho.current_remainder
+                    sequence_rhos_after = RemainderHistory.objects.filter(imei=row.Imei,shop=shop_receiver,created__gt=rho.created).order_by('created')
+                    for obj in sequence_rhos_after:
+                        obj.pre_remainder = remainder
+                        obj.current_remainder = (
+                            remainder
+                            + obj.incoming_quantity
+                            - obj.outgoing_quantity
+                        )
+                        obj.save()
+                        remainder = obj.current_remainder
+            document.sum = document_sum
+            document.save()
+            return redirect('log')
+        else:
+            context = {
+                'shops': shops,
+                }
+            return render(request, "documents/transfer_auto.html", context)
+    
+
+    else:
+        auth.logout(request)
+        return redirect("login")
 # =======================================================================================
 def identifier_recognition(request):
     if request.user.is_authenticated:
@@ -3293,7 +3435,7 @@ def recognition_input(request, identifier_id):
                     if shop.retail==True:
                         rho.retail_price=int(prices[i])
                     else:
-                        rho.wholesale_price=int(prices)
+                        rho.wholesale_price=int(prices[i])
                     rho.save()
                     document_sum+=rho.sub_total 
                    
