@@ -65,7 +65,8 @@ def log(request):
         suppliers = Supplier.objects.all()
         shops = Shop.objects.all()
         if request.method == "POST":
-            shop = request.POST['shop']
+            #shop = request.POST['shop']
+            shop = request.POST.get("shop", False)
             #start_date = request.POST["start_date"]
             start_date = request.POST.get("start_date", False)
             if start_date:
@@ -75,9 +76,12 @@ def log(request):
             if end_date:
                 end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
                 end_date = end_date + timedelta (days=1)
-            user = request.POST["user"]
-            supplier = request.POST["supplier"]
-            doc_type = request.POST["doc_type"]
+            #user = request.POST["user"]
+            user = request.POST.get("user", False)
+            #supplier = request.POST["supplier"]
+            supplier = request.POST.get("supplier", False)
+            #doc_type = request.POST["doc_type"]
+            doc_type = request.POST.get("doc_type", False)
             # queryset_list=Document.objects.all()
             if start_date:
                 queryset_list = queryset_list.filter(created__gte=start_date)
@@ -88,7 +92,7 @@ def log(request):
                 queryset_list = queryset_list.filter(title=doc_type)
             if shop:
                 shop=Shop.objects.get(id=shop)
-                queryset_list = queryset_list.filter(Q(shop_sender=shop) | Q(shop_receiver=shop))
+                queryset_list = queryset_list.filter(Q(shop_sender=shop) | Q (shop_receiver=shop))
             if user:
                 queryset_list = queryset_list.filter(user=user)
             if supplier:
