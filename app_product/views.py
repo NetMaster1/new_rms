@@ -1230,12 +1230,24 @@ def change_sale_unposted (request, document_id):
             quantities = request.POST.getlist("quantity", None)
             prices = request.POST.getlist("price", None)
             sub_totals = request.POST.getlist("sub_total", None)
-            cash = request.POST["cash"]
-            cash=int(cash)
-            credit = request.POST["credit"]
-            credit=int(credit)
-            card = request.POST["card"]
-            card=int(card)
+            #cash = request.POST["cash"]
+            cash=request.POST.get('cash', False)
+            if cash:
+                cash=int(cash)
+            else:
+                cash=0
+            #credit = request.POST["credit"]
+            credit=request.POST.get('credit', False)
+            if credit:
+                credit=int(credit)
+            else:
+                credit=0
+            #card = request.POST["card"]
+            card=request.POST.get('card', False)
+            if card:
+                card=int(card)
+            else:
+                card=0
             #===================DateTime module for Change Unposted===============================
             dateTime=request.POST['dateTime']
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
