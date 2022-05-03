@@ -73,6 +73,8 @@ def save_in_excel_daily_rep(request):
                     for rho in rhos:
                         sum += rho.retail_sum_outgoing()
                 shop_row.append(sum)
+                print('=============')
+                print(len(shop_row))
             # ===================================================================================
 
             expenses_type = DocumentType.objects.get(name="РКО (хоз.расходы)")
@@ -154,6 +156,8 @@ def save_in_excel_daily_rep(request):
                 wink=shop_row[6],
                 services=shop_row[7],
                 pay_cards=shop_row[8],
+                gadgets=shop_row[9],
+                modems=shop_row[10],
                 credit=credit_sum,
                 card=card_sum,
                 salary=salary_sum,
@@ -171,6 +175,8 @@ def save_in_excel_daily_rep(request):
                 + daily_rep.wink
                 + daily_rep.services
                 + daily_rep.pay_cards
+                + daily_rep.gadgets
+                + daily_rep.modems
             )
             daily_rep.final_balance = (
                 daily_rep.opening_balance
@@ -232,6 +238,10 @@ def save_in_excel_daily_rep(request):
             row_num += 1
             ws.write(row_num, col_num, query_list.pay_cards, font_style)
             row_num += 1
+            ws.write(row_num, col_num, query_list.gadgets, font_style)
+            row_num += 1
+            ws.write(row_num, col_num, query_list.modems, font_style)
+            row_num += 1
             ws.write(row_num, col_num, query_list.credit, font_style)
             row_num += 1
             ws.write(row_num, col_num, query_list.card, font_style)
@@ -258,6 +268,8 @@ def save_in_excel_daily_rep(request):
             "wink",
             "services",
             "pay_cards",
+            "gadgets",
+            "modems",
             "credit",
             "card",
             "salary",

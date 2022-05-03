@@ -63,6 +63,8 @@ class DailySaleRep (models.Model):
     insuranсе = models.IntegerField(null=True)
     wink = models.IntegerField(null=True)
     services = models.IntegerField(null=True)
+    gadgets = models.IntegerField(null=True)
+    modems = models.IntegerField(null=True)
     net_sales = models.IntegerField(null=True)
     #sub_total = models.IntegerField(null=True)
     credit = models.IntegerField(null=True)
