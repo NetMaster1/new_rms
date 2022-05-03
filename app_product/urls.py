@@ -114,6 +114,8 @@ urlpatterns = [
     # path ('delete_line_posted_transfer/<int:document_id>/<int:imei>', views.delete_line_posted_transfer, name='delete_line_posted_transfer'),
     path ('delete_line_unposted_transfer/<int:document_id>/<int:imei>', views.delete_line_unposted_transfer, name='delete_line_unposted_transfer'),
 
+    path ('transfer_auto', views.transfer_auto, name='transfer_auto'),
+
     # ===============================Revaluation==================================
     path ('identifier_revaluation', views.identifier_revaluation, name='identifier_revaluation'),
     path ('check_revaluation/<int:identifier_id>', views.check_revaluation, name='check_revaluation'),
