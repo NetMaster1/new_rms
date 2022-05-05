@@ -24,6 +24,7 @@
                      </li>
 
             {% for group in request.user.groups.all %}
+
             {% if group.name == 'sales' %}
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
@@ -46,7 +47,7 @@
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                     <li><a class="dropdown-item" href="{% url 'sale_report' %}">Отчет по продажам</a></li>
                     <li><a class="dropdown-item" href="{% url 'daily_report' %}">Отчет за день</a></li>
-                    <li><a class="dropdown-item" href="{% url 'daily_pay_card_rep' %}">Остатки КЭО</a></li>
+                    <li><a class="dropdown-item" href="{% url 'daily_pay_card_rep_general' %}">Остатки КЭО</a></li>
                     <li><a class="dropdown-item" href="{% url 'delivery_report' %}">Отчет по закупкам</a></li>
                     <li><a class="dropdown-item" href="{% url 'remainder_report' %}" >Отчет по остаткам на дату</a></li>
                     <li><a class="dropdown-item" href="{% url 'remainder_report_dynamic' %}">Отчет по остаткам динамический</a></li>
@@ -152,6 +153,8 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                         <li><a class="dropdown-item" href="{% url 'remainder_report' %}">Отчет по остаткам на дату</a></li>
+                        <li><a class="dropdown-item" href="{% url 'cash_report' %}">Отчет по кассе</a></li>
+                        <li><a class="dropdown-item" href="{% url 'daily_pay_card_rep_per_shop' %}">Отчет по остаткам КЭО</a></li>
                     </ul>
                 </li>
             </ul>

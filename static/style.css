@@ -3,8 +3,8 @@ a {
 }
 
 footer {
-    bottom: 0;
-    position: fixed;
+    /* bottom: 10px; */
+    position: relative;
     width: 100%;
 }
 
@@ -50,14 +50,13 @@ footer {
 .log {
     margin: auto;
     margin-top: 1rem;
-    max-height: 100%;
-   
+    height: 65vh;
+    /* max-height: 100%; */
+    /* overflow: scroll; */
     /* border-width: 1px; */
     /* border-radius:1rem; */
     /* border-color: black; */
     background-color: rgb(238, 240, 238);
-    /* overflow: auto; */
-   
 }
 
 .modal_new {
@@ -111,12 +110,12 @@ footer {
 }
 
 .shop_choice_form {
-    display: block;
-    position: fixed;
+    /* display: block;
+    position: fixed; */
     top: 10rem;
-    left: 40rem;
-    width: 30%;
-    height: 20%;
+    left: 30vw;
+    width: 30Vw;
+    height: 20Vh;
     background-color: rgb(238, 240, 238);
 }
 
@@ -134,17 +133,17 @@ footer {
     display: block;
     position: fixed;
     top: 10rem;
-    left: 40rem;
-    width: 30%;
+    left: 10Vw;
+    width: 30rem;
     min-height: 20%;
     background-color: rgb(238, 240, 238);
 }
 
 .modal-search-results {
-    display: block;
-    position: fixed;
+    /* display: block;
+    position: fixed; */
     top: 5rem;
-    left: 30rem;
+    left: 10rem;
     width: 50%;
     min-height: 18%;
     background-color: rgb(238, 240, 238);
