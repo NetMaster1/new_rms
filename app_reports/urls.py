@@ -13,7 +13,8 @@ urlpatterns = [
 
     path ('daily_report', views.daily_report, name='daily_report'),
     path ('save_in_excel_daily_rep', views.save_in_excel_daily_rep, name='save_in_excel_daily_rep'),
-    path ('daily_pay_card_rep', views.daily_pay_card_rep, name='daily_pay_card_rep'),
+    path ('daily_pay_card_rep_general', views.daily_pay_card_rep_general, name='daily_pay_card_rep_general'),
+    path ('daily_pay_card_rep_per_shop', views.daily_pay_card_rep_per_shop, name='daily_pay_card_rep_per_shop'),
 
     path ('delivery_report', views.delivery_report, name='delivery_report'),
     path ('remainder_report', views.remainder_report, name='remainder_report'),

@@ -314,13 +314,10 @@ def save_in_excel_daily_rep(request):
         # }
         # return render(request, "reports/sample.html", context)
 
-
 def daily_report(request):
     return render(request, "reports/daily_report.html")
 
-
 # ===============================================================
-
 
 def close_report(request):
     if request.user.is_authenticated:
@@ -341,14 +338,12 @@ def close_report(request):
         auth.logout(request)
         return redirect("login")
 
-
 def close_remainder_report(request):
     users = Group.objects.get(name="sales").user_set.all()
     if request.user in users:
         return redirect("sale_interface")
     else:
         return redirect("log")
-
 
 def sale_report(request):
     categories = ProductCategory.objects.all()
@@ -424,7 +419,6 @@ def sale_report(request):
         }
         return render(request, "reports/sale_report.html", context)
 
-
 def delivery_report(request):
     categories = ProductCategory.objects.all()
     suppliers = Supplier.objects.all()
@@ -461,7 +455,6 @@ def delivery_report(request):
         }
     return render(request, "reports/delivery_report.html", context)
 
-
 # =======================================================
 def remainder_report(request):
     if request.user.is_authenticated:
@@ -481,7 +474,6 @@ def remainder_report(request):
             # ==============Time Module=========================================
             date = request.POST.get("date", False)
             if date:
-                date = date
                 date = datetime.datetime.strptime(date, "%Y-%m-%d")
             else:
                 date = datetime.date.today()
@@ -497,7 +489,6 @@ def remainder_report(request):
     else:
         auth.logout(request)
         return redirect("login")
-
 
 def remainder_report_excel(request, shop_id, category_id, date):
     users = Group.objects.get(name="sales").user_set.all()
@@ -572,7 +563,6 @@ def remainder_report_excel(request, shop_id, category_id, date):
         auth.logout(request)
         return redirect("login")
 
-
 def remainder_report_output(request, shop_id, category_id, date):
     if request.user.is_authenticated:
         date = date
@@ -597,7 +587,6 @@ def remainder_report_output(request, shop_id, category_id, date):
     else:
         auth.logout(request)
         return redirect("login")
-
 
 def update_retail_price(request):
     group = Group.objects.get(name="admin").user_set.all()
@@ -649,7 +638,6 @@ def update_retail_price(request):
         auth.logout(request)
         return redirect("login")
 
-
 # ==========================================================
 def remainder_list(request, shop_id, category_id):
     shop = Shop.objects.get(id=shop_id)
@@ -676,7 +664,6 @@ def remainder_list(request, shop_id, category_id):
         "category": category,
     }
     return render(request, "reports/remainder_report_output.html", context)
-
 
 # ======================================================================
 def remainder_report_dynamic(request):
@@ -749,7 +736,6 @@ def remainder_report_dynamic(request):
     }
     return render(request, "reports/remainder_report_dynamic.html", context)
 
-
 def item_report(request):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -780,14 +766,30 @@ def item_report(request):
         auth.logout(request)
         return redirect("login")
 
-
 # ====================================================================
 def cash_report(request):
-    shops = Shop.objects.all()
-    queryset_list = Cash.objects.all()
-    context = {"queryset_list": queryset_list, "shops": shops}
-    return render(request, "reports/cash_report.html", context)
-
+    if request.user.is_authenticated:
+        session_shop=request.session['session_shop']
+        shop=Shop.objects.get(id=session_shop)
+        if request.method=='POST':
+            # start_date = request.POST.get("start_date", False)
+            start_date = request.POST["start_date"]
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = request.POST["end_date"]
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta (days=1)
+               
+       
+            queryset_list = Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date)
+            context = {
+                "queryset_list": queryset_list
+                }
+            return render(request, 'reports/cash_report.html', context)
+        else:
+            return render(request, "reports/cash_report.html")
+    else:
+        auth.logout(request)
+        return redirect("login")
 
 def credit_report(request):
     shops = Shop.objects.all()
@@ -818,7 +820,6 @@ def credit_report(request):
     context = {"shops": shops, "users": users}
     return render(request, "reports/credit_report.html", context)
 
-
 def card_report(request):
     shops = Shop.objects.all()
     cards = Card.objects.all()
@@ -848,8 +849,44 @@ def card_report(request):
     context = {"shops": shops, "users": users}
     return render(request, "reports/card_report.html", context)
 
+def daily_pay_card_rep_per_shop (request):
+    if request.user.is_authenticated:
+        shops=Shop.objects.all()
+        if request.method == "POST":
+            shop = request.POST.get("shop", False)
+            if shop:
+                shop=Shop.objects.get(shop=shop)
+            else:
+                session_shop=request.session['session_shop']
+                shop=Shop.objects.get(id=session_shop)
+            date = request.POST.get("date", False)
+            if date:
+                # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                date = datetime.datetime.strptime(date, "%Y-%m-%d")
+            else:
+                date = datetime.date.today()
+            product=Product.objects.get(imei='11111')
+            if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__date=date).exists():
+                rhos=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__date=date)
+            else:
+                messages.error(request,  'Приход и расхода КЭО не было')
+                return redirect("daily_pay_card_rep_per_shop")
+            context = {
+                "rhos": rhos,
+                "shops": shops
+            }
+            return render(request, "reports/daily_pay_card_rep.html", context)
+        else:
+            context = {
+                "shops": shops
+            }
+            return render(request, "reports/daily_pay_card_rep.html", context)
 
-def daily_pay_card_rep(request):
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+def daily_pay_card_rep_general(request):
     shops = Shop.objects.all()
     if request.method == "POST":
         date = request.POST.get("date", False)
@@ -930,7 +967,6 @@ def daily_pay_card_rep(request):
     else:
         return render(request, "reports/daily_pay_card_rep.html")
 
-
 # =====================================================================
 def salary_report(request):
     if request.user.is_authenticated:
@@ -964,7 +1000,6 @@ def salary_report(request):
             return render(request, "reports/salary_report.html")
     else:
         return redirect("login")
-
 
 def bonus_report_excel(request):
     users = User.objects.all()
@@ -1013,7 +1048,6 @@ def bonus_report_excel(request):
     wb.save("names.xlsx")
 
     return redirect("log")
-
 
 def bonus_report(request):
     users = User.objects.all()

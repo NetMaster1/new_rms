@@ -15,11 +15,13 @@
 
                 <div class="row form-row m-auto">
                     <div class="col-2">
-                        <input type="date" id='start_date' name="start_date">
+                        <input type="date" id='start_date' name="start_date" required>
                     </div>
                     <div class="col-2">
-                        <input type="date" id='end_date' name="end_date">
+                        <input type="date" id='end_date' name="end_date" required>
                     </div>
+            {% for group in request.user.groups.all %}
+            {% if group.name == 'admin' %}
                     <div class="col-2">
                         <select name="shop" id="shop" class='form-inline'>
                             <option value="">Выберите торговую точку</option>
@@ -28,6 +30,8 @@
                             {% endfor %}
                         </select>
                     </div>
+            {% endif %}
+            {% endfor %}
 
                 </div>
 

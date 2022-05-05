@@ -3,7 +3,7 @@ a {
 }
 
 footer {
-    bottom: 0;
+    bottom: 0px;
     position: fixed;
     width: 100%;
 }
@@ -50,8 +50,6 @@ footer {
 .log {
     margin: auto;
     margin-top: 1rem;
-    max-height: 100%;
-   
     /* border-width: 1px; */
     /* border-radius:1rem; */
     /* border-color: black; */
@@ -113,10 +111,10 @@ footer {
 .shop_choice_form {
     display: block;
     position: fixed;
-    top: 10rem;
-    left: 40rem;
-    width: 30%;
-    height: 20%;
+    top: 20vh;
+    left: 33vw;
+    width: 34vw;
+    height: 21vh;
     background-color: rgb(238, 240, 238);
 }
 
@@ -133,10 +131,10 @@ footer {
 .modal-search-form {
     display: block;
     position: fixed;
-    top: 10rem;
-    left: 40rem;
-    width: 30%;
-    min-height: 20%;
+    top: 20vh;
+    left: 30vw;
+    width: 34vw;
+    height: 23vh;
     background-color: rgb(238, 240, 238);
 }
 
