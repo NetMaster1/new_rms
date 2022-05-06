@@ -6,14 +6,10 @@
 <div class="container">
     <!-- <div class="page-location"> -->
 
-        <div class="row mt-1">
-            <h3>Журнал документов</h3>
-        </div>
-    
-    <div class="log border rounded">
+    <div class="log border rounded mt-1" style="background-color:rgb(215, 215, 215)" >
             <form action="{% url 'log' %}" method="POST">
                 {% csrf_token %}
-            <div class="row form-row mt-1">
+            <div class="row form-row">
                     <div class="col-2">
                         <input type="date" id='start_date' name="start_date" class='form-control'>
                     </div>
@@ -53,7 +49,7 @@
                     </select>
                 </div>
             </div>
-           <div class="row mt-2 mb-2">
+           <div class="row mt-1">
                         <div class="col-2">
                             <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark form-control">
                         </div>
@@ -69,29 +65,31 @@
             </form>      
     </div>
 
-<div class="log border rounded overflow-scroll" style="height:40rem" >
-    <div class="row m-auto">
-        <div class="col-1 m-auto">
+<div class="log border rounded mt-1" style="background-color:rgb(215, 215, 215)">
+    <div class="row">
+        <div class="col-1">
             <h4>Статус</h4>
         </div>
-        <div class="col-2 m-auto">
+        <div class="col-2">
             <h4>Дата</h4>
         </div>
-        <div class="col-3 m-auto">
+        <div class="col-3">
             <h4>Документ</h4>
         </div>
-        <div class="col-2 m-auto">
+        <div class="col-2">
             <h4>Сумма</h4>
         </div>
-        <div class="col-2 m-auto">
+        <div class="col-2">
             <h4>Инфо</h4>
         </div>
-        <div class="col-2 m-auto">
+        <div class="col-2">
             <h4>Автор</h4>
         </div>
     </div>
-    <hr>
- 
+</div>
+
+<div class="log border rounded mt-0 mb-3" style="overflow: auto; ">
+<!-- <div class="log border rounded overflow-scroll" style="height: 35rem"> -->
 {% for document in queryset_list %}
 <div class="row">
         <div class="col-1 m-auto">
