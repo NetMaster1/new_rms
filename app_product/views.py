@@ -169,7 +169,7 @@ def search(request):
                 remainders_array = set(remainders_array)
                 for i in remainders_array:
                     remainder=RemainderHistory.objects.filter(shop=shop, imei=i).latest('created')
-                    if remainder.remainder_current > 0:
+                    if remainder.current_remainder > 0:
                         remainders_array_final.append(remainder)
             else:
                 messages.error(request, "УУУУУПС. Такое наименование не найдено")

@@ -322,14 +322,14 @@ def daily_report(request):
 def close_report(request):
     if request.user.is_authenticated:
         users = Group.objects.get(name="sales").user_set.all()
-        if ReportTempId.objects.filter(existance_check=True).exists():
-            report_ids_temp = ReportTempId.objects.all()
-            for obj in report_ids_temp:
-                obj.delete()
-        if ReportTemp.objects.filter(existance_check=True).exists():
-            reports_temp = ReportTemp.objects.all()
-            for obj in reports_temp:
-                obj.delete()
+        # if ReportTemp.objects.filter(existance_check=True).exists():
+        #     reports_temp = ReportTemp.objects.all()
+        #     for obj in reports_temp:
+        #         obj.delete()
+        # if ReportTempId.objects.filter(existance_check=True).exists():
+        #     report_ids_temp = ReportTempId.objects.all()
+        #     for obj in report_ids_temp:
+        #         obj.delete()
         if request.user in users:
             return redirect("sale_interface")
         else:
