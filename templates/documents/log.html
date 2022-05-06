@@ -6,7 +6,7 @@
 <div class="container">
     <!-- <div class="page-location"> -->
 
-    <div class="log border rounded mt-1" style="background-color:rgb(215, 215, 215)">
+    <div class="log border rounded mt-1" style="background-color:rgb(215, 215, 215); height:11Vh">
         <form action="{% url 'log' %}" method="POST">
             {% csrf_token %}
             <div class="row form-row">
@@ -14,10 +14,10 @@
                     <input type="date" id='start_date' name="start_date" class='form-control'>
                 </div>
                 <div class="col-2">
-                    <input type="date" id='end_date' name="end_date" class='form-control'>
+                    <input type="date" id='end_date' name="end_date" class='form-control' >
                 </div>
                 <div class="col-2">
-                    <select name="doc_type" id="doc_type" class='form-control'>
+                    <select name="doc_type" id="doc_type" class='form-control' >
                         <option value="">Выберите тип документ</option>
                         {% for doc_type in doc_types %}
                         <option value="{{doc_type.id}}">{{doc_type.name}}</option>
@@ -66,7 +66,7 @@
         </form>
     </div>
 
-    <div class="log border rounded mt-1" style="background-color:rgb(215, 215, 215)">
+    <div class="log border rounded mt-1" style="background-color:rgb(215, 215, 215); height: 4Vh">
         <div class="row">
             <div class="col-1">
                 <h4>Статус</h4>

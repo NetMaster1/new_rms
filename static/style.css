@@ -3,8 +3,8 @@ a {
 }
 
 footer {
-    /* bottom: 10px; */
-    position: relative;
+    bottom: 0px;
+    position: fixed;
     width: 100%;
 }
 
@@ -49,8 +49,8 @@ footer {
 
 .log {
     margin: auto;
-    margin-top: 1rem;
-    height: 65vh;
+    /* margin-top: 1rem; */
+    /* height: 65vh; */
     /* max-height: 100%; */
     /* overflow: scroll; */
     /* border-width: 1px; */
@@ -66,7 +66,7 @@ footer {
 .page_location {
     margin: auto;
     /* display: block; */
-    margin-top: 3rem;
+    margin-top: 1Vh;
     /*margin-bottom: 1rem;
     /* border-style: solid;
     border-width: 5px;
@@ -110,12 +110,12 @@ footer {
 }
 
 .shop_choice_form {
-    /* display: block;
-    position: fixed; */
-    top: 10rem;
-    left: 30vw;
-    width: 30Vw;
-    height: 20Vh;
+    display: block;
+    position: fixed;
+    top: 20vh;
+    left: 33vw;
+    width: 34vw;
+    height: 21vh;
     background-color: rgb(238, 240, 238);
 }
 
@@ -132,10 +132,10 @@ footer {
 .modal-search-form {
     display: block;
     position: fixed;
-    top: 10rem;
-    left: 10Vw;
-    width: 30rem;
-    min-height: 20%;
+    top: 20vh;
+    left: 30vw;
+    width: 34vw;
+    height: 23vh;
     background-color: rgb(238, 240, 238);
 }
 

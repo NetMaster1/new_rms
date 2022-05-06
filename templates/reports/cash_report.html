@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
 <!-- <div class="hide"> -->
+   
+<div class="page_location">
     <div class="container">
-        <div class="page_location">
 
-        <div class="menu">
+        <div class="log border m-auto mt-1 rounded">
             <h3>Отчет движению наличных денежных средств</h3>
         </div>
 
-
-        <div class="menu">
+    <div class="log border m-auto mt-1 pt-1 pb-1">
             <form action="{% url 'cash_report' %}" method="POST">
                 {% csrf_token %}
 
-                <div class="row form-row m-auto">
+                <div class="row form-row' m-auto">
                     <div class="col-2">
                         <input type="date" id='start_date' name="start_date" required>
                     </div>
@@ -33,9 +33,9 @@
             {% endif %}
             {% endfor %}
 
-                </div>
-
-                <div class="row form-row mt-3">
+              
+            
+                
                     <div class="col-2">
                         <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
                     </div>
@@ -55,13 +55,12 @@
                             </button>
                         </a>
                     </div>
-
-
             </form>
         </div>
     </div>
+  
 
-    <div class="log">
+    <div class="log border m-auto mt-1" style="background-color:rgb(215, 215, 215);">
         <div class="row">
             <div class="col-2"><h5>Дата</h5></div>
             <div class="col-2"><h5>Начальный остаток</h5></div>
@@ -69,8 +68,10 @@
             <div class="col-2"><h5>Расход</h5></div>
             <div class="col-2"><h5>Документ</h5></div>
             <div class="col-2"><h5>Конечный остаток</h5></div>
-
         </div>
+    </div>
+
+    <div class="log border rounded mt-0 mb-2" style=" height: 60vh; overflow: auto; background-color: rgb(207, 250, 225)">
         {% for item in queryset_list %}
         <div class="row m-auto">
             <div class="col-2">{{item.created}}</div>
@@ -81,10 +82,10 @@
             <div class="col-2">{{item.current_remainder}}</div>
         </div>
         {% endfor %}
-        </div>
+    </div>
 
 </div>
 </div>
-<!-- </div> -->
+</div>
 
 {%endblock%}
