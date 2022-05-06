@@ -5,12 +5,12 @@
     <div class="page_location">
         <div class="menu">
             <div class="row">
-                <h3>Остатки КЭО </h3>
+                <h3>Остатки КЭО по всем точкам </h3>
             </div>
         </div>
 
         <div class="menu">
-            <form action="{% url 'daily_pay_card_rep' %}" method="POST">
+            <form action="{% url 'daily_pay_card_rep_general' %}" method="POST">
                 {% csrf_token %}
 
                 <div class="row form-row m-auto">

@@ -56,7 +56,7 @@ def log(request):
         year=datetime.datetime.now().year
         queryset_list = Document.objects.filter(created__year=year).order_by("-created")
         #============paginator module=================
-        paginator = Paginator(queryset_list, 25)
+        paginator = Paginator(queryset_list, 50)
         page = request.GET.get('page')
         paged_queryset_list = paginator.get_page(page)
         #=============end of paginator module===============

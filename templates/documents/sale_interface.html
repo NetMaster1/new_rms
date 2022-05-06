@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 
-   <div class="container">
-        <div class="log border m-auto mt-2 rounded p-3" >
+<div class="container">
+        <div class="log border m-auto mt-1 rounded p-3" style="background-color:rgb(215, 215, 215)"  >
             <div class="row">
                 <h5>Мои документы ({{request.user.last_name}} {{request.user.first_name}}) за {{date_1}}</h5>
             </div>
         </div>
     
-    <div class="log border m-auto mt-2 rounded p-3">
+    <div class="log border m-auto mt-1 rounded p-3"style="background-color:rgb(215, 215, 215)" >
         <div class="row">
             <div class="col-1"><h5>Статус</h5></div>
             <div class="col-2"><h5>Дата/Время</h5></div>
@@ -20,6 +20,7 @@
     </div>
     
 
+<div class="log border rounded mt-1 mb-2" style="overflow: auto; height: 70vh;">
 {% for document in queryset_list %}
 
     <div class="row mt-1">
@@ -209,9 +210,10 @@
 
 <!-- ===============================Author column===========================================       -->
         <div class="col-2">{{document.user.first_name}} {{document.user.last_name}}</div>
-    </div>
-            
+   
 {% endfor %} 
     </div>
 
+</div>
+</div>
 {% endblock %}
