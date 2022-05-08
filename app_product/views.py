@@ -1939,7 +1939,7 @@ def delivery_auto(request):
         for i in range(cycle):
             row = df1.iloc[i]#reads each row of the df1 one by one
             try:
-               prouct=Product.objects.get(imei=row.Imei)
+                product=Product.objects.get(imei=row.Imei)
             except Product.DoesNotExist:
                 product = Product.objects.create(
                     imei=row.Imei, 
