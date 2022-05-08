@@ -164,9 +164,10 @@ def sale_interface (request):
         else:
             pay_card_remainder_current=0
 #===================================Calculating Sum of Sold Goods per day=======================
+        doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
         sales_sum=0
-        if RemainderHistory.objects.filter(shop=shop, created__date=date).exists():
-            rhos=RemainderHistory.objects.filter(shop=shop, created__date=date)
+        if RemainderHistory.objects.filter(shop=shop, created__date=date, rho_type=doc_type ).exists():
+            rhos=RemainderHistory.objects.filter(shop=shop, created__date=date, rho_type=doc_type)
             for i in rhos:
                 sales_sum+=i.sub_total
 #=====================Calculating Incoming Cash per day=============================
