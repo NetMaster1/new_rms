@@ -162,15 +162,18 @@
 
 {% endif %}
 {% endfor %}
-        <div class="li navbar-brand">
-                <h5>Добро пожаловать {{request.user.first_name}}</h5>
+        <div class="li navbar-brand m-auto">
+                <h5>Сотрудник: {{request.user.first_name}} {{request.user.last_name}}</h5>
         </div>
-        <div class="li navbar-brand">
-            <h5>Торговая точка {{shop}}</h5>
+        <div class="li navbar-brand m-auto">
+            <h5>Торговая точка: {{shop}}</h5>
         </div>
+    
+        <div class="li navbar-brand m-auto">
+        <a class="navbar-brand" href="{% url 'logout' %}">Выйти</a>
         </div>
 
-        <a class="navbar-brand" href="{% url 'logout' %}">Выйти</a>
+        {{today}}
     </div>
     </div>
 </nav>
