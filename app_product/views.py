@@ -1939,7 +1939,7 @@ def delivery_auto(request):
         for i in range(cycle):
             row = df1.iloc[i]#reads each row of the df1 one by one
             try:
-                Product.objects.get(imei=row.Imei)
+               prouct=Product.objects.get(imei=row.Imei)
             except Product.DoesNotExist:
                 product = Product.objects.create(
                     imei=row.Imei, 
@@ -1957,7 +1957,7 @@ def delivery_auto(request):
             rho = RemainderHistory.objects.create(
                 document=document,
                 rho_type=document.title,
-                created=dateTime,
+                created=document.created,
                 shop=shop,
                 category=product.category,
                 supplier=supplier,
