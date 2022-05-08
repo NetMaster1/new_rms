@@ -3759,15 +3759,16 @@ def unpost_recognition(request, document_id):
         #===========Av_price_module====================================
             av_price_obj = AvPrice.objects.get(imei=rho.imei)
             av_price_obj.current_remainder -= rho.incoming_quantity
-            shop=Shop.objects.get(id=rho.shop)
+            shop=Shop.objects.get(id=rho.shop.id)
             if shop.retail == True:
-                av_price_sum-=rho.incoming_quantity * rho.retail_price
+                av_price_obj.sum-=rho.incoming_quantity * rho.retail_price
             else:
-                av_price_sum-=rho.incoming_quantity * rho.wholesale_price
+                av_price_obj.sum-=rho.incoming_quantity * rho.wholesale_price
             if av_price_obj.current_remainder > 0:
                 av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
             else:
                 av_price_obj.av_price=0
+                av_price_obj.sum=0
             av_price_obj.save()
             register=Register.objects.create(
                 document=document,
