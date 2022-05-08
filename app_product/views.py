@@ -3167,7 +3167,7 @@ def transfer_auto (request):
                     remainder_history= RemainderHistory.objects.filter(imei=row.Imei, shop=shop_sender, created__lt=dateTime).latest('created')
                     if remainder_history.current_remainder < int(row.Quantity):
                         #check_point.append(False)
-                        string=f'Документ не проведеден. Товар с IMEI {row.Imei} отсутствует на балансе фирмы.'
+                        string=f'Документ не проведеден. Количество товара с данным IMEI {row.Imei} недостаточно для перемещения.'
                         messages.error(request,  string)
                         return redirect("transfer_auto")
                 else:
