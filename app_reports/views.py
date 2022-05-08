@@ -845,6 +845,7 @@ def credit_report(request):
     context = {"shops": shops, "users": users}
     return render(request, "reports/credit_report.html", context)
 
+#=============================Pay_Card_Reports==============================
 def card_report(request):
     shops = Shop.objects.all()
     cards = Card.objects.all()
