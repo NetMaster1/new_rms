@@ -767,6 +767,17 @@ def item_report(request):
         return redirect("login")
 
 # ====================================================================
+def daily_chop_rep(request):
+    if request.user.is_authenticated:
+        session_shop=request.session['session_shop']
+        shop=Shop.objects.get(id=session_shop)
+        rhos=RemainderHistory.objects.filter(created__date=datetime.today, shop=shop)
+        
+        pass
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 def cash_report(request):
     if request.user.is_authenticated:
         session_shop=request.session['session_shop']
