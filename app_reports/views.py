@@ -669,18 +669,19 @@ def remainder_list(request, shop_id, category_id):
 def remainder_report_dynamic(request):
     products = Product.objects.all()
     categories = ProductCategory.objects.all()
-    products = Product.objects.all()
     shops = Shop.objects.all()
     if request.method == "POST":
         report_id = ReportTempId.objects.create()
         date_start = request.POST["date_start"]
         date_end = request.POST["date_end"]
+        date_end = datetime.datetime.strptime(date_end, "%Y-%m-%d")
+        date_end = date_end + timedelta(days=1)
         category = request.POST["category"]
         shop = request.POST["shop"]
         shop = Shop.objects.get(id=shop)
         queryset = RemainderHistory.objects.filter(
-            shop=shop, category=category, created__gte=date_start, created__lte=date_end
-        )
+            shop=shop, category=category, created__gt=date_start, created__lt=date_end)
+        products = Product.objects.filter(category=category)
         for product in products:
             if queryset.filter(imei=product.imei).exists():
                 queryset_list = queryset.filter(imei=product.imei)
@@ -701,22 +702,16 @@ def remainder_report_dynamic(request):
                     end_remainder=rho_end.current_remainder,
                 )
             else:
-                if RemainderHistory.objects.filter(
-                    imei=product.imei,
-                    shop=shop,
-                    category=category,
-                    created__lt=date_start,
-                ).exists():
-                    rhos = RemainderHistory.objects.filter(
-                        imei=product.imei, shop=shop, created__lt=date_start
-                    )
+                if RemainderHistory.objects.filter(imei=product.imei, shop=shop, category=category,
+                    created__lt=date_start).exists():
+                    rhos = RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__lt=date_start)
                     rho_latest = rhos.latest("created")
                     report = ReportTemp.objects.create(
                         report_id=report_id,
                         name=rho_latest.name,
                         imei=rho_latest.imei,
-                        # quantity_in=0,
-                        # quantity_out=0,
+                        quantity_in=0,
+                        quantity_out=0,
                         initial_remainder=rho_latest.current_remainder,
                         end_remainder=rho_latest.current_remainder,
                     )
