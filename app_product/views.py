@@ -131,21 +131,72 @@ def sale_interface (request):
     if request.user.is_authenticated:
         date=datetime.datetime.now()
         date_1=datetime.date.today()
+        date_before = date_1 - timedelta (days=1)
         #getting access of session_shop variable stored in session dictionnary
         session_shop=request.session['session_shop']
         shop=Shop.objects.get(id=session_shop)
+#======================Making a List of documentd per day==================================
         queryset_list = Document.objects.filter(user=request.user, created__date=date).order_by("-created")
-        #queryset_list = Document.objects.filter(user=request.user, created__date=date.today()).order_by("-created")
         doc_types = DocumentType.objects.all()
-        suppliers = Supplier.objects.all()
-        shops = Shop.objects.all()
-        
+
+#==================Calculating Cash Remainder==========================================
+        if Cash.objects.filter(shop=shop, created__lt=date).exists():
+            cho_before=Cash.objects.filter(shop=shop, created__lt=date).latest("created")
+            cash_remainder_start=cho_before.current_remainder
+        else:
+            cash_remainder_start=0
+        if Cash.objects.filter(shop=shop).exists():
+            cho_current=Cash.objects.filter(shop=shop).latest("created")
+            current_cash_remainder=cho_current.current_remainder
+        else:
+            current_cash_remainder=0
+
+#============================Calculating Pay_Cards_Remainders per day=======================      
+        if RemainderHistory.objects.filter(shop=shop, created__lt=date).exists():
+            rho_before=RemainderHistory.objects.filter(shop=shop, created__lt=date).latest("created")
+            pay_card_remainder_start=rho_before.current_remainder
+        else:
+            pay_card_remainder_start=0
+        if RemainderHistory.objects.filter(shop=shop).exists():
+            rho_current=RemainderHistory.objects.filter(shop=shop).latest("created")
+            pay_card_remainder_current=rho_current.current_remainder
+#===================================Calculating Sum of Sold Goods per day=======================
+        sales_sum=0
+        if RemainderHistory.objects.filter(shop=shop, created__date=date).exists():
+            rhos=RemainderHistory.objects.filter(shop=shop, created__date=date)
+            for i in rhos:
+                sales_sum+=i.sub_total
+        cash_sum=0
+#=====================Calculating Incoming Cash per day=============================
+        if Cash.objects.filter(shop=shop, created__date=date).exists():
+            chos=Cash.objects.filter(shop=shop, created__date=date)
+            for i in chos:
+                cash_sum+=i.cash_in
+        card_sum=0
+#===========================Calculaing Incoming Card Payments per day=====================
+        if Card.objects.filter(shop=shop, created__date=date).exists():
+            cards=Card.objects.filter(shop=shop, created__date=date)
+            for i in cards:
+                card_sum+=i.sum
+#====================Calculating Incoming Credit Payments per day=====================
+        credit_sum=0
+        if Credit.objects.filter(shop=shop, created__date=date).exists():
+            credits=Credit.objects.filter(shop=shop, created__date=date)
+            for i in credits:
+                credit_sum+=i.sum
+  
         context = {
+            'cash_remainder_start': cash_remainder_start,
+            'current_cash_remainder': current_cash_remainder,
             'queryset_list': queryset_list,
-            'shops': shops,
-            'suppliers': suppliers,
             'shop': shop,
             'date_1': date_1,
+            'sales_sum': sales_sum,
+            'card_sum': card_sum,
+            'credit_sum': credit_sum,
+            'cash_sum': cash_sum,
+            'pay_card_remainder_start': pay_card_remainder_start,
+            'pay_card_remainder_current': pay_card_remainder_current,
         }
         return render (request, 'documents/sale_interface.html', context)
     else:

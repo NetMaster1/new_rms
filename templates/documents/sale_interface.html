@@ -2,13 +2,61 @@
 {% block content %}
 
 <div class="container">
-        <div class="log border m-auto mt-1 rounded p-3" style="background-color:rgb(215, 215, 215); height: 7Vh" >
+    <div class="log border m-auto mt-1 rounded" style="background-color:rgb(215, 215, 215); height: 26Vh" >
             <div class="row">
-                <h5>Мои документы ({{request.user.last_name}} {{request.user.first_name}}) за {{date_1}}</h5>
+                <div class="col-2">
+                <h5> {{date_1}}</h5>
+                </div>
+                <div class="col">
+                    <h5>Остаток в кассе на утро:</h5>
+                </div>
+                <div class="col">
+                    <h5 style="color: red">{{cash_remainder_start}} руб.</h5>
+                </div>
+                <div class="col">
+                    <h5>Текущий остаток в кассе:</h5>
+                </div>
+                <div class="col">
+                    <h5 style="color: red">{{current_cash_remainder}} руб.</h5>
+                </div>
             </div>
-        </div>
+
+            <div class="row">
+                <div class="col-2">
+                </div>
+                <div class="col">
+                    <h5>Остаток КЭО на утро:</h5>
+                </div>
+                <div class="col">
+                    <h5>{{pay_card_remainder_start}} шт. </h5>
+                </div>
+                <div class="col">
+                    <h5>Текущий остаток КЭО:</h5>
+                </div>
+                <div class="col">
+                    <h5>{{pay_card_remainder_current}} шт.</h5>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-3"><h5>Общая выручка за день:</h5></div>
+                <div class="col-2">{{sales_sum}} руб.</div>
+            </div>
+            <div class="row">
+                <div class="col-3"><h5>Оплачено наличными:</h5></div>
+                <div class="col-2">{{cash_sum}} руб.</div>
+            </div>
+            <div class="row">
+                <div class="col-3"><h5>Оплачено картой:</h5></div>
+                <div class="col-2">{{card_sum}} руб.</div>
+            </div>
+            <div class="row">
+                <div class="col-3"><h5>Оплачено в кредит:</h5></div>
+                <div class="col-2">{{credit_sum}} руб.</div>
+            </div>
+    </div>
     
-    <div class="log border m-auto mt-1 rounded p-3"style="background-color:rgb(215, 215, 215); height: 7Vh" >
+    <div class="log border m-auto mt-1 rounded p-3"style="background-color:rgb(215, 215, 215); height: 6Vh" >
         <div class="row">
             <div class="col-1"><h5>Статус</h5></div>
             <div class="col-2"><h5>Дата/Время</h5></div>
@@ -20,7 +68,7 @@
     </div>
     
 
-<div class="log border rounded mt-0 mb-2" style=" height: 68vh; overflow: auto;">
+<div class="log border rounded mt-0 mb-2" style=" height: 60vh; overflow: auto;">
     
 {% for document in queryset_list %}
 <div class="row mt-1">
