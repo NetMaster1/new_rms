@@ -2266,8 +2266,9 @@ def delivery_input(request, identifier_id):
                             remainder = obj.current_remainder
                 document.sum = document_sum
                 document.save()
-                register = Register.objects.get(identifier=identifier, product=product)
-                register.delete()
+                registers = Register.objects.filter(identifier=identifier)
+                for register in registers:
+                    register.delete()
                 identifier.delete()
                 return redirect("log")
             # saving uposted delivery document
