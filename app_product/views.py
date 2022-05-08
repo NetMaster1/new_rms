@@ -1928,7 +1928,9 @@ def delivery_auto(request):
         df1 = pandas.read_excel(file)
         cycle = len(df1)
         document = Document.objects.create(
-            created=dateTime, 
+            created=dateTime,
+            shop_receiver=shop,
+            supplier=supplier,
             user=request.user, 
             title=doc_type,
             posted=True
