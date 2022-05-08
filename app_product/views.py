@@ -151,29 +151,32 @@ def sale_interface (request):
         else:
             current_cash_remainder=0
 
-#============================Calculating Pay_Cards_Remainders per day=======================      
-        if RemainderHistory.objects.filter(shop=shop, created__lt=date).exists():
-            rho_before=RemainderHistory.objects.filter(shop=shop, created__lt=date).latest("created")
+#============================Calculating Pay_Cards_Remainders per day======================= 
+        product=Product.objects.get(imei='11111')    
+        if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date).exists():
+            rho_before=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date).latest("created")
             pay_card_remainder_start=rho_before.current_remainder
         else:
             pay_card_remainder_start=0
-        if RemainderHistory.objects.filter(shop=shop).exists():
-            rho_current=RemainderHistory.objects.filter(shop=shop).latest("created")
+        if RemainderHistory.objects.filter(shop=shop, imei=product.imei).exists():
+            rho_current=RemainderHistory.objects.filter(shop=shop, imei=product.imei).latest("created")
             pay_card_remainder_current=rho_current.current_remainder
+        else:
+            pay_card_remainder_current=0
 #===================================Calculating Sum of Sold Goods per day=======================
         sales_sum=0
         if RemainderHistory.objects.filter(shop=shop, created__date=date).exists():
             rhos=RemainderHistory.objects.filter(shop=shop, created__date=date)
             for i in rhos:
                 sales_sum+=i.sub_total
-        cash_sum=0
 #=====================Calculating Incoming Cash per day=============================
+        cash_sum=0
         if Cash.objects.filter(shop=shop, created__date=date).exists():
             chos=Cash.objects.filter(shop=shop, created__date=date)
             for i in chos:
                 cash_sum+=i.cash_in
-        card_sum=0
 #===========================Calculaing Incoming Card Payments per day=====================
+        card_sum=0
         if Card.objects.filter(shop=shop, created__date=date).exists():
             cards=Card.objects.filter(shop=shop, created__date=date)
             for i in cards:
