@@ -353,9 +353,7 @@ def sale_report(request):
     users = User.objects.all()
     if request.method == "POST":
         doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
-        queryset_list = RemainderHistory.objects.filter(rho_type=doc_type).order_by(
-            "name"
-        )
+        queryset = RemainderHistory.objects.filter(rho_type=doc_type).order_by("name")
         sum = 0
         # category = request.POST["category"]
         category = request.POST.get("category", False)
@@ -371,39 +369,59 @@ def sale_report(request):
         if user:
             user = User.objects.get(id=user)
         start_date = request.POST.get("start_date", False)
+        if start_date:
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
         end_date = request.POST.get("end_date", False)
+        if end_date:
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
 
         if category:
-            queryset_list = queryset_list.filter(category=category)
+            products=Product.objects.filter(category=category)
+            queryset = queryset.filter(category=category)
+        else:
+            products=Product.objects.all()
         if shop:
-            queryset_list = queryset_list.filter(shop=shop)
+            queryset = queryset.filter(shop=shop)
         # if supplier:
         #     queryset_list = queryset_list.filter(supplier=supplier)
         if user:
-            queryset_list = queryset_list.filter(user=user)
+            queryset = queryset.filter(user=user)
             user = user
         # if Q(start_date) | Q(end_date):
         #     queryset_list = queryset_list.filter(created__range=[start_date, end_date])
         if start_date:
-            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-            queryset_list = queryset_list.filter(created__gte=start_date)
-        if end_date:
-            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-            end_date = end_date + timedelta(days=1)
-            queryset_list = queryset_list.filter(created__lte=end_date)
-            report_id = ReportTempId.objects.create()
+            queryset = queryset.filter(created__gt=start_date)
+        if end_date: 
+            queryset = queryset.filter(created__lt=end_date)
+        array=[]
+        for i in queryset:
+            array.append(i.imei)
+        array = set(array)#eliminating not unique imeis
+
+        report_id = ReportTempId.objects.create()
+        for i in array:
+            queryset_list=queryset.filter(imei=i)
+            quantity_out=0
+            self_cost=0
+            retail_sum=0
             for qs in queryset_list:
-                sale_rep = SaleReport.objects.create(
-                    report_id=report_id,
-                    product=qs.name,
-                    quantity=qs.outgoing_quantity,
-                    av_sum=qs.av_price,
-                    retail_sum=qs.retail_price
-                    # margin
-                )
+                quantity_out+=qs.outgoing_quantity
+                self_cost+=qs.av_price
+                retail_sum+=qs.retail_price
+            product=Product.objects.get(imei=i)
+            sale_rep = SaleReport.objects.create(
+                report_id=report_id,
+                product=product.name,
+                quantity=quantity_out,
+                av_sum=self_cost,
+                retail_sum=retail_sum
+                # margin
+            )
+        sale_report=SaleReport.objects.filter(report_id=report_id.id)
 
         context = {
-            "queryset_list": queryset_list,
+            "sale_report": sale_report,
             "categories": categories,
             "shops": shops,
             "suppliers": suppliers,
@@ -588,6 +606,72 @@ def remainder_report_output(request, shop_id, category_id, date):
         auth.logout(request)
         return redirect("login")
 
+def remainder_report_dynamic(request):
+    products = Product.objects.all()
+    categories = ProductCategory.objects.all()
+    shops = Shop.objects.all()
+    if request.method == "POST":
+        report_id = ReportTempId.objects.create()
+        date_start = request.POST["date_start"]
+        date_end = request.POST["date_end"]
+        date_end = datetime.datetime.strptime(date_end, "%Y-%m-%d")
+        date_end = date_end + timedelta(days=1)
+        category = request.POST["category"]
+        shop = request.POST["shop"]
+        shop = Shop.objects.get(id=shop)
+        queryset = RemainderHistory.objects.filter(
+            shop=shop, category=category, created__gt=date_start, created__lt=date_end)
+        products = Product.objects.filter(category=category)
+        for product in products:
+            if queryset.filter(imei=product.imei).exists():
+                queryset_list = queryset.filter(imei=product.imei)
+                q_in = 0
+                q_out = 0
+                for qs in queryset_list:
+                    q_in += qs.incoming_quantity
+                    q_out += qs.outgoing_quantity
+                rho_end = queryset_list.latest("created")
+                rho_start = queryset_list.earliest("created")
+                report = ReportTemp.objects.create(
+                    report_id=report_id,
+                    name=product.name,
+                    imei=product.imei,
+                    quantity_in=q_in,
+                    quantity_out=q_out,
+                    initial_remainder=rho_start.pre_remainder,
+                    end_remainder=rho_end.current_remainder,
+                )
+            else:
+                if RemainderHistory.objects.filter(imei=product.imei, shop=shop, category=category,
+                    created__lt=date_start).exists():
+                    rhos = RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__lt=date_start)
+                    rho_latest = rhos.latest("created")
+                    report = ReportTemp.objects.create(
+                        report_id=report_id,
+                        name=rho_latest.name,
+                        imei=rho_latest.imei,
+                        quantity_in=0,
+                        quantity_out=0,
+                        initial_remainder=rho_latest.current_remainder,
+                        end_remainder=rho_latest.current_remainder,
+                    )
+        reports = ReportTemp.objects.filter(report_id=report_id)
+        context = {
+            "reports": reports,
+            "shops": shops,
+            "categories": categories,
+            "date_start": date_start,
+            "date_end": date_end,
+            "shop": shop,
+        }
+        return render(request, "reports/remainder_report_dynamic.html", context)
+    context = {
+        "shops": shops,
+        "categories": categories,
+    }
+    return render(request, "reports/remainder_report_dynamic.html", context)
+
+#===================================================================
 def update_retail_price(request):
     group = Group.objects.get(name="admin").user_set.all()
     doc_type = DocumentType.objects.get(name="Переоценка ТМЦ")
@@ -666,71 +750,6 @@ def remainder_list(request, shop_id, category_id):
     return render(request, "reports/remainder_report_output.html", context)
 
 # ======================================================================
-def remainder_report_dynamic(request):
-    products = Product.objects.all()
-    categories = ProductCategory.objects.all()
-    shops = Shop.objects.all()
-    if request.method == "POST":
-        report_id = ReportTempId.objects.create()
-        date_start = request.POST["date_start"]
-        date_end = request.POST["date_end"]
-        date_end = datetime.datetime.strptime(date_end, "%Y-%m-%d")
-        date_end = date_end + timedelta(days=1)
-        category = request.POST["category"]
-        shop = request.POST["shop"]
-        shop = Shop.objects.get(id=shop)
-        queryset = RemainderHistory.objects.filter(
-            shop=shop, category=category, created__gt=date_start, created__lt=date_end)
-        products = Product.objects.filter(category=category)
-        for product in products:
-            if queryset.filter(imei=product.imei).exists():
-                queryset_list = queryset.filter(imei=product.imei)
-                q_in = 0
-                q_out = 0
-                for qs in queryset_list:
-                    q_in += qs.incoming_quantity
-                    q_out += qs.outgoing_quantity
-                rho_end = queryset_list.latest("created")
-                rho_start = queryset_list.earliest("created")
-                report = ReportTemp.objects.create(
-                    report_id=report_id,
-                    name=product.name,
-                    imei=product.imei,
-                    quantity_in=q_in,
-                    quantity_out=q_out,
-                    initial_remainder=rho_start.pre_remainder,
-                    end_remainder=rho_end.current_remainder,
-                )
-            else:
-                if RemainderHistory.objects.filter(imei=product.imei, shop=shop, category=category,
-                    created__lt=date_start).exists():
-                    rhos = RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__lt=date_start)
-                    rho_latest = rhos.latest("created")
-                    report = ReportTemp.objects.create(
-                        report_id=report_id,
-                        name=rho_latest.name,
-                        imei=rho_latest.imei,
-                        quantity_in=0,
-                        quantity_out=0,
-                        initial_remainder=rho_latest.current_remainder,
-                        end_remainder=rho_latest.current_remainder,
-                    )
-        reports = ReportTemp.objects.filter(report_id=report_id)
-        context = {
-            "reports": reports,
-            "shops": shops,
-            "categories": categories,
-            "date_start": date_start,
-            "date_end": date_end,
-            "shop": shop,
-        }
-        return render(request, "reports/remainder_report_dynamic.html", context)
-    context = {
-        "shops": shops,
-        "categories": categories,
-    }
-    return render(request, "reports/remainder_report_dynamic.html", context)
-
 def item_report(request):
     if request.user.is_authenticated:
         if request.method == "POST":
