@@ -129,9 +129,9 @@ def log(request):
 
 def sale_interface (request):
     if request.user.is_authenticated:
-        date=datetime.datetime.now()
-        date_1=datetime.date.today()
-        date_before = date_1 - timedelta (days=1)
+        # date=datetime.datetime.now()
+        date=datetime.date.today()
+        date_before = date - timedelta (days=1)
         #getting access of session_shop variable stored in session dictionnary
         session_shop=request.session['session_shop']
         shop=Shop.objects.get(id=session_shop)
@@ -194,7 +194,7 @@ def sale_interface (request):
             'current_cash_remainder': current_cash_remainder,
             'queryset_list': queryset_list,
             'shop': shop,
-            'date_1': date_1,
+            'date': date,
             'sales_sum': sales_sum,
             'card_sum': card_sum,
             'credit_sum': credit_sum,
