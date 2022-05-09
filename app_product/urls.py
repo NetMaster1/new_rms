@@ -11,6 +11,7 @@ urlpatterns = [
     path ('close_log', views.close_log, name='close_log'),
     #==================Remainde Input=====================================
     path ('remainder_input', views.remainder_input, name='remainder_input'),
+    path ('change_remainder_input_posted/int<document_id>', views.change_remainder_input_posted, name='change_remainder_input_posted'),
     
     # ==================Delivery========================
     path ('delivery_auto', views.delivery_auto, name='delivery_auto'),
