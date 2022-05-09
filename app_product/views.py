@@ -655,7 +655,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             n = len(names)
             for i in range(n):
                 product = Product.objects.get(imei=imeis[i])
-                av_price=AvPrice.objects.get(imei=imeis[i])
+                av_price_obj=AvPrice.objects.get(imei=imeis[i])
                 # checking docs before remainder_history
                 rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=document.created).latest('created')
                 # creating remainder_history
@@ -670,7 +670,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                     imei=imeis[i],
                     name=names[i],
                     retail_price=prices[i],
-                    av_price=av_price.av_price,
+                    av_price=av_price_obj.av_price,
                     pre_remainder=rho_latest_before.current_remainder,
                     incoming_quantity=0,
                     outgoing_quantity=quantities[i],
@@ -679,6 +679,11 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                     sub_total=int(int(quantities[i]) * int(prices[i])),
                 )
                 document_sum += int(quantities[i]) * int(prices[i])
+                #calculating av_price for the remainder
+                av_price_obj = AvPrice.objects.get(imei=imeis[i])
+                av_price_obj.current_remainder -= int(quantities[i])
+                av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
+                av_price_obj.save()
                 #cash back is calculated based on the subtotal for each item not depending on the total sum
                 if client.f_name != "default":
                     cashback = Cashback.objects.get(category=product.category)
@@ -704,15 +709,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             document.sum=document_sum
             document.sum_minus_cashback = document_sum - cashback_off
             document.save()
-            sum_to_pay = document.sum_minus_cashback
-            
-            #calculating av_price for the remainder
-            AvPrice.objects.filter(imei=imeis[i])
-            av_price_obj = AvPrice.objects.get(imei=imeis[i])
-            av_price_obj.current_remainder -= int(quantities[i])
-            av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
-            av_price_obj.save()
-                    
+            sum_to_pay = document.sum_minus_cashback        
             #checking chos before
             if Cash.objects.filter(shop=shop, created__lt=document.created).exists():
                 cho_latest_before = Cash.objects.filter(shop=shop, created__lt=document.created).latest('created')
@@ -789,7 +786,7 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                 dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
                 dateTime=dT_utcnow+tdelta
                 #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
-                #==================End of time module================================
+            #==================End of time module================================
             #checking availability of items to sell
             if not imeis:
                 messages.error(request,  'Вы не ввели ни одного наименования')
@@ -819,7 +816,7 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
             n = len(names)
             for i in range(n):
                 product = Product.objects.get(imei=imeis[i])
-                av_price=AvPrice.objects.get(imei=imeis[i])
+                av_price_obj=AvPrice.objects.get(imei=imeis[i])
                 # checking docs before remainder_history
                 rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=document.created).latest('created')
                 # creating remainder_history
@@ -834,7 +831,7 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                     imei=imeis[i],
                     name=names[i],
                     retail_price=prices[i],
-                    av_price=av_price.av_price,
+                    av_price=av_price_obj.av_price,
                     pre_remainder=rho_latest_before.current_remainder,
                     incoming_quantity=0,
                     outgoing_quantity=quantities[i],
@@ -843,6 +840,10 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                     sub_total=int(int(quantities[i]) * int(prices[i])),
                 )
                 document_sum+=int(quantities[i]) *  int (prices[i])
+                #calculating av_price for the remainder
+                av_price_obj.current_remainder -= int(quantities[i])
+                av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
+                av_price_obj.save()
                 #cash back is calculated based on the subtotal for each item not depending on the total sum
                 if client.f_name != "default":
                     cashback = Cashback.objects.get(category=product.category)
@@ -869,10 +870,6 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
             document.sum_minus_cashback = document_sum - cashback_off
             document.save()
             sum_to_pay = document.sum_minus_cashback
-            #calculating av_price for the remainder
-            av_price.current_remainder -= int(quantities[i])
-            av_price.sum -= int(quantities[i]) * av_price.av_price
-            av_price.save()
             #operations with credit
             credit = Credit.objects.create(
                 shop=shop,
@@ -960,7 +957,7 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
             document_sum = 0
             for i in range(n):
                 product = Product.objects.get(imei=imeis[i])
-                av_price=AvPrice.objects.get(imei=imeis[i])
+                av_price_obj=AvPrice.objects.get(imei=imeis[i])
                 rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=document.created).latest('created')
                 # creating remainder_history
                 rho = RemainderHistory.objects.create(
@@ -974,7 +971,7 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                     imei=imeis[i],
                     name=names[i],
                     retail_price=prices[i],
-                    av_price=av_price.av_price,
+                    av_price=av_price_obj.av_price,
                     pre_remainder=rho_latest_before.current_remainder,
                     incoming_quantity=0,
                     outgoing_quantity=quantities[i],
@@ -983,6 +980,10 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                     sub_total=int(int(quantities[i]) * int(prices[i])),
                 )
                 document_sum+=int(quantities[i]) *  int (prices[i])
+                #calculating av_price for the remainder
+                av_price_obj.current_remainder -= int(quantities[i])
+                av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
+                av_price_obj.save()
                 #cash back is calculated based on the subtotal for each item not depending on the total sum
                 if client.f_name != "default":
                     cashback = Cashback.objects.get(category=product.category)
@@ -1011,10 +1012,6 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
             document.sum_minus_cashback = document_sum - cashback_off
             document.save()
             sum_to_pay = document.sum_minus_cashback
-            #calculating av_price for the remainder
-            av_price.current_remainder -= int(quantities[i])
-            av_price.sum -= int(quantities[i]) * av_price.av_price
-            av_price.save()
             #operations with card
             card = Card.objects.create(
                 shop=shop,
@@ -1109,7 +1106,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
             document_sum = 0
             for i in range(n):
                 product = Product.objects.get(imei=imeis[i])
-                av_price=AvPrice.objects.get(imei=imeis[i])
+                av_price_obj=AvPrice.objects.get(imei=imeis[i])
                 rho_latest_before = RemainderHistory.objects.filter(
                     imei=imeis[i], shop=shop, created__lt=document.created).latest('created')
                 # creating remainder_history
@@ -1124,7 +1121,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                     imei=imeis[i],
                     name=names[i],
                     retail_price=prices[i],
-                    av_price=av_price.av_price,
+                    av_price=av_price_obj.av_price,
                     pre_remainder=rho_latest_before.current_remainder,
                     incoming_quantity=0,
                     outgoing_quantity=quantities[i],
@@ -1133,6 +1130,10 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                     sub_total=int(int(quantities[i]) * int(prices[i])),
                 )
                 document_sum+=int(quantities[i]) *  int (prices[i])
+                #calculating av_price for the remainder
+                av_price_obj.current_remainder -= int(quantities[i])
+                av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
+                av_price_obj.save()
                 #cash back is calculated based on the subtotal for each item not depending on the total sum
                 if client.f_name != "default":
                     cashback = Cashback.objects.get(category=product.category)
@@ -1155,15 +1156,12 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                         )
                         obj.save()
                         remainder = obj.current_remainder
-                #paying with cashback
-                document.sum=document_sum
-                document.sum_minus_cashback = document_sum - cashback_off
-                document.save()
-                sum_to_pay = document.sum_minus_cashback
-                #calculating av_price for the remainder
-                av_price.current_remainder -= int(quantities[i])
-                av_price.sum -= int(quantities[i]) * av_price.av_price
-                av_price.save()
+            #paying with cashback
+            document.sum=document_sum
+            document.sum_minus_cashback = document_sum - cashback_off
+            document.save()
+            sum_to_pay = document.sum_minus_cashback
+               
         
             # checking chos before
             if cash > 0:
@@ -1342,7 +1340,7 @@ def change_sale_unposted (request, document_id):
                 n=len(names)
                 for i in range(n):
                     product = Product.objects.get(imei=imeis[i])
-                    av_price=AvPrice.objects.get(imei=imeis[i])
+                    av_price_obj=AvPrice.objects.get(imei=imeis[i])
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop,created__lt=dateTime).exists():
                         rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
                         if rho_latest_before.current_remainder < int(quantities[i]):
@@ -1368,7 +1366,7 @@ def change_sale_unposted (request, document_id):
                         imei=imeis[i],
                         name=names[i],
                         retail_price=prices[i],
-                        av_price=av_price.av_price,
+                        av_price=av_price_obj.av_price,
                         pre_remainder=rho_latest_before.current_remainder,
                         incoming_quantity=0,
                         outgoing_quantity=quantities[i],
@@ -1392,8 +1390,6 @@ def change_sale_unposted (request, document_id):
                             remainder = obj.current_remainder
                          
                     #calculating av_price for the remainder
-                    AvPrice.objects.filter(imei=imeis[i])
-                    av_price_obj = AvPrice.objects.get(imei=imeis[i])
                     av_price_obj.current_remainder -= int(quantities[i])
                     av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
                     av_price_obj.save()
@@ -1558,10 +1554,11 @@ def unpost_sale (request, document_id):
                     remainder = obj.current_remainder
             product=Product.objects.get(imei=rho.imei)
             #correcting av_price model
-            av_price_item=AvPrice.objects.get(imei=rho.imei)
-            av_price_item.current_remainder=av_price_item.current_remainder + rho.outgoing_quantity
-            av_price_item.sum=av_price_item.current_remainder*rho.av_price
-            av_price_item.save()
+            av_price_obj=AvPrice.objects.get(imei=rho.imei)
+            av_price_obj.current_remainder=av_price_obj.current_remainder + rho.outgoing_quantity
+            av_price_obj.sum+=rho.outgoing_quantity*rho.av_price
+            av_price_obj.av_price=av_price_obj.sum / av_price_obj.current_remainder
+            av_price_obj.save()
 
             register=Register.objects.create(
                 created=document.created,
@@ -2427,20 +2424,11 @@ def change_delivery_unposted(request, document_id):
                             )
                         document_sum+=rho.sub_total
                 #===========Av_price_module================
-                        if AvPrice.objects.filter(imei=imeis[i]).exists():
-                            av_price_obj = AvPrice.objects.get(imei=imeis[i])
-                            av_price_obj.current_remainder += int(quantities[i])
-                            av_price_obj.sum += int(quantities[i]) * int(prices[i])
-                            av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
-                            av_price_obj.save()
-                        else:
-                            av_price_obj = AvPrice.objects.create(
-                            name=names[i],
-                            imei=imeis[i],
-                            current_remainder=int(quantities[i]),
-                            sum=int(quantities[i]) * int(prices[i]),
-                            av_price=int(prices[i]),
-                        )
+                        av_price_obj = AvPrice.objects.get(imei=imeis[i])
+                        av_price_obj.current_remainder += int(quantities[i])
+                        av_price_obj.sum += int(quantities[i]) * int(prices[i])
+                        av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                        av_price_obj.save()
                         rho.av_price=av_price_obj.av_price
                         rho.save()        
                         # checking docs after remainder_history
@@ -3463,10 +3451,8 @@ def recognition_input(request, identifier_id):
                     shop_receiver=shop,
                 )
                 for i in range(n):
-                    #while performing recognition we increse the av_price_obj.current_remainder &
-                    #and leave the same av_price_obj.sum thus making av_price lower
-                    #If av_price & sum are equal to 0, the av_price for the item being recognitioned
-                    # remains 0 
+                  #================Av_Price_Module===================================
+                  # При оприходовании на оптовый склад мы ставим оптовые цены, тем самым не сильно изменяя av_price. При оприходовании на розничный склад мы ставим розничные цены, которые значительно изменяют av_price при условии, что они отличаются от оптовых цен. (Интернет номера, КЭО)
                     if AvPrice.objects.filter(imei=imeis[i]).exists():
                         av_price_obj=AvPrice.objects.get(imei=imeis[i])
                         av_price_obj.current_remainder += int(quantities[i])
@@ -3651,13 +3637,13 @@ def change_recognition_unposted(request, document_id):
                     document.save()
                     
                     for i in range(n):
-                        av_price=AvPrice.objects.get(imei=imeis[i])
-                        av_price.current_remainder+=int(quantities[i])
-                        if av_price.av_price == 0:
-                            av_price.av_price=0
-                        else:
-                            av_price.av_price = av_price.sum / av_price.current_remainder
-                        av_price.save()
+                    #===============Av_price_module=========================
+                        av_price_obj=AvPrice.objects.get(imei=imeis[i])
+                        av_price_obj.current_remainder+=int(quantities[i])
+                        av_price_obj.sum+=int(quantities[i])*int(prices[i])
+                        av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                        av_price_obj.save()
+                    #==========End Of Av_price_module====================
                         product = Product.objects.get(imei=imeis[i])
                         # creating remainder_history object
                         rho = RemainderHistory.objects.create(
