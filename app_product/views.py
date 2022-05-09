@@ -169,7 +169,7 @@ def sale_interface (request):
         rhos=RemainderHistory.objects.filter(shop=shop, created__date=date, rho_type=doc_type)
         for i in rhos:
             sales_sum+=i.sub_total
-      
+
 #=====================Calculating Incoming Cash per day=============================
         cash_sum=0
         if Cash.objects.filter(shop=shop, created__date=date).exists():
