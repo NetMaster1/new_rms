@@ -166,10 +166,10 @@ def sale_interface (request):
 #===================================Calculating Sum of Sold Goods per day=======================
         doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
         sales_sum=0
-        if RemainderHistory.objects.filter(shop=shop, created__date=date, rho_type=doc_type ).exists():
-            rhos=RemainderHistory.objects.filter(shop=shop, created__date=date, rho_type=doc_type)
-            for i in rhos:
-                sales_sum+=i.sub_total
+        rhos=RemainderHistory.objects.filter(shop=shop, created__date=date, rho_type=doc_type)
+        for i in rhos:
+            sales_sum+=i.sub_total
+      
 #=====================Calculating Incoming Cash per day=============================
         cash_sum=0
         if Cash.objects.filter(shop=shop, created__date=date).exists():
@@ -201,6 +201,7 @@ def sale_interface (request):
             'cash_sum': cash_sum,
             'pay_card_remainder_start': pay_card_remainder_start,
             'pay_card_remainder_current': pay_card_remainder_current,
+            'rhos': rhos
         }
         return render (request, 'documents/sale_interface.html', context)
     else:
