@@ -129,9 +129,9 @@ def log(request):
 
 def sale_interface (request):
     if request.user.is_authenticated:
-        date=datetime.datetime.now()
-        date_1=datetime.date.today()
-        date_before = date_1 - timedelta (days=1)
+        # date=datetime.datetime.now()
+        date=datetime.date.today()
+        date_before = date - timedelta (days=1)
         #getting access of session_shop variable stored in session dictionnary
         session_shop=request.session['session_shop']
         shop=Shop.objects.get(id=session_shop)
@@ -166,10 +166,10 @@ def sale_interface (request):
 #===================================Calculating Sum of Sold Goods per day=======================
         doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
         sales_sum=0
-        if RemainderHistory.objects.filter(shop=shop, created__date=date, rho_type=doc_type ).exists():
-            rhos=RemainderHistory.objects.filter(shop=shop, created__date=date, rho_type=doc_type)
-            for i in rhos:
-                sales_sum+=i.sub_total
+        rhos=RemainderHistory.objects.filter(shop=shop, created__date=date, rho_type=doc_type)
+        for i in rhos:
+            sales_sum+=i.sub_total
+      
 #=====================Calculating Incoming Cash per day=============================
         cash_sum=0
         if Cash.objects.filter(shop=shop, created__date=date).exists():
@@ -194,13 +194,14 @@ def sale_interface (request):
             'current_cash_remainder': current_cash_remainder,
             'queryset_list': queryset_list,
             'shop': shop,
-            'date_1': date_1,
+            'date': date,
             'sales_sum': sales_sum,
             'card_sum': card_sum,
             'credit_sum': credit_sum,
             'cash_sum': cash_sum,
             'pay_card_remainder_start': pay_card_remainder_start,
             'pay_card_remainder_current': pay_card_remainder_current,
+            'rhos': rhos
         }
         return render (request, 'documents/sale_interface.html', context)
     else:
