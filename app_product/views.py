@@ -499,6 +499,29 @@ def remainder_input (request):
         auth.logout(request)
         return redirect("login")
 
+def change_remainder_input_posted (request, document_id):
+    if request.user.is_authenticated:
+        document = Document.objects.get(id=document_id)
+        shop=document.shop_receiver
+        dateTime=document.created
+        dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
+        rhos = RemainderHistory.objects.filter(document=document).order_by("created")
+        numbers = rhos.count()
+        for rho, i in zip(rhos, range(numbers)):
+            rho.number = i + 1
+            rho.save()
+        rhos = RemainderHistory.objects.filter(document=document).order_by("created")
+
+        context = {
+            "document": document,
+            "shop": shop,
+            "dateTime": dateTime,
+            'rhos': rhos
+        }
+        return render(request, "documents/change_remainder_input_posted.html", context)
+    else:
+        return redirect ('login')
+
 # ================================Sale Operations=================================
 def identifier_sale(request):
     if request.user.is_authenticated:
@@ -1984,7 +2007,7 @@ def delivery_auto(request):
                     imei=product.imei,
                     current_remainder=int(row.Quantity),
                     sum=int(row.Quantity) * int(row.Price),
-                    av_price=int(row.Price),
+                    av_price=int(row.Av_price),
                 )
             rho.av_price=av_price_obj.av_price
             rho.save()
