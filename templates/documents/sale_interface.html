@@ -5,7 +5,7 @@
     <div class="log border m-auto mt-1 rounded" style="background-color:rgb(215, 215, 215); height: 26Vh" >
             <div class="row">
                 <div class="col-2">
-                <h5> {{date_1}}</h5>
+                <h5> {{date}}</h5>
                 </div>
                 <div class="col">
                     <h5>Остаток в кассе на утро:</h5>
@@ -60,7 +60,7 @@
         <div class="row">
             <div class="col-2"><h5>Дата/Время</h5></div>
             <div class="col-2"><h5>Документ</h5></div>
-            <div class="col-2"><h5>Сумма</h5></div>
+            <div class="col-2"><h5>Наименование</h5></div>
             <div class="col-2"><h5>Кол-во</h5></div>
             <div class="col-2"><h5>Сумма</h5></div>
             <div class="col-2"><h5>Автор</h5></div>
@@ -74,7 +74,7 @@
 <div class="row mt-1">
     <div class="col">{{rho.created}}</div>
 
-    <div class="col"><a href="{url 'change_sale_posted' rho.document.id}">{{rho.document.title}}#{{rho.document.id}}</a></div>
+    <div class="col"><a href="{% url 'change_sale_posted' rho.document.id %}">{{rho.document.title}}#{{rho.document.id}}</a></div>
 
     <div class="col">{{rho.name}}</div>
     <div class="col">{{rho.outgoing_quantity}} шт.</div>
