@@ -407,16 +407,16 @@ def sale_report(request):
             retail_sum=0
             for qs in queryset_list:
                 quantity_out+=qs.outgoing_quantity
-                self_cost+=qs.av_price
-                retail_sum+=qs.retail_price
+                self_cost+=qs.av_price*qs.outgoing_quantity
+                retail_sum+=qs.sub_total
             product=Product.objects.get(imei=i)
             sale_rep = SaleReport.objects.create(
                 report_id=report_id,
                 product=product.name,
                 quantity=quantity_out,
                 av_sum=self_cost,
-                retail_sum=retail_sum
-                # margin
+                retail_sum=retail_sum,
+                margin=retail_sum - self_cost
             )
         sale_report=SaleReport.objects.filter(report_id=report_id.id)
 
