@@ -196,13 +196,13 @@ def sale_interface (request):
             'queryset_list': queryset_list,
             'shop': shop,
             'date': date,
-            'sales_sum': sales_sum,
+            # 'sales_sum': sales_sum,
             'card_sum': card_sum,
             'credit_sum': credit_sum,
             'cash_sum': cash_sum,
             'pay_card_remainder_start': pay_card_remainder_start,
             'pay_card_remainder_current': pay_card_remainder_current,
-            'rhos': rhos
+            # 'rhos': rhos
          
         }
         return render (request, 'documents/sale_interface.html', context)
