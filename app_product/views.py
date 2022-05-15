@@ -137,16 +137,16 @@ def sale_interface (request):
         #getting access of session_shop variable stored in session dictionnary
         session_shop=request.session['session_shop']
         shop=Shop.objects.get(id=session_shop)
-        idsd=IntegratedDailySaleDoc.objects.get(created=date, shop=shop)
-#======================Making a List of sales per day==================================
-        rhos = RemainderHistory.objects.filter(idsd=idsd).order_by("-created")
-        array=[]
-        sales_sum=0
-        for rho in rhos:
-            array.append(rho.imei)
-            sales_sum+=rho.sub_total
+        # idsd=IntegratedDailySaleDoc.objects.get(created=date, shop=shop)
+# #======================Making a List of sales per day==================================
+#         rhos = RemainderHistory.objects.filter(idsd=idsd).order_by("-created")
+#         array=[]
+#         sales_sum=0
+#         for rho in rhos:
+#             array.append(rho.imei)
+#             sales_sum+=rho.sub_total
             
-#==============Making a list of docs per pay
+#==============Making a list of docs per pay=====================================================
         queryset_list = Document.objects.filter(user=request.user, created__date=date).order_by("-created")
 #==================Calculating Cash Remainder==========================================
         if Cash.objects.filter(shop=shop, created__lt=date).exists():
