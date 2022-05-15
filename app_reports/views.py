@@ -2,6 +2,7 @@ from shutil import move
 from ssl import create_default_context
 from app_personnel.models import BonusAccount, Salary
 from django.db.models import query
+from app_product.views import change_cash_receipt_unposted
 from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product
 from app_cash.models import Cash, Credit, Card
 from django.shortcuts import render, redirect, get_object_or_404
@@ -398,8 +399,10 @@ def sale_report(request):
         for i in queryset:
             array.append(i.imei)
         array = set(array)#eliminating not unique imeis
-
+        #calculating payment types
+        
         report_id = ReportTempId.objects.create()
+        #calculating total quantity & sub_total per imei per day
         for i in array:
             queryset_list=queryset.filter(imei=i)
             quantity_out=0
@@ -418,7 +421,11 @@ def sale_report(request):
                 retail_sum=retail_sum,
                 margin=retail_sum - self_cost
             )
+        #calculating total sales sum
         sale_report=SaleReport.objects.filter(report_id=report_id.id)
+        total_sales=0
+        for item in sale_report:
+            total_sales+=item.retail_sum
 
         context = {
             "sale_report": sale_report,
@@ -426,6 +433,7 @@ def sale_report(request):
             "shops": shops,
             "suppliers": suppliers,
             "users": users,
+            "total_sales": total_sales,
         }
         return render(request, "reports/sale_report.html", context)
     else:
@@ -781,6 +789,49 @@ def item_report(request):
         return redirect("login")
 
 # ====================================================================
+def payment_report (request):
+    if request.user.is_authenticated:
+        shops=Shop.objects.all()
+        if request.method=="POST":
+            start_date = request.POST["start_date"]
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = request.POST["end_date"]
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+            cash=Cash.objects.filter(created__gt=start_date, created__lt=end_date)
+            card=Card.objects.filter(created__gt=start_date, created__lt=end_date)
+            credit=Credit.objects.filter(created__gt=start_date, created__lt=end_date)
+            shop = request.POST.get("shop", False)
+            if shop:
+                shop = Shop.objects.get(id=shop)
+                cash = cash.filter(shop=shop)
+                card = card.filter(shop=shop)
+                credit=credit.filter(shop=shop)
+            cash_sum=0
+            for item in cash:
+                cash_sum+=item.cash_in
+            card_sum=0
+            for item in card:
+                card_sum+=item.sum
+            credit_sum=0
+            for item in credit:
+                credit_sum+=credit.sum
+            context = {
+                "cash_sum": cash_sum,
+                "card_sum": card_sum,
+                "credit_sum": credit_sum,
+                "shops": shops
+            }
+            return render(request, "reports/payment_report.html", context)
+        else:
+            context = {
+                'shops': shops
+            }
+            return render(request, "reports/payment_report.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 def daily_shop_rep(request):
     if request.user.is_authenticated:
         session_shop=request.session['session_shop']
@@ -847,33 +898,43 @@ def credit_report(request):
 
 #=============================Pay_Card_Reports==============================
 def card_report(request):
-    shops = Shop.objects.all()
-    cards = Card.objects.all()
-    users = User.objects.all()
-    if request.method == "POST":
-        start_date = request.POST["start_date"]
-        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-        end_date = request.POST["end_date"]
-        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-        end_date = end_date + timedelta(days=1)
-        shop = request.POST.get("shop", False)
-        if shop:
-            shop = Shop.objects.get(id=shop)
-        user = request.POST.get("user", False)
-        if user:
-            user = User.objects.get(id=user)
-        card_report = Card.objects.filter(
-            created__gte=start_date, created__lte=end_date
-        )
-        if shop:
-            card_report = card_report.filter(shop=shop)
-        if user:
-            card_report = card_report.filter(user=user)
-        context = {"shops": shops, "users": users, "card_report": card_report}
-        return render(request, "reports/card_report.html", context)
+    if request.user.is_authenticated:
+        shops = Shop.objects.all()
+        cards = Card.objects.all()
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = request.POST["end_date"]
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+            shop = request.POST.get("shop", False)
+            if shop:
+                shop = Shop.objects.get(id=shop)
+    
+            card_report = Card.objects.filter(
+                created__gte=start_date, created__lte=end_date
+            )
+            if shop:
+                card_report = card_report.filter(shop=shop)
+                total_sum=0
+                for item in card_report:
+                    total_sum+=item.sum
 
-    context = {"shops": shops, "users": users}
-    return render(request, "reports/card_report.html", context)
+           
+            context = {
+                "shops": shops,
+                "card_report": card_report,
+                "total_sum": total_sum
+                }
+            return render(request, "reports/card_report.html", context)
+        else:
+            context = {
+                "shops": shops, 
+            }
+            return render(request, "reports/card_report.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
 
 def daily_pay_card_rep_per_shop (request):
     if request.user.is_authenticated:
