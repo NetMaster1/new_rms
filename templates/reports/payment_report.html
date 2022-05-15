@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- <div class="hide"> -->
+<div class="container">
+    <div class="page_location">
+
+        <div class="log border rounded">
+            <div class="row">
+                <h3>Отчет по типам оплаты</h3>
+            </div>
+        </div>
+
+        <div class="log border rounded">
+            <form action="{% url 'payment_report' %}" method="POST">
+                {% csrf_token %}
+
+                <div class="row m-auto mt-2 mb-1">
+          
+                    <div class="col-2">
+                        <input type="date" id='start_date' name="start_date" class='form-control' required>
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='end_date' name="end_date" class="form-control" required>
+                    </div>
+                 
+
+                    <div class="col-2">
+                        <select name="shop" id="shop" class='form-control'>
+                            <option value="">Выберите магазин</option>
+                            {% for shop in shops %}
+                            <option value="{{shop.id}}">{{shop.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="row m-auto mt-1 mb-2">
+                    <div class="col-2">
+                        <div class="row m-auto">
+                            <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="row m-auto">
+                            <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="row m-auto">
+                            <a href="{% url 'close_report' %}" class="btn btn-sm btn-block btn-outline-dark">
+                                Закрыть без сохранения
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <a href="#">
+                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                                Сохранить в Excel
+                            </button>
+                        </a>
+                    </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="log border rounded">
+        <div class="row m-auto">
+            <div class="col-2">
+                <h5>Оплачено:</h5>
+            </div>
+            <div class="col-2">
+                <h5>Наличные</h5>
+            </div>
+            <div class="col-2">
+                <h5>Карта</h5>
+            </div>
+            <div class="col-2">
+                <h5>Кредит</h5>
+            </div>
+            <div class="col-2">
+                <h5>Кэшбэк</h5>
+            </div>
+        </div>
+
+        <div class="row m-auto">
+            <div class="col-2"></div>
+            <div class="col-2">
+                <h5>{{cash_sum}} руб.</h5>
+            </div>
+            <div class="col-2">
+                <h5>{{card_sum}} руб.</h5>
+            </div>
+            <div class="col-2">
+                <h5>{{credit_sum}} руб.</h5>
+            </div>
+            <div class="col-2">
+
+            </div>
+            <div class="col-2">
+
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+
+
+    </div>
+</div>
+</div>
+
+{%endblock%}
