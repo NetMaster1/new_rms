@@ -214,6 +214,19 @@ footer {
 }
 /* ====================End of Delivery Page Modal for Entering New Product ======================= */
 
+/* ===================== Daily Sales Modal========================= */
+.enterSalesModal {
+    display: none;
+}
+
+.enterSalesModal.openModal {
+    display: block;
+    position: fixed;
+  
+    /* top: 70mm;
+    right: 0mm; */
+}
+
 
 /* ===========================Sale Page Modal for Entering client's phone for cashback================== */
 .enterCashbackModal {

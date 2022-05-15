@@ -41,6 +41,14 @@ class Document(models.Model):
     #     ordering = ('created',)  # sorting by date
     #     verbose_name = self.title
 
+class IntegratedDailySaleDoc(models.Model):
+    created = models.DateField(auto_now_add=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)
+
+    def __int__(self):
+        return self.id
+
 
 class Register(models.Model):
     number = models.IntegerField(null=True)
@@ -125,6 +133,7 @@ class RemainderHistory(models.Model):
     #editor = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='editor', null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)
+    idsd = models.ForeignKey(IntegratedDailySaleDoc, null=True, on_delete=models.DO_NOTHING) #for compiling a list of sales per day
     inventory_doc = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name="inventory" ,null=True, blank=True)
     rho_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
