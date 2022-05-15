@@ -419,13 +419,18 @@ def sale_report(request):
                 margin=retail_sum - self_cost
             )
         sale_report=SaleReport.objects.filter(report_id=report_id.id)
-
+        total_sales=0
+        for item in sale_report:
+            total_sales+=item.retail_sum
+        print('==================')
+        print(total_sales)
         context = {
             "sale_report": sale_report,
             "categories": categories,
             "shops": shops,
             "suppliers": suppliers,
             "users": users,
+            "total_sales": total_sales,
         }
         return render(request, "reports/sale_report.html", context)
     else:

@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .smsc_api import *
 from .models import (
     Document,
-    IntegratedDailySaleDoc,
+    # IntegratedDailySaleDoc,
     RemainderHistory,
     Register,
     Identifier,
@@ -619,7 +619,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
         date=datetime.date.today()
         session_shop=request.session['session_shop']
         shop=Shop.objects.get(id=session_shop)
-        idsd=IntegratedDailySaleDoc.objects.get(created=date, shop=shop)
+        # idsd=IntegratedDailySaleDoc.objects.get(created=date, shop=shop)
     #===================================================================
         users=Group.objects.get(name="sales").user_set.all()
         group=Group.objects.get(name="admin").user_set.all()
@@ -692,7 +692,6 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 # creating remainder_history
                 rho = RemainderHistory.objects.create(
                     document=document,
-                    idsd=idsd,
                     created=document.created,
                     rho_type=doc_type,
                     user=request.user,
@@ -3686,7 +3685,7 @@ def change_recognition_unposted(request, document_id):
                             category=product.category,
                             imei=imeis[i],
                             name=names[i],
-                            av_price=av_price.av_price,
+                            av_price=av_price_obj.av_price,
                             incoming_quantity=quantities[i],
                             outgoing_quantity=0,
                             sub_total=int(quantities[i])*int(prices[i]),

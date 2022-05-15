@@ -1,6 +1,6 @@
 import datetime
 from app_reference.models import Product, ProductCategory, Shop
-from app_product.models import RemainderHistory, IntegratedDailySaleDoc
+from app_product.models import RemainderHistory
 from app_clients.models import Customer
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, Group
@@ -60,13 +60,13 @@ def shop_choice (request):
                 # dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
                 # dateTime = datetime.datetime.now()
                 # dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
-            if IntegratedDailySaleDoc.objects.filter(created=datetime.date.today()).exists():
-                integrated_doc=IntegratedDailySaleDoc.objects.get(created=datetime.date.today())
-            else:
-                integrated_doc=IntegratedDailySaleDoc.objects.create(
-                    shop=shop,
-                    user=request.user
-                )
+            # if IntegratedDailySaleDoc.objects.filter(created=datetime.date.today()).exists():
+            #     integrated_doc=IntegratedDailySaleDoc.objects.get(created=datetime.date.today())
+            # else:
+            #     integrated_doc=IntegratedDailySaleDoc.objects.create(
+            #         shop=shop,
+            #         user=request.user
+            #     )
             group=Group.objects.get(name="admin").user_set.all()
             if request.user in group:
                 return redirect ('identifier_sale')
