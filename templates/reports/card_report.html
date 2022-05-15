@@ -4,13 +4,13 @@
 <div class="container">
     <div class="page_location">
 
-        <div class="menu">
+        <div class="log border rounded">
             <div class="row">
                 <h3>Отчет по экваирингу</h3>
             </div>
         </div>
 
-        <div class="menu">
+        <div class="log border rounded m-auto">
             <form action="{% url 'card_report' %}" method="POST">
                 {% csrf_token %}
 
@@ -35,15 +35,6 @@
                     </div>
 
 
-                    <div class="col-2">
-                        <select name="user" id="user" class='form-inline'>
-                            <option value="">Выберите продавца</option>
-                            {% for user in users %}
-                            <option value="{{user.id}}">{{user.first_name}} {{user.last_name}}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
                 </div>
 
                 <div class="row form-row mt-3">
@@ -62,41 +53,42 @@
                
             </form>
         </div>
-    </div>
+    
 
-    <div class="log">
+    <div class="log border rounded">
         <div class="row m-auto">
-            <div class="col">Всего продано на сумму:</div>
-            <div class="col">{{sum}}</div>
+
+            <div class="col-8"><h5 style="color:red">Всего оплачено картой</h5></div>
+            <div class="col-2"><h5 style="color:red">{{total_sum}} руб.</h5></div>
         </div>
 
 
-        <div class="row">
+        <div class="row m-auto">
 
             <div class="col-2">
-                <h5>Наименование</h5>
+                <h5>Дата</h5>
             </div>
             <div class="col-2">
-                <h5>Количество</h5>
+                <h5>Документ №</h5>
             </div>
             <div class="col-2">
-                <h5>Цена</h5>
+                <h5>Торговая точка</h5>
+            </div>
+            <div class="col-2">
+                <h5>Автор</h5>
             </div>
             <div class="col-2">
                 <h5>Сумма</h5>
             </div>
-            <div class="col-2">
-                <h5>Продавец</h5>
-            </div>
-
+        
         </div>
         {% for item in card_report%}
         <div class="row m-auto">
             <div class="col-2">{{item.created}}</div>
-            <div class="col-2">{{item.document}}</div>
+            <div class="col-2">Документ# {{item.document.id}}</div>
             <div class="col-2">{{item.shop}}</div>
-            <div class="col-2">{{item.user}}</div>
-            <div class="col-2">{{item.sum}}</div>
+            <div class="col-2">{{item.user.last_name}}</div>
+            <div class="col-2">{{item.sum}} руб.</div>
         </div>
         {% endfor %}
     </div>
