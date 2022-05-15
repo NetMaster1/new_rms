@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .smsc_api import *
 from .models import (
     Document,
+    IntegratedDailySaleDoc,
     RemainderHistory,
     Register,
     Identifier,
@@ -15,6 +16,7 @@ from .models import (
     AvPrice,
 )
 from app_cash.models import Cash, Credit, Card, PaymentRegister
+from app_reports.models import SaleReport, ReportTempId
 from app_reference.models import (
     Shop,
     Supplier,
@@ -135,10 +137,17 @@ def sale_interface (request):
         #getting access of session_shop variable stored in session dictionnary
         session_shop=request.session['session_shop']
         shop=Shop.objects.get(id=session_shop)
-#======================Making a List of documentd per day==================================
+        idsd=IntegratedDailySaleDoc.objects.get(created=date, shop=shop)
+#======================Making a List of sales per day==================================
+        rhos = RemainderHistory.objects.filter(idsd=idsd).order_by("-created")
+        array=[]
+        sales_sum=0
+        for rho in rhos:
+            array.append(rho.imei)
+            sales_sum+=rho.sub_total
+            
+#==============Making a list of docs per pay
         queryset_list = Document.objects.filter(user=request.user, created__date=date).order_by("-created")
-        doc_types = DocumentType.objects.all()
-
 #==================Calculating Cash Remainder==========================================
         if Cash.objects.filter(shop=shop, created__lt=date).exists():
             cho_before=Cash.objects.filter(shop=shop, created__lt=date).latest("created")
@@ -150,7 +159,6 @@ def sale_interface (request):
             current_cash_remainder=cho_current.current_remainder
         else:
             current_cash_remainder=0
-
 #============================Calculating Pay_Cards_Remainders per day======================= 
         product=Product.objects.get(imei='11111')    
         if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date).exists():
@@ -163,13 +171,6 @@ def sale_interface (request):
             pay_card_remainder_current=rho_current.current_remainder
         else:
             pay_card_remainder_current=0
-#===================================Calculating Sum of Sold Goods per day=======================
-        doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
-        sales_sum=0
-        rhos=RemainderHistory.objects.filter(shop=shop, created__date=date, rho_type=doc_type)
-        for i in rhos:
-            sales_sum+=i.sub_total
-
 #=====================Calculating Incoming Cash per day=============================
         cash_sum=0
         if Cash.objects.filter(shop=shop, created__date=date).exists():
@@ -202,6 +203,7 @@ def sale_interface (request):
             'pay_card_remainder_start': pay_card_remainder_start,
             'pay_card_remainder_current': pay_card_remainder_current,
             'rhos': rhos
+         
         }
         return render (request, 'documents/sale_interface.html', context)
     else:
@@ -613,6 +615,12 @@ def delete_line_sale(request, imei, identifier_id):
 
 def sale_input_cash(request, identifier_id, client_id, cashback_off):
     if request.user.is_authenticated:
+    #==============idsd_module======================================
+        date=datetime.date.today()
+        session_shop=request.session['session_shop']
+        shop=Shop.objects.get(id=session_shop)
+        idsd=IntegratedDailySaleDoc.objects.get(created=date, shop=shop)
+    #===================================================================
         users=Group.objects.get(name="sales").user_set.all()
         group=Group.objects.get(name="admin").user_set.all()
         identifier = Identifier.objects.get(id=identifier_id)
@@ -629,8 +637,6 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             quantities = request.POST.getlist("quantity", None)
             prices = request.POST.getlist("price", None)
             sub_totals = request.POST.getlist("sub_total", None)
-            session_shop=request.session['session_shop']
-            shop=Shop.objects.get(id=session_shop)
             #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
@@ -675,6 +681,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 cashback_off=cashback_off,
                 client=client,
             )
+            
             document_sum = 0
             n = len(names)
             for i in range(n):
@@ -685,6 +692,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 # creating remainder_history
                 rho = RemainderHistory.objects.create(
                     document=document,
+                    idsd=idsd,
                     created=document.created,
                     rho_type=doc_type,
                     user=request.user,
