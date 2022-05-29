@@ -2,6 +2,11 @@ a {
     text-decoration: none;
 }
 
+.font_heading {
+    font-size: 2rem;
+    font-weight: 500;
+}
+
 footer {
     bottom: 0px;
     position: fixed;
@@ -395,12 +400,8 @@ footer {
     display: none;
 }
 ModalLogHide.openModal {
-    /* display: block;
-    position: absolute;
-    margin-top: 20rem;
-    background-color: whitesmoke; */
     display: block;
-    position: fixed;
+  
 }
 /* ====================== End of Modal for Log ==================================== */
 
