@@ -25,7 +25,7 @@
 
 
         <div class="menu">
-            <form action="{% url 'products' %}" method="POST">
+            <form action="{% url 'product_list' %}" method="POST">
                 {% csrf_token %}
 
                 <div class="row form-row m-auto">
@@ -90,9 +90,11 @@
     <div class="row m-auto">
         <div class="col-2">{{item.category}}</div>
         <div class="col-2">
+<!-- ========================Modal Trigger============================================================= -->
             <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{item.imei}}">
                 {{item.imei}}
             </a>
+<!-- ============================End of Modal trigger===========================================-->
         </div>
         <div class="col-2">{{item.name}}</div>
        

@@ -10,6 +10,13 @@ def reference (request):
     return render(request, 'reference.html')
 
 def products (request):
+    categories=ProductCategory.objects.all()
+    context ={
+        'categories': categories
+    }
+    return render (request, 'reference/products.html', context )
+
+def product_list (request):
     products=Product.objects.all()
     categories=ProductCategory.objects.all()
     if request.method == "POST":
