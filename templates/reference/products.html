@@ -2,7 +2,7 @@
 {% block content %}
 <!-- <div class="hide"> -->
 <div class="container">
-    <div class="page_location">
+
 
 <!-- =====================Alert Messages Module=================== -->
 <div class="container">
@@ -19,60 +19,60 @@
 </div>
 <!-- ===================End of Alert Messages Module================ -->
 
-        <div class="menu">
-            <h3>Номенклатура</h3>
-        </div>
-
-
-        <div class="menu">
-            <form action="{% url 'products' %}" method="POST">
-                {% csrf_token %}
-
-                <div class="row form-row m-auto">
-                    <div class="col-3">
-                        <select name="category" class='form-inline' id='category'>
-                            <!-- <option selected="true" disabled="disabled">Выберите категорию</option> -->
-                            <!-- <option value="{{product.category.id}}">{{product.category}}</option> -->
-                            <!-- <option value='#'>Выберите категорию</option> -->
-                            <option value>Выберите категорию</option>
-                            {% for category in categories %}
-                            <option value="{{category.id}}">{{category.name}}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="col-2">
-                        <input type="text" name="imei" placeholder="IMEI">
-                    </div>
-                </div>
-
-                <div class="row form-row mt-3">
-                    <div class="col-2">
-                        <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
-                    </div>
-                    <div class="col-2">
-                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
-                    </div>
-                    <div class="col-2">
-                        <a href="{% url 'close_report' %}">
-                            <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark">
-                        </a>
-                    </div>
-                    <div class="col-2">
-                        <a href=#>
-                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
-                                Сохранить в Excel
-                            </button>
-                        </a>
-                    </div>
-            </form>
-        </div>
-    </div>
+<div class="log border rounded m-auto mt-1">
+    <div class="font_heading">Номенклатура</div> 
 </div>
-<div class="log">
-    
+       
 
+<div class="log border rounded m-auto mt-1">
+    <form action="{% url 'product_list' %}" method="POST">
+        {% csrf_token %}
+
+        <div class="row form-group m-auto">
+            <div class="col-3">
+                <select name="category" class='form-control' id='category'>
+                    <!-- <option selected="true" disabled="disabled">Выберите категорию</option> -->
+                    <!-- <option value="{{product.category.id}}">{{product.category}}</option> -->
+                    <!-- <option value='#'>Выберите категорию</option> -->
+                    <option value>Выберите категорию</option>
+                    {% for category in categories %}
+                    <option value="{{category.id}}">{{category.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        
+            <div class="col-3">
+                <input type="text" class='form-control' name="imei" placeholder="IMEI">
+            </div>
+        </div>
+
+        <div class="row form-group m-auto mt-1 mb-1">
+            <div class="col-1">
+                <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+            </div>
+            <div class="col-1">
+                <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+            </div>
+            <div class="col-2">
+                <a href="{% url 'close_report' %}">
+                    <input type="button" value="Закрыть без сохранения"
+                        class="btn btn-sm btn-block btn-outline-dark">
+                </a>
+            </div>
+            <div class="col-2">
+                <a href=#>
+                    <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                        Сохранить в Excel
+                    </button>
+                </a>
+            </div>
+    </form>
+</div>
+</div>
+
+
+
+<div class="log border rounded m-auto mt-1">
     <div class="row m-auto">
         <div class="col-2">
             <h5>Категория</h5>
@@ -90,18 +90,19 @@
     <div class="row m-auto">
         <div class="col-2">{{item.category}}</div>
         <div class="col-2">
+<!-- ========================Modal Trigger============================================================= -->
             <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{item.imei}}">
                 {{item.imei}}
             </a>
+<!-- ============================End of Modal trigger===========================================-->
         </div>
         <div class="col-2">{{item.name}}</div>
        
 <!-- =======================Document Bootstrap Modal================================= -->
-    <div class="modal fade" id="modal_{{item.imei}}" tabindex="-1" aria-labelledby="exampleModalLabel"
-        aria-hidden="true" class="ModalLogHide">
-        <!-- <div class="ModalLogHide"> -->
+<div class="modal fade ModalLogHide" id="modal_{{item.imei}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content" style="width: 80%">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Карточка товара</h5>
                     <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close">X</button>
@@ -147,13 +148,12 @@
         </div>
     </div>
 <!-- ============================End of Document Bootstrap Modal======================================= -->
-
-
     </div>
+
+    
     {% endfor %}
           
 
-</div>
 </div>
 </div>
 <!-- </div> -->
