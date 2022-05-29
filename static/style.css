@@ -2,6 +2,11 @@ a {
     text-decoration: none;
 }
 
+.font_heading {
+    font-size: 2rem;
+    font-weight: 500;
+}
+
 footer {
     bottom: 0px;
     position: fixed;
@@ -140,11 +145,10 @@ footer {
 }
 
 .modal-search-results {
-    /* display: block;
-    position: fixed; */
+    position: relative;
     top: 5rem;
     left: 10rem;
-    width: 50%;
+    width: 70%;
     min-height: 18%;
     background-color: rgb(238, 240, 238);
     text-align: center;
@@ -395,12 +399,8 @@ footer {
     display: none;
 }
 ModalLogHide.openModal {
-    /* display: block;
-    position: absolute;
-    margin-top: 20rem;
-    background-color: whitesmoke; */
     display: block;
-    position: fixed;
+  
 }
 /* ====================== End of Modal for Log ==================================== */
 
