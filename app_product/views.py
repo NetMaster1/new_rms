@@ -233,22 +233,24 @@ def search(request):
             else:
                 messages.error(request, "УУУУУПС. Такое наименование не найдено")
                 return redirect("search")
-
-
         else:
             shops=Shop.objects.all()
             for shop in shops:
                 if RemainderHistory.objects.filter(shop=shop, name__icontains=keyword).exists():
-                    remainders=RemainderHistory.objects.filter(shop=shop, name__icontains=keyword).latest('created')
-                    if remainders.current_remainder > 0:
-                        remainders=RemainderHistory.objects.filter(shop=shop, name__icontains=keyword).latest('created')
-                        remainders_array.append(remainders)
+                    remainders=RemainderHistory.objects.filter(shop=shop, name__icontains=keyword)
+                    for remainder in remainders:
+                        remainders_array.append(remainder.imei)
             if len(remainders_array) == 0:
                 messages.error(request, "УУУУУПС. Такое наименование не найдено")
                 return redirect("search")
-               
+            remainders_array = set(remainders_array)
+            for shop in shops:
+                for i in remainders_array:
+                    if RemainderHistory.objects.filter(shop=shop, imei=i).exists():
+                        remainder=RemainderHistory.objects.filter(shop=shop, imei=i).latest('created')
+                        if remainder.current_remainder > 0:
+                            remainders_array_final.append(remainder)     
         context = {
-                "remainders": remainders,
                 "remainders_array_final": remainders_array_final
                 }
         return render(request, "documents/search_results.html", context)

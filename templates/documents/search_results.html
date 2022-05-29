@@ -28,11 +28,8 @@
                 <div class="col-2"><h5>Цена</h5></div>
             </div>
 
-        <div class="col m-2">
+       
                 
-            {% for group in request.user.groups.all %}
-            {% if group.name == 'sales' %}
-
             {% for item in remainders_array_final %}
                 <div class="row mt-1 mb-1 ">
                     <div class="col-3">
@@ -52,53 +49,26 @@
                     </div>
                 </div>
             {% endfor %}
-
-                {% else %}
-
-                    {% for item in remainders%}
-                        <div class="row mt-1 mb-1 ">
-                            <div class="col-3">
-                                {{item.shop}}
-                            </div>
-                            <div class="col-3">
-                                {{item.name}}
-                            </div>
-                            <div class="col-2">
-                                {{item.imei}}
-                            </div>
-                            <div class="col-2">
-                                {{item.current_remainder}}
-                            </div>
-                            <div class="col-2">
-                                {{item.retail_price}}
-                            </div>
-                        </div>
-                    {% endfor %}
-
-            {% endif %}
-            {% endfor %}
-
-              
-
         
+            
         {%for group in request.user.groups.all%}
         {%if group.name == 'sales' %}
-        <div class="row m-auto mt-3">
+    <div class="row m-auto mt-4 mb-3" style="width: 80%">
             <a href="{% url 'sale_interface' %}" class="btn btn-block btn-outline-dark">
                 Закрыть
             </a>
         </div>
         
         {% else %}
-        <div class="row m-auto mt-3">
-            <a href="{% url 'log' %}" class="btn btn-sm btn-block btn-outline-dark">
+        <div class="row m-auto mt-4 mb-3" style="width: 80%">
+           
+            <a href="{% url 'log' %}" class="btn btn-block btn-outline-dark">
               Закрыть
             </a>
         </div>
-        
         {%endif%}
         {% endfor %}
-        </div>
+      
   
           
    </div>

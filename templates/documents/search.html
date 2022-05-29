@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="hide">
-
-    <div class="container" style="position: relative">
-            <div class="modal-search">
-                <div class="modal-search-form form border rounded">
+<div class="container" style="position: relative">
+    <div class="modal-search">
+        <div class="modal-search-form form border rounded">
 
 <!-- =====================Alert Messages Module=================== -->
 <div class="container mt-2">
@@ -21,91 +20,39 @@
 </div>
 <!-- ===================End of Alert Messages Module================ -->
 <div class="col m-3">
-                    <form action="{% url 'search' %}" method="POST" class= 'submit_event'>
-                        {% csrf_token %}
+    <form action="{% url 'search' %}" method="POST" class= 'submit_event'>
+        {% csrf_token %}
 
-                        <input type="text" class='form-control' id="keyword" name="keyword" maxlength='50' required placeholder="Введите модель, бренд или любое слово из названия товара, который вы ищете" autofocus>
-                      
-                        <div class="row m-auto mt-3">
-                            <input type="submit" value="Поиск" class="btn btn-outline-dark btn-block">
-                        </div>
-                    
-
-                            {%for group in request.user.groups.all%}
-                            {%if group.name == 'sales' %}
-                            <div class="row m-auto mt-3">
-                            <a href="{% url 'sale_interface' %}"class="btn btn-block btn-outline-dark" >
-                               Закрыть
-                            </a>
-                            </div>
-
-                            {% else %}
-                            <div class="row m-auto mt-3">
-                            <a href="{% url 'log' %}" class="btn btn-block btn-outline-dark">
-                               Закрыть
-                            </a>
-                            </div>
-
-                            {%endif%}
-                            {% endfor %}
-                    </div>
-                       
-                    </form>
-                    </div>
-                
-                <div>
-            </div>
-
-        <!-- ===========================Modal Body================================= -->
-        <div class="enterDeliveryModal">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Текущие остатки</h5>
-                        <!-- <button type="button" class="btn_close"></button> -->
-                    </div>
-                    <div class="modal-body">
-                        <div class="row ">
-                        <div class="col-2">Торговая точка</div>
-                        <div class="col-2">Наименование</div>
-                        <div class="col-2">IMEI</div>
-                        <div class="col-2">Количество</div>
-                        </div>      
-                  
-                    <div class="row">
-                    <div class="col-12 border rounded p-3 m-auto">
-                        {% for remainder in remainders %}
-                        <div class="row">
-                            <div class="col-2">
-                                {{remainder.shop}}
-                            </div>
-                            <div class="col-2">
-                                {{remainder.name}}
-                            </div>
-                            <div class="col-2">
-                                {{remainder.imei}}
-                            </div>
-                            <div class="col-2">
-                                {{remainder.current_remainder}}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn_close" data-bs-dismiss="modal">Закрыть</button>
-                    </div>
-
-                </div>
-            </div>
+        <input type="text" class='form-control' id="keyword" name="keyword" maxlength='50' required placeholder="Введите модель, бренд или любое слово из названия товара, который вы ищете" autofocus>
+        
+        <div class="row m-auto mt-3">
+            <input type="submit" value="Поиск" class="btn btn-outline-dark btn-block">
         </div>
-        <!-- =================================End of Modal Body======================================== -->
+    
 
+            {%for group in request.user.groups.all%}
+            {%if group.name == 'sales' %}
+            <div class="row m-auto mt-3">
+            <a href="{% url 'sale_interface' %}"class="btn btn-block btn-outline-dark" >
+                Закрыть
+            </a>
+            </div>
+            {% else %}
+            <div class="row m-auto mt-3">
+            <a href="{% url 'log' %}" class="btn btn-block btn-outline-dark">
+                Закрыть
+            </a>
+            </div>
+            {%endif%}
+            {% endfor %}
+    </form>
+</div> 
+           
+            </div>       
         </div>
     </div>
 </div>
-</div>
-</div>
+
+
 
 {% endblock %}
