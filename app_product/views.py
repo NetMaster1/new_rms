@@ -197,13 +197,13 @@ def sale_interface (request):
             'queryset_list': queryset_list,
             'shop': shop,
             'date': date,
-            # 'sales_sum': sales_sum,
+            'sales_sum': sales_sum,
             'card_sum': card_sum,
             'credit_sum': credit_sum,
             'cash_sum': cash_sum,
             'pay_card_remainder_start': pay_card_remainder_start,
             'pay_card_remainder_current': pay_card_remainder_current,
-            # 'rhos': rhos
+            'rhos': rhos
          
         }
         return render (request, 'documents/sale_interface.html', context)
@@ -1587,8 +1587,10 @@ def unpost_sale (request, document_id):
             product=Product.objects.get(imei=rho.imei)
             #correcting av_price model
             av_price_obj=AvPrice.objects.get(imei=rho.imei)
-            av_price_obj.current_remainder=av_price_obj.current_remainder + rho.outgoing_quantity
+            av_price_obj.current_remainder= av_price_obj.current_remainder + rho.outgoing_quantity
+            #av_price_obj.save()
             av_price_obj.sum+=rho.outgoing_quantity*rho.av_price
+            #av_price_obj.save()
             av_price_obj.av_price=av_price_obj.sum / av_price_obj.current_remainder
             av_price_obj.save()
 
