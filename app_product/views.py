@@ -4649,7 +4649,7 @@ def return_input(request, identifier_id):
                         incoming_quantity=quantities[i],
                         outgoing_quantity=0,
                         #av_price=av_price,
-                        current_remainder=rho_latest_before.current_remainder + int(quantities[i]),
+                        current_remainder=pre_remainder + int(quantities[i]),
                         retail_price=prices[i],
                         sub_total= int(quantities[i]) * int(prices[i]),
                     )
