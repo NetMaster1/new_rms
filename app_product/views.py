@@ -2138,6 +2138,8 @@ def enter_new_product(request, identifier_id):
     if request.method == "POST":
         name = request.POST["name"]
         imei = request.POST["imei"]
+        if '/' in imei:
+            imei=imei.replace('/', '_')
         category = request.POST["category"]
         category = ProductCategory.objects.get(id=category)
         if Product.objects.filter(imei=imei).exists():
