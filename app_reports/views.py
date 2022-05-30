@@ -58,9 +58,7 @@ def save_in_excel_daily_rep(request):
 
         report_id = ReportTempId.objects.create()
         for shop in shops:
-            shop_row = (
-                []
-            )  # list for storing retail values for each category/shop for further placing in model
+            shop_row = []  # list for storing retail values for each category/shop for further placing in model
             for category in categories:
                 sum = 0
                 if RemainderHistory.objects.filter(
@@ -77,21 +75,15 @@ def save_in_excel_daily_rep(request):
             # ===================================================================================
 
             expenses_type = DocumentType.objects.get(name="РКО (хоз.расходы)")
-            if Cash.objects.filter(
-                cho_type=expenses_type, shop=shop, created__date=date
-            ).exists():
-                chos = Cash.objects.filter(
-                    cho_type=expenses_type, shop=shop, created__date=date
-                )
+            if Cash.objects.filter(cho_type=expenses_type, shop=shop, created__date=date).exists():
+                chos = Cash.objects.filter(cho_type=expenses_type, shop=shop, created__date=date)
                 expenses_sum = 0
                 for cho in chos:
                     expenses_sum += cho.cash_out
             else:
                 expenses_sum = 0
             salary_type = DocumentType.objects.get(name="РКО (зарплата)")
-            if Cash.objects.filter(
-                cho_type=salary_type, shop=shop, created__date=date
-            ).exists():
+            if Cash.objects.filter(cho_type=salary_type, shop=shop, created__date=date).exists():
                 chos = Cash.objects.filter(cho_type=salary_type, created__date=date)
                 salary_sum = 0
                 for cho in chos:
@@ -99,21 +91,15 @@ def save_in_excel_daily_rep(request):
             else:
                 salary_sum = 0
             cash_move_type = DocumentType.objects.get(name="Перемещение денег")
-            if Cash.objects.filter(
-                cho_type=cash_move_type, shop=shop, sender=True, created__date=date
-            ).exists():
-                chos = Cash.objects.filter(
-                    cho_type=cash_move_type, sender=True, created__date=date
-                )
+            if Cash.objects.filter(cho_type=cash_move_type, shop=shop, sender=True, created__date=date).exists():
+                chos = Cash.objects.filter(cho_type=cash_move_type, shop=shop, sender=True, created__date=date)
                 cash_move_sum = 0
                 for cho in chos:
                     cash_move_sum += cho.cash_out
             else:
                 cash_move_sum = 0
             return_type = DocumentType.objects.get(name="Возврат ТМЦ")
-            if Cash.objects.filter(
-                cho_type=return_type, shop=shop, created__date=date
-            ).exists():
+            if Cash.objects.filter(cho_type=return_type, shop=shop, created__date=date).exists():
                 chos = Cash.objects.filter(cho_type=return_type, created__date=date)
                 return_sum = 0
                 for cho in chos:
@@ -188,6 +174,7 @@ def save_in_excel_daily_rep(request):
                 - daily_rep.cash_move
             )
             daily_rep.save()
+         
 
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (

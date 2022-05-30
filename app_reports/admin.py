@@ -12,7 +12,7 @@ class ReportTempAdmin(admin.ModelAdmin):
     list_display = ('report_id', 'imei', 'name', 'initial_remainder', 'quantity_in', 'quantity_out', 'end_remainder')
 
 class DailySaleRepAdmin(admin.ModelAdmin):
-    list_display = ('id',)
+    list_display = ('report_id', 'created', 'shop', 'cash_move')
 
 class PayCardReportAdmin(admin.ModelAdmin):
     list_display = ('id',)
