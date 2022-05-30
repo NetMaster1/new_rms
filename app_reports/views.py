@@ -61,16 +61,10 @@ def save_in_excel_daily_rep(request):
             shop_row = []  # list for storing retail values for each category/shop for further placing in model
             for category in categories:
                 sum = 0
-                if RemainderHistory.objects.filter(
-                    shop=shop, category=category, created__date=date, rho_type=doc_type).exists():
-                    rhos = RemainderHistory.objects.filter(
-                        shop=shop,
-                        category=category,
-                        created__date=date,
-                        rho_type=doc_type,
-                    )
+                if RemainderHistory.objects.filter(shop=shop, category=category, created__date=date, rho_type=doc_type).exists():
+                    rhos = RemainderHistory.objects.filter(shop=shop,category=category, created__date=date, rho_type=doc_type)
                     for rho in rhos:
-                        sum += rho.retail_sum_outgoing()
+                        sum += rho.sub_total
                 shop_row.append(sum)
             # ===================================================================================
 
@@ -84,7 +78,7 @@ def save_in_excel_daily_rep(request):
                 expenses_sum = 0
             salary_type = DocumentType.objects.get(name="РКО (зарплата)")
             if Cash.objects.filter(cho_type=salary_type, shop=shop, created__date=date).exists():
-                chos = Cash.objects.filter(cho_type=salary_type, created__date=date)
+                chos = Cash.objects.filter(cho_type=salary_type, shop=shop, created__date=date)
                 salary_sum = 0
                 for cho in chos:
                     salary_sum += cho.cash_out
