@@ -906,8 +906,6 @@ def card_report(request):
                 total_sum=0
                 for item in card_report:
                     total_sum+=item.sum
-
-           
             context = {
                 "shops": shops,
                 "card_report": card_report,
@@ -922,6 +920,7 @@ def card_report(request):
     else:
         auth.logout(request)
         return redirect("login")
+
 
 def daily_pay_card_rep_per_shop (request):
     if request.user.is_authenticated:
