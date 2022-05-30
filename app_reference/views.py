@@ -38,11 +38,6 @@ def product_list (request):
                     'products': products
                 }
                 return render (request, 'reference/products.html', context )
-            else:
-                context = {
-                    'categories': categories,
-                    'products': products
-                }  
     context={
         'products': products,
         'categories': categories
