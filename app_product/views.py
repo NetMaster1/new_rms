@@ -1089,6 +1089,12 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
             quantities = request.POST.getlist("quantity", None)
             prices = request.POST.getlist("price", None)
             sub_totals = request.POST.getlist("sub_total", None)
+            sum_to_pay=0
+            for sub_total in sub_totals:
+                sum_to_pay += int(sub_total)
+            if card+cash+credit != sum_to_pay:
+                messages.error(request,  'Документ не сформирован. Сумма в чеке не совпадает с суммой продажи.')
+                return redirect("sale", identifier.id)
             session_shop=request.session['session_shop']
             shop=Shop.objects.get(id=session_shop)
             #==============Time Module=========================================
