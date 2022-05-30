@@ -883,8 +883,7 @@ def credit_report(request):
     context = {"shops": shops, "users": users}
     return render(request, "reports/credit_report.html", context)
 
-#=============================Pay_Card_Reports==============================
-def card_report(request):
+#=========eport(request):
     if request.user.is_authenticated:
         shops = Shop.objects.all()
         cards = Card.objects.all()
@@ -922,7 +921,8 @@ def card_report(request):
     else:
         auth.logout(request)
         return redirect("login")
-
+====================Pay_Card_Reports==============================
+def card_r
 def daily_pay_card_rep_per_shop (request):
     if request.user.is_authenticated:
         shops=Shop.objects.all()

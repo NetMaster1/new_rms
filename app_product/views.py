@@ -4611,14 +4611,14 @@ def return_input(request, identifier_id):
             # posting the document
             if post_check == True:
                 #checking if return is based on sale for this shop
-                n = len(names)
-                for i in range(n):
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime, rho_type=base_doc_type).exists():
-                        rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime, rho_type=base_doc_type).latest('created')
-                    else:
-                        string=f'Документ не проведен. Товар с IMEI {imeis[i]} никогда не продавался с баланса данной фирмы.'
-                        messages.error(request,  string)
-                        return redirect("return_doc", identifier.id)       
+                # n = len(names)
+                # for i in range(n):
+                #     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime, rho_type=base_doc_type).exists():
+                #         rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime, rho_type=base_doc_type).latest('created')
+                #     else:
+                #         string=f'Документ не проведен. Товар с IMEI {imeis[i]} никогда не продавался с баланса данной фирмы.'
+                #         messages.error(request,  string)
+                #         return redirect("return_doc", identifier.id)       
                 document = Document.objects.create(
                     shop_receiver=shop,
                     title=doc_type, 
@@ -4631,7 +4631,11 @@ def return_input(request, identifier_id):
                 for i in range(n): 
                     product=Product.objects.get(imei=imeis[i])
                     # checking docs before remainder_history
-                    rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
+                        rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
+                        pre_remainder=rho_latest_before.current_remainder
+                    else:
+                        pre_remainder=0
                     #creating rho
                     rho = RemainderHistory.objects.create(
                         document=document,
@@ -4641,7 +4645,7 @@ def return_input(request, identifier_id):
                         category=product.category,
                         imei=imeis[i],
                         name=names[i],
-                        pre_remainder=rho_latest_before.current_remainder,
+                        pre_remainder=pre_remainder,
                         incoming_quantity=quantities[i],
                         outgoing_quantity=0,
                         #av_price=av_price,
@@ -4652,8 +4656,7 @@ def return_input(request, identifier_id):
                     document_sum+=rho.sub_total
                     
                     # checking docs after remainder_history
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, 
-                        created__gt=document.created).exists():
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
                         remainder=rho.current_remainder
                         sequence_rhos_after = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created)
                         sequence_rhos_after = sequence_rhos_after.all().order_by("created")
