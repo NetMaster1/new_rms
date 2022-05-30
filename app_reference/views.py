@@ -28,6 +28,7 @@ def product_list (request):
                 return redirect ('product_card', product.id )
             except:
                 messages.error(request, "Наименование с данным IMEI отсутствует в базе данных")
+                return redirect ('products')
         else:
             if category:
                 category=ProductCategory.objects.get(id=category)
