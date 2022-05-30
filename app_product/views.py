@@ -2791,7 +2791,11 @@ def transfer_input(request, identifier_id):
                     document_sum = 0
                     for i in range(n):
                         product=Product.objects.get(imei=imeis[i])
-                        av_price=AvPrice.objects.get(imei=imeis[i])
+                        if AvPrice.objects.get(imei=imeis[i]).exists():
+                            av_price=AvPrice.objects.get(imei=imeis[i])
+                            av_price=av_price.av_price
+                        else:
+                            av_price=0
                         document_sum += int(prices[i]) * int(quantities[i])
                         # checking shop_sender
                         rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i],shop=shop_sender,created__lt=dateTime).latest('created')
@@ -2804,7 +2808,7 @@ def transfer_input(request, identifier_id):
                             category=product.category,
                             imei=imeis[i],
                             name=names[i],
-                            av_price=av_price.av_price,
+                            av_price=av_price,
                             retail_price=prices[i],
                             pre_remainder=rho_latest_before.current_remainder,
                             incoming_quantity=0,
