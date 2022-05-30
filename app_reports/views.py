@@ -883,7 +883,7 @@ def credit_report(request):
     context = {"shops": shops, "users": users}
     return render(request, "reports/credit_report.html", context)
 
-#=========eport(request):
+
     if request.user.is_authenticated:
         shops = Shop.objects.all()
         cards = Card.objects.all()
@@ -921,8 +921,45 @@ def credit_report(request):
     else:
         auth.logout(request)
         return redirect("login")
-====================Pay_Card_Reports==============================
-def card_r
+
+#====================Pay_Card_Reports==============================
+def card_report(request):
+    if request.user.is_authenticated:
+        shops = Shop.objects.all()
+        cards = Card.objects.all()
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = request.POST["end_date"]
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+            shop = request.POST.get("shop", False)
+            if shop:
+                shop = Shop.objects.get(id=shop)
+    
+            card_report = Card.objects.filter(
+                created__gte=start_date, created__lte=end_date
+            )
+            if shop:
+                card_report = card_report.filter(shop=shop)
+                total_sum=0
+                for item in card_report:
+                    total_sum+=item.sum
+            context = {
+                "shops": shops,
+                "card_report": card_report,
+                "total_sum": total_sum
+                }
+            return render(request, "reports/card_report.html", context)
+        else:
+            context = {
+                "shops": shops, 
+            }
+            return render(request, "reports/card_report.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 def daily_pay_card_rep_per_shop (request):
     if request.user.is_authenticated:
         shops=Shop.objects.all()
