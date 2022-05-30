@@ -4609,14 +4609,14 @@ def return_input(request, identifier_id):
             # posting the document
             if post_check == True:
                 #checking if return is based on sale for this shop
-                n = len(names)
-                for i in range(n):
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime, rho_type=base_doc_type).exists():
-                        rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime, rho_type=base_doc_type).latest('created')
-                    else:
-                        string=f'Документ не проведен. Товар с IMEI {imeis[i]} никогда не продавался с баланса данной фирмы.'
-                        messages.error(request,  string)
-                        return redirect("return_doc", identifier.id)       
+                # n = len(names)
+                # for i in range(n):
+                #     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime, rho_type=base_doc_type).exists():
+                #         rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime, rho_type=base_doc_type).latest('created')
+                #     else:
+                #         string=f'Документ не проведен. Товар с IMEI {imeis[i]} никогда не продавался с баланса данной фирмы.'
+                #         messages.error(request,  string)
+                #         return redirect("return_doc", identifier.id)       
                 document = Document.objects.create(
                     shop_receiver=shop,
                     title=doc_type, 
