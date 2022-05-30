@@ -905,8 +905,6 @@ def credit_report(request):
                 total_sum=0
                 for item in card_report:
                     total_sum+=item.sum
-
-           
             context = {
                 "shops": shops,
                 "card_report": card_report,
