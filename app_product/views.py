@@ -1379,9 +1379,7 @@ def change_sale_unposted (request, document_id):
                 #calculating remainder_history
                 n=len(names)
                 for i in range(n):
-                    product = Product.objects.get(imei=imeis[i])
-                    av_price_obj=AvPrice.objects.get(imei=imeis[i])
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop,created__lt=dateTime).exists():
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                         rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
                         if rho_latest_before.current_remainder < int(quantities[i]):
                             string=f'Документ не проведен. Товар с IMEI {imeis[i]} отсутствует на балансе фирмы.'
@@ -1392,6 +1390,8 @@ def change_sale_unposted (request, document_id):
                         messages.error(request,  string)
                         return redirect("change_sale_unposted", document.id)
                 for i in range(n):
+                    product = Product.objects.get(imei=imeis[i])
+                    av_price_obj=AvPrice.objects.get(imei=imeis[i])
                     #checking rhos before
                     rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
                     # creating remainder_history
