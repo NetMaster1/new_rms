@@ -43,7 +43,7 @@ from django.db.models import Q
 
 
 def save_in_excel_daily_rep(request):
-    categories = ProductCategory.objects.all()
+    categories = ProductCategory.objects.all().order_by('id')
     shops = Shop.objects.all().order_by("name").exclude(name="ООС")
     # length=shops.count()
     doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
@@ -62,10 +62,11 @@ def save_in_excel_daily_rep(request):
             for category in categories:
                 sum = 0
                 if RemainderHistory.objects.filter(shop=shop, category=category, created__date=date, rho_type=doc_type).exists():
-                    rhos = RemainderHistory.objects.filter(shop=shop,category=category, created__date=date, rho_type=doc_type)
+                    rhos = RemainderHistory.objects.filter(shop=shop, category=category, created__date=date, rho_type=doc_type)
                     for rho in rhos:
                         sum += rho.sub_total
                 shop_row.append(sum)
+            print(shop_row)
             # ===================================================================================
 
             expenses_type = DocumentType.objects.get(name="РКО (хоз.расходы)")
