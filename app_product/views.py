@@ -2664,12 +2664,12 @@ def check_transfer_unposted(request, document_id):
     # if "imei_check" in request.GET:
     if request.method=="POST":
         imei = request.POST["imei_check"]
-        quantity = request.GET["quantity_input"]
+        quantity = request.POST["quantity_input"]
         # shop = request.GET["shop"]
         # shop = Shop.objects.get(id=shop)
         if Product.objects.filter(imei=imei).exists():
             if RemainderHistory.objects.filter(imei=imei, shop=shop_sender).exists():
-                rho=RemainderHistory.objects.filter(imei=imei, shop=shop_sender).latest()
+                rho=RemainderHistory.objects.filter(imei=imei, shop=shop_sender).latest('created')
                 if rho.current_remainder >= int(quantity):
                     product = Product.objects.get(imei=imei)
                     if Register.objects.filter(document=document, product=product).exists():
@@ -2690,8 +2690,7 @@ def check_transfer_unposted(request, document_id):
                         register.save()
                         return redirect("change_transfer_unposted", document.id)
                 else:
-                    messages.error(
-                        request,
+                    messages.error(request,
                         "На складе фирмы-отправителя отсутствует необходимое количество",
                     )
                     return redirect("change_transfer_unposted", document.id)
