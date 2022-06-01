@@ -2026,7 +2026,7 @@ def delivery_auto(request):
                     imei=product.imei,
                     current_remainder=int(row.Quantity),
                     sum=int(row.Quantity) * int(row.Price),
-                    av_price=int(row.Av_price),
+                    av_price=int(row.Price),
                 )
             rho.av_price=av_price_obj.av_price
             rho.save()
