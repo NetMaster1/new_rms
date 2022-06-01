@@ -2670,7 +2670,7 @@ def check_transfer_unposted(request, document_id):
         if Product.objects.filter(imei=imei).exists():
             if RemainderHistory.objects.filter(imei=imei, shop=shop_sender).exists():
                 rho=RemainderHistory.objects.filter(imei=imei, shop=shop_sender).latest()
-                if rho.current_remainder >= int(quantity)
+                if rho.current_remainder >= int(quantity):
                     product = Product.objects.get(imei=imei)
                     if Register.objects.filter(document=document, product=product).exists():
                         messages.error(request,"Вы уже ввели данное наименование. Запишите нужно кол-во в списке ниже",)

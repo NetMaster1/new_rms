@@ -27,7 +27,7 @@
 
 
             <div class="col-12 border rounded p-3">
-                <form action="{% url 'check_transfer_unposted' document.id %}">
+                <form action="{% url 'check_transfer_unposted' document.id %}" method='POST' >
                     {% csrf_token %}
                     <div class="row m-1">
                         <div class="col-4">
