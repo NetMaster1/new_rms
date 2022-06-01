@@ -2664,7 +2664,7 @@ def check_transfer_unposted(request, document_id):
     # if "imei_check" in request.GET:
     if request.method=="POST":
         imei = request.POST["imei_check"]
-        quantity = request.GET["quantity_input"]
+        quantity = request.POST["quantity_input"]
         # shop = request.GET["shop"]
         # shop = Shop.objects.get(id=shop)
         if Product.objects.filter(imei=imei).exists():
