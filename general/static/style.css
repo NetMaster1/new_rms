@@ -226,9 +226,10 @@ footer {
 .enterSalesModal.openModal {
     display: block;
     position: fixed;
-  
-    /* top: 70mm;
-    right: 0mm; */
+    top: 12rem;
+    width: 100rem;
+    min-height: 10rem;
+    left: 15rem;
 }
 
 
