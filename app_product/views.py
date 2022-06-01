@@ -140,12 +140,7 @@ def sale_interface (request):
         # idsd=IntegratedDailySaleDoc.objects.get(created=date, shop=shop)
 # #======================Making a List of sales per day==================================
         doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
-        rhos = RemainderHistory.objects.filter(created__date=date, rho_type=doc_type, shop=shop).order_by("-created")
-#         array=[]
-        sales_sum=0
-        for rho in rhos:
-#           array.append(rho.imei)
-            sales_sum+=rho.sub_total
+        rhos = RemainderHistory.objects.filter(created__date=date, rho_type=doc_type, shop=shop).order_by("-created")   
             
 #==============Making a list of docs per pay=====================================================
         queryset_list = Document.objects.filter(user=request.user, created__date=date).order_by("-created")
@@ -197,7 +192,6 @@ def sale_interface (request):
             'queryset_list': queryset_list,
             'shop': shop,
             'date': date,
-            'sales_sum': sales_sum,
             'card_sum': card_sum,
             'credit_sum': credit_sum,
             'cash_sum': cash_sum,
