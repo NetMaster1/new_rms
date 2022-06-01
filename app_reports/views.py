@@ -41,7 +41,6 @@ from django.db.models import Q
 
 # Create your views here.
 
-
 def save_in_excel_daily_rep(request):
     categories = ProductCategory.objects.all().order_by('id')
     shops = Shop.objects.all().order_by("name").exclude(name="ООС")

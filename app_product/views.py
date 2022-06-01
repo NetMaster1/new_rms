@@ -1379,7 +1379,7 @@ def change_sale_unposted (request, document_id):
                 #calculating remainder_history
                 n=len(names)
                 for i in range(n):
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop,created__lt=dateTime).exists():
                         rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
                         if rho_latest_before.current_remainder < int(quantities[i]):
                             string=f'Документ не проведен. Товар с IMEI {imeis[i]} отсутствует на балансе фирмы.'
@@ -2026,7 +2026,7 @@ def delivery_auto(request):
                     imei=product.imei,
                     current_remainder=int(row.Quantity),
                     sum=int(row.Quantity) * int(row.Price),
-                    av_price=int(row.Av_price),
+                    av_price=int(row.Price),
                 )
             rho.av_price=av_price_obj.av_price
             rho.save()
