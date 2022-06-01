@@ -3823,7 +3823,12 @@ def unpost_recognition(request, document_id):
                 register.price=rho.av_price
             register.save()
             rho.delete()
+        doc_sum=0
+        registers=Register.objects.filter(document=document)
+        for register in registers:
+            doc_sum+=register.sub_total
         document.posted = False
+        document.sum=doc_sum
         document.save()
         return redirect("log")
     else:
