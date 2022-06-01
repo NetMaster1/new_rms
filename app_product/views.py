@@ -2661,15 +2661,16 @@ def check_transfer_unposted(request, document_id):
         if register.deleted == True:
             register.delete()
     shop_sender = document.shop_sender
-    if "imei_check" in request.GET:
-        imei = request.GET["imei_check"]
+    # if "imei_check" in request.GET:
+    if request.method=="POST":
+        imei = request.POST["imei_check"]
         quantity = request.GET["quantity_input"]
         # shop = request.GET["shop"]
         # shop = Shop.objects.get(id=shop)
         if Product.objects.filter(imei=imei).exists():
-            if RemainderCurrent.objects.filter(imei=imei, shop=shop_sender).exists():
-                remainder_current = RemainderCurrent.objects.get(imei=imei, shop=shop_sender)
-                if remainder_current.current_remainder >= int(quantity):
+            if RemainderHistory.objects.filter(imei=imei, shop=shop_sender).exists():
+                rho=RemainderHistory.objects.filter(imei=imei, shop=shop_sender).latest()
+                if rho.current_remainder >= int(quantity):
                     product = Product.objects.get(imei=imei)
                     if Register.objects.filter(document=document, product=product).exists():
                         messages.error(request,"Вы уже ввели данное наименование. Запишите нужно кол-во в списке ниже",)
@@ -2678,11 +2679,14 @@ def check_transfer_unposted(request, document_id):
                         register = Register.objects.create(
                             product=product,
                             document=document,
-                            price=remainder_current.retail_price,
-                            quantity=1,
+                            quantity=quantity,
                             new=True,
                         )
-                        register.sub_total = register.quantity * remainder_current.retail_price
+                        if rho.retail_price:
+                            register.price=rho.retail_price
+                        else:
+                            register.price=0
+                        register.sub_total = register.quantity * rho.retail_price
                         register.save()
                         return redirect("change_transfer_unposted", document.id)
                 else:
