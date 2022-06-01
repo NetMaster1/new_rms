@@ -2686,7 +2686,7 @@ def check_transfer_unposted(request, document_id):
                             register.price=rho.retail_price
                         else:
                             register.price=0
-                        register.sub_total = register.quantity * int(register.price)
+                        register.sub_total = int(quantity) * int(register.price)
                         register.save()
                         return redirect("change_transfer_unposted", document.id)
                 else:
