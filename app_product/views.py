@@ -3504,12 +3504,15 @@ def recognition_input(request, identifier_id):
                 )
                 for i in range(n):
                   #================Av_Price_Module===================================
-                  # При оприходовании на оптовый склад мы ставим оптовые цены, тем самым не сильно изменяя av_price. При оприходовании на розничный склад мы ставим розничные цены, которые значительно изменяют av_price при условии, что они отличаются от оптовых цен. (Интернет номера, КЭО)
+                  # При оприходовании на оптовый склад мы ставим оптовые цены, тем самым не сильно изменяя av_price. При оприходовании на розничный склад мы ставим розничные цены, которые значительно изменяют av_price при условии, что они отличаются от оптовых цен. (Интернет номера, КЭО). Соответстенно товар не желательно оприходовать на розничный склад.
                     if AvPrice.objects.filter(imei=imeis[i]).exists():
                         av_price_obj=AvPrice.objects.get(imei=imeis[i])
                         av_price_obj.current_remainder += int(quantities[i])
                         av_price_obj.sum += int(quantities[i]) * int(prices[i])
-                        av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                        if av_price_obj.current_remainder > 0:
+                            av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                        else:
+                            av_price_obj.av_price = int(prices[i])
                         av_price_obj.save()
                     else:
                         av_price_obj = AvPrice.objects.create(
@@ -3693,7 +3696,10 @@ def change_recognition_unposted(request, document_id):
                         av_price_obj=AvPrice.objects.get(imei=imeis[i])
                         av_price_obj.current_remainder+=int(quantities[i])
                         av_price_obj.sum+=int(quantities[i])*int(prices[i])
-                        av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                        if av_price_obj.current_remainder > 0:
+                            av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                        else:
+                            av_price_obj.av_price = int(prices[i])
                         av_price_obj.save()
                     #==========End Of Av_price_module====================
                         product = Product.objects.get(imei=imeis[i])
@@ -3823,7 +3829,12 @@ def unpost_recognition(request, document_id):
                 register.price=rho.av_price
             register.save()
             rho.delete()
+        doc_sum=0
+        registers=Register.objects.filter(document=document)
+        for register in registers:
+            doc_sum+=register.sub_total
         document.posted = False
+        document.sum=doc_sum
         document.save()
         return redirect("log")
     else:
