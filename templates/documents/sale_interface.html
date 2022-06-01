@@ -2,7 +2,7 @@
 {% block content %}
 
 <div class="container">
-    <div class="log border m-auto mt-1 rounded" style="background-color:rgb(215, 215, 215); height: 26Vh">
+    <div class="log border m-auto mt-1 rounded" style="background-color:rgb(215, 215, 215); height: 13rem">
         <div class="row">
             <div class="col-2">
                 <h5> {{date_1}}</h5>
@@ -48,8 +48,43 @@
             <div class="col-3">
                 <h5>Оплачено наличными:</h5>
             </div>
-            <div class="col-2">{{cash_sum}} руб.</div>
+            <div class="col-1">{{cash_sum}} руб.</div>
+            <div class="col-3"></div>
+        
+
+        <!-- ==============================Modal Trigger================== -->
+        <div class="col-3">
+            <button type="button" class="btn btn-sm btn-outline-dark btn_modal">
+                Просмотреть продажи за день
+            </button>
         </div>
+        <!-- ============================End of Modal Trigger========================= -->
+        <!-- ===========================Modal Body================================= -->
+      
+        <div class="enterSalesModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="whiteSalesModal">Продажи за {{date}}</h5>
+                    <button type="button" class="btn btn-secondary btn_close">Закрыть</button>
+                </div>
+                {% for rho in rhos %}
+                <div class="row m-auto">
+                    <div class="col-1">{{rho.document.id}}</div>
+                    <div class="col-3">{{rho.name}}</div>
+                    <div class="col-3">{{rho.imei}}</div>
+                    <div class="col-1">{{rho.outgoing_quantity}}</div>
+                    <div class="col-2">{{rho.retail_price}}</div>
+                    <div class="col-2">{{rho.sub_total}}</div>
+                </div>
+                {% endfor %}      
+                </div>
+            </div>
+        </div>
+    
+    <!-- =================================End of Modal Body======================================== -->
+
+        
+
         <div class="row">
             <div class="col-3">
                 <h5>Оплачено картой:</h5>
@@ -62,34 +97,9 @@
             </div>
             <div class="col-2">{{credit_sum}} руб.</div>
         </div>
-        <div class="row">
-
-<!-- ==============================Modal Trigger================== -->
-            <div class="col-6 border rounded p-3">
-                <button type="button" class="btn btn-sm btn-outline-dark btn_modal">
-                    Просмотреть продажи за день
-                </button>
-            </div>
-<!-- ============================End of Modal Trigger========================= -->
-        </div>
-<!-- ===========================Modal Body================================= -->
-        <div class="enterSalesModal" style=" width: 100Vw">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Продажи за {{date}}</h5>
-                </div>
-                    {% for rho in rhos %}
-                        {{rho.product}}
-                    {% endfor %}
-                            
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn_close">Закрыть</button>
-                </div>
-            </div>
-    <!-- =================================End of Modal Body======================================== -->
-            </div>
+    </div>
         
-        </div>
+
   
  
 
@@ -342,6 +352,8 @@
 
     const btn_modal = document.querySelector('.btn_modal');
     const enterSalesModal = document.querySelector('.enterSalesModal');
+    //const salesModalShadow = document.querySelector('.salesModalShadow');
+
     const btn_close = document.querySelector('.btn_close');
 
     btn_modal.addEventListener('click', openModal)
