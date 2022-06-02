@@ -140,7 +140,7 @@ footer {
     top: 20vh;
     left: 30vw;
     width: 34vw;
-    height: 23vh;
+    min-height: 23vh;
     background-color: rgb(238, 240, 238);
 }
 
