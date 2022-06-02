@@ -1975,15 +1975,14 @@ def delivery_auto(request):
         document_sum = 0
         for i in range(cycle):
             row = df1.iloc[i]#reads each row of the df1 one by one
-            try:
-                product=Product.objects.get(imei=row.Imei)
-            except Product.DoesNotExist:
+            if Product.objects.filter(imei=row.Imei).exists():
+                product=Product.objects.filter(imei=row.Imei)
+            else:
                 product = Product.objects.create(
-                    imei=row.Imei, 
-                    category=category, 
                     name=row.Title
+                    imei=row.Imei, 
+                    category=category,                   
                 )
-                product = Product.objects.get(imei=row.Imei)
             # checking docs before remainder_history
             if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=document.created).exists():
                 rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=document.created).latest('created')
@@ -2044,13 +2043,14 @@ def delivery_auto(request):
         document.sum = document_sum
         document.save()
         return redirect("log")
-    context = {
-        "shops": shops,
-        'shop_default': shop_default,
-        "suppliers": suppliers, 
-        "categories": categories,
-        }
-    return render(request, "documents/delivery_auto.html", context)
+    else:
+        context = {
+            "shops": shops,
+            'shop_default': shop_default,
+            "suppliers": suppliers, 
+            "categories": categories,
+            }
+        return render(request, "documents/delivery_auto.html", context)
 
 def identifier_delivery(request):
     identifier = Identifier.objects.create()
