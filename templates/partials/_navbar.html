@@ -45,7 +45,8 @@
                     Отчеты
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <li><a class="dropdown-item" href="{% url 'sale_report' %}">Отчет по продажам</a></li>
+                    <li><a class="dropdown-item" href="{% url 'sale_report_analytic' %}">Аналитика в разрезе продаж</a></li>
+                    <li><a class="dropdown-item" href="{% url 'sale_report_per_shop' %}">Продажи по точкам для Арины</a></li>
                     <li><a class="dropdown-item" href="{% url 'daily_report' %}">Отчет за день</a></li>
                     <li><a class="dropdown-item" href="{% url 'daily_pay_card_rep_general' %}">Остатки КЭО</a></li>
                     <li><a class="dropdown-item" href="{% url 'delivery_report' %}">Отчет по закупкам</a></li>
