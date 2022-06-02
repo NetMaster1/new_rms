@@ -327,7 +327,110 @@ def close_remainder_report(request):
     else:
         return redirect("log")
 
-def sale_report(request):
+def sale_report_per_shop(request):
+    shops = Shop.objects.all()
+    if request.method == "POST":
+        doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+        shop = request.POST["shop"]
+        shop = Shop.objects.get(id=shop)
+        start_date = request.POST["start_date"]
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = request.POST["end_date"]
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = end_date + timedelta(days=1)
+        if RemainderHistory.objects.filter(rho_type=doc_type, shop=shop, created__gt=start_date, created__lt=end_date).exists():
+            queryset =RemainderHistory.objects.filter(rho_type=doc_type, shop=shop, created__gt=start_date, created__lt=end_date)
+        else:
+            messages.error(request, "Продаж в данный период не было")
+            return redirect("sale_report_per_shop")
+        # if Q(start_date) | Q(end_date):
+        #     queryset_list = queryset_list.filter(created__range=[start_date, end_date])
+
+       #============================Calculating Pay_Cards_Remainders per day======================= 
+        product=Product.objects.get(imei='11111')    
+        if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=start_date).exists():
+            rho_before=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=start_date).latest("created")
+            pay_card_remainder_start=rho_before.current_remainder
+        else:
+            pay_card_remainder_start=0
+        if RemainderHistory.objects.filter(shop=shop, imei=product.imei).exists():
+            rho_current=RemainderHistory.objects.filter(shop=shop, imei=product.imei).latest("created")
+            pay_card_remainder_current=rho_current.current_remainder
+        else:
+            pay_card_remainder_current=0
+       #===============================End of Calculating Pay Cards Remainder Module==================================
+
+        #=====================Calculating Incoming Cash per day=============================
+        cash_sum=0
+        if Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date).exists():
+            chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date)
+            for i in chos:
+                cash_sum+=i.cash_in
+    #===========================Calculaing Incoming Card Payments per day=====================
+        card_sum=0
+        if Card.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date).exists():
+            cards=Card.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date)
+            for i in cards:
+                card_sum+=i.sum
+    #====================Calculating Incoming Credit Payments per day=====================
+        credit_sum=0
+        if Credit.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date).exists():
+            credits=Credit.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date)
+            for i in credits:
+                credit_sum+=i.sum
+
+        array=[]
+        for i in queryset:
+            array.append(i.imei)
+        array = set(array)#eliminating not unique imeis
+        report_id = ReportTempId.objects.create()
+        #calculating total quantity & sub_total per imei per day
+        for i in array:
+            queryset_list=queryset.filter(imei=i)
+            quantity_out=0
+            self_cost=0
+            retail_sum=0
+            for qs in queryset_list:
+                quantity_out+=qs.outgoing_quantity
+                self_cost+=qs.av_price*qs.outgoing_quantity
+                retail_sum+=qs.sub_total
+            product=Product.objects.get(imei=i)
+
+            sale_rep = SaleReport.objects.create(
+                report_id=report_id,
+                product=product.name,
+                category=product.category,
+                quantity=quantity_out,
+                av_sum=self_cost,
+                retail_sum=retail_sum,
+                margin=retail_sum - self_cost
+            )
+        #calculating total sales sum
+        sale_report=SaleReport.objects.filter(report_id=report_id.id).order_by('category').order_by('product')
+        total_sales=0
+        for item in sale_report:
+            total_sales+=item.retail_sum
+
+        else:
+            context = {
+                "sale_report": sale_report,
+                "shops": shops,
+                "total_sales": total_sales,
+                "shop": shop,
+                "pay_card_remainder_start": pay_card_remainder_start,
+                "pay_card_remainder_current": pay_card_remainder_current,
+                "cash_sum": cash_sum,
+                "credit_sum": credit_sum,
+                "card_sum": card_sum,
+            }
+            return render(request, "reports/sale_report_per_shop.html", context)
+    else:
+        context = {
+            "shops": shops,
+        }
+        return render(request, "reports/sale_report_per_shop.html", context)
+
+def sale_report_analytic(request):
     categories = ProductCategory.objects.all()
     products = Product.objects.all()
     shops = Shop.objects.all()
@@ -418,7 +521,7 @@ def sale_report(request):
                 "total_sales": total_sales,
                 "shop": shop
             }
-            return render(request, "reports/sale_report.html", context)
+            return render(request, "reports/sale_report_analytic.html", context)
         else:
             context = {
                 "sale_report": sale_report,
@@ -429,7 +532,7 @@ def sale_report(request):
                 "total_sales": total_sales,
                 "shop": shop
             }
-            return render(request, "reports/sale_report.html", context)
+            return render(request, "reports/sale_report_analytic.html", context)
     else:
         context = {
             "categories": categories,
@@ -437,7 +540,7 @@ def sale_report(request):
             "suppliers": suppliers,
             "users": users,
         }
-        return render(request, "reports/sale_report.html", context)
+        return render(request, "reports/sale_report_analytic.html", context)
 
 def delivery_report(request):
     categories = ProductCategory.objects.all()
