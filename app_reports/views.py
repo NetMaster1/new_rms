@@ -353,13 +353,22 @@ def sale_report_per_shop(request):
             pay_card_remainder_start=rho_before.current_remainder
         else:
             pay_card_remainder_start=0
-        if RemainderHistory.objects.filter(shop=shop, imei=product.imei).exists():
-            rho_current=RemainderHistory.objects.filter(shop=shop, imei=product.imei).latest("created")
-            pay_card_remainder_current=rho_current.current_remainder
+        if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=end_date).exists():
+            rho_latest=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=end_date).latest("created")
+            pay_card_remainder_current=rho_latest.current_remainder
         else:
             pay_card_remainder_current=0
        #===============================End of Calculating Pay Cards Remainder Module==================================
 
+        #================Calculating Cash at the beginning of the day and at the end===========================
+        if Cash.objects.filter(shop=shop, created__lt=start_date).exists():
+            cho=Cash.objects.filter(shop=shop, created__lt=start_date).latest('created')
+            cash_start = cho.current_remainder
+        else:
+            cash_start =0
+        if Cash.objects.filter(shop=shop, created__lt=end_date).exists():
+            cho_latest= Cash.objects.filter(shop=shop, created__lt=end_date).latest('created')
+            cash_end=cho_latest.current_remainder
         #=====================Calculating Incoming Cash per day=============================
         cash_sum=0
         if Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date).exists():
@@ -422,6 +431,8 @@ def sale_report_per_shop(request):
                 "cash_sum": cash_sum,
                 "credit_sum": credit_sum,
                 "card_sum": card_sum,
+                "cash_start": cash_start,
+                "cash_end": cash_end
             }
             return render(request, "reports/sale_report_per_shop.html", context)
     else:
