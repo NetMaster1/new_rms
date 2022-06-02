@@ -140,7 +140,7 @@ def sale_interface (request):
         # idsd=IntegratedDailySaleDoc.objects.get(created=date, shop=shop)
 # #======================Making a List of sales per day==================================
         doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
-        rhos = RemainderHistory.objects.filter(created__date=date, rho_type=doc_type, shop=shop).order_by("-created")
+        rhos = RemainderHistory.objects.filter(created__date=date, rho_type=doc_type, shop=shop).order_by("-category").order_by('name')
         sales_sum=0
         for rho in rhos:
             sales_sum+=rho.sub_total
@@ -1975,15 +1975,14 @@ def delivery_auto(request):
         document_sum = 0
         for i in range(cycle):
             row = df1.iloc[i]#reads each row of the df1 one by one
-            try:
+            if Product.objects.filter(imei=row.Imei).exists():
                 product=Product.objects.get(imei=row.Imei)
-            except Product.DoesNotExist:
+            else:
                 product = Product.objects.create(
+                    name=row.Title,
                     imei=row.Imei, 
-                    category=category, 
-                    name=row.Title
+                    category=category,                   
                 )
-                product = Product.objects.get(imei=row.Imei)
             # checking docs before remainder_history
             if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=document.created).exists():
                 rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=document.created).latest('created')
@@ -2016,7 +2015,10 @@ def delivery_auto(request):
                 av_price_obj = AvPrice.objects.get(imei=product.imei)
                 av_price_obj.current_remainder += int(row.Quantity)
                 av_price_obj.sum += int(row.Quantity) * int(row.Price)
-                av_price_obj.av_price = int(av_price_obj.sum) / int(av_price_obj.current_remainder)
+                if av_price_obj.current_remainder > 0:
+                    av_price_obj.av_price = int(av_price_obj.sum) / int(av_price_obj.current_remainder)
+                else:
+                    av_price_obj.av_price=int(row.Price)
                 av_price_obj.save()
             else:
                 av_price_obj = AvPrice.objects.create(
@@ -2044,13 +2046,14 @@ def delivery_auto(request):
         document.sum = document_sum
         document.save()
         return redirect("log")
-    context = {
-        "shops": shops,
-        'shop_default': shop_default,
-        "suppliers": suppliers, 
-        "categories": categories,
-        }
-    return render(request, "documents/delivery_auto.html", context)
+    else:
+        context = {
+            "shops": shops,
+            'shop_default': shop_default,
+            "suppliers": suppliers, 
+            "categories": categories,
+            }
+        return render(request, "documents/delivery_auto.html", context)
 
 def identifier_delivery(request):
     identifier = Identifier.objects.create()

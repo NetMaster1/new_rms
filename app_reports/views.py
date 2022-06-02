@@ -335,7 +335,7 @@ def sale_report(request):
     users = User.objects.all()
     if request.method == "POST":
         doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
-        queryset = RemainderHistory.objects.filter(rho_type=doc_type).order_by("name")
+        queryset = RemainderHistory.objects.filter(rho_type=doc_type)
         sum = 0
         # category = request.POST["category"]
         category = request.POST.get("category", False)
@@ -403,20 +403,33 @@ def sale_report(request):
                 margin=retail_sum - self_cost
             )
         #calculating total sales sum
-        sale_report=SaleReport.objects.filter(report_id=report_id.id)
+        sale_report=SaleReport.objects.filter(report_id=report_id.id).order_by('product')
         total_sales=0
         for item in sale_report:
             total_sales+=item.retail_sum
 
-        context = {
-            "sale_report": sale_report,
-            "categories": categories,
-            "shops": shops,
-            "suppliers": suppliers,
-            "users": users,
-            "total_sales": total_sales,
-        }
-        return render(request, "reports/sale_report.html", context)
+        if shop:
+            context = {
+                "sale_report": sale_report,
+                "categories": categories,
+                "shops": shops,
+                "suppliers": suppliers,
+                "users": users,
+                "total_sales": total_sales,
+                "shop": shop
+            }
+            return render(request, "reports/sale_report.html", context)
+        else:
+            context = {
+                "sale_report": sale_report,
+                "categories": categories,
+                "shops": shops,
+                "suppliers": suppliers,
+                "users": users,
+                "total_sales": total_sales,
+                "shop": shop
+            }
+            return render(request, "reports/sale_report.html", context)
     else:
         context = {
             "categories": categories,
