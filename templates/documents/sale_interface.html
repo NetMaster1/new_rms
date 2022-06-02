@@ -55,7 +55,7 @@
         <!-- ==============================Modal Trigger================== -->
         <div class="col-3">
             <button type="button" class="btn btn-sm btn-outline-dark btn_modal">
-                Просмотреть продажи за день
+                Продажи за день по торговой точке
             </button>
         </div>
         <!-- ============================End of Modal Trigger========================= -->
@@ -73,8 +73,9 @@
                     <div class="col-3">{{rho.name}}</div>
                     <div class="col-3">{{rho.imei}}</div>
                     <div class="col-1">{{rho.outgoing_quantity}}</div>
-                    <div class="col-2">{{rho.retail_price}}</div>
-                    <div class="col-2">{{rho.sub_total}}</div>
+                    <div class="col-1">{{rho.retail_price}}</div>
+                    <div class="col-1">{{rho.sub_total}}</div>
+                    <div class="col-2">{{rho.user}}</div>
                 </div>
                 {% endfor %}      
                 </div>
