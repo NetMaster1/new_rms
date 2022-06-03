@@ -118,7 +118,7 @@ class SaleReport (models.Model):
 class PayCardReport (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     shop = models.CharField(max_length=50, null=True)
-    created = models.CharField(max_length=50, null=True)
+    created = models.DateTimeField(auto_now_add=True)
     product = models.CharField(max_length=50, null=True)
     pre_remainder = models.IntegerField(default=0)
     incoming_quantity = models.IntegerField(default=0)
