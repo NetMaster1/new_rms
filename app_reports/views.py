@@ -1119,27 +1119,29 @@ def daily_pay_card_rep_per_shop (request):
 def daily_pay_card_rep_general(request):
     shops = Shop.objects.all()
     if request.method == "POST":
-        date = request.POST.get("date", False)
-        if date:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            date = datetime.datetime.strptime(date, "%Y-%m-%d")
-        else:
-            date = datetime.date.today()
-        tdelta = datetime.timedelta(days=1)
-        next_date = date + tdelta
-        print(date)
-        print(next_date)
-        dateTime = date.strftime("%Y-%m-%d")
-        product = Product.objects.get(imei=2626)
+        start_date = request.POST["start_date"]
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = request.POST["end_date"]
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = end_date + timedelta(days=1)
+
+
+        product = Product.objects.get(imei=11111)
         report_id = ReportTempId.objects.create()
         # ========================================================
         for shop in shops:
-            if RemainderHistory.objects.filter(
-                imei=product.imei, created__date=date, shop=shop
-            ).exists():
-                rhos = RemainderHistory.objects.filter(
-                    imei=product.imei, created__date=date, shop=shop
-                )
+            if RemainderHistory.objects.filter(imei=product.imei, created__lt=start_date, shop=shop).exists():
+                rho_latest = RemainderHistory.objects.filter(imei=product.imei, created__lt=start_date, shop=shop).latest('created')
+                pre_remainder=rho_latest.current_remainder
+            else:
+                pre_remainder=0
+            if RemainderHistory.objects.filter(imei=product.imei, created__lt=end_date, shop=shop).exists():
+                rho_last = RemainderHistory.objects.filter(imei=product.imei, created__lt=end_date, shop=shop).latest('created')
+                current_remainder=rho_last.current_remainder
+            else:
+                current_remainder=0
+            if RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__gt=start_date, created__lt=end_date).exists():
+                rhos = RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__gt=start_date, created__lt=end_date)
                 incoming_sum = 0
                 outgoing_sum = 0
                 for rho in rhos:
@@ -1148,34 +1150,10 @@ def daily_pay_card_rep_general(request):
             else:
                 incoming_sum = 0
                 outgoing_sum = 0
-            # =======================================================
-            if RemainderHistory.objects.filter(
-                imei=product.imei, created__lt=date, shop=shop
-            ).exists():
-                rho = RemainderHistory.objects.filter(
-                    imei=product.imei, created__lt=date, shop=shop
-                ).latest("created")
-                pre_remainder = rho.current_remainder
-            else:
-                pre_remainder = 0
-            # ==========================================================================
-            if RemainderHistory.objects.filter(
-                imei=product.imei, created__lt=next_date, shop=shop
-            ).exists():
-                rhos = RemainderHistory.objects.filter(
-                    imei=product.imei, created__lt=next_date, shop=shop
-                )
-                rho = RemainderHistory.objects.filter(
-                    imei=product.imei, created__lt=next_date, shop=shop
-                ).latest("created")
-                current_remainder = rho.current_remainder
-            else:
-                current_remainder = 0
             # =========================================================
             pay_card_rep = PayCardReport.objects.create(
                 report_id=report_id,
                 shop=shop,
-                created=dateTime,
                 product=product,
                 pre_remainder=pre_remainder,
                 incoming_quantity=incoming_sum,
@@ -1186,6 +1164,7 @@ def daily_pay_card_rep_general(request):
         data = pd.DataFrame(qs)
         data = data.drop("report_id_id", 1)  # deleting 'report_id' column
         data = data.drop("product", 1)  # deleting 'report_id' column
+        data = data.drop("created", 1)  # deleting 'report_id' column
         data.set_index("id", inplace=True)
         data.set_index("shop", inplace=True)  # sets column as titles for rows & deletes
         data = data.T  # transposing the dataframe
