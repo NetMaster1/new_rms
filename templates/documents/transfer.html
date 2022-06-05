@@ -49,7 +49,7 @@
                 </div> -->
 
                 <div class="col-3">
-                    <input type="submit" value="Ввести IMEI" class="btn btn-block btn-outline-dark">
+                    <input type="submit" value="Ввести IMEI" class="btn btn-block btn-outline-dark" id="imei_button">
                 </div>
             </div>
         </form>
@@ -72,7 +72,6 @@
                     </div>
                 </div>
        
-
                 <div class="form-row">
                     <div class="col-3">
                         <label for="shop"><h5>Фирма отправитель</h5></label>
@@ -86,7 +85,6 @@
                         </select>
                     </div>
                 </div>
-
 
                 <div class="form-row">
                     <div class="col-3">
@@ -193,6 +191,12 @@
     const buttons = document.querySelectorAll('.clear_storage');
     const save_button = document.querySelector('#save_button');
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
+    //=======================
+    const check_imei = document.querySelector('#check_imei');
+
+    //==================== Returning cursor back to input field========================
+   
+
 
     //const val= typeof quantities
 
@@ -283,7 +287,7 @@
             choice = sessionStorage.getItem('shop_receiver');
             shop_receiver.value = choice
         }
-
+        check_imei.select(); 
     })
 
     //updating session storage on pushing 'Delete line button'
@@ -293,7 +297,6 @@
             sessionStorage.removeItem(imeis[i].value)
         })
     };
-
 
     //clearing session storage on pushing 'Submit' & 'Close without save' buttons
     //===========================================================================
