@@ -2622,30 +2622,31 @@ def check_transfer(request, identifier_id):
         if Product.objects.filter(imei=imei).exists():
             product = Product.objects.get(imei=imei)
             if Register.objects.filter(identifier=identifier, product=product).exists():
-                register = Register.objects.get(identifier=identifier, product=product)
-                register.quantity += 1
-                if register.price:
-                    register.sub_total=  register.quantity *register.price
-                register.save()
+               
+                messages.error(request,"Вы уже ввели данное наименование. Запишите нужно кол-во в списке ниже",)
                 return redirect("transfer", identifier.id)
             else:
-                register = Register.objects.create(
-                    product=product,
-                    identifier=identifier,
-                    quantity=1,
-                )
-            # if request.user in users:
-            #     shop_receiver=request.session['session_shop']
-            #     shop_receiver=Shop.objects.get(id=shop_receiver)
-            #     if RemainderCurrent.objects.filter(imei=imei, shop=shop_receiver).exists():
-            #         remainder_current = RemainderCurrent.objects.get(imei=imei, shop=shop_receiver)
-            #         register.price=remainder_current.retail_price        
-            #     else:
-            #         register.price=0
-            #     register.sub_total = register.quantity * register.price
-            #     register.save()
-            #     return redirect("transfer", identifier.id)
-            return redirect ("transfer", identifier.id)
+                if product.category.name == 'Сим_карты':   
+                    if AvPrice.objects.filter(imei=product.imei).exists():
+                        av_price=AvPrice.objects.get(imei=product.imei)
+                        register = Register.objects.create(
+                            product=product,
+                            identifier=identifier,
+                            quantity=1,
+                            price=av_price.av_price,
+                            sub_total=av_price.av_price
+                        )
+                    else:
+                        messages.error(request,"Поступление для данного наименования не было создано. Соответственно av_price отсутствует",)
+                        return redirect("transfer", identifier.id)
+                else:
+                    print(product.category)
+                    register = Register.objects.create(
+                        product=product,
+                        identifier=identifier,
+                        quantity=1,
+                    )
+                return redirect ("transfer", identifier.id)
         else:
             messages.error(request, "Данное наименование отсутствует в базе данных")
             return redirect("transfer", identifier.id)
