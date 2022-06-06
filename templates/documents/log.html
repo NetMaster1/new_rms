@@ -3,6 +3,8 @@
 
 <!-- <div class="hide"> -->
 
+
+
 <div class="container">
     <!-- <div class="page-location"> -->
 
@@ -295,4 +297,13 @@
 
 
 </div>
+
+<script>
+    const noContext = document.getElementById('container');
+
+    noContext.addEventListener('contextmenu', e => {
+            e.preventDefault();
+        });
+
+</script>
 {% endblock %}

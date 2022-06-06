@@ -166,7 +166,6 @@
     const save_button = document.querySelector('#save_button');
 
 
-
     btn_modal.addEventListener('click', openModal)
     btn_close.addEventListener('click', closeModal)
 
@@ -184,7 +183,6 @@
         choice = shop.value;
         sessionStorage.setItem('shop', choice);
     })
-
 
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')
@@ -262,6 +260,7 @@
         }
     })
 
+
     //clearing session storage on pushing 'Submit' & 'Close without save' buttons
     //===========================================================================
     for (let button of buttons) {
@@ -274,6 +273,7 @@
     save_button.addEventListener('submit', e => {
         sessionStorage.clear();
     })
+
 
 
     console.log('End of the script')
