@@ -31,7 +31,7 @@
                     {% csrf_token %}
                     <div class="row m-1">
                         <div class="col-4">
-                            <input type="text" class='form-control' id="imei_check" name="imei_check" maxlength='50'
+                            <input type="text" class='form-control' id="check_imei" name="imei_check" maxlength='50'
                                 required placeholder="Введите IMEI">
                         </div>
                         <div class="col-1">
@@ -223,6 +223,7 @@
     const buttons = document.querySelectorAll('.clear_storage');
     const save_button = document.querySelector('#save_button');
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
+    const check_imei = document.querySelector('#check_imei');
 
     //const val= typeof quantities
 
@@ -313,7 +314,7 @@
             choice = sessionStorage.getItem('shop_receiver');
             shop_receiver.value = choice
         }
-
+        check_imei.select(); 
     })
 
     //updating session storage on pushing 'Delete line button'

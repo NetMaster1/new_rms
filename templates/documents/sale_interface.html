@@ -278,12 +278,8 @@
             {% endif %}
 
             {% elif document.title.name == 'Перемещение ТМЦ' %}
-            {% if document.posted == True %}
-            <div class="col-2">C {{document.remainderhistory_set.first.shop}} на
-                {{document.remainderhistory_set.last.shop}} </div>
-            {% else %}
-            <div class="col-2">{{document.shop_sender}} на {{document.shop_receiver}} </div>
-            {% endif %}
+            <div class="col-2">C {{document.shop_sender}} на {{document.shop_receiver}} </div>
+           
 
             {% elif document.title.name == 'Возврат ТМЦ' %}
             {% if document.posted == True %}
