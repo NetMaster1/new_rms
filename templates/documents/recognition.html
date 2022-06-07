@@ -96,10 +96,10 @@
                                                 </select>
                                                 {% else %}
                                                 <select name="category" id="category" class='form-control' required>
-                                                    <option value="">Выберите категорию</option>
-                                                    {% for category in categories %}
+                                                    <option value="{{sim_category.id}}">{{sim_category}}</option>
+                                                    <!-- {% for category in categories %}
                                                     <option value="{{category.id}}">{{category.name}}</option>
-                                                    {% endfor %}
+                                                    {% endfor %} -->
                                                 </select>
                                                 {% endif %}
                                                 {% endfor %}
