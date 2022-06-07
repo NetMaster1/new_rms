@@ -3432,6 +3432,7 @@ def check_recognition_unposted (request, document_id):
 def recognition(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     categories = ProductCategory.objects.all()
+    sim_category=ProductCategory.objects.get(name="Сим_карты")
     shops = Shop.objects.all()
     registers = Register.objects.filter(identifier=identifier).order_by("created")
     numbers = registers.count()
@@ -3443,6 +3444,7 @@ def recognition(request, identifier_id):
         "categories": categories,
         "shops": shops,
         "registers": registers,
+        "sim_category": sim_category,
     }
     return render(request, "documents/recognition.html", context)
 

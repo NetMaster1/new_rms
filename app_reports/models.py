@@ -105,7 +105,7 @@ class MonthlyBonus (models.Model):
 
 class SaleReport (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
-    category = models.CharField(max_length=50, null=True)#this field is needed to place SaleReports ordered by Category
+    #category = models.CharField(max_length=50, null=True)#this field is needed to place SaleReports ordered by Category
     product = models.CharField(max_length=50, null=True)
     av_sum = models.IntegerField(default=0)
     quantity = models.IntegerField(default=0)

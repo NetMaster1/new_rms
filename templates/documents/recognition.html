@@ -86,12 +86,23 @@
                                             <label for="category">Вид ТМЦ</label>
                                         </div>
                                         <div class="col">
+                                            {% for group in request.user.groups.all %}
+                                            {% if group.name == 'admin' %}
                                                 <select name="category" id="category" class='form-control' required>
                                                     <option value="">Выберите категорию</option>
                                                     {% for category in categories %}
                                                     <option value="{{category.id}}">{{category.name}}</option>
                                                     {% endfor %}
                                                 </select>
+                                                {% else %}
+                                                <select name="category" id="category" class='form-control' required>
+                                                    <option value="">Выберите категорию</option>
+                                                    {% for category in categories %}
+                                                    <option value="{{category.id}}">{{category.name}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                {% endif %}
+                                                {% endfor %}
                                             </select>
                                         </div>
                                     </div>
