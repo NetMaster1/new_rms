@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'app_personnel',
     'app_reports',
     'app_finance',
-    'app_error'
+    'app_error',
+    'app_wholesale'
   
 ]
 
@@ -141,6 +142,11 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'general/static')
 ]
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
+
 
 SESSION_COOKIE_AGE = 43200
 
