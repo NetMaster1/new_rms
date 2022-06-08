@@ -68,23 +68,31 @@ def log(request):
         shops = Shop.objects.all()
         if request.method == "POST":
             #shop = request.POST['shop']
+            #if shop.value in request.GET:
+            #shop = request.GET['shop']
             shop = request.POST.get("shop", False)
             #start_date = request.POST["start_date"]
             start_date = request.POST.get("start_date", False)
+            #if start_date in request.GET:
+            #start_date = request.GET['start_date']
             if start_date:
                 start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-            #end_date = request.POST["end_date"]
+            #if end_date in request.GET:
+            #end_date = request.GET["end_date"]
             end_date = request.POST.get("end_date", False)
             if end_date:
                 end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
                 end_date = end_date + timedelta (days=1)
+            #if user in request.GET:
             #user = request.POST["user"]
             user = request.POST.get("user", False)
+            #if supplier in request.GET:
             #supplier = request.POST["supplier"]
             supplier = request.POST.get("supplier", False)
-            #doc_type = request.POST["doc_type"]
+            #if doc_type in request.GET:
+            #doc_type = request.GET["doc_type"]
             doc_type = request.POST.get("doc_type", False)
-            # queryset_list=Document.objects.all()
+            queryset_list=Document.objects.all()
             if start_date:
                 queryset_list = queryset_list.filter(created__gte=start_date)
             if end_date:
@@ -98,33 +106,34 @@ def log(request):
             if user:
                 queryset_list = queryset_list.filter(user=user)
             if supplier:
-                doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
-                queryset_list = queryset_list.filter(title=doc_type)
                 supplier = Supplier.objects.get(id=supplier)
-                new_list = []
-                for item in queryset_list:
-                    if item.remainderhistory_set.first().supplier == supplier:
-                        new_list.append(item)
-                queryset_list = new_list
-            
+                doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
+              
+                
             context = {
                 "queryset_list": queryset_list,
                 "doc_types": doc_types,
                 "users": users,
                 "suppliers": suppliers,
                 "shops": shops,
+
             }
             return render(request, "documents/log.html", context)
 
         else:
-            context = {
-                "queryset_list": paged_queryset_list,
-                "doc_types": doc_types,
-                "users": users,
-                "suppliers": suppliers,
-                "shops": shops,
-            }
-            return render(request, "documents/log.html", context)
+            if 'app_productlog' in request.path:
+
+                context = {
+                    "queryset_list": queryset_list,
+                    "doc_types": doc_types,
+                    "users": users,
+                    "suppliers": suppliers,
+                    "shops": shops,
+
+                }
+                return render(request, "documents/log.html", context)
+       
+    
     else:
         auth.logout(request)
         return redirect("login")
@@ -1972,7 +1981,6 @@ def delivery_auto(request):
             messages.error(request, "Введите категорию.")
             return redirect("delivery_auto")
         file = request.FILES["file_name"]
-        
         # print(file)
         # df1 = pandas.read_excel('Delivery_21_06_21.xlsx')
         df1 = pandas.read_excel(file)
@@ -1988,6 +1996,8 @@ def delivery_auto(request):
         document_sum = 0
         for i in range(cycle):
             row = df1.iloc[i]#reads each row of the df1 one by one
+            if '/' in row.Imei:
+                row.Imei=row.Imei.replace('/', '_')
             if Product.objects.filter(imei=row.Imei).exists():
                 product=Product.objects.get(imei=row.Imei)
             else:
@@ -2182,6 +2192,8 @@ def enter_new_product_from_unposted(request, document_id):
     if request.method == "POST":
         name = request.POST["name"]
         imei = request.POST["imei"]
+        if '/' in imei:
+            imei=imei.replace('/', '_')
         category = request.POST["category"]
         category = ProductCategory.objects.get(id=category)
 
@@ -3384,6 +3396,8 @@ def enter_new_product_recognition(request, identifier_id):
     if request.method == "POST":
         name = request.POST["name"]
         imei = request.POST["imei"]
+        if '/' in imei:
+            imei=imei.replace('/', '_')
         category = request.POST["category"]
         category = ProductCategory.objects.get(id=category)
         if Product.objects.filter(imei=imei).exists():
@@ -3433,6 +3447,9 @@ def recognition(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     categories = ProductCategory.objects.all()
     sim_category=ProductCategory.objects.get(name="Сим_карты")
+    service_category=ProductCategory.objects.get(name='Услуги')
+    wink_category=ProductCategory.objects.get(name='Подписки')
+    insurance_category=ProductCategory.objects.get(name='Страховки')
     shops = Shop.objects.all()
     registers = Register.objects.filter(identifier=identifier).order_by("created")
     numbers = registers.count()
@@ -3445,6 +3462,9 @@ def recognition(request, identifier_id):
         "shops": shops,
         "registers": registers,
         "sim_category": sim_category,
+        'wink_category': wink_category,
+        "service_category": service_category,
+        "insurance_category": insurance_category,
     }
     return render(request, "documents/recognition.html", context)
 
