@@ -4,6 +4,8 @@ from . models import Product, ProductCategory
 from app_product.models import RemainderHistory, RemainderCurrent
 from app_clients.models import Customer
 from django.contrib import messages
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+
 
 # Create your views here.
 def reference (request):
@@ -31,15 +33,27 @@ def product_list (request):
                 return redirect ('products')
         else:
             if category:
+           
                 category=ProductCategory.objects.get(id=category)
-                products=Product.objects.filter(category=category)
+                queryset_list=Product.objects.filter(category=category)
+                numbers = queryset_list.count()
+                for item, i in zip(queryset_list, range(numbers)):
+                    item.enumerator = i + 1
+                    item.save()
+
+                #============paginator module=================
+                paginator = Paginator(queryset_list, 50)
+                page = request.GET.get('page')
+                paged_queryset_list = paginator.get_page(page)
+                #=============end of paginator module===============
                 context = {
+                    'queryset_list':  paged_queryset_list,
                     'categories': categories,
-                    'products': products
+                    'products': products, 
                 }
                 return render (request, 'reference/products.html', context )
     context={
-        'products': products,
+        "products": products,
         'categories': categories
     }
     return render (request, 'reference/products.html', context )

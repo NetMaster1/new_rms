@@ -7,20 +7,19 @@
 
 <div class="container">
     <!-- <div class="page-location"> -->
-
     <div class="log border rounded mt-1" style="background-color:rgb(215, 215, 215); height:11Vh">
-        <form action="{% url 'log' %}" method="POST">
+        <form action="{% url 'log' %}" method ="POST">
             {% csrf_token %}
             <div class="row form-row">
                 <div class="col-2">
                     <input type="date" id='start_date' name="start_date" class='form-control'>
                 </div>
                 <div class="col-2">
-                    <input type="date" id='end_date' name="end_date" class='form-control' >
+                    <input type="date" id='end_date' name="end_date" class='form-control'value="{{values.end_date}}" >
                 </div>
                 <div class="col-2">
-                    <select name="doc_type" id="doc_type" class='form-control' >
-                        <option value="">Выберите тип документ</option>
+                    <select name="doc_type" id="doc_type" class='form-control'>
+                        <option value="{{values.doc_type}}">Выберите тип документ</option>
                         {% for doc_type in doc_types %}
                         <option value="{{doc_type.id}}">{{doc_type.name}}</option>
                         {% endfor %}
@@ -34,14 +33,17 @@
                         {% endfor %}
                     </select>
                 </div>
+
+
                 <div class="col-2">
                     <select name="shop" id="shop" class='form-control'>
-                        <option value="">Выберите торговую точку</option>
+                        <option value="">Выберите точку</option>
                         {% for shop in shops %}
                         <option value="{{shop.id}}">{{shop.name}}</option>
                         {% endfor %}
                     </select>
                 </div>
+                
                 <div class="col-2">
                     <select name="user" id="user" class='form-control'>
                         <option value="">Выберите автора</option>
@@ -56,12 +58,14 @@
                     <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark form-control">
                 </div>
                 <div class="col-2">
-                    <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark form-control">
+                    
+                    <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark form-control" id="reset_button">
                 </div>
                 <div class="col-2">
+                <div class="a"></div>
                     <a href="{% url 'close_log' %}">
                         <input type="button" value="Стандартный журнал"
-                            class="btn btn-sm btn-block btn-outline-dark form-control">
+                            class="btn btn-sm btn-block btn-outline-dark form-control" id ="standard_log_button">
                     </a>
                 </div>
             </div>
@@ -294,16 +298,99 @@
     </div>
     <!-- ==============================End of pagination module============================ -->
 
-
-
 </div>
 
 <script>
-    const noContext = document.getElementById('container');
+  
+    const start_date = document.querySelector('#start_date');
+    const end_date=document.querySelector ('#end_date');
+    const doc_type=document.querySelector ('#doc_type');
+    const supplier=document.querySelector ('#supplier');
+    const shop=document.querySelector ('#shop');
+    const user=document.querySelector ('#user');
+    const reset_button=document.querySelector ('#reset_button');
+    const standard_log_button=document.querySelector ('#standard_log_button');
 
-    noContext.addEventListener('contextmenu', e => {
-            e.preventDefault();
-        });
+     reset_button.addEventListener('click', e => {
+            sessionStorage.clear();
+        })
+
+    standard_log_button.addEventListener('click', e => {
+            sessionStorage.clear();
+        })
+
+    start_date.addEventListener('change', e => {
+            choice = start_date.value;
+            sessionStorage.setItem('start_date', choice);
+        })
+
+    end_date.addEventListener('change', e => {
+            choice = end_date.value;
+            sessionStorage.setItem('end_date', choice);
+        })
+    shop.addEventListener('change', e => {
+            choice = shop.value;
+            sessionStorage.setItem('shop', choice);
+        })
+    
+    supplier.addEventListener('change', e => {
+            choice = supplier.value;
+            sessionStorage.setItem('supplier', choice);
+        })
+
+    doc_type.addEventListener('change', e => {
+            choice = doc_type.value;
+            sessionStorage.setItem('doc_type', choice);
+        })
+    
+    user.addEventListener('change', e => {
+            choice = user.value;
+            sessionStorage.setItem('user', choice);
+        })
+    
+
+    document.addEventListener('DOMContentLoaded', e => {
+        choice = sessionStorage.getItem('start_date');
+        start_date.value = choice;
+            })
+     document.addEventListener('DOMContentLoaded', e => {
+            choice = sessionStorage.getItem('end_date');
+            end_date.value = choice;
+        })
+     document.addEventListener('DOMContentLoaded', e => {
+            if (sessionStorage.getItem('shop') === null) {
+                shop.value = "Выберите точку"
+         }
+            choice = sessionStorage.getItem('shop');
+            shop.value = choice;
+        })
+     document.addEventListener('DOMContentLoaded', e => {
+            if (sessionStorage.getItem('supplier') === null) {
+             supplier.value= "Выберите поставщика"
+         }
+            choice = sessionStorage.getItem('supplier');
+            supplier.value = choice;
+        })
+
+    document.addEventListener('DOMContentLoaded', e => {
+            if (sessionStorage.getItem('doc_type') === null) {
+                doc_type.value = 'Выберите тип документа'
+            }
+            choice = sessionStorage.getItem('doc_type');
+            doc_type.value = choice;
+        })
+
+    document.addEventListener('DOMContentLoaded', e => {
+            if (sessionStorage.getItem('user') === null) {
+                console.log('No user choice')
+            }
+            choice = sessionStorage.getItem('user');
+            user.value = choice;
+        })
+
+
+    
 
 </script>
+
 {% endblock %}
