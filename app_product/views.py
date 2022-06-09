@@ -92,7 +92,6 @@ def log(request):
             #if doc_type in request.GET:
             #doc_type = request.GET["doc_type"]
             doc_type = request.POST.get("doc_type", False)
-            queryset_list=Document.objects.all()
             if start_date:
                 queryset_list = queryset_list.filter(created__gte=start_date)
             if end_date:
@@ -111,7 +110,7 @@ def log(request):
               
                 
             context = {
-                "queryset_list": paged_queryset_list,
+                "queryset_list": queryset_list,
                 "doc_types": doc_types,
                 "users": users,
                 "suppliers": suppliers,
