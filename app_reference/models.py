@@ -55,7 +55,7 @@ class Product (models.Model):
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=50)
     imei = models.CharField(max_length=50, unique=True)
-    #img = models.ImageField(upload_to='images', blank=True)
+    img = models.ImageField(upload_to='images', blank=True)
 
     class Meta:
         # ordering = ('created',)  # sorting by date
