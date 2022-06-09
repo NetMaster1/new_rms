@@ -51,7 +51,7 @@ class DocumentType (models.Model):
 
 class Product (models.Model):
     created = models.DateTimeField(auto_now=True)
-    emumerator = models.IntegerField( null=True)
+    #emumerator = models.IntegerField( null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=50)
     imei = models.CharField(max_length=50, unique=True)
