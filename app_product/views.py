@@ -111,7 +111,7 @@ def log(request):
               
                 
             context = {
-                "queryset_list": queryset_list,
+                "queryset_list": paged_queryset_list,
                 "doc_types": doc_types,
                 "users": users,
                 "suppliers": suppliers,
@@ -124,7 +124,7 @@ def log(request):
             if 'app_productlog' in request.path:
 
                 context = {
-                    "queryset_list": queryset_list,
+                    "queryset_list": paged_queryset_list,
                     "doc_types": doc_types,
                     "users": users,
                     "suppliers": suppliers,
