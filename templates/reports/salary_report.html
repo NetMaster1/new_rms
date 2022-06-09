@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+            <div class="border rounded p-3">
+    <!-- =====================Alert Messages Module=================== -->
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info" role="alert">
+            <!-- <button class="close" data-dismiss="alert">
+                                            <small><sup>x</sup></small>
+                                        </button> -->
+            {{ message }}
+        </div>
+        {% endfor%}
+        {% endif%}
+    </div>
+    <!-- ===================End of Alert Messages Module================ -->
+        <h5>Ведомость по выплате заработной платы</h5>
+        </div>
+
+        <div class="border rounded p-3">
+        <div class="row form-row m-auto">
+            <div class="col-3">
+        <form action="{% url 'salary_report' %}" method="POST">
+            {% csrf_token %}
+        
+            <div class="row form-row m-auto">
+                    <input type="date" id='start_date' class='form-control' name="start_date" required>
+               
+                    <input type="date" id='end_date' class='form-control' name="end_date" required>
+                </div>
+            </div>
+        
+
+            <div class="col-2">
+                <div class="row">
+                <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                </div>
+                <div class="row">
+                <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                </div>
+                <div class="row">
+                <a href="{% url 'close_report' %}"class="btn btn-sm btn-block btn-outline-dark" >
+                  Закрыть без сохранения
+                </a>
+                </div>
+                <div class="row">
+                <a href="{% url 'save_in_excel' %}"class="btn btn-sm btn-block btn-outline-dark" >
+                    Сохранить в Excel
+                </a>
+                </div>
+            </div>
+        </form>
+    </div>
+    </div>
+
+        <div class="border rounded p-3">
+            <div class="row form-row m-auto">
+                {% for i in arr %}
+                {% for key, value in i.items %}
+                <div class="row">
+                    <div class="col-2">{{key}}:</div>
+                    <div class="col-2">{{value}}</div>
+                </div>
+                
+                {%endfor%}
+                {% endfor %}
+            </div>
+        </div>
+
+</div>
+</div>
+</div>
+
+
+
+{% endblock %}

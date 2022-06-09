@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Cумма кэшбэка возможная к списанию</h5>
+                <h5>{{cashback_off}} руб.</h5>          
+            </div>
+
+        <div class="modal-body">
+
+                <form action="{% url 'sec_code_confirm' identifier.id client.id %}" method="POST"   class='form-inline'>
+                    {% csrf_token %}
+                    <input type="text" id="code_string" name="code_string" value="{{code_string}}" hidden><br>
+                    <!-- <label for="code"><h5>Введите код:</h5></label> -->
+                    <input type="text" id="code" name="code" class='form-control' placeholder="Введите код">
+
+    
+                    <div class="row m-auto mt-2">
+                        <input type="submit" value="Отправить код" class="btn btn-sm btn-outline-dark ">
+                    </div>
+                </form>
+      
+         
+            <div class="row m-auto mt-2 mb-2">
+                <a href="{% url 'close_without_save' identifier.id %}" class="btn btn-sm btn-outline-dark">
+                    Закрыть без сохранения
+                </a>
+            </div>
+        </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,368 @@
+{% extends 'base.html' %}
+{% block content %}
+<body oncontextmenu="return false">
+<div class="container">
+    <div class="log border m-auto mt-1 rounded" style="background-color:rgb(215, 215, 215); height: 13rem">
+        <div class="row">
+            <div class="col-2">
+                <h5> {{date_1}}</h5>
+            </div>
+            <div class="col">
+                <h5>Остаток в кассе на утро:</h5>
+            </div>
+            <div class="col">
+                <h5 style="color: red">{{cash_remainder_start}} руб.</h5>
+            </div>
+            <div class="col">
+                <h5>Текущий остаток в кассе:</h5>
+            </div>
+            <div class="col">
+                <h5 style="color: red">{{current_cash_remainder}} руб.</h5>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-2">
+            </div>
+            <div class="col">
+                <h5>Остаток КЭО на утро:</h5>
+            </div>
+            <div class="col">
+                <h5>{{pay_card_remainder_start}} шт. </h5>
+            </div>
+            <div class="col">
+                <h5>Текущий остаток КЭО:</h5>
+            </div>
+            <div class="col">
+                <h5>{{pay_card_remainder_current}} шт.</h5>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-3">
+                <h5>Общая выручка за день:</h5>
+            </div>
+            <div class="col-2">{{sales_sum}} руб.</div>
+        </div>
+        <div class="row">
+            <div class="col-3">
+                <h5>Оплачено наличными:</h5>
+            </div>
+            <div class="col-1">{{cash_sum}} руб.</div>
+            <div class="col-3"></div>
+        
+
+        <!-- ==============================Modal Trigger================== -->
+        <div class="col-3">
+            <button type="button" class="btn btn-sm btn-outline-dark btn_modal">
+                Продажи за день по торговой точке
+            </button>
+        </div>
+        <!-- ============================End of Modal Trigger========================= -->
+        <!-- ===========================Modal Body================================= -->
+      
+        <div class="enterSalesModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="whiteSalesModal">Продажи за {{date}}</h5>
+                    <button type="button" class="btn btn-secondary btn_close">Закрыть</button>
+                </div>
+                {% for rho in rhos %}
+                <div class="row m-auto">
+                    <div class="col-1">{{rho.document.id}}</div>
+                    <div class="col-3">{{rho.name}}</div>
+                    <div class="col-3">{{rho.imei}}</div>
+                    <div class="col-1">{{rho.outgoing_quantity}}</div>
+                    <div class="col-1">{{rho.retail_price}}</div>
+                    <div class="col-1">{{rho.sub_total}}</div>
+                    <div class="col-2">{{rho.user}}</div>
+                </div>
+                {% endfor %}      
+                </div>
+            </div>
+        </div>
+    
+    <!-- =================================End of Modal Body======================================== -->
+
+        
+
+        <div class="row">
+            <div class="col-3">
+                <h5>Оплачено картой:</h5>
+            </div>
+            <div class="col-2">{{card_sum}} руб.</div>
+        </div>
+        <div class="row">
+            <div class="col-3">
+                <h5>Оплачено в кредит:</h5>
+            </div>
+            <div class="col-2">{{credit_sum}} руб.</div>
+        </div>
+    </div>
+        
+
+  
+ 
+
+    <div class="log border m-auto mt-1 rounded p-3" style="background-color:rgb(215, 215, 215); height: 6Vh">
+        <div class="row">
+            <div class="col-1">
+                <h5>Статус</h5>
+            </div>
+            <div class="col-2">
+                <h5>Дата/Время</h5>
+            </div>
+            <div class="col-2">
+                <h5>Документ</h5>
+            </div>
+            <div class="col-2">
+                <h5>Сумма</h5>
+            </div>
+            <div class="col-2">
+                <h5>Доп. инфо</h5>
+            </div>
+            <div class="col-2">
+                <h5>Автор</h5>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="log border rounded mt-0 mb-2" style=" height: 60vh; overflow: auto;">
+
+        {% for document in queryset_list %}
+        <div class="row mt-1">
+
+
+            <div class="col-1">
+                {% if document.posted == True %}
+                <i class="far fa-check-square"></i>
+                {% else %}
+                <!-- <input type="checkbox" id="post_check" name="post_check" readonly> -->
+                <i class="far fa-square"></i>
+                {% endif %}
+            </div>
+
+            <div class="col-2">
+                {{document.created}}
+            </div>
+
+            <!-- ==============================Document Column================================================== -->
+            {% if document.title.name == 'Поступление ТМЦ' %}
+            {% if document.posted == True %}
+            <div class="col-2"><a href="{% url 'change_delivery_posted' document.id %}">{{document.title}}
+                    #{{document.id}}</a></div>
+            {% else %}
+            <div class="col-2"><a href="{% url 'change_delivery_unposted' document.id %}">{{document.title}}
+                    {{document.id}}</a></div>
+            {% endif %}
+
+            {% elif document.title.name == 'Перемещение ТМЦ' %}
+            {% if document.posted == True %}
+            <div class="col-2"><a href="{% url 'change_transfer_posted' document.id %}">{{document.title}}
+                    {{document.id}}</a></div>
+            {% else %}
+            <div class="col-2"><a href="{% url 'change_transfer_unposted' document.id %}">{{document.title}}
+                    {{document.id}}</a></div>
+            {% endif %}
+
+            {% elif document.title.name == 'Возврат ТМЦ' %}
+            {% if document.posted == True %}
+            <div class="col-2"><a href="{% url 'change_return_posted' document.id %}">{{document.title}}
+                    {{document.id}}</a></div>
+            {% else %}
+            <div class="col-2"><a href="{% url 'change_return_unposted' document.id %}">{{document.title}}
+                    {{document.id}}</a>
+            </div>
+            {% endif %}
+
+            {% elif document.title.name == 'Оприходование ТМЦ' %}
+            {% if document.posted == True %}
+            <div class="col-2"><a href="{% url 'change_recognition_posted' document.id %}">{{document.title}}
+                    {{document.id}}</a></div>
+            {% else %}
+            <div class="col-2"><a href="{% url 'change_recognition_unposted' document.id %}">{{document.title}}
+                    {{document.id}}</a>
+            </div>
+            {% endif %}
+
+            {% elif document.title.name == 'Списание ТМЦ' %}
+            {% if document.posted == True %}
+            <div class="col-2"><a href="{% url 'change_signing_off_posted' document.id %}">{{document.title}}
+                    {{document.id}}</a>
+            </div>
+            {% else %}
+            <div class="col-2"><a href="{% url 'change_signing_off_unposted' document.id %}">{{document.title}}
+                    {{document.id}}</a>
+            </div>
+            {% endif %}
+            {% elif document.title.name == 'ПКО' %}
+            {% if document.posted == True %}
+            <div class="col-2"><a href="{% url 'change_cash_receipt_posted' document.id %}">{{document.title}}
+                    {{document.id}}</a>
+            </div>
+            {% else %}
+            <div class="col-2"><a href="{% url 'change_cash_receipt_unposted' document.id %}"> {{document.title}}
+                    {{document.id}}</a>
+            </div>
+            {% endif %}
+            {% elif document.title.name == 'ПКО' %}
+            {% if document.posted == True %}
+            <div class="col-2"><a href="{% url 'change_cash_off_salary_posted' document.id %}">{{document.title}}
+                    {{document.id}}</a>
+            </div>
+            {% else %}
+            <div class="col-2"><a href="{% url 'change_cash_off_salary_unposted' document.id %}">
+                    {{document.title}}{{document.id}}</a>
+            </div>
+            {% endif %}
+
+            {% elif document.title.name == 'Перемещение денег' %}
+            {% if document.posted == True %}
+            <div class="col-2"><a
+                    href="{% url 'change_cash_movement_posted' document.id %}">{{document.title}}{{document.id}}</a>
+            </div>
+            {% else %}
+            <div class="col-2"><a href="{% url 'change_cash_movement_unposted' document.id %}">
+                    {{document.title}}{{document.id}}</a>
+            </div>
+            {% endif %}
+
+            {% elif document.title.name == 'РКО (хоз.расходы)' %}
+            {% if document.posted == True %}
+            <div class="col-2"><a
+                    href="{% url 'change_cash_off_expenses_posted' document.id %}">{{document.title}}{{document.id}}</a>
+            </div>
+            {% else %}
+            <div class="col-2"><a href="{% url 'change_cash_off_expenses_unposted' document.id %}">
+                    {{document.title}}{{document.id}}</a>
+            </div>
+            {% endif %}
+
+
+            {% elif document.title.name == 'Продажа ТМЦ' %}
+            {% if document.posted == True %}
+            <div class="col-2"><a href="{% url 'change_sale_posted' document.id %}">{{document.title}}
+                    {{document.id}}</a>
+            </div>
+            {%else%}
+            <div class="col-2"><a href="{% url 'change_sale_unposted' document.id %}">{{document.title}}
+                    {{document.id}}</a>
+            </div>
+            {% endif %}
+
+            {% elif document.title.name == 'РКО (зарплата)' %}
+            {% if document.posted == True %}
+            <div class="col-2"><a href="{% url 'change_cash_off_salary_posted' document.id %}">{{document.title}}
+                    {{document.id}}</a>
+            </div>
+            {%else%}
+            <div class="col-2"><a href="{% url 'change_cash_off_salary_unposted' document.id %}">{{document.title}}
+                    {{document.id}}</a>
+            </div>
+            {% endif %}
+
+            {% endif %}
+
+            <!-- ============================Document Sum Column============================================ -->
+            <div class="col-2">
+                {{document.sum}} руб.
+            </div>
+            <!-- =========================Additional Info Column=============================================== -->
+
+            {% if document.title.name == 'Поступление ТМЦ' %}
+            {% if document.posted == True %}
+            <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
+            {% else %}
+            <div class="col-2">{{document.shop_receiver}} </div>
+            {% endif %}
+
+            {% elif document.title.name == 'Перемещение ТМЦ' %}
+            <div class="col-2">C {{document.shop_sender}} на {{document.shop_receiver}} </div>
+           
+
+            {% elif document.title.name == 'Возврат ТМЦ' %}
+            {% if document.posted == True %}
+            <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
+            {% else %}
+            <div class="col-2">{{document.shop_receiver}} </div>
+            {% endif %}
+
+            {% elif document.title.name == 'Оприходование ТМЦ' %}
+            {% if document.posted == True %}
+            <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
+            {% else %}
+            <div class="col-2">{{document.shop_receiver}} </div>
+            {% endif %}
+
+            {% elif document.title.name == 'Списание ТМЦ' %}
+            {% if document.posted == True %}
+            <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
+            {% else %}
+            <div class="col-2">{{document.shop_sender}} </div>
+            {% endif %}
+
+
+            {% elif document.title.name == 'Продажа ТМЦ' %}
+            {% if document.posted == True %}
+            <div class="col-2">{{document.remainderhistory_set.first.shop}} </div>
+            {% else %}
+            <div class="col-2">{{document.shop_sender}} </div>
+            {% endif %}
+
+            {% elif document.title.name == 'Перемещение денег' %}
+            {% if document.posted == True %}
+            <div class="col-2">C {{document.cash_set.first.shop}} на {{document.cash_set.last.shop}} </div>
+            {% else %}
+            <div class="col-2">{{document.shop_sender}} </div>
+            {% endif %}
+
+            {% elif document.title.name == 'РКО (хоз.расходы)' %}
+            {% if document.posted == True %}
+            <div class="col-2">{{document.cash_set.first.shop}} </div>
+            {% else %}
+            <div class="col-2">{{document.shop_sender}} </div>
+            {% endif %}
+
+            {% elif document.title.name == 'РКО (зарплата)' %}
+            {% if document.posted == True %}
+            <div class="col-2">{{document.cash_set.first.shop}} </div>
+            {% else %}
+            <div class="col-2">{{document.shop_sender}} </div>
+            {% endif %}
+
+
+            {% endif %}
+
+            <!-- ===============================Author column===========================================       -->
+            <div class="col-2">{{document.user.first_name}} {{document.user.last_name}}</div>
+        </div>
+        {% endfor %}
+
+
+    </div>
+</div>
+
+<script>
+    
+    console.log('Script works');
+
+    const btn_modal = document.querySelector('.btn_modal');
+    const enterSalesModal = document.querySelector('.enterSalesModal');
+    //const salesModalShadow = document.querySelector('.salesModalShadow')
+    const btn_close = document.querySelector('.btn_close');
+
+    btn_modal.addEventListener('click', openModal)
+    btn_close.addEventListener('click', closeModal)
+
+        function openModal() {
+            enterSalesModal.classList.add('openModal')
+        }
+
+        function closeModal() {
+            enterSalesModal.classList.remove('openModal')
+        }
+
+        console.log('Script works');
+</script>
+{% endblock %}

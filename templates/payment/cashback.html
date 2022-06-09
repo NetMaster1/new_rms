@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-12 border rounded m-auto payment_choice">
+               
+                <div class="row m-auto mt-3">
+                <div class="col-8"><h5>Cумма кэшбэка возможная к списанию</h5></div>
+                <div class="col-4"><h5>{{cashback_off}} руб.</h5></div>   
+                </div>
+                <div class="row m-auto">
+                    <div class="col-8">
+                        <h5>Лицевой счет клиента</h5>
+                    </div>
+                    <div class="col-4">
+                        <h5>{{client.accum_cashback}} руб.</h5>
+                    </div>
+                </div>
+             
+                <div class="row m-auto">
+                    <a href="{% url 'security_code' identifier.id client.id  %}">
+                        <div class="row m-auto p-2">
+                        <input type="button" value="Списать кэшбэк" class="btn btn-outline-dark btn-block">
+                        </div>
+                    </a>
+                </div>
+
+                <div class="row m-auto">
+                    <a href="{% url 'no_cashback_off' identifier.id client.id  %}">
+                        <div class="row m-auto p-2">
+                        <input type="submit" value="Продолжить без списания" class="btn btn-outline-dark btn-block">
+                        </div>
+                    </a>
+                </div>
+
+                <div class="row m-auto">
+                    <a href="{% url 'close_without_save' identifier.id %}">
+                        <div class="row m-auto p-2">
+                        <input type="button" value="Закрыть без сохранения" class="btn btn-block btn-outline-dark">
+                        </div>
+                    </a>
+                </div>
+
+
+                    </div>
+                </div>
+
+</div>
+
+
+        </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}

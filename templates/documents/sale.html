@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<body oncontextmenu="return false"></body>
+
+<div class="hide">
+<div class="container">
+<div class="page_location">
+
+<div class="row m-2 pt-2">
+    <div class="col">
+        <h3>Продажа ТМЦ</h3>
+    </div>
+</div>
+    <!-- =====================Alert Messages Module=================== -->
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info" role="alert">
+            <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+            {{ message }}
+        </div>
+        {% endfor%}
+        {% endif%}
+    </div>
+    <!-- ===================End of Alert Messages Module================ -->
+
+
+<!-- ============================Check availability================================== -->
+<div class="row m-3">
+    <div class="col-9 border rounded p-2 mb-2">
+    <form action="{% url 'check_sale' identifier.id %}" method="POST">
+        {% csrf_token %}
+        <div class="row m-1">
+    
+            <div class="col-3">
+                <div class="row">
+                <input type="text" class='form-control' id="imei" name="imei" maxlength='50' placeholder="Введите IMEI" required>
+                </div>
+                <!-- <div class="row">
+                    {% for group in request.user.groups.all %}
+                    {% if group.name == 'admin' %}
+                    <select name="shop" id="shop" class='form-control' required> -->
+                        <!-- <option selected="false" disabled="disabled">Выберите торговую  точку</option> -->
+                        <!-- <option value="">Выберите торговую точку</option>
+                        {% for shop in shops %}
+                        <option value="{{shop.id}}">{{shop.name}}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                    {% endfor %}
+                </div> -->
+            </div>
+    
+   
+            <div class="col-2">
+                <label for="quantity"><h5>Кол-во:</h5></label>
+            </div>
+            <div class="col-2">
+                <input type="number" class='form-control' id="quantity" name="quantity" value=1 required>
+            </div>
+            <div class="col-3">
+                <input type="submit" value="Ввести IMEI" class="btn btn btn-block btn-outline-dark">
+            </div>
+    </form>
+        </div>
+</div>
+
+
+
+<div class="col-3 border rounded p-2 mb-2" style="text-align: center">
+    <h1>ООО Ритейл</h1>
+</div>
+</div>
+<!-- ===========================End of Check of Availability====================================== -->
+
+<div class="row m-3 border rounded">
+    <div class="col-9 p-2 mb-2">
+        
+                <div class="row ">
+                    <div class="col-1"><label for="number"><h5>#</h5></label></div>
+                    <div class="col-1"><label for="imei"><h5>IMEI</h5></label></div>
+                    <div class="col-2"><label for="name"><h5>Наименование</h5></label></div>
+                    <div class="col-2"><label for="quantity"><h5>Кол-во</h5></label></div>
+                    <div class="col-2"><label for="price"><h5>Цена, руб.</h5></label></div>
+                    <div class="col-2"><label for="sum"><h5>Сумма</h5></label></div>
+                </div>
+
+           {% for register in registers %}
+            <div class="row mr-1">
+                <div class="col-1">
+                    <!-- {{register.number}} -->
+                    <input type="text" class='form-control' id="number" name="number" value='{{register.number}}'readonly>
+                </div>
+                <div class="col-1">
+                    <!-- {{register.product.imei}} -->
+                    <input type="text" class='form-control' id="imri" name="imei" value='{{register.product.imei}}' readonly>
+                </div>
+                <div class="col-2">
+                    <!-- {{register.product.name}} -->
+                    <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}' readonly>
+                </div>
+                <div class="col-2">
+                    <!-- {{register.quantity}} -->
+                    <input type="number" class='form-control' id="quantity" name="quantity" value='{{register.quantity}}' readonly>
+                </div>
+                <div class="col-2">
+                    <!-- {{register.price}} -->
+                    <input type="number" class='form-control' id="price" name="price" value='{{register.price}}' readonly>
+                </div>
+                <div class="col-2">
+                    <!-- {{register.sub_total}} -->
+                    <input type="number" class='form-control' id="sub_total" name="sub_total" value="{{register.sub_total}}" readonly>
+                </div>
+                <div class="col-1">
+                <a href="{% url 'delete_line_sale' register.product.imei identifier.id %}">
+                    <input type="button" value="Удалить" class="btn btn-block btn-outline-dark">
+                </a>
+                </div>
+            </div>
+                {% endfor %}
+
+        <div class="row m-auto mb-2 mt-5 border rounded">
+            <div class="col-3"><h5>Общая сумма чека:</h5></div>
+            <div class="col-2"><h5>{{sum}} руб.</h5> </div>
+        </div>
+    </div>
+<!-- ==============================Menu=================================================== -->
+<div class="col-3 border rounded p-2 mb-2">
+
+    <div class="row m-auto mt-2 mb-2">
+        <a href="{% url 'clear_sale' identifier.id %}" class="btn btn-sm btn-outline-dark">
+            Очистить форму
+        </a>
+    </div>
+
+    <div class="row m-auto mt-2 mb-2">
+        <a href="{% url 'close_without_save' identifier.id %}" class="btn btn-sm btn-outline-dark">
+            Закрыть без сохранения
+        </a>
+    </div>     
+              
+<!-- ========================Enter client's phone for cashback modal trigger============================ -->
+    <div class="row m-auto mt-2 mb-2">
+        <button type="button" class="btn btn-sm btn-outline-dark btn_modal_cashback bg-success">
+        Продажа с кэшбэком
+        </button>
+    </div>
+<!-- ===========================Client's Phone for cashback modal======================= -->
+        <div class="enterCashbackModal">
+         
+                <div class="modal-content-cash-back">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Введите телефон для начисления кэшбэка</h5>
+                        <!-- <button type="button" class="btn_close"></button> -->
+                    </div>
+                <div class="modal-body">
+
+                    <form action="{% url 'cashback' identifier.id %}" method="POST" >
+                        {% csrf_token %}
+                            <div class="form-group">
+                                <label for="phone">Телефон:</label>
+                                <input class='form-control' type="text" id="phone" name="phone" maxlength='11' required>
+                            </div>
+        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary btn_close_cashback" data-bs-dismiss="modal">Закрыть без сохранения</button>
+                            <button type="submit" class="btn btn-secondary">Ввести</button>
+                        </div>
+
+
+                    </form>
+
+                </div>
+            </div>
+        
+        </div>
+<!-- ==============================End of Client's phone for cashback modal======================== -->
+    
+<!-- ==============================New Cashback Client Modal Trigger================== -->
+<div class="row m-auto mt-2 mb-2">
+    <button type="button" class="btn btn-sm btn-block btn-outline-dark btn_modal_cashback_new_client">
+        Новый клиент кэшбэк
+    </button>
+</div>
+                    
+<!-- ===========================Modal Body================================= -->
+        <div class="enterModalCashbackNewClient">
+                        
+            <div class="modal-content-new-client">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Введите данные нового клиента</h5>
+                    <!-- <button type="button" class="btn_close"></button> -->
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'new_client_sale' identifier.id%}" method="POST">
+                        {% csrf_token %}
+    
+                        <div class="form-row">
+                    
+                        <div class="form-group">
+                            <label for="name">Имя:</label>
+                            <input class='form-control' type="text" id="f_name" name="f_name" maxlength='100' required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Фамилия</label>
+                            <input class='form-control' type="text" id="f_name" name="f_name" maxlength='100' required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Телефон</label>
+                            <input class='form-control' type="text" id="phone" name="phone" maxlength='100' required>
+                        </div>
+                </div>
+    
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn_close_cashback_new_client" data-bs-dismiss="modal">Закрыть без
+                        сохранения</button>
+                    <button type="submit" class="btn btn-secondary">Добавить клиента</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<!-- ==============================End of Modal Body====================================== -->
+
+      
+<!-- ===================================End of New Cashback Client Modal==================== -->
+
+    <div class="row m-auto mt-2 mb-2">
+        <a href="{% url 'noCashback' identifier.id %}" class="btn btn-sm btn-outline-dark">
+            Продажа без кэшбэка
+        </a>
+    </div>
+
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+
+<script>
+    console.log('Script works');
+
+   
+    const btn_modal_cashback = document.querySelector('.btn_modal_cashback')
+    const btn_close_cashback = document.querySelector('.btn_close_cashback')
+    const enterCashbackModal = document.querySelector('.enterCashbackModal')
+    btn_modal_cashback.addEventListener('click', openModalCashback)
+    btn_close_cashback.addEventListener('click', closeModalCashback)
+    function openModalCashback() {
+            enterCashbackModal.classList.add('openModal')
+        }
+    function closeModalCashback() {
+            enterCashbackModal.classList.remove('openModal')
+        }
+
+    const btn_modal_cashback_new_client = document.querySelector('.btn_modal_cashback_new_client')
+    const btn_close_cashback_new_client = document.querySelector('.btn_close_cashback_new_client')
+    const enterModalCashbackNewClient = document.querySelector('.enterModalCashbackNewClient')
+    btn_modal_cashback_new_client.addEventListener('click', openModalCashbackNewClient)
+    btn_close_cashback_new_client.addEventListener('click', closeModalCashbackNewClient)
+    function openModalCashbackNewClient() {
+            enterModalCashbackNewClient.classList.add('openModal')
+        }
+
+        function closeModalCashbackNewClient() {
+            enterModalCashbackNewClient.classList.remove('openModal')
+        }
+
+        //window.onbeforeunload = function () {
+          //      return false;
+            //};
+    
+        //window.onbeforeunload = function () {
+        //        return "Есть несохранённые изменения. Всё равно уходим?";
+        //    };
+
+</script>
+
+
+{%endblock%}

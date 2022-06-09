@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<body oncontextmenu="return false"></body>
+
+<div class="hide">
+<div class="container">
+    <div class="row mt-5">
+        <h5>Страница находится в стадии разработки</h5>
+    </div>
+ 
+        <!-- Alerts ========================== -->
+        {% include 'partials/_alerts.html' %}
+        <!-- ========================================== -->
+
+        
+        <div class="menu border rounded">
+            <div class="row m-2">
+                <div class="col-3">
+                    <a href="{% url 'sale_interface' %}" class="btn btn-sm btn-block btn-outline-dark">
+                        Закрыть
+                    </a>
+                </div>
+            </div>
+        </div>
+
+      
+    </div>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,425 @@
+a {
+    text-decoration: none;
+}
+
+.font_heading {
+    font-size: 2rem;
+    font-weight: 500;
+}
+
+footer {
+    bottom: 0px;
+    position: fixed;
+    width: 100%;
+}
+
+.hide {      
+    /* display: block; */
+    /* display: none; */
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    overflow-y: scroll;
+    opacity: 100%;
+    /* visibility: visible;
+    visibility: hidden; */
+}
+
+.sale-interface {
+    background-image: url("/static/img/dollar.jpg");
+    position: fixed;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* opacity: 40%; */
+    overflow-y: scroll;
+}
+
+.menu {
+    margin: auto;
+    margin-top: 2rem;
+    width: 80%;
+    visibility: visible;
+    /* padding: 1rem; */
+    /* border-width: 1px; */
+    /* border-radius:1rem; */
+    /* border-color: black; */
+    background-color: rgb(238, 240, 238);
+    /* position: sticky */
+}
+
+
+.log {
+    margin: auto;
+    /* margin-top: 1rem; */
+    /* height: 65vh; */
+    /* max-height: 100%; */
+    /* overflow: scroll; */
+    /* border-width: 1px; */
+    /* border-radius:1rem; */
+    /* border-color: black; */
+    background-color: rgb(238, 240, 238);
+}
+
+.modal_new {
+    background-color: white;
+}
+
+.page_location {
+    margin: auto;
+    /* display: block; */
+    margin-top: 1Vh;
+    /*margin-bottom: 1rem;
+    /* border-style: solid;
+    border-width: 5px;
+    border-color: red; */
+    /* border: solid 5px red; */
+    border-radius: 0.5%;
+    /* position: absolute; */
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    /* overflow-y: scroll; */
+    /* overflow-y: auto; */
+}
+
+.payment_choice {
+    /*margin: auto;
+    /* display: block; */
+    margin-top: 3rem;
+    /*margin-bottom: 1rem;
+    /* border-style: solid;
+    border-width: 5px;
+    border-color: red; */
+    /* border: solid 5px red; */
+    border-radius: 0.5%;
+    /* position: absolute; */
+    width: 50%;
+    height: 100%;
+    background-color: white;
+    /* overflow-y: scroll; */
+    /* overflow-y: auto; */
+}
+
+.shop_choice_page {
+    display: block;
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.shop_choice_form {
+    display: block;
+    position: fixed;
+    top: 20vh;
+    left: 33vw;
+    width: 34vw;
+    height: 21vh;
+    background-color: rgb(238, 240, 238);
+}
+
+.modal-search {
+    display: block;
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-search-form {
+    display: block;
+    position: fixed;
+    top: 20vh;
+    left: 30vw;
+    width: 34vw;
+    min-height: 23vh;
+    background-color: rgb(238, 240, 238);
+}
+
+.modal-search-results {
+    position: relative;
+    top: 5rem;
+    left: 10rem;
+    width: 70%;
+    min-height: 18%;
+    background-color: rgb(238, 240, 238);
+    text-align: center;
+}
+
+.page_location_posted{
+    /* display: block; */
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    /* border-style: solid;
+    border-width: 5px;
+    border-color: red; */
+    /* border: solid 5px red; */
+    border-radius: 0.5%;
+    /* position: absolute; */
+    width: 100%;
+    height: 100%;
+    background-color: rgb(252, 158, 163);
+    /* overflow-y: scroll; */
+    /* overflow-y: auto; */
+}
+
+.page_location_unposted{
+    /* display: block; */
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    /* border-style: solid;
+    border-width: 5px;
+    border-color: red; */
+    /* border: solid 5px red; */
+    border-radius: 0.5%;
+    /* position: absolute; */
+    width: 100%;
+    height: 100%;
+    background-color: rgb(214, 245, 232);
+    /* overflow-y: scroll; */
+    /* overflow-y: auto; */
+}
+
+.page_location_search {
+    /*display: block; */
+    margin: auto;
+    margin-top: 5rem;
+    /* border-style: solid;
+    border-width: 5px;
+    border-color: red; */
+    /* border: solid 5px red; */
+    border-radius: 0.5%;
+    /*position: absolute; */
+    width: 40%;
+    height: 100%;
+    background-color: white;
+    /* overflow-y: scroll; */
+    /* overflow-y: auto; */
+}
+
+/* ===================== Delivery Page Modal for Entering New Product========================= */
+.enterDeliveryModal {
+    display: none;
+}
+
+.enterDeliveryModal.openModal {
+    display: block;
+    position: fixed;
+    /* top: 70mm;
+    right: 0mm; */
+}
+/* ====================End of Delivery Page Modal for Entering New Product ======================= */
+
+/* ===================== Daily Sales Modal========================= */
+.enterSalesModal {
+    display: none;
+}
+
+.enterSalesModal.openModal {
+    display: block;
+    position: fixed;
+    top: 12rem;
+    width: 100rem;
+    min-height: 10rem;
+    left: 15rem;
+}
+
+
+/* ===========================Sale Page Modal for Entering client's phone for cashback================== */
+.enterCashbackModal {
+    display: none;
+}
+
+.enterCashbackModal.openModal {
+    display: block;
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* overflow-y: scroll; */
+    /* opacity: 0; */
+}
+
+.modal-content-cash-back {
+    display: block;
+    position: fixed;
+    top: 2rem;
+    left: 25rem;
+    width: 30%;
+    height: 22%;
+    background-color: rgb(238, 240, 238);
+}
+/* ===========================Sale Page Modal for Entering client's phone for cashback================== */
+
+.enterModalCashbackNewClient {
+    display: none;
+}
+
+.enterModalCashbackNewClient.openModal {
+    display: block;
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content-new-client {
+    display: block;
+    position: fixed;
+    top: 2rem;
+    left: 25rem;
+    width: 30%;
+    height: 35%;
+    background-color: rgb(238, 240, 238);
+}
+
+
+
+/* =================== End Sale Page Modal for Entering client's phone for cashback================== */
+
+/* ====================== Payment Page Modal for Paying in cash ==================================== */
+.enterModalCash {
+    display: none;
+}
+
+.enterModalCash.openModal {
+    display: block;
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+
+.modal-content {
+    display: block;
+    width: 60%;
+    min-height: 280px;
+    margin: auto;
+    margin-top: 2rem;
+}
+
+/* ==================== End of Payment Page Modal for Paying in cash ==================================== */
+
+/* ====================== Payment Page Modal for Credits ==================================== */
+.enterModalCredit {
+    display: none;
+}
+
+.enterModalCredit.openModal {
+    display: block;
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* ====================== End of Payment Page Modal for Credits ==================================== */
+
+/* ====================== Payment Page Modal for Cards ==================================== */
+.enterModalCard {
+    display: none;
+}
+
+.enterModalCard.openModal {
+    display: block;
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+/* ====================== End of Payment Page Modal for Cards ==================================== */
+
+/* ====================== Payment Page Modal for Complex payment ==================================== */
+.enterModalComplex {
+    display: none;
+}
+
+.enterModalComplex.openModal {
+    display: block;
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+/* ==================== End of Payment Page Modal for Complex payment ==================================== */
+
+
+
+
+/* ====================== Cashback_off Modal for Cashback ==================================== */
+.cashback_off_modal{
+    display: none;
+}
+.cashback_off_modal.openModal {
+    display: block;
+    position: absolute;
+    margin-top: 20rem;
+    background-color: whitesmoke;
+   
+  
+}
+/* ====================== End of Cashback_off Modal for Cash ==================================== */
+
+/* ====================== Modal for Delivery ==================================== */
+.ModalDeliveryHide{
+    display: none;
+}
+.ModalDeliveryHide.openModal {
+    /* display: block;
+    position: absolute;
+    margin-top: 20rem;
+    background-color: whitesmoke; */
+    display: block;
+    position: fixed;
+}
+/* ====================== End of Cashback_off Modal for Cash ==================================== */
+
+/* ====================== Modal for Log ==================================== */
+.ModalLogHide{
+    display: none;
+}
+ModalLogHide.openModal {
+    display: block;
+  
+}
+/* ====================== End of Modal for Log ==================================== */
+
+/* ===================== Product Page Modal for Entering Product Card========================= */
+.enterProductCard {
+    display: none;
+}
+
+.enterProductCard.openModal {
+    display: block;
+    position: fixed;
+    /* top: 70mm;
+    right: 0mm; */
+}
+/* ====================End of Product Page Modal for Entering Product Card ======================= */
+
+
+.imei {
+    border: solid;
+    border-color: red;
+}

@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- <div class="hide"> -->
+<div class="container">
+
+
+<!-- =====================Alert Messages Module=================== -->
+<div class="container">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-info" role="alert">
+        <!-- <button class="close" data-dismiss="alert">
+                    <small><sup>x</sup></small>
+                </button> -->
+        {{ message }}
+    </div>
+    {% endfor%}
+    {% endif%}
+</div>
+<!-- ===================End of Alert Messages Module================ -->
+
+<div class="log border rounded m-auto mt-1">
+    <div class="font_heading">Номенклатура</div> 
+</div>
+       
+
+<div class="log border rounded m-auto mt-1">
+    <form action="{% url 'product_list' %}" method="POST">
+        {% csrf_token %}
+
+        <div class="row form-group m-auto">
+            <div class="col-3">
+                <select name="category" class='form-control' id='category'>
+                    <!-- <option selected="true" disabled="disabled">Выберите категорию</option> -->
+                    <!-- <option value="{{product.category.id}}">{{product.category}}</option> -->
+                    <!-- <option value='#'>Выберите категорию</option> -->
+                    <option value>Выберите категорию</option>
+                    {% for category in categories %}
+                    <option value="{{category.id}}">{{category.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        
+            <div class="col-3">
+                <input type="text" class='form-control' name="imei" placeholder="IMEI">
+            </div>
+        </div>
+
+        <div class="row form-group m-auto mt-1 mb-1">
+            <div class="col-1">
+                <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+            </div>
+            <div class="col-1">
+                <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+            </div>
+            <div class="col-2">
+                <a href="{% url 'close_report' %}">
+                    <input type="button" value="Закрыть без сохранения"
+                        class="btn btn-sm btn-block btn-outline-dark">
+                </a>
+            </div>
+            <div class="col-2">
+                <a href=#>
+                    <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                        Сохранить в Excel
+                    </button>
+                </a>
+            </div>
+    </form>
+</div>
+</div>
+
+<div class="log border rounded m-auto mt-1">
+    <div class="row m-auto">
+        <div class="col-2">
+            <h5>Категория</h5>
+        </div>
+        <div class="col-2">
+            <h5>IMEI</h5>
+        </div>
+        <div class="col-1">
+            <h5>Название</h5>
+        </div>
+    </div>
+      
+ 
+    
+    {%  for item in queryset_list %}
+    <div class="row m-auto">
+        <div class="col-1">{{item.enumerator}}</div>
+        <div class="col-2">{{item.category}}</div>
+        <div class="col-2">
+<!-- ======================Modal Trigger========================================================= -->
+
+            <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{item.imei}}">
+                {{item.imei}}
+            </a>
+<!-- ============================End of Modal trigger===========================================-->
+        </div>
+        <div class="col-4">{{item.name}}</div>
+       
+<!-- =======================Document Bootstrap Modal================================= -->
+<div class="modal fade" id="modal_{{item.imei}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style="width: 80%">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Карточка товара</h5>
+                    <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close">X</button>
+                </div>
+            <div class="modal-body">
+
+                <form action="{% url 'update_product' item.id %}" method="POST">
+                    {% csrf_token %}
+            
+                    <div class="form-row">
+                        <div class="col-3">
+                            <label for="category">Вид ТМЦ</label>
+                        </div>
+                        <div class="col">
+                            <select name="category" id="category" class='form-control'>
+                                <!-- <option selected="true" disabled="disabled">Выберите поставщика</option> -->
+                                <option value="{{item.category.id}}">{{item.category}}</option>
+                                {% for category in categories %}
+                                <option value="{{category.id}}">{{category.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Наименование:</label>
+                        <input class='form-control' type="text" id="name" name="name" value='{{item.name}}'>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">IMEI:</label>
+                        <input class='form-control' type="text" id="imei" name="imei" value='{{item.imei}}'>
+                    </div>
+               
+            </div>
+     
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-secondary">Сохранить</button>
+                    <button type="button" class="btn btn-danger">Удалить</button>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+<!-- ============================End of Document Bootstrap Modal======================================= -->
+    </div>
+
+    
+    {% endfor %}
+          
+
+</div>
+</div>
+
+
+
+
+<!-- ========================Pagination  module=============================== -->
+<div class="row mt-1">
+    <div class="col-5 m-auto">
+        {% if queryset_list.has_other_pages %}
+        <ul class="pagination">
+            {% if queryset_list.has_previous %}
+            <li class="page-item">
+                <a href="?page={{1}}" class="page-link">В начало</a>
+            </li>
+            <li class="page-item">
+                <a href="?page={{queryset_list.previous_page_number}}" class="page-link">&laquo;</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link">&laquo;</a>
+            </li>
+            {% endif %}
+            {% for i in queryset_list.paginator.page_range%}
+            {% if queryset_list.number == i %}
+            <li class="page-item active">
+                <a class="page-link">{{i}}</a>
+            </li>
+            {% elif i > queryset_list.number|add:'-3' and i < queryset_list.number|add:'3' %} <li class="page-item">
+                <a class='page-link' href="?page={{i}}" class="page-link">{{i}}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% if queryset_list.has_next %}
+                <li class="page-item">
+                    <a href="?page={{queryset_list.next_page_number}}" class="page-link">&raquo;</a>
+                </li>
+                <li class="page-item">
+                    <a href="?page={{queryset_list.paginator.num_pages}}" class="page-link">В конец</a>
+                </li>
+                {% endif %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+<!-- ==============================End of pagination module============================ --
+{% endblock %}

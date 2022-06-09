@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<body oncontextmenu="return false">
+
+<div class="hide">
+<div class="container">
+    <div class="page_location">
+
+        <div class="log border rounded">
+            <h3>Отчет по остаткам динамический</h3>
+        </div>
+
+
+        <div class="log border rounded mt-1">
+            <form action="{% url 'remainder_report_dynamic' %}" method="POST">
+                {% csrf_token %}
+
+                <div class="row form-row m-auto">
+
+                    <div class="col-2">
+                        <select name="category" class='form-inline' required>
+                            <option value="">Выберите категорию</option>
+                            {% for category in categories %}
+                            <option value="{{category.id}}">{{category.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-2">
+                        <select name="shop" id="shop" class='form-inline' required>
+                        <option value="">Выберите торговую точку</option>
+                            <!-- <option value="#">Выберите ТТ</option> -->
+                            {% for shop in shops %}
+                            <option value="{{shop.id}}">{{shop.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='date_start' name="date_start" required>
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='date_end' name="date_end" required>
+                    </div>
+                </div>
+
+                <div class="row form-row m-auto mt-1">
+                   
+                    <div class="col-2">
+                        <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                  
+                    <div class="col-2">
+                        <a href="{% url 'close_report' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                    <div class="col-2">
+                        <a href="#">
+                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                                Сохранить в Excel
+                            </button>
+                        </a>
+                    </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="log mt-1 border rounded">  
+        <div class="row m-auto">
+            <h5>Период с {{date_start}} по {{date_end}} по тт {{shop}}</h5>
+        </div>
+
+        <div class="row m-auto">
+            <div class="col-2">
+                <h5>IMEI</h5>
+            </div>
+            <div class="col-2">
+                <h5>Наименование</h5>
+            </div>
+          
+            <div class="col-2">
+                <h5>Остаток на начало периода</h5>
+            </div>
+
+            <div class="col-2">
+                <h5>Поступление ТМЦ</h5>
+            </div>
+            <div class="col-2">
+                <h5>Расход ТМЦ</h5>
+            </div>
+            <div class="col-2">
+                <h5>Остаток на конец периода</h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="log mt-1 border rounded" style="overflow: auto">
+        {% for report in reports %}
+        <div class="row m-auto">
+            <div class="col-2">{{report.imei}}</div>
+            <div class="col-2">{{report.name}}</div>
+            <div class="col-2">{{report.initial_remainder}}</div>
+            {% if report.quantity_in > 0%}
+            <div class="col-2">{{report.quantity_in}}</div>
+            {% else %}
+            <div class="col-2"></div>
+            {% endif %}
+            {% if report.quantity_out > 0%}
+            <div class="col-2">{{report.quantity_out}}</div>
+            {% else %}
+            <div class="col-2"></div>
+            {% endif %}
+            <div class="col-2">{{report.end_remainder}}</div>
+        </div>
+        {% endfor %}
+
+      
+    </div>
+
+</div>
+</div>
+</div>
+
+{%endblock%}

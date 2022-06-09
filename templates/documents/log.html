@@ -1,0 +1,395 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- <div class="hide"> -->
+
+
+
+<div class="container">
+    <!-- <div class="page-location"> -->
+    <div class="log border rounded mt-1" style="background-color:rgb(215, 215, 215); height:11Vh">
+        <form action="{% url 'log' %}" method ="POST">
+            {% csrf_token %}
+            <div class="row form-row">
+                <div class="col-2">
+                    <input type="date" id='start_date' name="start_date" class='form-control'>
+                </div>
+                <div class="col-2">
+                    <input type="date" id='end_date' name="end_date" class='form-control'value="{{values.end_date}}" >
+                </div>
+                <div class="col-2">
+                    <select name="doc_type" id="doc_type" class='form-control'>
+                        <option value="{{values.doc_type}}">Выберите тип документ</option>
+                        {% for doc_type in doc_types %}
+                        <option value="{{doc_type.id}}">{{doc_type.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-2">
+                    <select name="supplier" id="supplier" class='form-control'>
+                        <option value="">Выберите поставщика</option>
+                        {% for supplier in suppliers %}
+                        <option value="{{supplier.id}}">{{supplier.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+
+                <div class="col-2">
+                    <select name="shop" id="shop" class='form-control'>
+                        <option value="">Выберите точку</option>
+                        {% for shop in shops %}
+                        <option value="{{shop.id}}">{{shop.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-2">
+                    <select name="user" id="user" class='form-control'>
+                        <option value="">Выберите автора</option>
+                        {% for user in users %}
+                        <option value="{{user.id}}">{{user.last_name}} {{user.first_name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-2">
+                    <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark form-control">
+                </div>
+                <div class="col-2">
+                    
+                    <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark form-control" id="reset_button">
+                </div>
+                <div class="col-2">
+                    <a href="{% url 'close_log' %}">
+                        <input type="button" value="Стандартный журнал"
+                            class="btn btn-sm btn-block btn-outline-dark form-control" id ="standard_log_button">
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="log border rounded mt-1" style="background-color:rgb(215, 215, 215); height: 4Vh">
+        <div class="row">
+            <div class="col-1">
+                <h4>Статус</h4>
+            </div>
+            <div class="col-2">
+                <h4>Дата</h4>
+            </div>
+            <div class="col-3">
+                <h4>Документ</h4>
+            </div>
+            <div class="col-2">
+                <h4>Сумма</h4>
+            </div>
+            <div class="col-2">
+                <h4>Инфо</h4>
+            </div>
+            <div class="col-2">
+                <h4>Автор</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="log border rounded mt-0 mb-2" style=" height: 70vh; overflow: auto;">
+        <!-- <div class="log border rounded overflow-scroll" style="height: 35rem"> -->
+        {% for document in queryset_list %}
+        <div class="row">
+            <div class="col-1 m-auto">
+                {% if document.posted == True %}
+                <i class="far fa-check-square"></i>
+                {% else %}
+                <!-- <input type="checkbox" id="post_check" name="post_check" readonly> -->
+                <i class="far fa-square"></i>
+                {% endif %}
+            </div>
+
+            <div class="col-2 m-auto">
+                {{document.created}}
+            </div>
+
+
+            <div class="col-3 m-auto">
+                {% if document.title.name == 'Поступление ТМЦ' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_delivery_posted' document.id %}">{{document.title}} #{{document.id}}</a>
+                {% else %}
+                <a href="{% url 'change_delivery_unposted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% endif %}
+
+                {% elif document.title.name == 'Перемещение ТМЦ' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_transfer_posted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% else %}
+                <a href="{% url 'change_transfer_unposted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% endif %}
+
+                {% elif document.title.name == 'Возврат ТМЦ' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_return_posted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% else %}
+                <a href="{% url 'change_return_unposted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% endif %}
+
+                {% elif document.title.name == 'Оприходование ТМЦ' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_recognition_posted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% else %}
+                <a href="{% url 'change_recognition_unposted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% endif %}
+
+                {% elif document.title.name == 'Списание ТМЦ' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_signing_off_posted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% else %}
+                <a href="{% url 'change_signing_off_unposted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% endif %}
+
+                {% elif document.title.name == 'ПКО' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_cash_receipt_posted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% else %}
+                <a href="{% url 'change_cash_receipt_unposted' document.id %}"> {{document.title}} {{document.id}}</a>
+                {% endif %}
+
+                {% elif document.title.name == 'РКО (хоз.расходы)' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_cash_off_expenses_posted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% else %}
+                <a href="{% url 'change_cash_off_expenses_unposted' document.id %}"> {{document.title}}
+                    {{document.id}}</a>
+                {% endif %}
+
+                {% elif document.title.name == 'РКО (зарплата)' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_cash_off_salary_posted' document.id %}">{{document.title}}{{document.id}}</a>
+                {% else %}
+                <a href="{% url 'change_cash_off_salary_unposted' document.id %}"> {{document.title}}{{document.id}}</a>
+                {% endif %}
+
+                {% elif document.title.name == 'Перемещение денег' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_cash_movement_posted' document.id %}">{{document.title}} #{{document.id}}</a>
+                {% else %}
+                <a href="{% url 'change_cash_movement_unposted' document.id %}"> {{document.title}} #{{document.id}}</a>
+                {% endif %}
+
+                {% elif document.title.name == 'Инвентаризация ТМЦ' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_inventory_posted' document.id %}">{{document.title}}{{document.id}}</a>
+                {% else %}
+                <a href="{% url 'change_inventory_unposted' document.id %}">{{document.title}}{{document.id}}</a>
+                {% endif %}
+
+                {% elif document.title.name == 'Ввод остатков ТМЦ' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_remainder_input_posted' document.id %}">{{document.title}}{{document.id}}</a>
+                {% else %}
+                <a href="#">{{document.title}}{{document.id}}</a>
+                {% endif %}
+
+                {% elif document.title.name == 'Продажа ТМЦ' %}
+                {% if document.posted == True %}
+                <a href="{% url 'change_sale_posted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% else %}
+                <a href="{% url 'change_sale_unposted' document.id %}">{{document.title}} {{document.id}}</a>
+                {% endif %}
+                {% endif %}
+            </div>
+
+
+            <!-- ============================Document Sum Column============================================ -->
+            <div class="col-2 m-auto">
+                {{document.sum}} руб.
+            </div>
+
+
+<!-- ==============================Document Additional Info======================================== -->
+            <div class="col-2 m-auto">
+
+                {% if document.title.name == 'Поступление ТМЦ' %}
+                {{document.shop_receiver}}
+
+                {% elif document.title.name == 'Перемещение ТМЦ' %}
+                C {{document.shop_sender}} на {{document.shop_receiver}}
+
+                {% elif document.title.name == 'Возврат ТМЦ' %}
+                {{document.shop_receiver}}
+
+                {% elif document.title.name == 'Оприходование ТМЦ' %}
+                {{document.shop_receiver}}
+
+                {% elif document.title.name == 'Списание ТМЦ' %}
+                {{document.shop_sender}}
+
+                {% elif document.title.name == 'Продажа ТМЦ' %}
+                {{document.shop_sender}}
+
+                {% elif document.title.name == 'РКО (хоз.расходы)' %}
+                {{document.shop_sender}}
+
+                {% elif document.title.name == 'ПКО' %}
+                {{document.shop_receiver}}
+
+                {% elif document.title.name == 'РКО (зарплата)' %}
+                {{document.shop_sender}}
+
+                {% elif document.title.name == 'Перемещение денег' %}
+                C {{document.shop_sender}} на {{document.shop_receiver}}
+
+                {% elif document.title.name == 'Ввод остатков ТМЦ' %}
+                {{document.shop_receiver}}
+
+                {% elif document.title.name == 'Инвентаризация ТМЦ' %}
+                {{document.shop}}
+                {% endif %}
+            </div>
+
+            <!-- =========================== Creator Column==================================== -->
+            <div class="col-2 m-auto">{{document.user.first_name}} {{document.user.last_name}}</div>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- ========================Pagination  module=============================== -->
+    <div class="row mt-1">
+        <div class="col-5 m-auto">
+            {% if queryset_list.has_other_pages %}
+            <ul class="pagination">
+                {% if queryset_list.has_previous %}
+                <li class="page-item">
+                    <a href="?page={{1}}" class="page-link">В начало</a>
+                </li>
+                <li class="page-item">
+                    <a href="?page={{queryset_list.previous_page_number}}" class="page-link">&laquo;</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link">&laquo;</a>
+                </li>
+                {% endif %}
+                {% for i in queryset_list.paginator.page_range%}
+                {% if queryset_list.number == i %}
+                <li class="page-item active">
+                    <a class="page-link">{{i}}</a>
+                </li>
+                {% elif i > queryset_list.number|add:'-3' and i < queryset_list.number|add:'3' %} <li class="page-item">
+                    <a class='page-link' href="?page={{i}}" class="page-link">{{i}}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if queryset_list.has_next %}
+                    <li class="page-item">
+                        <a href="?page={{queryset_list.next_page_number}}" class="page-link">&raquo;</a>
+                    </li>
+                    <li class="page-item">
+                        <a href="?page={{queryset_list.paginator.num_pages}}" class="page-link">В конец</a>
+                    </li>
+                    {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+    <!-- ==============================End of pagination module============================ -->
+
+</div>
+
+<script>
+  
+    const start_date = document.querySelector('#start_date');
+    const end_date=document.querySelector ('#end_date');
+    const doc_type=document.querySelector ('#doc_type');
+    const supplier=document.querySelector ('#supplier');
+    const shop=document.querySelector ('#shop');
+    const user=document.querySelector ('#user');
+    const reset_button=document.querySelector ('#reset_button');
+    const standard_log_button=document.querySelector ('#standard_log_button');
+
+     reset_button.addEventListener('click', e => {
+            sessionStorage.clear();
+        })
+
+    standard_log_button.addEventListener('click', e => {
+            sessionStorage.clear();
+        })
+
+    start_date.addEventListener('change', e => {
+            choice = start_date.value;
+            sessionStorage.setItem('start_date', choice);
+        })
+
+    end_date.addEventListener('change', e => {
+            choice = end_date.value;
+            sessionStorage.setItem('end_date', choice);
+        })
+    shop.addEventListener('change', e => {
+            choice = shop.value;
+            sessionStorage.setItem('shop', choice);
+        })
+    
+    supplier.addEventListener('change', e => {
+            choice = supplier.value;
+            sessionStorage.setItem('supplier', choice);
+        })
+
+    doc_type.addEventListener('change', e => {
+            choice = doc_type.value;
+            sessionStorage.setItem('doc_type', choice);
+        })
+    
+    user.addEventListener('change', e => {
+            choice = user.value;
+            sessionStorage.setItem('user', choice);
+        })
+    
+
+    document.addEventListener('DOMContentLoaded', e => {
+        choice = sessionStorage.getItem('start_date');
+        start_date.value = choice;
+            })
+     document.addEventListener('DOMContentLoaded', e => {
+            choice = sessionStorage.getItem('end_date');
+            end_date.value = choice;
+        })
+     document.addEventListener('DOMContentLoaded', e => {
+            if (sessionStorage.getItem('shop') === null) {
+                shop.value = "Выберите точку"
+         }
+            choice = sessionStorage.getItem('shop');
+            shop.value = choice;
+        })
+     document.addEventListener('DOMContentLoaded', e => {
+            if (sessionStorage.getItem('supplier') === null) {
+             supplier.value= "Выберите поставщика"
+         }
+            choice = sessionStorage.getItem('supplier');
+            supplier.value = choice;
+        })
+
+    document.addEventListener('DOMContentLoaded', e => {
+            if (sessionStorage.getItem('doc_type') === null) {
+                doc_type.value = 'Выберите тип документа'
+            }
+            choice = sessionStorage.getItem('doc_type');
+            doc_type.value = choice;
+        })
+
+    document.addEventListener('DOMContentLoaded', e => {
+            if (sessionStorage.getItem('user') === null) {
+                console.log('No user choice')
+            }
+            choice = sessionStorage.getItem('user');
+            user.value = choice;
+        })
+
+
+    
+
+</script>
+
+{% endblock %}

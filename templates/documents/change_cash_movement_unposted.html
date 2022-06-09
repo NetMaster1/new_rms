@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="page_location_unposted">
+
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Перемещение денежных средств</h3>
+                </div>
+            </div>
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
+
+            <div class="row m-2 pb-2">
+                <div class="col-12 border rounded ">
+
+
+                    <form action="{% url 'change_cash_movement_unposted' document.id %}" method="POST">
+                        {% csrf_token %}
+
+                        {% for group in request.user.groups.all %}
+                        {% if group.name == 'admin' %}
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="date">
+                                    <h5>Дата</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" value='{{dateTime}}'>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="shop">
+                                    <h5>Торговая точка - отправитель</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <select name="shop_cash_sender" id="shop_cash_sender" class='form-control' required>
+                                    <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
+                                    <!-- <option value="">Выберите торговую точку</option> -->
+                                    <option selected="true" value="{{document.shop_sender.id}}">
+                                        {{document.shop_sender.name}}</option>
+                                    {% for shop in shops %}
+                                    <option value="{{shop.id}}">{{shop.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="shop">
+                                    <h5>Торговая точка - получатель</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <select name="shop_cash_receiver" id="shop_cash_receiver" class='form-control' required>
+                                    <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
+                                    <!-- <option value="">Выберите торговую точку</option> -->
+                                    <option selected="true" value="{{document.shop_receiver.id}}">
+                                        {{document.shop_receiver.name}}</option>
+                                    {% for shop in shops %}
+                                    <option value="{{shop.id}}">{{shop.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+
+
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="sum">
+                                    <h5>Сумма к перемещению</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="number" class='form-control' id="sum" name="sum" value='{{document.sum}}'
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="row m-auto mt-3 mb-3">
+                            {% for group in request.user.groups.all %}
+                            {% if group.name == 'admin' %}
+                            <div class="col-1">
+                                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
+                            </div>
+                            
+                            <div class="col-2">
+                                <label for="post_check"> С проведением </label>
+                                <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                            </div>
+
+                            <div class="col-3">
+                                <a href="{% url 'delete_unposted_document' document.id %}">
+                                    <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                                </a>
+                            </div>
+
+                            {% endif %}
+                            {% endfor %}
+
+
+                    </form>
+
+
+                    <div class="col-2">
+                        <a href="{% url 'log' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+
+{% endblock %}

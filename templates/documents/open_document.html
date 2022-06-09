@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+
+    <div class="row">
+        <div class="col-1">
+            <h4>Id</h4>
+        </div>
+        <div class="col-3">
+            <h4>Наименование</h4>
+        </div>
+        <div class="col-2">
+            <h4>Дата</h4>
+        </div>
+        <div class="col-2">
+            <h4>Автор</h4>
+        </div>
+    </div>
+    {% for document in documents %}
+    <div class="row">
+        <div class="col">
+            {{document.id}}
+        </div>
+        <div class="col">
+            {{document.document.title}}
+        </div>
+        <div class="col">
+            {{document.shop}}
+        </div>
+        <div class="col">
+            {{document.name}}
+        </div>
+        <div class="col">
+            {{document.imei}}
+        </div>
+        <div class="col">
+            {{document.quantity}}
+        </div>
+        <div class="col">
+            {{document.price}}
+        </div>
+        <div class="col">
+            {{document.sub_total}}
+        </div>
+    </div>
+    {% endfor %}
+
+
+
+</div>
+</div>
+{%endblock%}
