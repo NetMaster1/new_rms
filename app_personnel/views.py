@@ -10,6 +10,7 @@ from django.contrib.auth import update_session_auth_hash, authenticate
 from app_reference.models import ProductCategory
 import numpy as np
 import datetime
+from datetime import date, timedelta
 
 # def index (request):
 #     return render (request, 'index.html')
@@ -142,22 +143,32 @@ def motivation (request):
 def number_of_work_days (request):
     users=User.objects.all()
     work_days={}
-    for user in users:
-        dates=[]
-        user_rows=RemainderHistory.objects.filter(user=user)
-        #user_rows_values=user_rows.values_list('created').order_by('-created')
-        for row in user_rows:
-            #we format 'row.created' field from <class 'datetime.datetime'> to '<str>' & cut off time values in order to receive date in <str> format for further comparaison. Then we save the date in 'dates' array
-            date=row.created.strftime('%Y-%m-%d')
-            dates.append(date)
-            #we use 'numpy.unique' function to count unique values
-            list=np.unique(dates)
-        n=len(list)
-        work_days[user]=n
-    context = {
-        'work_days': work_days,
-    }
-    return render (request, 'personnel/work_days.html', context)
+    if request.method=="POST":
+        start_date=request.POST ['start_date']
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = request.POST.get("end_date", False)
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = end_date + timedelta (days=1)
+        rhos=RemainderHistory.objects.filter(created__gt=start_date, created__lt=end_date)
+        for user in users:
+            dates=[]
+            list=[]
+            user_rows=rhos.filter(user=user)
+            #user_rows_values=user_rows.values_list('created').order_by('-created')
+            for row in user_rows:
+                #we format 'row.created' field from <class 'datetime.datetime'> to '<str>' & cut off time values in order to receive date in <str> format for further comparaison. Then we save the date in 'dates' array
+                date=row.created.strftime('%Y-%m-%d')
+                dates.append(date)
+                #we use 'numpy.unique' function to count unique values
+                list=np.unique(dates)
+            n=len(list)
+            work_days[user]=n
+        context = {
+            'work_days': work_days,
+        }
+        return render (request, 'personnel/work_days.html', context)
+    else:
+        return render (request, 'personnel/work_days.html')
   
 def cash_back_bonus (request):
     users=User.objects.all()
