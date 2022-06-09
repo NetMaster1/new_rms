@@ -84,10 +84,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created', models.DateTimeField(auto_now=True)),
-<<<<<<< HEAD
-                ('emumerator', models.IntegerField(null=True)),
-=======
->>>>>>> 07ea3dc876783f7f59e43ee8188eb24b6f47dae0
                 ('name', models.CharField(max_length=50)),
                 ('imei', models.CharField(max_length=50, unique=True)),
                 ('img', models.ImageField(blank=True, upload_to='images')),
