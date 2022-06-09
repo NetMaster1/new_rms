@@ -1,25 +1,0 @@
-a
-
-    4¤Ўbh  г                   @   sІ   d dl mZ G dd„ dejѓZG dd„ dejѓZG dd„ dejѓZG dd	„ d	ejѓZG d
-d„ dejѓZG dd
-„ d
-ejѓZG dd„ dejѓZ	G dd„ dejѓZ
-G dd„ dejѓZdS )й    )Ъmodelsc                   @   s    e Zd ZejddЌZdd„ ZdS )ЪContributorйъ   ©Ъ
-max_lengthc                 C   s   | j S ©N)Ъid©Ъself© r   ъ;D:\Soft\Web_programming\rms\rms_new\app_reference\models.pyЪ__int__	   s    zContributor.__int__N)Ъ__name__Ъ
-__module__Ъ__qualname__r   Ъ	CharFieldЪnamer
-   r   r   r   r   r      s   r   c                   @   s    e Zd ZejddЌZdd„ ZdS )ЪSupplierй2   r   c                 C   s   | j S r   ©r   r	   r   r   r   Ъ__str__   s    zSupplier.__str__N©r   r   r   r   r   r   r   r   r   r   r   r      s   r   c                   @   sF   e Zd ZejddЌZejddЌZejddЌZ	G dd„ dѓZ
-dd	„ Zd
-S )ЪShopr   r   й   )ЪdefaultTc                   @   s   e Zd ZdZdS )z	Shop.Metar   N)r   r   r   Ъorderingr   r   r   r   ЪMeta   s   r   c                 C   s   | j S r   r   r	   r   r   r   r      s    zShop.__str__N)r   r   r   r   r   r   ЪIntegerFieldZsale_kЪBooleanFieldZretailr   r   r   r   r   r   r      s
-   r   c                   @   s.   e Zd ZejddЌZejdddЌZdd„ ZdS )	ЪProductCategoryr   r   й   й   ©Ъ
-max_digitsЪdecimal_placesc                 C   s   | j S r   r   r	   r   r   r   r   !   s    zProductCategory.__str__N)	r   r   r   r   r   r   ЪDecimalFieldЪ
-bonus_percentr   r   r   r   r   r      s   r   c                   @   s<   e Zd ZejddЌZejdddЌZejdddЌZ	d	d
-„ Z
-dS )ЪServicesr   r   r   T)r   Ъnullr    r!   r"   c                 C   s   | j S r   r   r	   r   r   r   r   )   s    zServices.__str__N)r   r   r   r   r   r   r   Ъretail_pricer%   r&   r   r   r   r   r   r'   $   s   r'   c                   @   s.   e Zd ZejddЌZG dd„ dѓZdd„ ZdS )ЪDocumentTyper   r   c                   @   s   e Zd ZdZdS )zDocumentType.MetaZdocumentTypeN)r   r   r   Ъverbose_namer   r   r   r   r   /   s   r   c                 C   s   | j S r   r   r	   r   r   r   r   1   s    zDocumentType.__str__N)r   r   r   r   r   r   r   r   r   r   r   r   r*   ,   s   r*   c                   @   sd   e Zd ZejddЌZejddЌZeje	ej
-dЌZejddЌZ
-ejdddЌZG dd	„ d	ѓZd
-d„ ZdS )
-ЪProductT)Ъauto_now)r(   )Ъ	on_deleter   r   )r   Ъuniquec                   @   s   e Zd ZdZdZdS )zProduct.MetaЪproductZproductsN)r   r   r   r+   Ъverbose_name_pluralr   r   r   r   r   <   s   r   c                 C   s   | j S r   r   r	   r   r   r   r   A   s    zProduct.__str__N)r   r   r   r   Ъ
-DateTimeFieldЪcreatedr   Z
-emumeratorЪ
-ForeignKeyr   Ъ
-DO_NOTHINGЪcategoryr   r   Ъimeir   r   r   r   r   r   r,   4   s   r,   c                   @   s"   e Zd ZejdddЌZdd„ ZdS )ЪExpenser   T©r   r(   c                 C   s   | j S r   r   r	   r   r   r   r   G   s    zExpense.__str__Nr   r   r   r   r   r8   D   s   r8   c                   @   s"   e Zd ZejdddЌZdd„ ZdS )ЪVoucherr   Tr9   c                 C   s   | j S r   r   r	   r   r   r   r   M   s    zVoucher.__str__Nr   r   r   r   r   r:   J   s   r:   N)Ъ	django.dbr   ЪModelr   r   r   r   r'   r*   r,   r8   r:   r   r   r   r   Ъ<module>   s   
