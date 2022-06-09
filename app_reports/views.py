@@ -266,35 +266,7 @@ def save_in_excel_daily_rep(request):
         wb.save(response)
         return response
 
-        # qs = (
-        #     DailySaleRep.objects.filter(report_id=report_id)
-        #     .exclude(shop="ООС")
-        #     .order_by("shop")
-        #     .values()
-        # )
-        # # n=qs.count()
-        # data = pd.DataFrame(qs)
-        # data = data.drop("report_id_id", 1)  # deleting 'report_id' column
-        # # data=data.drop('row_name', 0)#deleting a row
 
-        # data.set_index("id", inplace=True)
-        # data.set_index(
-        #     "shop", inplace=True
-        # )  # sets column as titles for rows & deletes from the body of df
-        # # data.set_index('shop', inplace=True, drop=False)#set column as titles for rows & leaves it in the df
-        # print(data)
-
-        # data = data.T  # transposing the dataframe
-        # # data=data_t.T #transposing backwards
-        # data.to_excel("D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx")
-        # registers = DailySaleRep.objects.all()
-        # for register in registers:
-        #     register.delete()
-
-        # context = {
-        #     "data": data.to_html(),
-        # }
-        # return render(request, "reports/sample.html", context)
 
 def daily_report(request):
     return render(request, "reports/daily_report.html")
