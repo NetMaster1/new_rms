@@ -582,7 +582,47 @@ def remainder_input_excel (request, document_id):
         return redirect ('login')
 
 def unpost_remainder_input (request, document_id):
-    pass
+    if request.user.is_authenticated:
+        document=Document.objects.get(id=document_id)
+        shop=document.shop_receiver
+        rhos=RemainderHistory.objects.filter(document=document_id)
+        for rho in rhos:
+            product=Product.objects.get(imei=rho.imei)
+            #checking rhos before
+            if RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__lt=rho.created).exists():
+                rho_latest_before = RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__lt=rho.created).latest('created')
+                remainder=rho_latest_before.current_remainder
+            else:
+                remainder=0
+             #checking rhos after
+            if RemainderHistory.objects.filter(shop=rho.shop, imei=rho.imei, created__gt=rho.created).exists():
+                sequence_rhos_after = RemainderHistory.objects.filter( shop=rho.shop, imei=rho.imei, created__gt=rho.created).order_by('created')
+                for obj in sequence_rhos_after:
+                    obj.pre_remainder = remainder
+                    obj.current_remainder = (
+                        remainder
+                        + obj.incoming_quantity
+                        - obj.outgoing_quantity
+                    )
+                    obj.save()
+                    remainder = obj.current_remainder
+            #=============Av_price_module==================================
+            av_price_obj = AvPrice.objects.get(imei=rho.imei)
+            av_price_obj.current_remainder -= rho.incoming_quantity
+            av_price_obj.sum -= int(rho.incoming_quantity) * int(rho.av_price)
+            if av_price_obj.current_remainder > 0:
+                av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+            else:
+                av_price_obj.av_price=0
+            rho.delete()
+        document.delete()
+        #document.posted=False
+        #document.save()
+        return redirect ('log')
+
+    else:
+        return redirect ('login')
+
 
 # ================================Sale Operations=================================
 def identifier_sale(request):
