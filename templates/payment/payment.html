@@ -32,7 +32,7 @@
             </div>
             <div class="modal-body">
 
-                <form action="{% url 'sale_input_cash' identifier.id client.id cashback_off %}" method="POST">
+                <form action="{% url 'sale_input_cash' identifier.id client.id cashback_off %}" method="POST" class="sale_form">
                     {% csrf_token %}
 
                     {% for group in request.user.groups.all %}
@@ -96,7 +96,7 @@
                         <div class="col-3" style="text-align:right">
                         <button type="button" class="btn btn-secondary btn_close_cash"
                             data-bs-dismiss="modal">Закрыть</button>
-                        <button type="submit" class="btn btn-secondary">Оплатить</button>
+                        <button type="submit" class="btn btn-secondary pay_button">Оплатить</button>
                         </div>
                     </div>
                 </form>
@@ -481,6 +481,7 @@
     const enterModalCredit = document.querySelector('.enterModalCredit')
     const btn_close_credit = document.querySelector('.btn_close_credit')
 
+
     btn_modal_credit.addEventListener('click', openModalCredit)
     btn_close_credit.addEventListener('click', closeModalCredit)
 
@@ -530,7 +531,16 @@
     function closeModalCashbackOff() {
         cashback_off_modal.classList.remove('openModal')
     }
+//======================Disabling a Button after sending a form============================
+    const sale_form = document.querySelector('.sale_form')
+    const pay_button = document.querySelector('.pay_button')
 
+    sale_form.addEventListener('submit', blockButton)
+    function blockButton() {
+        console.log('clicked');
+        pay_button.disabled = true;
+    }
+//===================================================================
 console.log("Js finishing")
 </script>
 {% endblock %}
