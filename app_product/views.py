@@ -39,6 +39,8 @@ import decimal
 import random
 import pandas
 import openpyxl as xls
+import xlwt
+from openpyxl import Workbook, load_workbook
 import datetime
 from datetime import date, timedelta
 import pytz
@@ -538,11 +540,43 @@ def change_remainder_input_posted (request, document_id):
 
 def remainder_input_excel (request, document_id):
     if request.user.is_authenticated:
+        document=Document.objects.get(id=document_id)
+        shop=document.shop_receiver
         rhos=RemainderHistory.objects.filter(document=document_id)
-        query=rhos.values ('name', 'imei', 'incoming_quantity')
-        data=pandas.DataFrame.from_records(query)
-        data.to_excel('D:/Soft/Files/Remainder.xlsx', index='False')
-        return redirect ('change_remainder_input_posted', document_id)
+
+        #query=rhos.values ('name', 'imei', 'incoming_quantity')
+        #data=pandas.DataFrame.from_records(query)
+        #data.to_excel('D:/Soft/Files/Remainder.xlsx', index='False')
+        #return redirect ('change_remainder_input_posted', document_id)
+
+#=======================Uploading to Excel Module===================================
+        response = HttpResponse(content_type="application/ms-excel")
+        response["Content-Disposition"] = (
+            "attachment; filename=Remainder_" + str(datetime.date.today()) + ".xls"
+        )
+
+        wb = xlwt.Workbook(encoding="utf-8")
+        ws = wb.add_sheet("Remainder")
+
+        # sheet header in the first row
+        row_num = 0
+        font_style = xlwt.XFStyle()
+
+        columns = ["Name", "IMEI", "Quantity"]
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num, columns[col_num], font_style)
+
+        # sheet body, remaining rows
+        font_style = xlwt.XFStyle()
+        query = rhos.values_list("name", "imei", "incoming_quantity")
+
+        for row in query:
+            row_num += 1
+            for col_num in range(len(row)):
+                ws.write(row_num, col_num, str(row[col_num]), font_style)
+        wb.save(response)
+        return response
+#=======================End of Excel Upload Module================================
 
     else:
         return redirect ('login')
