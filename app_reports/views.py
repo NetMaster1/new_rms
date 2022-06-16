@@ -630,6 +630,7 @@ def remainder_report_excel(request, shop_id, category_id, date):
         # data.to_excel(f'RemainderReport_{date}.xlsx', index=False)
         # data.to_excel('RemainderReport.xlsx', index=False)
 
+#=======================Uploading to Excel Module===================================
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (
             "attachment; filename=Remainder_" + str(datetime.date.today()) + ".xls"
@@ -657,6 +658,7 @@ def remainder_report_excel(request, shop_id, category_id, date):
                 ws.write(row_num, col_num, str(row[col_num]), font_style)
         wb.save(response)
         return response
+#=======================End of Excel Upload Module================================
 
         for i in report_query:
             i.delete()
