@@ -1,3 +1,4 @@
+from turtle import pd
 from django.db.models.fields import BLANK_CHOICE_DASH, NullBooleanField
 from django.http import request
 from app_product.admin import RemainderHistoryAdmin
@@ -37,6 +38,7 @@ from django.contrib import messages
 import decimal
 import random
 import pandas
+import openpyxl as xls
 import datetime
 from datetime import date, timedelta
 import pytz
@@ -533,6 +535,20 @@ def change_remainder_input_posted (request, document_id):
         return render(request, "documents/change_remainder_input_posted.html", context)
     else:
         return redirect ('login')
+
+def remainder_input_excel (request, document_id):
+    if request.user.is_authenticated:
+        rhos=RemainderHistory.objects.filter(document=document_id)
+        query=rhos.values ('name', 'imei', 'incoming_quantity')
+        data=pandas.DataFrame.from_records(query)
+        data.to_excel('D:/Soft/Files/Remainder.xlsx', index='False')
+        return redirect ('change_remainder_input_posted', document_id)
+
+    else:
+        return redirect ('login')
+
+def unpost_remainder_input (request, document_id):
+    pass
 
 # ================================Sale Operations=================================
 def identifier_sale(request):
@@ -1995,8 +2011,6 @@ def delivery_auto(request):
         document_sum = 0
         for i in range(cycle):
             row = df1.iloc[i]#reads each row of the df1 one by one
-            if '/' in row.Imei:
-                row.Imei=row.Imei.replace('/', '_')
             if Product.objects.filter(imei=row.Imei).exists():
                 product=Product.objects.get(imei=row.Imei)
             else:
