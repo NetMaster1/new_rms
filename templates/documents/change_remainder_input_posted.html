@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <div class="hide">
 
     <div class="container">
@@ -138,6 +139,13 @@
                                     class="btn btn-sm btn-block btn-outline-dark clear_storage">
                             </a>
                         </div>
+
+                        <div class="col-2">
+                            <a href="{% url 'remainder_input_excel' document.id %}">
+                                <input type="button" value="Сохранить в Excel" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                            </a>
+                        </div>
+
                     </div>
 
 
@@ -146,7 +154,7 @@
         </div>
     </div>
 </div>
-</div>
+
 
 
 <script>
@@ -297,4 +305,6 @@
 
     console.log('End of the script')
 </script>
+
+
 {% endblock %}

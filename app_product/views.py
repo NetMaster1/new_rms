@@ -1,3 +1,4 @@
+from turtle import pd
 from django.db.models.fields import BLANK_CHOICE_DASH, NullBooleanField
 from django.http import request
 from app_product.admin import RemainderHistoryAdmin
@@ -37,6 +38,7 @@ from django.contrib import messages
 import decimal
 import random
 import pandas
+import openpyxl as xls
 import datetime
 from datetime import date, timedelta
 import pytz
@@ -533,6 +535,20 @@ def change_remainder_input_posted (request, document_id):
         return render(request, "documents/change_remainder_input_posted.html", context)
     else:
         return redirect ('login')
+
+def remainder_input_excel (request, document_id):
+    if request.user.is_authenticated:
+        rhos=RemainderHistory.objects.filter(document=document_id)
+        query=rhos.values ('name', 'imei', 'incoming_quantity')
+        data=pandas.DataFrame.from_records(query)
+        data.to_excel('C:/Users/Files/Remainder.xlsx', index='False')
+        return redirect ('change_remainder_input_posted', document_id)
+
+    else:
+        return redirect ('login')
+
+def unpost_remainder_input (request, document_id):
+    pass
 
 # ================================Sale Operations=================================
 def identifier_sale(request):

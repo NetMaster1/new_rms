@@ -12,6 +12,8 @@ urlpatterns = [
     #==================Remainde Input=====================================
     path ('remainder_input', views.remainder_input, name='remainder_input'),
     path ('change_remainder_input_posted/int<document_id>', views.change_remainder_input_posted, name='change_remainder_input_posted'),
+    path ('remainder_input_excel/int<document_id>', views.remainder_input_excel, name='remainder_input_excel'),
+    path ('unpost_remainder_input/int<document_id>', views.unpost_remainder_input, name='unpost_remainder_input'),
     
     # ==================Delivery========================
     path ('delivery_auto', views.delivery_auto, name='delivery_auto'),
