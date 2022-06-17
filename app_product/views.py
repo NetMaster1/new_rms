@@ -638,6 +638,8 @@ def check_sale(request, identifier_id):
     if request.user.is_authenticated:
         if request.method == "POST":
             imei = request.POST["imei"]
+            if '/' in imei:
+                imei=imei.replace('/', '_')
             quantity = request.POST["quantity"]
             quantity = int(quantity)
             if Product.objects.filter(imei=imei).exists():
@@ -1772,6 +1774,8 @@ def check_sale_unposted (request, document_id):
     shop=document.shop_sender
     if request.method == "POST":
         imei = request.POST["imei"]
+        if '/' in imei:
+            imei=imei.replace('/', '_')
         if Product.objects.filter(imei=imei).exists():
             product = Product.objects.get(imei=imei)
             if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
@@ -2178,6 +2182,8 @@ def check_delivery(request, identifier_id):
     # if 'imei' in request.GET:
     if request.method == "POST":
         imei = request.POST["imei"]
+        if '/' in imei:
+            imei=imei.replace('/', '_')
         if Product.objects.filter(imei=imei).exists():
             product = Product.objects.get(imei=imei)
             if Register.objects.filter(identifier=identifier, product=product).exists():
@@ -2200,6 +2206,8 @@ def check_delivery_unposted(request, document_id):
     registers = Register.objects.filter(document=document)
     if request.method == "POST":
         imei = request.POST["imei"]
+        if '/' in imei:
+            imei=imei.replace('/', '_')
         if Product.objects.filter(imei=imei).exists():
             product = Product.objects.get(imei=imei)
             if Register.objects.filter(document=document, product=product).exists():
@@ -2208,7 +2216,8 @@ def check_delivery_unposted(request, document_id):
             else:
                 register = Register.objects.create(
                     document=document,
-                    product=product
+                    product=product,
+                    new=True
                 )
                 return redirect("change_delivery_unposted", document.id)
         else:
@@ -2583,7 +2592,7 @@ def change_delivery_unposted(request, document_id):
                                 sub_total=int(int(quantities[i]) * int(prices[i]))
                             )
                         document_sum+=rho.sub_total
-                #===========Av_price_module================
+            #===========Av_price_module================
                         if AvPrice.objects.filter(imei=imeis[i]).exists():
                             av_price_obj = AvPrice.objects.get(imei=imeis[i])
                             av_price_obj.current_remainder += int(quantities[i])
@@ -2598,9 +2607,7 @@ def change_delivery_unposted(request, document_id):
                                 sum=sub_totals[i],
                                 av_price=int(sub_totals[i])/ int(quantities[i])
                             )
-                #===================End of Av_price module
-                        rho.av_price=av_price_obj.av_price
-                        rho.save()        
+                #===================End of Av_price module      
                         # checking docs after remainder_history
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=rho.created).exists():
                             remainder=rho.current_remainder
@@ -2749,6 +2756,8 @@ def check_transfer(request, identifier_id):
     #shop = request.GET["shop"]
     if request.method == "POST":
         imei = request.POST["check_imei"]
+        if '/' in imei:
+            imei=imei.replace('/', '_')
         # quantity = request.POST["quantity"]
         # quantity=int(quantity)
         if Product.objects.filter(imei=imei).exists():
@@ -2798,6 +2807,8 @@ def check_transfer_unposted(request, document_id):
     # if "imei_check" in request.GET:
     if request.method=="POST":
         imei = request.POST["imei_check"]
+        if '/' in imei:
+            imei=imei.replace('/', '_')
         quantity = request.POST["quantity_input"]
         # shop = request.GET["shop"]
         # shop = Shop.objects.get(id=shop)
@@ -3248,6 +3259,7 @@ def change_transfer_unposted(request, document_id):
                         register.new=False
                         register.quantity = quantities[i]
                         register.sub_total = int(prices[i]) * int(quantities[i])
+                        register.new=False
                         register.save()
                     document.sum = document_sum
                     document.created=dateTime
@@ -3463,6 +3475,8 @@ def check_recognition(request, identifier_id):
         # if 'imei' in request.GET:
         if request.method == "POST":
             imei = request.POST["check_imei"]
+            if '/' in imei:
+                imei=imei.replace('/', '_')
             # shop = request.POST["shop"]
             # shop=Shop.objects.get(id=shop)
             if Product.objects.filter(imei=imei).exists():
@@ -3517,6 +3531,8 @@ def check_recognition_unposted (request, document_id):
         registers = Register.objects.filter(document=document)
         if request.method == "POST":
             imei = request.POST["imei"]
+            if '/' in imei:
+                imei=imei.replace('/', '_')
             shop=document.shop_receiver
             #shop=Shop.objects.get(id=shop)
             if Product.objects.filter(imei=imei).exists():
@@ -4631,6 +4647,8 @@ def check_return(request, identifier_id):
         # if 'imei' in request.GET:
         if request.method == "POST":
             imei = request.POST["imei"]
+            if '/' in imei:
+                imei=imei.replace('/', '_')
             # if request.user in users:
             #     shop=request.session['session_shop']
             #     shop=Shop.objects.get(id=shop)
@@ -4666,6 +4684,8 @@ def check_return_unposted(request, document_id):
         # if 'imei' in request.GET:
         if request.method == "POST":
             imei = request.POST["imei"]
+            if '/' in imei:
+                imei=imei.replace('/', '_')
             if Product.objects.filter(imei=imei).exists():
                 product = Product.objects.get(imei=imei)
                 if Register.objects.filter(document=document, product=product).exists():
