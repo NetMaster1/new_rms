@@ -1,5 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
+{% for group in request.user.groups.all %}
+{% if group.name == 'sales' %}
+
+<body oncontextmenu="return false">
+    {% endif%}
+    {% endfor%}
+
+
 <div class="hide">
 
     <div class="container">

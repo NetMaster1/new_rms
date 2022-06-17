@@ -1,22 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<<<<<<< HEAD
-{% for group in request.user.groups.all %}
-{% if group.name == 'sales' %}
-
-<body oncontextmenu="return false">
-    {% endif%}
-    {% endfor%}
-
-=======
 
 {% for group in request.user.groups.all %}
 {% if group.name == 'sales' %}
 <body oncontextmenu="return false">
 {% endif%}
 {% endfor%}
->>>>>>> d4d7ab0ef9380ee2c9245f7a4ab3459870541835
 
 <!-- <div class="hide"> -->
 <div class="container">
