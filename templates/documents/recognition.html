@@ -83,7 +83,7 @@
                                 <!-- <button type="button" class="btn_close"></button> -->
                             </div>
                             <div class="modal-body">
-                                <form action="{% url 'enter_new_product_recognition' identifier.id %}" method="POST">
+                                <form action="{% url 'enter_new_product_recognition' identifier.id %}" method="POST" class="new_product_form">
                                     {% csrf_token %}
 
                             <div class="form-row">
@@ -128,7 +128,7 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary btn_close"
                                     data-bs-dismiss="modal">Закрыть без сохранения</button>
-                                <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
+                                <button type="submit" class="btn btn-secondary new_product_button">Сохранить изменения</button>
                             </div>
                             </form>
                         </div>
@@ -140,7 +140,7 @@
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'recognition_input' identifier.id %}" method="POST" >
+                    <form action="{% url 'recognition_input' identifier.id %}" method="POST" class="recognition_form">
                         {% csrf_token %}
 
                     {% for group in request.user.groups.all %}
@@ -232,7 +232,7 @@
 
                 <div class="row m-auto mt-3 ">
                     <div class="col-1">
-                        <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage recognition_button">
                     </div>
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}
@@ -285,6 +285,21 @@
     const check_imei = document.querySelector('#check_imei');
     //const save_button = document.querySelector('#save_button');
 
+    //block button until recognition form is submtitted
+    const recognition_button = document.querySelector('.recognition_button');
+    const recognition_form = document.querySelector('.recognition_form');
+    recognition_form.addEventListener('submit', blockButton)
+        function blockButton() {
+            recognition_button.disabled = true;
+        }
+
+    //block button until new_product form is submtitted
+    const new_product_button = document.querySelector('.new_product_button');
+    const new_product_form = document.querySelector('.new_product_form');
+    new_product_form.addEventListener('submit', blockButton1)
+        function blockButton1() {
+            new_product_button.disabled = true;
+        }
 
 
     btn_modal.addEventListener('click', openModal)

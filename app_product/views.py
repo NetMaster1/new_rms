@@ -1875,43 +1875,9 @@ def check_service(request, identifier_id):
         auth.logout(request)
         return redirect ('login')
 
-# ================================Payment Operations=============================================
-def payment(request, identifier_id, client_id, cashback_off):
-    if request.user.is_authenticated:
-        identifier = Identifier.objects.get(id=identifier_id)
-        client = Customer.objects.get(id=client_id)
-        registers = Register.objects.filter(identifier=identifier)
-        shops=Shop.objects.all()
-        sum = 0
-        n = registers.count()
-        for register in registers:
-            sum += register.sub_total
-        sum_to_pay = sum - cashback_off
-
-        doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
-        context = {
-            "identifier": identifier,
-            "registers": registers,
-            "client": client,
-            "sum": sum,
-            "cashback_off": cashback_off,
-            "sum_to_pay": sum_to_pay,
-            'shops': shops
-        }
-        return render(request, "payment/payment.html", context)
-    else:
-        return redirect("login")
 #===============================CashBack Operations======================================================
 
-def noCashback(request, identifier_id):
-    if request.user.is_authenticated:
-        identifier = Identifier.objects.get(id=identifier_id)
-        client = Customer.objects.get(f_name="default")
-        cashback_off = 0
-        return redirect("payment", identifier.id, client.id, cashback_off)
-    else:
-        auth.logout(request)
-        return redirect("login")
+
 
 def cashback(request, identifier_id):
     if request.user.is_authenticated:
@@ -1954,23 +1920,45 @@ def cashback_off_choice(request, identifier_id, client_id):
         return render(request, "payment/cashback.html", context)
 
 def security_code(request, identifier_id, client_id):
+    import requests
+    import json
+
     if request.user.is_authenticated:
         client = Customer.objects.get(id=client_id)
         cashback_off=client.accum_cashback
         identifier = Identifier.objects.get(id=identifier_id)
         registers = Register.objects.filter(identifier=identifier)
-        # if request.method=="POST":
-        security_code = []
-        for i in range(4):
-            a = random.randint(0, 9)
-            security_code.append(a)
-        # transforming every integer into string
-        code_string = "".join(str(i) for i in security_code)  
-        print(code_string)
 
-        #==================SMSC API===========================
-        smsc=SMSC()
-        r=smsc.send_sms('79200711112', 'Тестовое сообщение', sender='sms')
+        #=============SMSC API (phone calls) ()==================================
+        api_request=requests.get("https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones=79519125000&mes=code&call=1&fmt=3")
+        #server's response is returned in json format
+        api=json.loads(api_request.content)
+        code=api['code']
+        print(api)
+        print(code)
+
+        #try:
+        #    api=json.loads(api_request.content)
+        #    messages.error(request, api)
+        #except Exception as e:
+        #    api =  'Error…'
+        #    messages.error(request, api)
+    #========================================================================
+
+        # if request.method=="POST":
+        #==================Creating Security Code Module=================================
+        #security_code = []
+        #for i in range(4):
+        #    a = random.randint(0, 9)
+        #    security_code.append(a)
+        # transforming every integer into string
+        #code_string = "".join(str(i) for i in security_code)  
+        #print(code_string)
+        #=======================================================
+
+        #==================SMSC API (sms)===========================
+        #smsc=SMSC()
+        #r=smsc.send_sms('79200711112', 'Тестовое сообщение', sender='sms')
         #r = smsc.send_sms("79200711112", "http://smsc.ru\nSMSC.RU", query="maxsms=3")
         #===============================================
 
@@ -1988,7 +1976,8 @@ def security_code(request, identifier_id, client_id):
             "identifier": identifier,
             "client": client,
             "cashback_off" : cashback_off,
-            "code_string": code_string,
+            #"code_string": code_string,
+            "code": code
         }
         return render(request, "payment/security_code.html", context)
     else:
@@ -2021,6 +2010,8 @@ def sec_code_confirm(request, identifier_id, client_id):
             messages.error(request, "Неверный код. Попробуйте еще раз.")
             return redirect("security_code", identifier.id, client.id)
 
+
+
 def cashback_off(request, identifier_id, client_id):
     client = Customer.objects.get(id=client_id)
     registers = Register.objects.filter(identifier=identifier_id)
@@ -2039,11 +2030,51 @@ def cashback_off(request, identifier_id, client_id):
 
     return redirect("payment", identifier_id, client.id, cashback_off)
 
+
+
 def no_cashback_off(request, identifier_id, client_id):
     identifier = Identifier.objects.get(id=identifier_id)
     client = Customer.objects.get(id=client_id)
     cashback_off = 0
     return redirect("payment", identifier.id, client.id, cashback_off)
+
+def noCashback(request, identifier_id):
+    if request.user.is_authenticated:
+        identifier = Identifier.objects.get(id=identifier_id)
+        client = Customer.objects.get(f_name="default")
+        cashback_off = 0
+        return redirect("payment", identifier.id, client.id, cashback_off)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+# ================================Payment Operations=============================================
+def payment(request, identifier_id, client_id, cashback_off):
+    if request.user.is_authenticated:
+        identifier = Identifier.objects.get(id=identifier_id)
+        client = Customer.objects.get(id=client_id)
+        registers = Register.objects.filter(identifier=identifier)
+        shops=Shop.objects.all()
+        sum = 0
+        n = registers.count()
+        for register in registers:
+            sum += register.sub_total
+        sum_to_pay = sum - cashback_off
+
+        doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+        context = {
+            "identifier": identifier,
+            "registers": registers,
+            "client": client,
+            "sum": sum,
+            "cashback_off": cashback_off,
+            "sum_to_pay": sum_to_pay,
+            'shops': shops
+        }
+        return render(request, "payment/payment.html", context)
+    else:
+        return redirect("login")
+
 
 # ====================================Delivery Operations==============================================
 def delivery_auto(request):

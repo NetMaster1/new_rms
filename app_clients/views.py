@@ -4,7 +4,6 @@ from app_product.models import Identifier
 
 # Create your views here.
 def new_client_sale (request, identifier_id):
-    print('===================')
     identifier=Identifier.objects.get(id=identifier_id)
     if request.method=="POST":
         f_name=request.POST['f_name']
