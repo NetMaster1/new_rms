@@ -3374,11 +3374,24 @@ def transfer_auto (request):
             for i in range(cycle):
                 row = df1.iloc[i]#reads rows of excel file one by one
                 product=Product.objects.get(imei=row.Imei)
-                av_price=AvPrice.objects.get(imei=row.Imei)
+                if AvPrice.objects.filter(imei=row.Imei).exists():
+                    av_price=AvPrice.objects.get(imei=row.Imei)
+                else:
+                    av_price=AvPrice.objects.create(
+                        imei=row.Imei,
+                        name=row.Title,
+                        current_remainder=row.Quantity,
+                        av_price=row.Retail_price,
+                        sum=int(row.Quantity)*int(row.Retail_price)
+                    )
                 document_sum+=int(row.Quantity) * int(row.Retail_price)
                 # checking shop_sender
-                rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei,shop=shop_sender,created__lt=document.created).latest('created')
-
+                #additional check in case quantities in excel file are 0
+                if RemainderHistory.objects.filter(imei=row.Imei,shop=shop_sender,created__lt=document.created).exists():
+                    rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei,shop=shop_sender,created__lt=document.created).latest('created')
+                    pre_remainder=rho_latest_before.current_remainder
+                else:
+                    pre_remainder=0
                 rho = RemainderHistory.objects.create (
                     created=document.created,
                     user=request.user,
@@ -3390,9 +3403,9 @@ def transfer_auto (request):
                     name=product.name,
                     av_price=av_price.av_price,
                     retail_price=row.Retail_price,
-                    pre_remainder=rho_latest_before.current_remainder,
+                    pre_remainder=pre_remainder,
                     incoming_quantity=0,
-                    outgoing_quantity=row.Quantity,
+                    outgoing_quantity=int(row.Quantity),
                     current_remainder=rho_latest_before.current_remainder- int(row.Quantity),
                     sub_total=int(row.Retail_price) * int(row.Quantity),
                     status=False,
@@ -3411,6 +3424,7 @@ def transfer_auto (request):
                         obj.save()
                         remainder = obj.current_remainder
                 #checking docs before for shop_receiver
+                #additional check in case quantities in excel file are 0
                 if RemainderHistory.objects.filter(imei=row.Imei, shop=shop_receiver, created__lt=document.created).exists():
                     rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop_receiver, created__lt=document.created).latest('created')
                     pre_remainder=rho_latest_before.current_remainder
@@ -3454,8 +3468,6 @@ def transfer_auto (request):
                 'shops': shops,
                 }
             return render(request, "documents/transfer_auto.html", context)
-    
-
     else:
         auth.logout(request)
         return redirect("login")
