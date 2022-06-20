@@ -4,6 +4,23 @@
 <div class="container">
     <div class="row mt-5">
     <div class="col-6 border rounded m-auto payment_choice">
+        
+        <!-- =====================Alert Messages Module=================== -->
+        <div class="container mt-2">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">
+                <!-- <button class="close" data-dismiss="alert">
+                                                <small><sup>x</sup></small>
+                                            </button> -->
+                {{ message }}
+            </div>
+            {% endfor%}
+            {% endif%}
+        </div>
+        <!-- ===================End of Alert Messages Module================ -->
+
+
         <div class="row mt-3">
             <h3 class='text-center'>Выберите тип оплаты</h3>
         </div>

@@ -841,7 +841,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             document.sum=document_sum
             document.sum_minus_cashback = document_sum - cashback_off
             document.save()
-            sum_to_pay = document.sum_minus_cashback        
+            sum_to_pay = document.sum_minus_cashback       
             #checking chos before
             if Cash.objects.filter(shop=shop, created__lt=document.created).exists():
                 cho_latest_before = Cash.objects.filter(shop=shop, created__lt=document.created).latest('created')
@@ -1441,6 +1441,10 @@ def change_sale_unposted (request, document_id):
                 card=int(card)
             else:
                 card=0
+            if cashback_off:
+                cashback_off=int(cashback_off)
+            else:
+                cashback_off=0
             #===================DateTime module for Change Unposted===============================
             dateTime=request.POST['dateTime']
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
@@ -1469,7 +1473,7 @@ def change_sale_unposted (request, document_id):
                 n=len(sub_totals)
                 for i in range(n):
                     sum+=int(sub_totals[i])
-                cash_sum = int(cash) + int(credit) + int(card)
+                cash_sum = int(cash) + int(credit) + int(card) + int (cashback_off)
                 if cash_sum != sum:
                     messages.error(request, "Сумма в чеке не совпадает с суммой продажи.")
                     return redirect("change_sale_unposted", document.id)
@@ -1550,6 +1554,7 @@ def change_sale_unposted (request, document_id):
                         rho.save()
 
                 client.accum_cashback-=cashback_off
+                client.save()
                 document.sum=document_sum
                 #document.sum_minus_cashback-=(int(document.sum)-int(cashback_off))
                 document.posted=True
@@ -1726,12 +1731,12 @@ def unpost_sale (request, document_id):
             if client.f_name != "default":
                 client.accum_cashback-=rho.cash_back_awarded
                 client.save()
-
             rho.delete()
         document.posted=False
         if client.f_name != "default":
             client.accum_cashback=client.accum_cashback+document.cashback_off
-        document.cashback_off=0
+            client.save()
+        #document.cashback_off=0
         document.save()
 
         #correcting cash/credit/card operations
@@ -1876,7 +1881,10 @@ def check_service(request, identifier_id):
         return redirect ('login')
 
 #===============================CashBack Operations======================================================
-
+#При проведении докумена (продажа) кэшбэк, списанный со счета клиента сохраняется в document.cashback_off.
+#При отмене проведения документа (продажа) начисленный кэшбэк обнуляется со счета клиента (customer.accum_cashback); списанный кэшбэк возвращается на счет клиента, но одновременно сохраняется в document.cashback_off.
+#При проведении change_sale_unposted рассчитывается новый начисленный кэшбэк, который идет на счет клиенту; списываемый кэшбэк списывается со счета клиента (сумма берется из document.cashback_off). Таким образом, при редактировании документа change_sale_posted сумма кэшбэка к списанию не редактируется.
+#При удалении документа кэшбэк с покупки не начисляется; списываемый кэшбэк не списывается со счета клиент, и одновременно удаляется из document.cashback_off вместе с документом.
 
 
 def cashback(request, identifier_id):
@@ -1930,13 +1938,24 @@ def security_code(request, identifier_id, client_id):
         registers = Register.objects.filter(identifier=identifier)
 
         #=============SMSC API (phone calls) ()==================================
-        api_request=requests.get("https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones=79519125000&mes=code&call=1&fmt=3")
+        phone=client.phone
+        #api_request=requests.get("https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={}&mes=code&call=1&fmt=3")
+        #url=f"https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={phone}&mes=code&call=1&fmt=3"
+        #variable can't be placed directly in url string. That's why I use .format() or f'
+        base_url="https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={}&mes=code&call=1&fmt=3"
+        url=base_url.format(phone)
+        api_request=requests.get(url)
         #server's response is returned in json format
-        api=json.loads(api_request.content)
-        code=api['code']
-        print(api)
-        print(code)
 
+        try:
+            api=json.loads(api_request.content)
+            code_string=api['code']
+            messages.success(request, "Сейчас покупатель получит звонок. Необходимо ввести последние 6 цифр номера, с которого будет звонок, чтобы подтвердить списание кэш-бэка.")
+            print(api)
+            print(code_string)
+        except Exception as e:
+            messages.error(request, 'Ошибка ответа сервера. В данный момент списание кэш-бэка не возможно. Попробуйте продажу без списания кэш-бэка')
+            return redirect("sale", identifier.id)
         #try:
         #    api=json.loads(api_request.content)
         #    messages.error(request, api)
@@ -1976,8 +1995,7 @@ def security_code(request, identifier_id, client_id):
             "identifier": identifier,
             "client": client,
             "cashback_off" : cashback_off,
-            #"code_string": code_string,
-            "code": code
+            "code_string": code_string,
         }
         return render(request, "payment/security_code.html", context)
     else:
@@ -1992,6 +2010,7 @@ def sec_code_confirm(request, identifier_id, client_id):
         code_string = request.POST["code_string"]
         code = request.POST["code"]
         if code == code_string:
+            messages.success(request, "Кэшбэк был списан с лицевого счета покупателя.")
             sum = 0
             for register in registers:
                 sum += register.sub_total
@@ -2007,10 +2026,8 @@ def sec_code_confirm(request, identifier_id, client_id):
 
             return redirect("payment", identifier.id, client.id, cashback_off)
         else:
-            messages.error(request, "Неверный код. Попробуйте еще раз.")
-            return redirect("security_code", identifier.id, client.id)
-
-
+            messages.error(request, "Вы ввели неверный код. Попробуйте еще раз.")
+            return redirect("sale", identifier.id)
 
 def cashback_off(request, identifier_id, client_id):
     client = Customer.objects.get(id=client_id)
@@ -2029,8 +2046,6 @@ def cashback_off(request, identifier_id, client_id):
     client.save()
 
     return redirect("payment", identifier_id, client.id, cashback_off)
-
-
 
 def no_cashback_off(request, identifier_id, client_id):
     identifier = Identifier.objects.get(id=identifier_id)
