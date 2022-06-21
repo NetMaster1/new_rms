@@ -114,6 +114,15 @@ def save_in_excel_daily_rep(request):
                     credit_sum += credit.sum
             else:
                 credit_sum = 0
+            #=========================Calculating Cashback=============================
+            sale_type = DocumentType.objects.get(name="Продажа ТМЦ")
+            if Document.objects.filter(shop_sender=shop, created__date=date, posted=True, title=sale_type).exists():
+                docs=Document.objects.filter(shop_sender=shop, created__date=date, posted=True, title=sale_type)
+                cashback=0
+                for doc in docs:
+                    cashback+=doc.cashback_off
+            else:
+                cashback=0
             # =======================Calculating opening balance for each shop======================
             if Cash.objects.filter(created__lt=date, shop=shop).exists():
                 prev_day_cho = Cash.objects.filter(created__lt=date, shop=shop).latest("created")
@@ -139,6 +148,7 @@ def save_in_excel_daily_rep(request):
                 modems=shop_row[10],
                 credit=credit_sum,
                 card=card_sum,
+                cashback=cashback,
                 salary=salary_sum,
                 expenses=expenses_sum,
                 return_sum=return_sum,
@@ -163,6 +173,7 @@ def save_in_excel_daily_rep(request):
                 - daily_rep.credit
                 - daily_rep.salary
                 - daily_rep.card
+                - daily_rep.cashback
                 - daily_rep.expenses
                 - daily_rep.return_sum
                 - daily_rep.cash_move
@@ -225,6 +236,8 @@ def save_in_excel_daily_rep(request):
             ws.write(row_num, col_num, query_list.credit, font_style)
             row_num += 1
             ws.write(row_num, col_num, query_list.card, font_style)
+            row_num+= 1
+            ws.write(row_num, col_num, query_list.cashback, font_style)
             row_num += 1
             ws.write(row_num, col_num, query_list.salary, font_style)
             row_num += 1
@@ -252,6 +265,7 @@ def save_in_excel_daily_rep(request):
             "modems",
             "credit",
             "card",
+            "cashack"
             "salary",
             "expenses",
             "return_sum",
@@ -359,6 +373,12 @@ def sale_report_per_shop(request):
             credits=Credit.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date)
             for i in credits:
                 credit_sum+=i.sum
+    #===========================Calculating cashback sum=================================
+        cashback=0
+        if Document.objects.filter(shop_sender=shop, created__gt=start_date, created__lt=end_date, posted=True).exists():
+            docs=Document.objects.filter(shop_sender=shop, created__gt=start_date, created__lt=end_date, posted=True)
+            for doc in docs:
+                cashback+=doc.cashback_off
 
         array=[]
         for i in queryset:
@@ -392,21 +412,22 @@ def sale_report_per_shop(request):
         for item in sale_report:
             total_sales+=item.retail_sum
 
-        else:
-            context = {
-                "sale_report": sale_report,
-                "shops": shops,
-                "total_sales": total_sales,
-                "shop": shop,
-                "pay_card_remainder_start": pay_card_remainder_start,
-                "pay_card_remainder_current": pay_card_remainder_current,
-                "cash_sum": cash_sum,
-                "credit_sum": credit_sum,
-                "card_sum": card_sum,
-                "cash_start": cash_start,
-                "cash_end": cash_end
-            }
-            return render(request, "reports/sale_report_per_shop.html", context)
+        
+        context = {
+            "sale_report": sale_report,
+            "shops": shops,
+            "total_sales": total_sales,
+            "shop": shop,
+            "pay_card_remainder_start": pay_card_remainder_start,
+            "pay_card_remainder_current": pay_card_remainder_current,
+            "cash_sum": cash_sum,
+            "credit_sum": credit_sum,
+            "card_sum": card_sum,
+            "cash_start": cash_start,
+            "cash_end": cash_end,
+            "cashback": cashback,
+        }
+        return render(request, "reports/sale_report_per_shop.html", context)
     else:
         context = {
             "shops": shops,

@@ -34,19 +34,37 @@
 <!-- ===========================Modal Body For Paying Cash================================= -->
 <div class="enterModalCash">
         <div class="modal-content">
-            <div class="modal-header">
-             
-             
-                <h5 class="modal-title" id="exampleModalLabel">Оплата наличными</h5>
-              
-                <div class="col-2"><h5>Торговая точка: {{shop}}</h5></div>
-                <div class="col-"><h5>Кассир: {{request.user}}</h5></div>
-                <div class="col-4"><h5>Кэшбэк: {{cashback_off}} руб.</h5></div>
-                <div class="col-4"><h5>Остаток на лс: {{client.accum_cashback}} руб.</h5></div>
-                
-                <!-- <button type="button" class="btn_close"></button> -->
-               
-            </div>
+                    <div class="row m-auto mt-1">
+                        <h5>Оплата наличными</h5>
+                    </div>
+                    
+                    <div class="row m-auto">
+                        <div class="col-2">
+                            <strong>Торговая точка:</strong>
+                        </div>
+                        <div class="col-1">
+                            <strong>{{shop}}</strong>
+                        </div>
+                        <div class="col-1">
+                            <strong>Кассир:</strong>
+                        </div>
+                        <div class="col-1 text-left">
+                            <strong class="text-left">{{request.user}}</strong>
+                        </div>
+                        <div class="col-1">
+                            <strong>Кэшбэк:</strong>
+                        </div>
+                        <div class="col-1">
+                            <strong>{{cashback_off}} руб.</strong>
+                        </div>
+                        <div class="col-2">
+                            <strong>Остаток лс клиента:</strong>
+                        </div>
+                        <div class="col-1">
+                            <strong>{{client.accum_cashback}} руб.</strong>
+                        </div>
+                    </div>
+                    <hr>
             <div class="modal-body">
 
                 <form action="{% url 'sale_input_cash' identifier.id client.id cashback_off %}" method="POST" class="sale_form">
@@ -106,9 +124,16 @@
                     {% endfor %}
 
                     <div class="modal-footer">
-                        <!-- <div class="col-6" style="text-align:left"> -->
-                            <h5>Сумма к уплате за вычетом кэшбэка:</h5><h3>{{sum_to_pay}}</h3> <h5>руб.</h5> </h5>
+                        {% if cashback_off > 0 %}
+                        <h5>Сумма к уплате за вычетом кэшбэка:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3>
+                        <h5>руб.</h5>
                         <!-- </div> -->
+                        {% else %}
+                        <h5>Сумма к оплате:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3>
+                        <h5>руб.</h5>
+                        {% endif %}
                     
                         <div class="col-3" style="text-align:right">
                         <button type="button" class="btn btn-secondary btn_close_cash"
@@ -130,24 +155,37 @@
 <!-- ==============================Modal Body For Paying Credit====================================== -->
 <div class="enterModalCredit">
     <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Оплата в кредит</h5>
-            <div class="col-2">
-                <h5>Торговая точка: {{shop}}</h5>
-            </div>
-            <div class="col-">
-                <h5>Кассир: {{request.user}}</h5>
-            </div>
-            <div class="col-4">
-                <h5>Кэшбэк: {{cashback_off}} руб.</h5>
-            </div>
-            <div class="col-4">
-                <h5>Остаток на лс: {{client.accum_cashback}} руб.</h5>
-            </div>
-
-            <!-- <button type="button" class="btn_close"></button> -->
-
-        </div>
+                <div class="row m-auto mt-1">
+                    <h5>Оплата в кредит</h5>
+                </div>
+                
+                <div class="row m-auto">
+                    <div class="col-2">
+                        <strong>Торговая точка:</strong>
+                    </div>
+                    <div class="col-1">
+                        <strong>{{shop}}</strong>
+                    </div>
+                    <div class="col-1">
+                        <strong>Кассир:</strong>
+                    </div>
+                    <div class="col-1 text-left">
+                        <strong class="text-left">{{request.user}}</strong>
+                    </div>
+                    <div class="col-1">
+                        <strong>Кэшбэк:</strong>
+                    </div>
+                    <div class="col-1">
+                        <strong>{{cashback_off}} руб.</strong>
+                    </div>
+                    <div class="col-2">
+                        <strong>Остаток лс клиента:</strong>
+                    </div>
+                    <div class="col-1">
+                        <strong>{{client.accum_cashback}} руб.</strong>
+                    </div>
+                </div>
+                <hr>
         <div class="modal-body">
 
             <form action="{% url 'sale_input_credit' identifier.id client.id cashback_off %}" method="POST">
@@ -222,12 +260,16 @@
                 {% endfor %}
 
                 <div class="modal-footer">
-                    <!-- <div class="col-6" style="text-align:left"> -->
+                    {% if cashback_off > 0 %}
                     <h5>Сумма к уплате за вычетом кэшбэка:</h5>
-                    <h3>{{sum_to_pay}}</h3>
+                    <h3 style="color: red">{{sum_to_pay}}</h3>
                     <h5>руб.</h5>
-                    </h5>
                     <!-- </div> -->
+                    {% else %}
+                    <h5>Сумма к оплате:</h5>
+                    <h3 style="color: red">{{sum_to_pay}}</h3>
+                    <h5>руб.</h5>
+                    {% endif %}
 
                     <div class="col-3" style="text-align:right">
                         <button type="button" class="btn btn-secondary btn_close_credit"
@@ -251,16 +293,36 @@
 <!-- ==============================Modal Body For Paying Card====================================== -->
 <div class="enterModalCard">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Оплата картой</h5>
-                <div class="col-4">
-                    <h5>Торговая точка: {{shop}}</h5>
+
+            <div class="row m-auto mt-1"><h5>Оплата картой (экваиринг)</h5></div>
+
+            <div class="row m-auto">
+                <div class="col-2">
+                    <strong>Торговая точка:</strong>
                 </div>
-                <div class="col-4">
-                    <h5>Кассир: {{request.user}}</h5>
+                <div class="col-1">
+                    <strong>{{shop}}</strong>
                 </div>
-                <button type="button" class="btn_close"></button>
+                <div class="col-1">
+                    <strong>Кассир:</strong>
+                </div>
+                <div class="col-1 text-left">
+                    <strong class="text-left">{{request.user}}</strong>
+                </div>
+                <div class="col-1">
+                    <strong>Кэшбэк:</strong>
+                </div>
+                <div class="col-1">
+                    <strong>{{cashback_off}} руб.</strong>
+                </div>
+                <div class="col-2">
+                    <strong>Остаток лс клиента:</strong>
+                </div>
+                <div class="col-1">
+                    <strong>{{client.accum_cashback}} руб.</strong>
+                </div>
             </div>
+       <hr>
             <div class="modal-body">
                 <form action="{% url 'sale_input_card' identifier.id client.id cashback_off %}" method="POST">
                     {% csrf_token %}
@@ -331,10 +393,15 @@
                     {% endfor %}
 
                     <div class="modal-footer">
-                        <div class="col-8" style="text-align:left">
-                            <h5>Общая сумма чека: {{sum}} руб. </h5>
-                        </div>
-                    
+                        {% if cashback_off > 0 %}
+                        <h5>Сумма к уплате за вычетом кэшбэка:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3><h5>руб.</h5>
+                        <!-- </div> -->
+                        {% else %}
+                        <h5>Сумма к оплате:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3><h5>руб.</h5>
+                        {% endif %}
+
                         <div class="col-3" style="text-align:right">
                         <button type="button" class="btn btn-secondary btn_close_card"
                             data-bs-dismiss="modal">Закрыть</button>
@@ -355,18 +422,37 @@
 <!-- ============================Modal Body For Paying Complex====================================== -->
 <div class="enterModalComplex">
         <div class="modal-content">
-            <div class="modal-header">
-                <div class="col-4">
-                    <h5>Сложная оплата</h5>
-                </div>
-                <div class="col-4">
-                    <h5>Торговая точка: {{shop}}</h5>
-                </div>
-                <div class="col-4">
-                    <h5>Кассир: {{request.user}}</h5>
-                </div>
-                <button type="button" class="btn_close"></button>
+            <div class="row m-auto mt-1">
+                <h5>Сложная оплата</h5>
             </div>
+            
+            <div class="row m-auto">
+                <div class="col-2">
+                    <strong>Торговая точка:</strong>
+                </div>
+                <div class="col-1">
+                    <strong>{{shop}}</strong>
+                </div>
+                <div class="col-1">
+                    <strong>Кассир:</strong>
+                </div>
+                <div class="col-1 text-left">
+                    <strong class="text-left">{{request.user}}</strong>
+                </div>
+                <div class="col-1">
+                    <strong>Кэшбэк:</strong>
+                </div>
+                <div class="col-1">
+                    <strong>{{cashback_off}} руб.</strong>
+                </div>
+                <div class="col-2">
+                    <strong>Остаток лс клиента:</strong>
+                </div>
+                <div class="col-1">
+                    <strong>{{client.accum_cashback}} руб.</strong>
+                </div>
+            </div>
+            <hr>
             <div class="modal-body">
                 <form action="{% url 'sale_input_complex' identifier.id client.id cashback_off %}" method="POST">
                     {% csrf_token %}
@@ -452,9 +538,16 @@
                     </div>
 
                     <div class="modal-footer">
-                        <div class="col-8" style="text-align:left">
-                            <h5>Общая сумма чека: {{sum}} руб. </h5>
-                        </div>
+                        {% if cashback_off > 0 %}
+                        <h5>Сумма к уплате за вычетом кэшбэка:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3>
+                        <h5>руб.</h5>
+                        <!-- </div> -->
+                        {% else %}
+                        <h5>Сумма к оплате:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3>
+                        <h5>руб.</h5>
+                        {% endif %}
 
                         <div class="col-3" style="text-align:right">
                         <button type="button" class="btn btn-secondary btn_close_complex"

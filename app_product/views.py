@@ -158,7 +158,11 @@ def sale_interface (request):
             sales_sum+=rho.sub_total
          
 #==============Making a list of docs per pay=====================================================
-        queryset_list = Document.objects.filter(user=request.user, created__date=date).order_by("-created")
+        queryset_list = Document.objects.filter(user=request.user, created__date=date, posted=True).order_by("-created")
+        cashback=0
+        for doc in queryset_list:
+            cashback+=doc.cashback_off
+
 #==================Calculating Cash Remainder==========================================
         if Cash.objects.filter(shop=shop, created__lt=date).exists():
             cho_before=Cash.objects.filter(shop=shop, created__lt=date).latest("created")
@@ -213,8 +217,8 @@ def sale_interface (request):
             'pay_card_remainder_start': pay_card_remainder_start,
             'pay_card_remainder_current': pay_card_remainder_current,
             'sales_sum': sales_sum,
-            'rhos': rhos
-         
+            'rhos': rhos,
+            'cashback': cashback,
         }
         return render (request, 'documents/sale_interface.html', context)
     else:
@@ -1089,7 +1093,6 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
             document_sum = 0
             for i in range(n):
                 product = Product.objects.get(imei=imeis[i])
-                av_price_obj=AvPrice.objects.get(imei=imeis[i])
                 rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=document.created).latest('created')
                 # creating remainder_history
                 rho = RemainderHistory.objects.create(
@@ -1103,7 +1106,7 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                     imei=imeis[i],
                     name=names[i],
                     retail_price=prices[i],
-                    av_price=av_price_obj.av_price,
+                    #av_price=av_price_obj.av_price,
                     pre_remainder=rho_latest_before.current_remainder,
                     incoming_quantity=0,
                     outgoing_quantity=quantities[i],
@@ -1113,9 +1116,21 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                 )
                 document_sum+=int(quantities[i]) *  int (prices[i])
                 #calculating av_price for the remainder
-                av_price_obj.current_remainder -= int(quantities[i])
-                av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
-                av_price_obj.save()
+                if AvPrice.objects.filter(imei=imeis[i]).exists():
+                    av_price_obj=AvPrice.objects.get(imei=imeis[i])
+                    av_price_obj.current_remainder -= int(quantities[i])
+                    av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
+                    av_price_obj.save()
+                else:
+                    av_price_obj=AvPrice.objects.create(
+                        imei=imeis[i],
+                        name=names[i],
+                        current_remainder=0,
+                        av_price=0,
+                        sum=0
+                        )
+                rho.av_price=av_price_obj.av_price
+                rho.save()
                 #cash back is calculated based on the subtotal for each item not depending on the total sum
                 if client.f_name != "default":
                     cashback = Cashback.objects.get(category=product.category)
@@ -1190,9 +1205,9 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
             sum_to_pay=0
             for sub_total in sub_totals:
                 sum_to_pay += int(sub_total)
-            if card+cash+credit != sum_to_pay:
+            if card+cash+credit+cashback_off != sum_to_pay:
                 messages.error(request,  'Документ не сформирован. Сумма в чеке не совпадает с суммой продажи.')
-                return redirect("sale", identifier.id)
+                return redirect("payment", identifier.id, client.id, cashback_off)
             session_shop=request.session['session_shop']
             shop=Shop.objects.get(id=session_shop)
             #==============Time Module=========================================
@@ -2070,6 +2085,8 @@ def payment(request, identifier_id, client_id, cashback_off):
         client = Customer.objects.get(id=client_id)
         registers = Register.objects.filter(identifier=identifier)
         shops=Shop.objects.all()
+        session_shop=request.session['session_shop']
+        shop = Shop.objects.get(id=session_shop)
         sum = 0
         n = registers.count()
         for register in registers:
@@ -2084,7 +2101,8 @@ def payment(request, identifier_id, client_id, cashback_off):
             "sum": sum,
             "cashback_off": cashback_off,
             "sum_to_pay": sum_to_pay,
-            'shops': shops
+            'shops': shops,
+            'shop': shop,
         }
         return render(request, "payment/payment.html", context)
     else:

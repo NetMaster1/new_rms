@@ -69,6 +69,7 @@ class DailySaleRep (models.Model):
     #sub_total = models.IntegerField(null=True)
     credit = models.IntegerField(null=True)
     card = models.IntegerField(null=True)
+    cashback = models.IntegerField(null=True)
     salary = models.IntegerField(null=True)
     expenses = models.IntegerField(null=True)
     cash_move = models.IntegerField(null=True)
