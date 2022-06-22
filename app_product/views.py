@@ -5283,6 +5283,27 @@ def unpost_return(request, document_id):
 #     context = {"shops": shops}
 #     return render(request, "documents/list_sale.html", context)
 #=================================================================================================
+def revaluation_document (request):
+    identifier = Identifier.objects.create()
+    if request.method == "POST":
+        items = request.POST.getlist("checked", None)
+        n = len(items)
+        for i in range(n): 
+            product=Product.objects.get(imei=items[i])
+            register = Register.objects.create(
+                identifier=identifier,
+                name=product.name,
+                imei=product.imei
+              
+            )
+        registers=Register.objects.filter(identifier=identifier)
+        context = {
+            'registers': registers,
+            'identifier': identifier
+        }
+        return render (request, 'documents/revaluation.html', context)
+
+
 def identifier_revaluation(request):
     if request.user.is_authenticated:
         identifier = Identifier.objects.create()

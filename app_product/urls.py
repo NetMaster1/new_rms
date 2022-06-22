@@ -120,6 +120,7 @@ urlpatterns = [
     path ('transfer_auto', views.transfer_auto, name='transfer_auto'),
 
     # ===============================Revaluation==================================
+    path ('revaluation_document', views.revaluation_document, name='revaluation_document'),
     path ('revaluation_auto', views.revaluation_auto, name='revaluation_auto'),
     path ('identifier_revaluation', views.identifier_revaluation, name='identifier_revaluation'),
     path ('check_revaluation/<int:identifier_id>', views.check_revaluation, name='check_revaluation'),
