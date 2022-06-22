@@ -1897,9 +1897,10 @@ def check_service(request, identifier_id):
 
 #===============================CashBack Operations======================================================
 #При проведении докумена (продажа) кэшбэк, списанный со счета клиента сохраняется в document.cashback_off.
-#При отмене проведения документа (продажа) начисленный кэшбэк обнуляется со счета клиента (customer.accum_cashback); списанный кэшбэк возвращается на счет клиента, но одновременно сохраняется в document.cashback_off.
+#При отмене проведения документа (продажа) начисленный кэшбэк обнуляется со счета клиента (customer.accum_cashback); списанный кэшбэк возвращается на счет клиента, но одновременно остется в непроведенном в document.cashback_off.
 #При проведении change_sale_unposted рассчитывается новый начисленный кэшбэк, который идет на счет клиенту; списываемый кэшбэк списывается со счета клиента (сумма берется из document.cashback_off). Таким образом, при редактировании документа change_sale_posted сумма кэшбэка к списанию не редактируется.
 #При удалении документа кэшбэк с покупки не начисляется; списываемый кэшбэк не списывается со счета клиент, и одновременно удаляется из document.cashback_off вместе с документом.
+#Новые клиенты кэшбэк сохраняются в таблице Cusomers. Для создания отчета по новым качественным клиентам мы берем выборку клиентов по полю cretated за данный месяц и прогоняем их по всем документам (продажа) за данный месяц. Таблица Document имеет поле client. Т.е. если мы видим, что новый клиент отметился в документе продажа за текущий месяцы, то он считается качественным.
 
 
 def cashback(request, identifier_id):
@@ -2296,7 +2297,7 @@ def delivery(request, identifier_id):
     suppliers = Supplier.objects.all()
     shop=Shop.objects.get(name='ООС')
     #shops = Shop.objects.all()
-    registers = Register.objects.filter(identifier=identifier).order_by("created")
+    registers = Register.objects.filter(identifier=identifier).order_by("-created")
     numbers = registers.count()
     for register, i in zip(registers, range(numbers)):
         register.number = i + 1
@@ -2542,12 +2543,12 @@ def change_delivery_posted(request, document_id):
         shop=document.shop_receiver
         dateTime=document.created
         dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
-        rhos = RemainderHistory.objects.filter(document=document).order_by("created")
+        rhos = RemainderHistory.objects.filter(document=document).order_by("-created")
         numbers = rhos.count()
         for rho, i in zip(rhos, range(numbers)):
             rho.number = i + 1
             rho.save()
-        rhos = RemainderHistory.objects.filter(document=document).order_by("created")
+        rhos = RemainderHistory.objects.filter(document=document).order_by("-created")
 
         context = {
             "document": document,
@@ -2564,7 +2565,7 @@ def change_delivery_unposted(request, document_id):
     group=Group.objects.get(name="admin").user_set.all()
     if request.user in group:               
         document = Document.objects.get(id=document_id)
-        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("created")
+        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("-created")
         suppliers = Supplier.objects.all()
         shops = Shop.objects.all()
         categories=ProductCategory.objects.all()
@@ -2791,7 +2792,7 @@ def transfer(request, identifier_id):
         shops = Shop.objects.all()
         shop_default = Shop.objects.get(name="ООС")
         if Register.objects.filter(identifier=identifier).exists():
-            registers = Register.objects.filter(identifier=identifier)
+            registers = Register.objects.filter(identifier=identifier).order_by('created')
             numbers = registers.count()
             for register, i in zip(registers, range(numbers)):
                 register.number = i + 1
@@ -3132,7 +3133,7 @@ def change_transfer_posted(request, document_id):
     document = Document.objects.get(id=document_id)
     shop_sender=document.shop_sender
     shop_receiver=document.shop_receiver
-    rhos=RemainderHistory.objects.filter(document=document).exclude(shop=shop_receiver)
+    rhos=RemainderHistory.objects.filter(document=document).exclude(shop=shop_receiver).order_by('created')
     #dateTimee=document.created
     document_datetime=document.created
     document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
@@ -4915,7 +4916,25 @@ def return_input(request, identifier_id):
                         sub_total= int(quantities[i]) * int(prices[i]),
                     )
                     document_sum+=rho.sub_total
-                    
+                    #calculating av_price for the remainder
+                    if AvPrice.objects.filter(imei=imeis[i]).exists():
+                        av_price_obj=AvPrice.objects.get(imei=imeis[i])
+                        av_price_obj.current_remainder += int(quantities[i])
+                        av_price_obj.sum += int(quantities[i]) * int(prices[i])
+                        if av_price_obj.current_remainder > 0:
+                            av_price_obj.av_price=av_price_obj.sum / av_price_obj.current_remainder
+                        else:
+                            av_price_obj.av_price = int(prices[i])
+                        av_price_obj.save()
+                    else:
+                        av_price_obj=AvPrice.objects.create (
+                            name=names[i],
+                            imei=imeis[i],
+                            current_remainder=int(quantities[i]),
+                            av_price=int(prices[i]),
+                            sum=int(quantities)*int(prices)
+                        )
+                    av_price_obj.save()
                     # checking docs after remainder_history
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
                         remainder=rho.current_remainder
@@ -5271,6 +5290,22 @@ def identifier_revaluation(request):
     else:
         return redirect("login")
 
+def revaluation_auto (request):
+    if request.user.is_authenticated:
+        shops=Shop.objects.all()
+        categories = ProductCategory.objects.all()
+
+        context = {
+            "shops": shops,
+            "categories": categories,
+            }
+        return render(request, "documents/revaluation_auto.html", context)
+
+    
+
+    else:
+        return redirect ('login')
+
 def check_revaluation(request, identifier_id):
     # shops = Shop.objects.all()
     identifier = Identifier.objects.get(id=identifier_id)
@@ -5449,6 +5484,57 @@ def change_revaluation_unposted (request, document_id):
 
 def unpost_revaluation (request, document_id):
     pass
+
+def update_retail_price(request):
+    group = Group.objects.get(name="admin").user_set.all()
+    doc_type = DocumentType.objects.get(name="Переоценка ТМЦ")
+    dateTime = datetime.datetime.now()
+    if request.user in group:
+        if request.method == "POST":
+            imei = request.POST["imei"]
+            retail_price = request.POST["retail_price"]
+            shop = request.POST["shop"]
+            shop = Shop.objects.get(name=shop)
+
+            category = request.POST["category"]
+            category = ProductCategory.objects.get(name=category)
+
+            product = Product.objects.get(imei=imei)
+            # remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
+            # remainder_current.retail_price=retail_price
+            # remainder_current.save()
+            document = Document.objects.create(
+                created=dateTime,
+                title=doc_type,
+                user=request.user,
+                posted=True,
+            )
+            rho_latest_before = RemainderHistory.objects.filter(
+                shop=shop, imei=imei, created__lt=dateTime
+            ).latest("created")
+            rho = RemainderHistory.objects.create(
+                document=document,
+                created=document.created,
+                rho_type=doc_type,
+                user=request.user,
+                shop=shop,
+                product_id=product,
+                category=product.category,
+                imei=imei,
+                name=product.name,
+                retail_price=retail_price,
+                pre_remainder=rho_latest_before.pre_remainder,
+                incoming_quantity=0,
+                outgoing_quantity=0,
+                current_remainder=rho_latest_before.current_remainder,
+            )
+            # rho.sub_total=rho.current_remainder*rho.retail_price
+            # return redirect ('remainder_list', shop.id , category.id )
+            return redirect("remainder_report_output", shop.id, category.id, dateTime)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 # =========================================Cash_off salary ===========================================
 
 def cash_off_salary(request):

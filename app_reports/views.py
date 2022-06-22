@@ -291,19 +291,29 @@ def cashback_rep (request):
             end_date = request.POST ["end_date"]
             end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
             end_date = end_date + timedelta(days=1)
-            customers=Customer.objects.filter (created__gt=start_date, created__lt=end_date, accum_cashback__gt=0)
+            if Customer.objects.filter(created__gt=start_date, created__lt=end_date).exists():
+                customers=Customer.objects.filter (created__gt=start_date, created__lt=end_date)
+            else:
+                messages.error(request, "Новые клиенты отсутствуют")
+                return redirect("cashback_rep")
+            doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+            if Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type).exists():
+                documents=Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type)
+            else:
+                messages.error(request, "Продаж в данный период не было")
+                return redirect("cashback_rep")
             dict = {}
             for user in users:
                 counter=0
                 for customer in customers:
-                    if customer.user == user:
-                        counter+=1
+                    if Document.objects.filter(client=customer).exists():
+                        if customer.user == user:
+                            counter +=1
                 dict[user]=counter
 
-                context = {
-                    'dict': dict
-                }
-
+            context = {
+                'dict': dict
+            }
 
             return render (request, "reports/cashback_rep.html", context)
         else:
@@ -815,57 +825,6 @@ def remainder_report_dynamic(request):
         "categories": categories,
     }
     return render(request, "reports/remainder_report_dynamic.html", context)
-
-#===================================================================
-def update_retail_price(request):
-    group = Group.objects.get(name="admin").user_set.all()
-    doc_type = DocumentType.objects.get(name="Переоценка ТМЦ")
-    dateTime = datetime.datetime.now()
-    if request.user in group:
-        if request.method == "POST":
-            imei = request.POST["imei"]
-            retail_price = request.POST["retail_price"]
-            shop = request.POST["shop"]
-            shop = Shop.objects.get(name=shop)
-
-            category = request.POST["category"]
-            category = ProductCategory.objects.get(name=category)
-
-            product = Product.objects.get(imei=imei)
-            # remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
-            # remainder_current.retail_price=retail_price
-            # remainder_current.save()
-            document = Document.objects.create(
-                created=dateTime,
-                title=doc_type,
-                user=request.user,
-                posted=True,
-            )
-            rho_latest_before = RemainderHistory.objects.filter(
-                shop=shop, imei=imei, created__lt=dateTime
-            ).latest("created")
-            rho = RemainderHistory.objects.create(
-                document=document,
-                created=document.created,
-                rho_type=doc_type,
-                user=request.user,
-                shop=shop,
-                product_id=product,
-                category=product.category,
-                imei=imei,
-                name=product.name,
-                retail_price=retail_price,
-                pre_remainder=rho_latest_before.pre_remainder,
-                incoming_quantity=0,
-                outgoing_quantity=0,
-                current_remainder=rho_latest_before.current_remainder,
-            )
-            # rho.sub_total=rho.current_remainder*rho.retail_price
-            # return redirect ('remainder_list', shop.id , category.id )
-            return redirect("remainder_report_output", shop.id, category.id, dateTime)
-    else:
-        auth.logout(request)
-        return redirect("login")
 
 # ==========================================================
 def remainder_list(request, shop_id, category_id):

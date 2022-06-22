@@ -43,6 +43,8 @@
                             <input type="date" id='end_date' name="end_date" class="form-control" required>
                         </div>
                 
+                {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
                         <div class="col-2">
                             <select name="user" id="user" class='form-control'>
                                 <option value="">Выберите продавца</option>
@@ -51,6 +53,8 @@
                                 {% endfor %}
                             </select>
                         </div>
+                {% endif %}
+                {% endfor %}
                 
                     </div>
                 
@@ -72,6 +76,8 @@
                                 </a>
                             </div>
                         </div>
+                    {% for group in request.user.groups.all %}
+                    {% if group.name == 'admin' %}
                         <div class="col-2">
                             <a href="#">
                                 <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
@@ -79,6 +85,8 @@
                                 </button>
                             </a>
                         </div>
+                    {% endif %}
+                    {% endfor %}
                 </form>
 
                 {% for key, value in dict.items %}

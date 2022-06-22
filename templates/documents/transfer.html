@@ -191,10 +191,8 @@
     const buttons = document.querySelectorAll('.clear_storage');
     const save_button = document.querySelector('#save_button');
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
-    //=======================
-    const check_imei = document.querySelector('#check_imei');
-
     //==================== Returning cursor back to input field========================
+    const check_imei = document.querySelector('#check_imei');
    
 
 
@@ -287,6 +285,7 @@
             choice = sessionStorage.getItem('shop_receiver');
             shop_receiver.value = choice
         }
+        //returning cursor back to input field
         check_imei.select(); 
     })
 
