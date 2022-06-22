@@ -280,6 +280,40 @@ def save_in_excel_daily_rep(request):
         wb.save(response)
         return response
 
+#=================CashBack Report================================
+
+def cashback_rep (request):
+    if request.user.is_authenticated:
+        users=User.objects.all()
+        if request.method == 'POST':
+            start_date=request.POST ['start_date']
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = request.POST ["end_date"]
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+            customers=Customer.objects.filter (created__gt=start_date, created__lt=end_date, accum_cashback__gt=0)
+            dict = {}
+            for user in users:
+                counter=0
+                for customer in customers:
+                    if customer.user == user:
+                        counter+=1
+                dict[user]=counter
+
+                context = {
+                    'dict': dict
+                }
+
+
+            return render (request, "reports/cashback_rep.html", context)
+        else:
+            context = {
+                'users': users
+            }
+            return render (request, "reports/cashback_rep.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
 
 
 def daily_report(request):
