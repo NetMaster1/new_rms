@@ -3,23 +3,25 @@
 <div class="hide">
     <div class="container">
 
-        <!-- =====================Alert Messages Module=================== -->
-        <div class="container">
-            {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-info" role="alert">
-                <!-- <button class="close" data-dismiss="alert">
-                            <small><sup>x</sup></small>
-                        </button> -->
-                {{ message }}
-            </div>
-            {% endfor%}
-            {% endif%}
-        </div>
-        <!-- ===================End of Alert Messages Module================ -->
+        
 
 
         <div class="modal-content">
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container mt-2">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                                        <small><sup>x</sup></small>
+                                    </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
             <div class="modal-header">
                 <h5>Cумма кэшбэка возможная к списанию</h5>
                 <h5>{{cashback_off}} руб.</h5>          
@@ -27,7 +29,7 @@
 
             
         <div class="modal-body">
-                <form action="{% url 'sec_code_confirm' identifier.id client.id %}" method="POST"   class='form-inline'>
+                <form action="{% url 'sec_code_confirm' identifier.id client.id %}" method="POST"   class='form-inline cashback_form'>
                     {% csrf_token %}
                     <input type="text" id="code_string" name="code_string" value="{{code_string}}" hidden><br>
                     <!-- <label for="code"><h5>Введите код:</h5></label> -->
@@ -35,7 +37,7 @@
 
     
                     <div class="row m-auto mt-2">
-                        <input type="submit" value="Отправить код" class="btn btn-sm btn-outline-dark ">
+                        <input type="submit" value="Отправить код" class="btn btn-sm btn-outline-dark code_button ">
                     </div>
                 </form>
       
@@ -46,7 +48,7 @@
                 </a>
             </div>
 
-            {{code}}
+            {{code_string}}
 
         </div>
 
@@ -54,6 +56,28 @@
         </div>
     </div>
 </div>
+<script>
+console.log('JS works')
 
+    //cancel uploading a page
+    //window.addEventListener('beforeunload', (event) => {
+        //event.preventDefault();
+    //   alert('skjdkfjskdf')
+        // Chrome requires returnValue to be set.
+    //    event.returnValue = '';
+    //});
+  
+    const cashback_form = document.querySelector('.cashback_form')
+    const code_button = document.querySelector('.code_button')
+
+    cashback_form.addEventListener('submit', blockButton3)
+        function blockButton3() {
+            code_button.disabled = true;
+        }
+
+
+
+console.log('JS finished')
+</script>
 
 {% endblock %}

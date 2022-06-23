@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% for group in request.user.groups.all %}
+{% if group.name == 'sales' %}
+<body oncontextmenu="return false">
+{% endif%}
+{% endfor%}
+
+    <div class="hide">
+        <div class="container">
+            <div class="page_location">
+                <div class="border rounded p-3">
+        <!-- =====================Alert Messages Module=================== -->
+        <div class="container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">
+                <!-- <button class="close" data-dismiss="alert">
+                            <small><sup>x</sup></small>
+                        </button> -->
+                {{ message }}
+            </div>
+            {% endfor%}
+            {% endif%}
+        </div>
+        <!-- ===================End of Alert Messages Module================ -->
+                    <h3>Новые клиенты кэшбэк за период</h3>
+                </div>
+
+                <div class="border rounded p-3">
+                <form action="{% url 'cashback_rep' %}" method="POST">
+                    {% csrf_token %}
+                
+                    <div class="row m-auto mt-2 mb-1">
+                        <!-- <div class="-2">
+                                <input type="text" name="imei" placeholder="IMEI">
+                            </div> -->
+                        <div class="col-2">
+                            <input type="date" id='start_date' name="start_date" class='form-control' required>
+                        </div>
+                        <div class="col-2">
+                            <input type="date" id='end_date' name="end_date" class="form-control" required>
+                        </div>
+                
+                {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
+                        <div class="col-2">
+                            <select name="user" id="user" class='form-control'>
+                                <option value="">Выберите продавца</option>
+                                {% for user in users %}
+                                <option value="{{user.id}}">{{user.last_name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                {% endif %}
+                {% endfor %}
+                
+                    </div>
+                
+                    <div class="row m-auto mt-1 mb-2">
+                        <div class="col-2">
+                            <div class="row m-auto">
+                                <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="row m-auto">
+                                <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="row m-auto">
+                                <a href="{% url 'close_report' %}" class="btn btn-sm btn-block btn-outline-dark">
+                                    Закрыть без сохранения
+                                </a>
+                            </div>
+                        </div>
+                    {% for group in request.user.groups.all %}
+                    {% if group.name == 'admin' %}
+                        <div class="col-2">
+                            <a href="#">
+                                <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                                    Сохранить в Excel
+                                </button>
+                            </a>
+                        </div>
+                    {% endif %}
+                    {% endfor %}
+                </form>
+
+                {% for key, value in dict.items %}
+                <div class="row">
+                    <div class="col-2">{{key}}</div>
+                    <div class="col-1">{{value}}</div>
+                </div>
+                {% endfor %}
+
+                </div>
+          
+
+
+
+
+        </div>
+
+    </div>
+ 
+
+    {% endblock %}

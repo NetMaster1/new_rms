@@ -114,6 +114,15 @@ def save_in_excel_daily_rep(request):
                     credit_sum += credit.sum
             else:
                 credit_sum = 0
+            #=========================Calculating Cashback=============================
+            sale_type = DocumentType.objects.get(name="Продажа ТМЦ")
+            if Document.objects.filter(shop_sender=shop, created__date=date, posted=True, title=sale_type).exists():
+                docs=Document.objects.filter(shop_sender=shop, created__date=date, posted=True, title=sale_type)
+                cashback=0
+                for doc in docs:
+                    cashback+=doc.cashback_off
+            else:
+                cashback=0
             # =======================Calculating opening balance for each shop======================
             if Cash.objects.filter(created__lt=date, shop=shop).exists():
                 prev_day_cho = Cash.objects.filter(created__lt=date, shop=shop).latest("created")
@@ -139,6 +148,7 @@ def save_in_excel_daily_rep(request):
                 modems=shop_row[10],
                 credit=credit_sum,
                 card=card_sum,
+                cashback=cashback,
                 salary=salary_sum,
                 expenses=expenses_sum,
                 return_sum=return_sum,
@@ -163,6 +173,7 @@ def save_in_excel_daily_rep(request):
                 - daily_rep.credit
                 - daily_rep.salary
                 - daily_rep.card
+                - daily_rep.cashback
                 - daily_rep.expenses
                 - daily_rep.return_sum
                 - daily_rep.cash_move
@@ -225,6 +236,8 @@ def save_in_excel_daily_rep(request):
             ws.write(row_num, col_num, query_list.credit, font_style)
             row_num += 1
             ws.write(row_num, col_num, query_list.card, font_style)
+            row_num+= 1
+            ws.write(row_num, col_num, query_list.cashback, font_style)
             row_num += 1
             ws.write(row_num, col_num, query_list.salary, font_style)
             row_num += 1
@@ -252,6 +265,7 @@ def save_in_excel_daily_rep(request):
             "modems",
             "credit",
             "card",
+            "cashack"
             "salary",
             "expenses",
             "return_sum",
@@ -266,6 +280,50 @@ def save_in_excel_daily_rep(request):
         wb.save(response)
         return response
 
+#=================CashBack Report================================
+
+def cashback_rep (request):
+    if request.user.is_authenticated:
+        users=User.objects.all()
+        if request.method == 'POST':
+            start_date=request.POST ['start_date']
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = request.POST ["end_date"]
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+            if Customer.objects.filter(created__gt=start_date, created__lt=end_date).exists():
+                customers=Customer.objects.filter (created__gt=start_date, created__lt=end_date)
+            else:
+                messages.error(request, "Новые клиенты отсутствуют")
+                return redirect("cashback_rep")
+            doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+            if Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type).exists():
+                documents=Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type)
+            else:
+                messages.error(request, "Продаж в данный период не было")
+                return redirect("cashback_rep")
+            dict = {}
+            for user in users:
+                counter=0
+                for customer in customers:
+                    if Document.objects.filter(client=customer).exists():
+                        if customer.user == user:
+                            counter +=1
+                dict[user]=counter
+
+            context = {
+                'dict': dict
+            }
+
+            return render (request, "reports/cashback_rep.html", context)
+        else:
+            context = {
+                'users': users
+            }
+            return render (request, "reports/cashback_rep.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
 
 
 def daily_report(request):
@@ -359,6 +417,12 @@ def sale_report_per_shop(request):
             credits=Credit.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date)
             for i in credits:
                 credit_sum+=i.sum
+    #===========================Calculating cashback sum=================================
+        cashback=0
+        if Document.objects.filter(shop_sender=shop, created__gt=start_date, created__lt=end_date, posted=True).exists():
+            docs=Document.objects.filter(shop_sender=shop, created__gt=start_date, created__lt=end_date, posted=True)
+            for doc in docs:
+                cashback+=doc.cashback_off
 
         array=[]
         for i in queryset:
@@ -392,21 +456,22 @@ def sale_report_per_shop(request):
         for item in sale_report:
             total_sales+=item.retail_sum
 
-        else:
-            context = {
-                "sale_report": sale_report,
-                "shops": shops,
-                "total_sales": total_sales,
-                "shop": shop,
-                "pay_card_remainder_start": pay_card_remainder_start,
-                "pay_card_remainder_current": pay_card_remainder_current,
-                "cash_sum": cash_sum,
-                "credit_sum": credit_sum,
-                "card_sum": card_sum,
-                "cash_start": cash_start,
-                "cash_end": cash_end
-            }
-            return render(request, "reports/sale_report_per_shop.html", context)
+        
+        context = {
+            "sale_report": sale_report,
+            "shops": shops,
+            "total_sales": total_sales,
+            "shop": shop,
+            "pay_card_remainder_start": pay_card_remainder_start,
+            "pay_card_remainder_current": pay_card_remainder_current,
+            "cash_sum": cash_sum,
+            "credit_sum": credit_sum,
+            "card_sum": card_sum,
+            "cash_start": cash_start,
+            "cash_end": cash_end,
+            "cashback": cashback,
+        }
+        return render(request, "reports/sale_report_per_shop.html", context)
     else:
         context = {
             "shops": shops,
@@ -760,57 +825,6 @@ def remainder_report_dynamic(request):
         "categories": categories,
     }
     return render(request, "reports/remainder_report_dynamic.html", context)
-
-#===================================================================
-def update_retail_price(request):
-    group = Group.objects.get(name="admin").user_set.all()
-    doc_type = DocumentType.objects.get(name="Переоценка ТМЦ")
-    dateTime = datetime.datetime.now()
-    if request.user in group:
-        if request.method == "POST":
-            imei = request.POST["imei"]
-            retail_price = request.POST["retail_price"]
-            shop = request.POST["shop"]
-            shop = Shop.objects.get(name=shop)
-
-            category = request.POST["category"]
-            category = ProductCategory.objects.get(name=category)
-
-            product = Product.objects.get(imei=imei)
-            # remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
-            # remainder_current.retail_price=retail_price
-            # remainder_current.save()
-            document = Document.objects.create(
-                created=dateTime,
-                title=doc_type,
-                user=request.user,
-                posted=True,
-            )
-            rho_latest_before = RemainderHistory.objects.filter(
-                shop=shop, imei=imei, created__lt=dateTime
-            ).latest("created")
-            rho = RemainderHistory.objects.create(
-                document=document,
-                created=document.created,
-                rho_type=doc_type,
-                user=request.user,
-                shop=shop,
-                product_id=product,
-                category=product.category,
-                imei=imei,
-                name=product.name,
-                retail_price=retail_price,
-                pre_remainder=rho_latest_before.pre_remainder,
-                incoming_quantity=0,
-                outgoing_quantity=0,
-                current_remainder=rho_latest_before.current_remainder,
-            )
-            # rho.sub_total=rho.current_remainder*rho.retail_price
-            # return redirect ('remainder_list', shop.id , category.id )
-            return redirect("remainder_report_output", shop.id, category.id, dateTime)
-    else:
-        auth.logout(request)
-        return redirect("login")
 
 # ==========================================================
 def remainder_list(request, shop_id, category_id):

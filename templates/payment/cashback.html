@@ -19,9 +19,9 @@
                 </div>
              
                 <div class="row m-auto">
-                    <a href="{% url 'security_code' identifier.id client.id  %}">
+                    <a href="{% url 'security_code' identifier.id client.id  %}" class="a_cashback">
                         <div class="row m-auto p-2">
-                        <input type="button" value="Списать кэшбэк" class="btn btn-outline-dark btn-block">
+                        <input type="button" value="Списать кэшбэк" class="btn btn-outline-dark btn-block cashback_button">
                         </div>
                     </a>
                 </div>
@@ -54,6 +54,18 @@
     </div>
 </div>
 
+<script>
+    console.log("JS works")
 
+    const cashback_button = document.querySelector('.cashback_button')
+    const a_cashback = document.querySelector('.a_cashback')
+    cashback_button.addEventListener('click', blockButton2)
+    function blockButton2() {
+        a_cashback.disabled = true;
+    }
+
+
+    console.log("JS is over")
+</script>
 
 {% endblock %}

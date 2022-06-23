@@ -2,22 +2,22 @@
 {% block content %}
 <body oncontextmenu="return false">
 <div class="container">
-    <div class="log border m-auto mt-1 rounded" style="background-color:rgb(215, 215, 215); height: 13rem">
+    <div class="log border m-auto mt-1 rounded" style="background-color:rgb(215, 215, 215); height: 12rem">
         <div class="row">
             <div class="col-2">
                 <h5> {{date_1}}</h5>
             </div>
             <div class="col">
-                <h5>Остаток в кассе на утро:</h5>
+                <strong>Остаток в кассе на утро:</strong>
             </div>
             <div class="col">
-                <h5 style="color: red">{{cash_remainder_start}} руб.</h5>
+                <strong style="color: red">{{cash_remainder_start}} руб.</strong>
             </div>
             <div class="col">
-                <h5>Текущий остаток в кассе:</h5>
+                <strong>Текущий остаток в кассе:</strong>
             </div>
             <div class="col">
-                <h5 style="color: red">{{current_cash_remainder}} руб.</h5>
+                <strong style="color: red">{{current_cash_remainder}} руб.</strong>
             </div>
         </div>
 
@@ -25,84 +25,83 @@
             <div class="col-2">
             </div>
             <div class="col">
-                <h5>Остаток КЭО на утро:</h5>
+                <strong>Остаток КЭО на утро:</strong>
             </div>
             <div class="col">
-                <h5>{{pay_card_remainder_start}} шт. </h5>
+                <strong>{{pay_card_remainder_start}} шт. </strong>
             </div>
             <div class="col">
-                <h5>Текущий остаток КЭО:</h5>
+                <strong>Текущий остаток КЭО:</strong>
             </div>
             <div class="col">
-                <h5>{{pay_card_remainder_current}} шт.</h5>
+                <strong>{{pay_card_remainder_current}} шт.</strong>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row mt-1">
             <div class="col-3">
-                <h5>Общая выручка за день:</h5>
+                <strong>Общая выручка за день:</strong>
             </div>
             <div class="col-2">{{sales_sum}} руб.</div>
+            <div class="col-2"></div>
+
+    <!-- ==============================Modal Trigger================== -->
+    <div class="col-3">
+        <button type="button" class="btn btn-sm btn-outline-dark btn_modal">
+            Продажи за день по торговой точке
+        </button>
+    </div>
+    <!-- ============================End of Modal Trigger========================= -->
+    <!-- ===========================Modal Body================================= -->   
+    <div class="enterSalesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="whiteSalesModal">Продажи за {{date}}</h5>
+                <button type="button" class="btn btn-secondary btn_close">Закрыть</button>
+            </div>
+            {% for rho in rhos %}
+            <div class="row m-auto">
+                <div class="col-1">{{rho.document.id}}</div>
+                <div class="col-3">{{rho.name}}</div>
+                <div class="col-3">{{rho.imei}}</div>
+                <div class="col-1">{{rho.outgoing_quantity}}</div>
+                <div class="col-1">{{rho.retail_price}}</div>
+                <div class="col-1">{{rho.sub_total}}</div>
+                <div class="col-2">{{rho.user}}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <!-- =================================End of Modal Body======================================== -->
         </div>
         <div class="row">
             <div class="col-3">
-                <h5>Оплачено наличными:</h5>
+                <strong>Оплачено наличными:</strong>
             </div>
             <div class="col-1">{{cash_sum}} руб.</div>
             <div class="col-3"></div>
-        
-
-        <!-- ==============================Modal Trigger================== -->
-        <div class="col-3">
-            <button type="button" class="btn btn-sm btn-outline-dark btn_modal">
-                Продажи за день по торговой точке
-            </button>
-        </div>
-        <!-- ============================End of Modal Trigger========================= -->
-        <!-- ===========================Modal Body================================= -->
-      
-        <div class="enterSalesModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="whiteSalesModal">Продажи за {{date}}</h5>
-                    <button type="button" class="btn btn-secondary btn_close">Закрыть</button>
-                </div>
-                {% for rho in rhos %}
-                <div class="row m-auto">
-                    <div class="col-1">{{rho.document.id}}</div>
-                    <div class="col-3">{{rho.name}}</div>
-                    <div class="col-3">{{rho.imei}}</div>
-                    <div class="col-1">{{rho.outgoing_quantity}}</div>
-                    <div class="col-1">{{rho.retail_price}}</div>
-                    <div class="col-1">{{rho.sub_total}}</div>
-                    <div class="col-2">{{rho.user}}</div>
-                </div>
-                {% endfor %}      
-                </div>
-            </div>
         </div>
     
-    <!-- =================================End of Modal Body======================================== -->
-
-        
-
         <div class="row">
             <div class="col-3">
-                <h5>Оплачено картой:</h5>
+                <strong>Оплачено картой:</strong>
             </div>
             <div class="col-2">{{card_sum}} руб.</div>
         </div>
         <div class="row">
             <div class="col-3">
-                <h5>Оплачено в кредит:</h5>
+                <strong>Оплачено в кредит:</strong>
             </div>
             <div class="col-2">{{credit_sum}} руб.</div>
         </div>
+        <div class="row">
+            <div class="col-3">
+                <strong>Оплачено кэшбэком:</strong>
+            </div>
+            <div class="col-2">{{cashback}} руб.</div>
+        </div>
     </div>
         
-
-  
- 
 
     <div class="log border m-auto mt-1 rounded p-3" style="background-color:rgb(215, 215, 215); height: 6Vh">
         <div class="row">

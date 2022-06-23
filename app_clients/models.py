@@ -7,7 +7,7 @@ class Customer (models.Model):
     f_name = models.CharField(max_length=50)
     l_name = models.CharField(max_length=50)
     phone=models.CharField(max_length=50)
-    created = models.DateField(auto_now_add=True)
+    created = models.DateField(auto_now_add=True)#creation stamp
     bar_code = models.CharField(max_length=50, blank=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     accum_cashback= models.IntegerField(default=0)
