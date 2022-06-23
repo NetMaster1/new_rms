@@ -25,7 +25,7 @@
     <!-- ===================End of Alert Messages Module================ -->
         <div class="row m-2">
             <div class="col-12 border rounded p-3">
-                <form action="{% url 'check_revaluation' identifier.id %}" method="POST">
+                <form action="#" method="POST">
                     {% csrf_token %}
                     <div class="row m-1">
                         <div class="col-4">
@@ -53,7 +53,7 @@
         <div class="row m-2 pb-2">
             <div class="col-12 border rounded p-3">
 
-                <form action="{% url 'revaluation_input' identifier.id %}" method="POST">
+                <form action="#" method="POST">
                     {% csrf_token %}
 
                     {% for group in request.user.groups.all %}
@@ -117,11 +117,11 @@
                         </div>
                         <div class="col-2">
                             <input type="text" class='form-control' id="imei" name="imei"
-                                value='{{register.product.imei}}'>
+                                value='{{register.imei}}'>
                         </div>
                         <div class="col-2">
                             <input type="text" class='form-control' id="name" name="name"
-                                value='{{register.product.name}}'>
+                                value='{{register.name}}'>
                         </div>
                         <div class="col-1">
                             <input type="number" class='form-control' id="quantity" name="quantity"
@@ -137,7 +137,7 @@
                     <input type="number" class='form-control' id="sub_total" name="sub_total" maxlength='50'>
                 </div> -->
                         <div class="col">
-                            <a href="{% url 'delete_line_revaluation' register.product.imei identifier.id register.shop.id %}">
+                            <a href="#">
                                 <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark">
                             </a>
                         </div>
@@ -152,12 +152,12 @@
                 </form>
 
                 <div class="col-2">
-                    <a href="{% url 'clear_return' identifier.id %}">
+                    <a href="#">
                         <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark">
                     </a>
                 </div>
                 <div class="col-2">
-                    <a href="{% url 'close_without_save' identifier.id %}">
+                    <a href="{% url 'close_without_save' identifier.id%}">
                         <input type="button" value="Закрыть без сохранения"
                             class="btn btn-sm btn-block btn-outline-dark">
                     </a>

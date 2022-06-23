@@ -1,6 +1,10 @@
 from django.db import models
 from django.db.models.fields import DecimalField
 from app_reference.models import ProductCategory
+#from app_product.models import Document
+# import datetime
+from datetime import datetime, date
+from django.utils import timezone
 
 # Create your models here.
 
@@ -10,3 +14,4 @@ class Cashback (models.Model):
     
     def __int__(self):
         return self.id
+

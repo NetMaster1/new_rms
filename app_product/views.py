@@ -158,7 +158,11 @@ def sale_interface (request):
             sales_sum+=rho.sub_total
          
 #==============Making a list of docs per pay=====================================================
-        queryset_list = Document.objects.filter(user=request.user, created__date=date).order_by("-created")
+        queryset_list = Document.objects.filter(user=request.user, created__date=date, posted=True).order_by("-created")
+        cashback=0
+        for doc in queryset_list:
+            cashback+=doc.cashback_off
+
 #==================Calculating Cash Remainder==========================================
         if Cash.objects.filter(shop=shop, created__lt=date).exists():
             cho_before=Cash.objects.filter(shop=shop, created__lt=date).latest("created")
@@ -213,8 +217,8 @@ def sale_interface (request):
             'pay_card_remainder_start': pay_card_remainder_start,
             'pay_card_remainder_current': pay_card_remainder_current,
             'sales_sum': sales_sum,
-            'rhos': rhos
-         
+            'rhos': rhos,
+            'cashback': cashback,
         }
         return render (request, 'documents/sale_interface.html', context)
     else:
@@ -841,7 +845,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             document.sum=document_sum
             document.sum_minus_cashback = document_sum - cashback_off
             document.save()
-            sum_to_pay = document.sum_minus_cashback        
+            sum_to_pay = document.sum_minus_cashback       
             #checking chos before
             if Cash.objects.filter(shop=shop, created__lt=document.created).exists():
                 cho_latest_before = Cash.objects.filter(shop=shop, created__lt=document.created).latest('created')
@@ -1201,9 +1205,9 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
             sum_to_pay=0
             for sub_total in sub_totals:
                 sum_to_pay += int(sub_total)
-            if card+cash+credit != sum_to_pay:
+            if card+cash+credit+cashback_off != sum_to_pay:
                 messages.error(request,  'Документ не сформирован. Сумма в чеке не совпадает с суммой продажи.')
-                return redirect("sale", identifier.id)
+                return redirect("payment", identifier.id, client.id, cashback_off)
             session_shop=request.session['session_shop']
             shop=Shop.objects.get(id=session_shop)
             #==============Time Module=========================================
@@ -1452,6 +1456,10 @@ def change_sale_unposted (request, document_id):
                 card=int(card)
             else:
                 card=0
+            if cashback_off:
+                cashback_off=int(cashback_off)
+            else:
+                cashback_off=0
             #===================DateTime module for Change Unposted===============================
             dateTime=request.POST['dateTime']
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
@@ -1480,7 +1488,7 @@ def change_sale_unposted (request, document_id):
                 n=len(sub_totals)
                 for i in range(n):
                     sum+=int(sub_totals[i])
-                cash_sum = int(cash) + int(credit) + int(card)
+                cash_sum = int(cash) + int(credit) + int(card) + int (cashback_off)
                 if cash_sum != sum:
                     messages.error(request, "Сумма в чеке не совпадает с суммой продажи.")
                     return redirect("change_sale_unposted", document.id)
@@ -1561,6 +1569,7 @@ def change_sale_unposted (request, document_id):
                         rho.save()
 
                 client.accum_cashback-=cashback_off
+                client.save()
                 document.sum=document_sum
                 #document.sum_minus_cashback-=(int(document.sum)-int(cashback_off))
                 document.posted=True
@@ -1737,12 +1746,12 @@ def unpost_sale (request, document_id):
             if client.f_name != "default":
                 client.accum_cashback-=rho.cash_back_awarded
                 client.save()
-
             rho.delete()
         document.posted=False
         if client.f_name != "default":
             client.accum_cashback=client.accum_cashback+document.cashback_off
-        document.cashback_off=0
+            client.save()
+        #document.cashback_off=0
         document.save()
 
         #correcting cash/credit/card operations
@@ -1887,7 +1896,11 @@ def check_service(request, identifier_id):
         return redirect ('login')
 
 #===============================CashBack Operations======================================================
-
+#При проведении докумена (продажа) кэшбэк, списанный со счета клиента сохраняется в document.cashback_off.
+#При отмене проведения документа (продажа) начисленный кэшбэк обнуляется со счета клиента (customer.accum_cashback); списанный кэшбэк возвращается на счет клиента, но одновременно остется в непроведенном в document.cashback_off.
+#При проведении change_sale_unposted рассчитывается новый начисленный кэшбэк, который идет на счет клиенту; списываемый кэшбэк списывается со счета клиента (сумма берется из document.cashback_off). Таким образом, при редактировании документа change_sale_posted сумма кэшбэка к списанию не редактируется.
+#При удалении документа кэшбэк с покупки не начисляется; списываемый кэшбэк не списывается со счета клиент, и одновременно удаляется из document.cashback_off вместе с документом.
+#Новые клиенты кэшбэк сохраняются в таблице Cusomers. Для создания отчета по новым качественным клиентам мы берем выборку клиентов по полю cretated за данный месяц и прогоняем их по всем документам (продажа) за данный месяц. Таблица Document имеет поле client. Т.е. если мы видим, что новый клиент отметился в документе продажа за текущий месяцы, то он считается качественным.
 
 
 def cashback(request, identifier_id):
@@ -1941,13 +1954,24 @@ def security_code(request, identifier_id, client_id):
         registers = Register.objects.filter(identifier=identifier)
 
         #=============SMSC API (phone calls) ()==================================
-        api_request=requests.get("https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones=79519125000&mes=code&call=1&fmt=3")
+        phone=client.phone
+        #api_request=requests.get("https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={}&mes=code&call=1&fmt=3")
+        #url=f"https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={phone}&mes=code&call=1&fmt=3"
+        #variable can't be placed directly in url string. That's why I use .format() or f'
+        base_url="https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={}&mes=code&call=1&fmt=3"
+        url=base_url.format(phone)
+        api_request=requests.get(url)
         #server's response is returned in json format
-        api=json.loads(api_request.content)
-        code=api['code']
-        print(api)
-        print(code)
 
+        try:
+            api=json.loads(api_request.content)
+            code_string=api['code']
+            messages.success(request, "Сейчас покупатель получит звонок. Необходимо ввести последние 6 цифр номера, с которого будет звонок, чтобы подтвердить списание кэш-бэка.")
+            print(api)
+            print(code_string)
+        except Exception as e:
+            messages.error(request, 'Ошибка ответа сервера. В данный момент списание кэш-бэка не возможно. Попробуйте продажу без списания кэш-бэка')
+            return redirect("sale", identifier.id)
         #try:
         #    api=json.loads(api_request.content)
         #    messages.error(request, api)
@@ -1987,8 +2011,7 @@ def security_code(request, identifier_id, client_id):
             "identifier": identifier,
             "client": client,
             "cashback_off" : cashback_off,
-            #"code_string": code_string,
-            "code": code
+            "code_string": code_string,
         }
         return render(request, "payment/security_code.html", context)
     else:
@@ -2003,6 +2026,7 @@ def sec_code_confirm(request, identifier_id, client_id):
         code_string = request.POST["code_string"]
         code = request.POST["code"]
         if code == code_string:
+            messages.success(request, "Кэшбэк был списан с лицевого счета покупателя.")
             sum = 0
             for register in registers:
                 sum += register.sub_total
@@ -2018,10 +2042,8 @@ def sec_code_confirm(request, identifier_id, client_id):
 
             return redirect("payment", identifier.id, client.id, cashback_off)
         else:
-            messages.error(request, "Неверный код. Попробуйте еще раз.")
-            return redirect("security_code", identifier.id, client.id)
-
-
+            messages.error(request, "Вы ввели неверный код. Попробуйте еще раз.")
+            return redirect("sale", identifier.id)
 
 def cashback_off(request, identifier_id, client_id):
     client = Customer.objects.get(id=client_id)
@@ -2040,8 +2062,6 @@ def cashback_off(request, identifier_id, client_id):
     client.save()
 
     return redirect("payment", identifier_id, client.id, cashback_off)
-
-
 
 def no_cashback_off(request, identifier_id, client_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -2066,6 +2086,8 @@ def payment(request, identifier_id, client_id, cashback_off):
         client = Customer.objects.get(id=client_id)
         registers = Register.objects.filter(identifier=identifier)
         shops=Shop.objects.all()
+        session_shop=request.session['session_shop']
+        shop = Shop.objects.get(id=session_shop)
         sum = 0
         n = registers.count()
         for register in registers:
@@ -2080,7 +2102,8 @@ def payment(request, identifier_id, client_id, cashback_off):
             "sum": sum,
             "cashback_off": cashback_off,
             "sum_to_pay": sum_to_pay,
-            'shops': shops
+            'shops': shops,
+            'shop': shop,
         }
         return render(request, "payment/payment.html", context)
     else:
@@ -2274,7 +2297,7 @@ def delivery(request, identifier_id):
     suppliers = Supplier.objects.all()
     shop=Shop.objects.get(name='ООС')
     #shops = Shop.objects.all()
-    registers = Register.objects.filter(identifier=identifier).order_by("created")
+    registers = Register.objects.filter(identifier=identifier).order_by("-created")
     numbers = registers.count()
     for register, i in zip(registers, range(numbers)):
         register.number = i + 1
@@ -2520,12 +2543,12 @@ def change_delivery_posted(request, document_id):
         shop=document.shop_receiver
         dateTime=document.created
         dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
-        rhos = RemainderHistory.objects.filter(document=document).order_by("created")
+        rhos = RemainderHistory.objects.filter(document=document).order_by("-created")
         numbers = rhos.count()
         for rho, i in zip(rhos, range(numbers)):
             rho.number = i + 1
             rho.save()
-        rhos = RemainderHistory.objects.filter(document=document).order_by("created")
+        rhos = RemainderHistory.objects.filter(document=document).order_by("-created")
 
         context = {
             "document": document,
@@ -2542,7 +2565,7 @@ def change_delivery_unposted(request, document_id):
     group=Group.objects.get(name="admin").user_set.all()
     if request.user in group:               
         document = Document.objects.get(id=document_id)
-        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("created")
+        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("-created")
         suppliers = Supplier.objects.all()
         shops = Shop.objects.all()
         categories=ProductCategory.objects.all()
@@ -2769,7 +2792,7 @@ def transfer(request, identifier_id):
         shops = Shop.objects.all()
         shop_default = Shop.objects.get(name="ООС")
         if Register.objects.filter(identifier=identifier).exists():
-            registers = Register.objects.filter(identifier=identifier)
+            registers = Register.objects.filter(identifier=identifier).order_by('created')
             numbers = registers.count()
             for register, i in zip(registers, range(numbers)):
                 register.number = i + 1
@@ -3110,7 +3133,7 @@ def change_transfer_posted(request, document_id):
     document = Document.objects.get(id=document_id)
     shop_sender=document.shop_sender
     shop_receiver=document.shop_receiver
-    rhos=RemainderHistory.objects.filter(document=document).exclude(shop=shop_receiver)
+    rhos=RemainderHistory.objects.filter(document=document).exclude(shop=shop_receiver).order_by('created')
     #dateTimee=document.created
     document_datetime=document.created
     document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
@@ -4894,7 +4917,25 @@ def return_input(request, identifier_id):
                         sub_total= int(quantities[i]) * int(prices[i]),
                     )
                     document_sum+=rho.sub_total
-                    
+                    #calculating av_price for the remainder
+                    if AvPrice.objects.filter(imei=imeis[i]).exists():
+                        av_price_obj=AvPrice.objects.get(imei=imeis[i])
+                        av_price_obj.current_remainder += int(quantities[i])
+                        av_price_obj.sum += int(quantities[i]) * int(prices[i])
+                        if av_price_obj.current_remainder > 0:
+                            av_price_obj.av_price=av_price_obj.sum / av_price_obj.current_remainder
+                        else:
+                            av_price_obj.av_price = int(prices[i])
+                        av_price_obj.save()
+                    else:
+                        av_price_obj=AvPrice.objects.create (
+                            name=names[i],
+                            imei=imeis[i],
+                            current_remainder=int(quantities[i]),
+                            av_price=int(prices[i]),
+                            sum=int(quantities)*int(prices)
+                        )
+                    av_price_obj.save()
                     # checking docs after remainder_history
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=document.created).exists():
                         remainder=rho.current_remainder
@@ -5243,12 +5284,49 @@ def unpost_return(request, document_id):
 #     context = {"shops": shops}
 #     return render(request, "documents/list_sale.html", context)
 #=================================================================================================
+def revaluation_document (request):
+    identifier = Identifier.objects.create()
+    if request.method == "POST":
+        items = request.POST.getlist("checked", None)
+        n = len(items)
+        for i in range(n): 
+            product=Product.objects.get(imei=items[i])
+            register = Register.objects.create(
+                identifier=identifier,
+                name=product.name,
+                imei=product.imei
+              
+            )
+        registers=Register.objects.filter(identifier=identifier)
+        context = {
+            'registers': registers,
+            'identifier': identifier
+        }
+        return render (request, 'documents/revaluation.html', context)
+
+
 def identifier_revaluation(request):
     if request.user.is_authenticated:
         identifier = Identifier.objects.create()
         return redirect("revaluation", identifier.id)
     else:
         return redirect("login")
+
+def revaluation_auto (request):
+    if request.user.is_authenticated:
+        shops=Shop.objects.all()
+        categories = ProductCategory.objects.all()
+
+        context = {
+            "shops": shops,
+            "categories": categories,
+            }
+        return render(request, "documents/revaluation_auto.html", context)
+
+    
+
+    else:
+        return redirect ('login')
 
 def check_revaluation(request, identifier_id):
     # shops = Shop.objects.all()
@@ -5428,6 +5506,57 @@ def change_revaluation_unposted (request, document_id):
 
 def unpost_revaluation (request, document_id):
     pass
+
+def update_retail_price(request):
+    group = Group.objects.get(name="admin").user_set.all()
+    doc_type = DocumentType.objects.get(name="Переоценка ТМЦ")
+    dateTime = datetime.datetime.now()
+    if request.user in group:
+        if request.method == "POST":
+            imei = request.POST["imei"]
+            retail_price = request.POST["retail_price"]
+            shop = request.POST["shop"]
+            shop = Shop.objects.get(name=shop)
+
+            category = request.POST["category"]
+            category = ProductCategory.objects.get(name=category)
+
+            product = Product.objects.get(imei=imei)
+            # remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
+            # remainder_current.retail_price=retail_price
+            # remainder_current.save()
+            document = Document.objects.create(
+                created=dateTime,
+                title=doc_type,
+                user=request.user,
+                posted=True,
+            )
+            rho_latest_before = RemainderHistory.objects.filter(
+                shop=shop, imei=imei, created__lt=dateTime
+            ).latest("created")
+            rho = RemainderHistory.objects.create(
+                document=document,
+                created=document.created,
+                rho_type=doc_type,
+                user=request.user,
+                shop=shop,
+                product_id=product,
+                category=product.category,
+                imei=imei,
+                name=product.name,
+                retail_price=retail_price,
+                pre_remainder=rho_latest_before.pre_remainder,
+                incoming_quantity=0,
+                outgoing_quantity=0,
+                current_remainder=rho_latest_before.current_remainder,
+            )
+            # rho.sub_total=rho.current_remainder*rho.retail_price
+            # return redirect ('remainder_list', shop.id , category.id )
+            return redirect("remainder_report_output", shop.id, category.id, dateTime)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 # =========================================Cash_off salary ===========================================
 
 def cash_off_salary(request):
