@@ -158,7 +158,7 @@ def sale_interface (request):
             sales_sum+=rho.sub_total
          
 #==============Making a list of docs per pay=====================================================
-        queryset_list = Document.objects.filter(user=request.user, created__date=date, posted=True).order_by("-created")
+        queryset_list = Document.objects.filter(user=request.user, created__date=date, posted=True, shop_sender=shop).order_by("-created")
         cashback=0
         for doc in queryset_list:
             cashback+=doc.cashback_off
@@ -860,7 +860,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 user=request.user,
                 pre_remainder=cash_remainder,
                 cash_in=sum_to_pay,
-                current_remainder=cash_remainder + document_sum,
+                current_remainder=cash_remainder + sum_to_pay,
             )
             if Cash.objects.filter(shop=shop, created__gt=document.created).exists():
                 sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
@@ -1723,14 +1723,12 @@ def unpost_sale (request, document_id):
             product=Product.objects.get(imei=rho.imei)
             #correcting av_price model
             av_price_obj=AvPrice.objects.get(imei=rho.imei)
-            av_price_obj.current_remainder= av_price_obj.current_remainder + rho.outgoing_quantity
-            #av_price_obj.save()
-            av_price_obj.sum+=av_price_obj.current_remainder*rho.av_price
-            #av_price_obj.save()
-            if av_price_obj.current_remainder > 0:
-                av_price_obj.av_price=av_price_obj.sum / av_price_obj.current_remainder
-            else:
-                av_price_obj.av_price =0
+            av_price_obj.current_remainder+= rho.outgoing_quantity
+            av_price_obj.sum=av_price_obj.current_remainder*rho.av_price
+            #if av_price_obj.current_remainder > 0:
+            #    av_price_obj.av_price=av_price_obj.sum / av_price_obj.current_remainder
+            #else:
+            #    av_price_obj.av_price =0
             av_price_obj.save()
 
             register=Register.objects.create(
@@ -1905,11 +1903,12 @@ def check_service(request, identifier_id):
 
 def cashback(request, identifier_id):
     if request.user.is_authenticated:
-        
         identifier = Identifier.objects.get(id=identifier_id)
+        if not Register.objects.filter(identifier=identifier).exists():
+            messages.error (request, 'Вы не ввели ни одного наименования для продажи.')
+            return redirect ("sale", identifier.id)
         if request.method=="POST":
             phone = request.POST["phone"]
-            
             if Customer.objects.filter(phone=phone).exists():
                 client = Customer.objects.get(phone=phone)
                 return redirect("cashback_off_choice", identifier.id, client.id)
@@ -2073,8 +2072,12 @@ def noCashback(request, identifier_id):
     if request.user.is_authenticated:
         identifier = Identifier.objects.get(id=identifier_id)
         client = Customer.objects.get(f_name="default")
-        cashback_off = 0
-        return redirect("payment", identifier.id, client.id, cashback_off)
+        if Register.objects.filter(identifier=identifier).exists():
+            cashback_off = 0
+            return redirect("payment", identifier.id, client.id, cashback_off)
+        else:
+            messages.error (request, 'Вы не ввели ни одного наименования для продажи')
+            return redirect ('sale', identifier.id)
     else:
         auth.logout(request)
         return redirect("login")
@@ -5302,7 +5305,6 @@ def revaluation_document (request):
             'identifier': identifier
         }
         return render (request, 'documents/revaluation.html', context)
-
 
 def identifier_revaluation(request):
     if request.user.is_authenticated:
