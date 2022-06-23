@@ -2,14 +2,31 @@
 {% block content %}
 <div class="hide">
     <div class="container">
+
+        <!-- =====================Alert Messages Module=================== -->
+        <div class="container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">
+                <!-- <button class="close" data-dismiss="alert">
+                            <small><sup>x</sup></small>
+                        </button> -->
+                {{ message }}
+            </div>
+            {% endfor%}
+            {% endif%}
+        </div>
+        <!-- ===================End of Alert Messages Module================ -->
+
+
         <div class="modal-content">
             <div class="modal-header">
                 <h5>Cумма кэшбэка возможная к списанию</h5>
                 <h5>{{cashback_off}} руб.</h5>          
             </div>
 
+            
         <div class="modal-body">
-
                 <form action="{% url 'sec_code_confirm' identifier.id client.id %}" method="POST"   class='form-inline'>
                     {% csrf_token %}
                     <input type="text" id="code_string" name="code_string" value="{{code_string}}" hidden><br>
@@ -28,6 +45,9 @@
                     Закрыть без сохранения
                 </a>
             </div>
+
+            {{code}}
+
         </div>
 
 

@@ -1,7 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<body oncontextmenu="return false"></body>
+
+{% for group in request.user.groups.all %}
+{% if group.name == 'sales' %}
+
+<body oncontextmenu="return false">
+    {% endif%}
+    {% endfor%}
+
 
 <div class="hide">
 <div class="container">
@@ -184,9 +191,8 @@
     <button type="button" class="btn btn-sm btn-block btn-outline-dark btn_modal_cashback_new_client">
         Новый клиент кэшбэк
     </button>
-</div>
-                    
-<!-- ===========================Modal Body================================= -->
+</div>                   
+<!-- ===========================New Cashback Client Modal Body================================= -->
         <div class="enterModalCashbackNewClient">
                         
             <div class="modal-content-new-client">
@@ -195,6 +201,7 @@
                     <!-- <button type="button" class="btn_close"></button> -->
                 </div>
                 <div class="modal-body">
+                    <!-- we use identifier.id to let us stay at the same sale.html page -->
                     <form action="{% url 'new_client_sale' identifier.id%}" method="POST">
                         {% csrf_token %}
     
@@ -223,10 +230,8 @@
             </div>
         </div>
     </div>
-<!-- ==============================End of Modal Body====================================== -->
+<!-- ==================End of New Cashback Client Modal Body====================================== -->
 
-      
-<!-- ===================================End of New Cashback Client Modal==================== -->
 
     <div class="row m-auto mt-2 mb-2">
         <a href="{% url 'noCashback' identifier.id %}" class="btn btn-sm btn-outline-dark">
