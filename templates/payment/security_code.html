@@ -40,7 +40,10 @@
                         <input type="submit" value="Отправить код" class="btn btn-sm btn-outline-dark code_button ">
                     </div>
                 </form>
-      
+                    <div class="row m-auto mt-2">
+                        <!-- при нажатии на кнопку обновляет страницу через js -->
+                        <input type="button" value="Запросить код еще раз" class="btn btn-sm btn-outline-dark code_update ">
+                    </div>
          
             <div class="row m-auto mt-2 mb-2">
                 <a href="{% url 'close_without_save' identifier.id %}" class="btn btn-sm btn-outline-dark">
@@ -69,13 +72,17 @@ console.log('JS works')
   
     const cashback_form = document.querySelector('.cashback_form')
     const code_button = document.querySelector('.code_button')
+    const code_update = document.querySelector('.code_update')
 
     cashback_form.addEventListener('submit', blockButton3)
-        function blockButton3() {
+    function blockButton3() {
             code_button.disabled = true;
         }
-
-
+    //обновляет страницу при нажатии на кнопку
+    code_update.addEventListener('click', update_code)
+    function update_code () {
+        window.location.reload()
+    }
 
 console.log('JS finished')
 </script>
