@@ -745,6 +745,7 @@ def remainder_report_output(request, shop_id, category_id, date):
         products = Product.objects.filter(category=category).order_by(
             "name"
         )  # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
         for product in products:
             imei = product.imei
             if RemainderHistory.objects.filter(
