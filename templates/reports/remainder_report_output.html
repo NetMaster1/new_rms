@@ -11,6 +11,8 @@
 <!-- <div class="hide"> -->
 <div class="container">
     <div class="page_location">
+        {% for group in request.user.groups.all %}
+        {% if group.name == 'admin' %}
         <!-- =====================Alert Messages Module=================== -->
         <div class="container">
             {% if messages %}
@@ -25,7 +27,8 @@
             {% endif%}
         </div>
         <!-- ===================End of Alert Messages Module================ -->
-
+        {% endif %}
+        {% endfor %}
         <div class="row">
             <h3>Отчет по остаткам на дату</h3>
         </div>
