@@ -29,7 +29,7 @@ class AvPriceAdmin(admin.ModelAdmin):
     list_filter = ('name',)
 
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'time_seconds', 'title' , 'user', 'sum', 'base_doc')
+    list_display = ('id', 'time_seconds', 'title' , 'user', 'sum', 'client', 'base_doc')
     ordering = ('-created',)
     #I don't know how it works, but this functions created a separate columng based on column 'created', but with more precise time '19 Feb 2022 15:54:00' instead of  'Feb. 21, 2022, 3:11 p.m.' I deleted 'created' from display_list. Somehow it may influence to filtering, but so far I have not noticed anything.
     def time_seconds(self, obj):
