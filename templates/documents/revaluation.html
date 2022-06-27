@@ -6,7 +6,7 @@
     <div class="page_location">
         <div class="row m-2 pt-2">
             <div class="col">
-                <h3>Переоценка ТМЦ (только розничные склады)</h3>
+                <h3>Переоценка ТМЦ (только розничные склады, текущее время)</h3>
             </div>
         </div>
     <!-- =====================Alert Messages Module=================== -->
@@ -34,11 +34,11 @@
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}
                     <div class="form-row">
-                        <div class="col-2">
+                        <!-- <div class="col-2">
                             <label for="date"><h5>Дата</h5></label>
-                        </div>
+                        </div> -->
                         <div class="col">
-                            <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"><br>
+                            <input type="datetime-local" class='form-control' id="dateTime" name="dateTime" hidden><br>
                         </div>
                     </div>
                     {% endif %}
