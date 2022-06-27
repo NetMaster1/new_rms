@@ -1191,12 +1191,24 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
         sum_minuns_cashback=sum-cashback_off
         doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
         if request.method == "POST":
-            cash = request.POST["cash"]
-            cash=int(cash)
-            credit = request.POST["credit"]
-            credit=int(credit)
-            card = request.POST["card"]
-            card=int(card)
+            #cash = request.POST["cash"]
+            cash=request.POST.get('cash', False)
+            if cash:
+                cash=int(cash)
+            else:
+                cash=0
+            #credit = request.POST["credit"]
+            credit=request.POST.get('credit', False)
+            if credit:
+                credit=int(credit)
+            else:
+                credit=0
+            #card = request.POST["card"]
+            card=request.POST.get('card', False)
+            if card:
+                card=int(card)
+            else:
+                card=0
             imeis = request.POST.getlist("imei", None)
             names = request.POST.getlist("name", None)
             quantities = request.POST.getlist("quantity", None)
