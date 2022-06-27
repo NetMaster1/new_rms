@@ -7,7 +7,7 @@ def new_client_sale (request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     if request.method=="POST":
         f_name=request.POST['f_name']
-        l_name=request.POST['f_name']
+        l_name=request.POST['l_name']
         phone=request.POST['phone']
         new_client=Customer.objects.create(
             f_name=f_name,
