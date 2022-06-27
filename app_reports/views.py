@@ -291,14 +291,16 @@ def cashback_rep (request):
             end_date = request.POST ["end_date"]
             end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
             end_date = end_date + timedelta(days=1)
-            if Customer.objects.filter(created__gt=start_date, created__lt=end_date).exists():
-                customers=Customer.objects.filter (created__gt=start_date, created__lt=end_date)
+            print(start_date)
+            print(end_date)
+            if Customer.objects.filter(created__gte=start_date, created__lt=end_date).exists():
+                customers=Customer.objects.filter (created__gte=start_date, created__lt=end_date)
             else:
                 messages.error(request, "Новые клиенты отсутствуют")
                 return redirect("cashback_rep")
             doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
-            if Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type).exists():
-                documents=Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type)
+            if Document.objects.filter(created__gte=start_date, created__lt=end_date, title=doc_type).exists():
+                documents=Document.objects.filter(created__gte=start_date, created__lt=end_date, title=doc_type)
             else:
                 messages.error(request, "Продаж в данный период не было")
                 return redirect("cashback_rep")
