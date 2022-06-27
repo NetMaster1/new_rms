@@ -123,9 +123,10 @@ urlpatterns = [
     path ('revaluation_document', views.revaluation_document, name='revaluation_document'),
     path ('revaluation_auto', views.revaluation_auto, name='revaluation_auto'),
     path ('identifier_revaluation', views.identifier_revaluation, name='identifier_revaluation'),
-    path ('check_revaluation/<int:identifier_id>', views.check_revaluation, name='check_revaluation'),
+    #path ('check_revaluation/<int:identifier_id>', views.check_revaluation, name='check_revaluation'),
     path ('revaluation/<int:identifier_id>', views.revaluation, name='revaluation'),
     path ('revaluation_input/<int:identifier_id>', views.revaluation_input, name='revaluation_input'),
+    path ('change_revaluation_posted/<int:document_id>', views.change_revaluation_posted, name='change_revaluation_posted'),
     path ('delete_line_revaluation/<str:imei>/<int:identifier_id>/<shop_id>', views.delete_line_revaluation, name='delete_line_revaluation'),
     path ('update_retail_price', views.update_retail_price, name='update_retail_price'),
     #======================================================================================

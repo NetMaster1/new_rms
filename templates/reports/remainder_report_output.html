@@ -85,8 +85,9 @@
                 {% for group in request.user.groups.all %}
                 {% if group.name == 'admin' %}
                 <div class="col-1">
-                    <input type="checkbox" id="checkbox" name="checked" value='{{arr.imei}}' class="'form-checkup-input">
+                    <input type="checkbox" id="check_box" name="checked" value='{{arr.imei}}' class="form_checkup_input">
                 </div>
+                <input type="shop" id="shop" name="shop" value='{{shop.id}}' hidden>
                 {% endif %}
                 {% endfor %}
                 
@@ -111,6 +112,24 @@
 
 </div>
 </div>
-<!-- </div> -->
+
+<script>
+      console.log('Script works');
+
+        const row = document.querySelector('.row');
+        const form_checkup_input = document.querySelector('.form_checkup_input');
+        
+
+
+        form_checkup_input.addEventListener('click', highlight)
+     
+
+        function highlight() {
+            row.classList.add('highlights')
+        }
+
+     
+
+</script>
 
 {%endblock%}
