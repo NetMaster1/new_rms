@@ -748,15 +748,18 @@ def remainder_report_output(request, shop_id, category_id, date):
         messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
         for product in products:
             imei = product.imei
-            if RemainderHistory.objects.filter(
-                shop=shop, imei=imei, created__lte=date
-            ).exists():
+            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
                 rho = RemainderHistory.objects.filter(
                     shop=shop, imei=imei, created__lte=date
                 ).latest("created")
                 if rho.current_remainder > 0:
                     array.append(rho)
-        context = {"date": date, "shop": shop, "array": array, "category": category}
+        context = {
+            "date": date, 
+            "shop": shop, 
+            "array": array, 
+            "category": category
+            }
         return render(request, "reports/remainder_report_output.html", context)
     else:
         auth.logout(request)

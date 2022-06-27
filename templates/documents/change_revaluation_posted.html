@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+
+    <div class="container">
+        <div class="page_location_posted">
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Документ {{document.title}} # {{document.id}} (проведен) </h3>
+                </div>
+<!-- =====================Alert Messages Module=================== -->
+                <div class="container">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-info" role="alert">
+                        <!-- <button class="close" data-dismiss="alert">
+            <small><sup>x</sup></small>
+        </button> -->
+                        {{ message }}
+                    </div>
+                    {% endfor%}
+                    {% endif%}
+                </div>
+                <!-- ===================End of Alert Messages Module================ -->
+            </div>
+
+            <div class="row m-2 pb-2">
+                <div class="col-12 border rounded p-3">
+
+                    <div class="form-row">
+                        <div class="col-6">
+                            <label for="date">
+                                <h5>Текущая дата документа: {{document.created}}</h5>
+                            </label>
+                        </div>
+                        <div class="col">
+                            <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
+                                value="{{dateTime}}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-3">
+                            <label for="shop">
+                                <h5>Фирма</h5>
+                            </label>
+                        </div>
+                        <div class="col">
+                            <select name="shop" id="shop" class='form-control' readonly>
+                                <option selected="true" value="{{.shop.id}}">
+                                    {{shop.name}}</option>
+                                <!-- {% for shop in shops %}
+                                    <option value="{{shop.id}}">{{shop.name}}</option>
+                                    {% endfor %} -->
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class='form-inline'>
+                        <div class="row m-1">
+                            <div class="col-1"><label for="title">
+                                    <h5>#</h5>
+                                </label></div>
+                            <div class="col-2"><label for="title">
+                                    <h5>IMEI</h5>
+                                </label></div>
+                            <div class="col-2"><label for="title">
+                                    <h5>Наименование</h5>
+                                </label></div>
+                            <div class="col-2"><label for="price">
+                                    <h5>Цена</h5>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% for rho in rhos %}
+                    <div class="row m-auto mb-1">
+                        <div class="col-1">
+                            <input type="text" class='form-control' id="number" name="number" value='{{rho.number}}'
+                                readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class='form-control' id="imei" name="imei" value='{{rho.imei}}' readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class='form-control' id="name" name="name" value='{{rho.name}}' readonly>
+                        </div>
+               
+                        <div class="col-2">
+                            {% if shop.retail == True%}
+                            <input type="number" class='form-control' id="price" name="price"
+                                value='{{rho.retail_price}}' maxlength='50'>
+                            {% else %}
+                            <input type="number" class='form-control' id="price" name="price" value='{{rho.av_price}}'
+                                maxlength='50'>
+                            {% endif %}
+                        </div>
+                    
+
+                    </div>
+                    {% endfor %}
+                    {%for group in request.user.groups.all %}
+                    {%if group.name == 'admin'%}
+
+                    <div class="row">
+                        {% if not document.base_doc %}
+                        <div class="col-3 mt-3">
+                            <a href="#">
+                                <input type="button" value="Сделать непроведенным"
+                                    class="btn btn-sm btn-block btn-outline-dark">
+                            </a>
+                        </div>
+                        {% endif %}
+                        {%endif%}
+                        {%endfor%}
+                        <div class="col-3 mt-3">
+                            <a href="{% url 'close_edited_document' document.id %}">
+                                <input type="button" value="Закрыть без сохранения"
+                                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                            </a>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+<script>
+    console.log('Script works');
+
+    const btn_modal = document.querySelector('.btn_modal');
+    const enterDeliveryModal = document.querySelector('.enterDeliveryModal');
+    const btn_close = document.querySelector('.btn_close');
+
+    const imeis = document.querySelectorAll("#imei");
+    const quantities = document.querySelectorAll("#quantity");
+    const sub_totals = document.querySelectorAll("#sub_total");
+    const prices = document.querySelectorAll("#price");
+    const shop = document.querySelector("#shop");
+
+    const buttons = document.querySelectorAll('.clear_storage');
+    const delete_buttons = document.querySelectorAll('.delete_line_storage');
+    const check_imei = document.querySelector('#check_imei');
+    const save_button = document.querySelector('#save_button');
+
+
+    btn_modal.addEventListener('click', openModal)
+    btn_close.addEventListener('click', closeModal)
+
+    function openModal() {
+        enterDeliveryModal.classList.add('openModal')
+    }
+
+    function closeModal() {
+        enterDeliveryModal.classList.remove('openModal')
+    }
+
+    //saving "Shop_receiver select option" from switching to default when updating the page
+    //================================================================================================
+    shop.addEventListener('change', e => {
+        choice = shop.value;
+        sessionStorage.setItem('shop', choice);
+    })
+
+
+    //changing inputs & loading changed input to session storage (via changing 'quantities')
+    //================================================================================================
+    for (let i = 0; i < quantities.length; i++) {
+        quantities[i].addEventListener('change', e => {
+            sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+
+    //changing inputs & loading changed input to session storage (via changing 'prices')
+    //================================================================================================
+    for (let i = 0; i < prices.length; i++) {
+        prices[i].addEventListener('change', e => {
+            sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+
+    //changing inputs & loading changed input to session storage (via changing 'sub_totals')
+    //================================================================================================
+    for (let i = 0; i < sub_totals.length; i++) {
+        sub_totals[i].addEventListener('change', e => {
+            prices[i].value = sub_totals[i].value / quantities[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(sub_totals[i].value)
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+
+
+    //updating session storage on pushing 'Delete line button'
+    //===========================================================================
+    for (let i = 0; i < delete_buttons.length; i++) {
+        delete_buttons[i].addEventListener('click', e => {
+            sessionStorage.removeItem(imeis[i].value)
+        })
+    }
+
+    // getting data from session storage & passing it to html code on page reload
+    //=================================================================================
+    document.addEventListener('DOMContentLoaded', e => {
+        for (j = 0; j < imeis.length; j++) {
+            for (i = 0; i < sessionStorage.length; i++) {
+                if (JSON.parse(sessionStorage.getItem(imeis[j].value))) {
+                    a = JSON.parse(sessionStorage.getItem(imeis[j].value));
+                    if (imeis[j].value == a[0]) {
+                        quantities[j].value = a[1]
+                        prices[j].value = a[2]
+                        sub_totals[j].value = a[3]
+                    }
+                }
+            }
+        }
+        if (sessionStorage.getItem('shop') === null) {
+            console.log('No shop choice')
+        }
+        else {
+            choice = sessionStorage.getItem('shop');
+            shop.value = choice
+        }
+    })
+
+
+    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //===========================================================================
+    for (let button of buttons) {
+        button.addEventListener('click', clearStorage);
+    }
+    function clearStorage(e) {
+        sessionStorage.clear();
+    };
+
+    save_button.addEventListener('submit', e => {
+        sessionStorage.clear();
+    })
+
+
+
+    console.log('End of the script')
+</script>
+{% endblock %}
