@@ -158,7 +158,8 @@ def sale_interface (request):
             sales_sum+=rho.sub_total
          
 #==============Making a list of docs per pay=====================================================
-        queryset_list = Document.objects.filter(user=request.user, created__date=date, posted=True, shop_sender=shop).order_by("-created")
+        queryset_list = Document.objects.filter(user=request.user, created__date=date, posted=True)
+        queryset_list=queryset_list.filter( Q(shop_sender=shop) | Q(shop_receiver=shop)).order_by("-created")
         cashback=0
         for doc in queryset_list:
             cashback+=doc.cashback_off
