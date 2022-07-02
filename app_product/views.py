@@ -652,7 +652,7 @@ def check_sale(request, identifier_id):
                 session_shop=request.session['session_shop']
                 shop = Shop.objects.get(id=session_shop)
                 if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
-                    rho_latest_before=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
+                    rho_latest_before=RemainderHistory.objects.filter(imei=imei, shop=shop)
                     if rho_latest_before.current_remainder < quantity:
                         messages.error(request,"Количество, необходимое для продажи отсутствует на данном складе",)
                         return redirect("sale", identifier.id)
