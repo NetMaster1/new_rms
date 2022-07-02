@@ -5483,7 +5483,25 @@ def clear_revaluation(request, identifier_id):
     return redirect("revaluation", identifier.id)
 
 def unpost_revaluation (request, document_id):
-    pass
+    if request.user.is_authenticated:
+        document = Document.objects.get(id=document_id)
+        rhos = RemainderHistory.objects.filter(document=document)
+        for rho in rhos:
+            product=Product.objects.get(imei=rho.imei)
+            register=Register.objects.create(
+                document=document,
+                product=product,
+                quantity=rho.current_remainder,
+                price=rho.retail_price,
+                sub_total=rho.sub_total
+            )
+            rho.delete()
+        document.posted=False
+        document.save
+        return redirect ('log')
+    else:
+        return redirect ('login')
+
 
 def delete_line_revaluation_unposted (request, imei, document_id):
     pass
