@@ -628,7 +628,6 @@ def unpost_remainder_input (request, document_id):
     else:
         return redirect ('login')
 
-
 # ================================Sale Operations=================================
 def identifier_sale(request):
     if request.user.is_authenticated:
