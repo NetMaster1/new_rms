@@ -107,7 +107,7 @@
                     <div class="row">
                         {% if not document.base_doc %}
                         <div class="col-3 mt-3">
-                            <a href="#">
+                            <a href="{% url 'unpost_revaluation' document.id %}">
                                 <input type="button" value="Сделать непроведенным"
                                     class="btn btn-sm btn-block btn-outline-dark">
                             </a>

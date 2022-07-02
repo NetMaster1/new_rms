@@ -5446,7 +5446,7 @@ def change_revaluation_posted (request, document_id):
             "rhos": rhos,
             "document": document,
             'dateTime': dateTime,
-            'shop': shop
+            'shop': shop,
         }
         return render(request, "documents/change_revaluation_posted.html", context)
     else:
@@ -5497,16 +5497,23 @@ def unpost_revaluation (request, document_id):
             )
             rho.delete()
         document.posted=False
-        document.save
+        document.save()
         return redirect ('log')
     else:
         return redirect ('login')
 
+def change_revaluation_unposted (request, document_id):
+    document = Document.objects.get(id=document_id)
+    registers=Register.objects.filter(document=document)
+    shop=document.shop_receiver
+    context = {
+        'document': document,
+        'registers': registers,
+        'shop': shop
+    }
+    return render (request, 'documents/change_revaluation_unposted.html', context)
 
 def delete_line_revaluation_unposted (request, imei, document_id):
-    pass
-
-def change_revaluation_unposted (request, document_id):
     pass
 
 # def identifier_revaluation(request):
