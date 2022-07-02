@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- <body onselectstart="return false" oncopy="return false" oncontextmenu="return false"> -->
+
+<!-- <body oncontextmenu="return false"> -->
+
+    <div class="container">
+        <div class="row m-2">
+            <h5>{{the_video.title}}</h5>
+        </div>
+        <div class="row m-2">
+
+            <!-- <video id="video" class="video-js vjs-big-play-centered" preload="auto" width="1280" height="640" poster="https://picsum.photos/800/450"data-setup="{}"> -->
+
+            <!-- <video id="video" class="video-js vjs-theme-fantasy" preload="auto" width="1280" height="640"
+    poster='http://127.0.0.1:8000/static/images/logo.png' data-setup="{}"> -->
+
+            <!-- <video id="video" class="video-js vjs-big-play-centered" preload="auto" width="1280" height="640" poster='http://127.0.0.1:8000/static/images/logo.png' data-setup="{}"> -->
+
+
+            <!-- <video id="video" class="video-js vjs-big-play-centered" preload="auto" controls controlsList="nodownload" 
+    poster='http://127.0.0.1:8000/static/images/logo.png'data-setup="{}" > -->
+
+
+            <video id="video" class="video-js vjs-big-play-centered" preload="auto"
+                poster='' data-setup="{}">
+
+                <source src="{{the_video.video_file.url}}" type="video/mp4" />
+                <!-- <track label='Russian' kind='subtitles' srclang="ru" src="{{the_video.subtitle_file.url}}" width='50' height='30' default> -->
+                <p class="vjs-no-js">
+                    To view this video please enable JavaScript, and consider upgrading to a
+                    web browser that
+                    <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+                </p>
+            </video>
+        </div>
+
+
+    </div>
+
+    {% endblock %}

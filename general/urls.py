@@ -30,4 +30,5 @@ urlpatterns = [
     path('finance', include ('app_finance.urls')),
     path('error', include ('app_error.urls')),
     path('wholesale', include ('app_wholesale.urls')),
+    path('tutorial', include ('app_tutorial.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

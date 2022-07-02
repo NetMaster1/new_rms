@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'app_reports',
     'app_finance',
     'app_error',
-    'app_wholesale'
+    'app_wholesale',
+    'app_tutorial',
   
 ]
 

@@ -23,9 +23,14 @@
                         </ul>
                      </li>
 
-            {% for group in request.user.groups.all %}
+            <a class="nav-link text-light" href="{% url 'tutorials' %}">Обучающие ролики</a>
 
+
+            {% for group in request.user.groups.all %}
             {% if group.name == 'sales' %}
+
+            
+            
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false">
@@ -131,7 +136,7 @@
                         <li><a class="dropdown-item" href="{% url 'cashback_rep' %}">Клиенты кэшбэк</a></li>
                     </ul>
                 </li>
-
+                <a class="nav-link text-light" href="{% url 'tutorials' %}">Обучающие ролики</a>
                 <a class="nav-link text-light"href="{% url 'search' %}">Поиск товара</a>
 
                 <li class="nav-item dropdown">

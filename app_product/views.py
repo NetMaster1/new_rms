@@ -2136,10 +2136,22 @@ def delivery_auto(request):
     if request.method == "POST":
         dateTime=request.POST.get('dateTime', False)
         if dateTime:
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
         else:
-            dateTime = datetime.datetime.now()
+            tdelta=datetime.timedelta(hours=3)
+            dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+            dateTime=dT_utcnow+tdelta
+            #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+            #==================End of time module================================
         shop = request.POST["shop"]
         shop = Shop.objects.get(id=shop)
         try:
