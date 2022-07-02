@@ -652,7 +652,7 @@ def check_sale(request, identifier_id):
                 session_shop=request.session['session_shop']
                 shop = Shop.objects.get(id=session_shop)
                 if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
-                    rho_latest_before=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
+                    rho_latest_before=RemainderHistory.objects.filter(imei=imei, shop=shop)
                     if rho_latest_before.current_remainder < quantity:
                         messages.error(request,"Количество, необходимое для продажи отсутствует на данном складе",)
                         return redirect("sale", identifier.id)
@@ -2136,22 +2136,20 @@ def delivery_auto(request):
     if request.method == "POST":
         dateTime=request.POST.get('dateTime', False)
         if dateTime:
-                # converting dateTime in str format (2021-07-08T01:05) to django format ()
-                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
-                current_dt=datetime.datetime.now()
-                mics=current_dt.microsecond
-                tdelta_1=datetime.timedelta(microseconds=mics)
-                secs=current_dt.second
-                tdelta_2=datetime.timedelta(seconds=secs)
-                tdelta_3=tdelta_1+tdelta_2
-                dateTime=dateTime+tdelta_3
+            # converting dateTime in str format (2021-07-08T01:05) to django format ()
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
         else:
             tdelta=datetime.timedelta(hours=3)
             dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
             dateTime=dT_utcnow+tdelta
-            #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
-            #==================End of time module================================
         shop = request.POST["shop"]
         shop = Shop.objects.get(id=shop)
         try:
@@ -4184,11 +4182,11 @@ def check_signing_off(request, identifier_id):
             shop=Shop.objects.get(id=session_shop)
             if Product.objects.filter(imei=imei).exists():
                 product = Product.objects.get(imei=imei)
-                # if RemainderHistory.objects.filter(shop=shop, imei=imei).exists():
-                #     remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imei)
-                # else:
-                #     messages.error(request, "Данное наименование отсутствует на балансе данной торговой точки.")
-                #     return redirect("signing_off", identifier.id)
+                if RemainderHistory.objects.filter(shop=shop, imei=imei).exists():
+                    rho_latest=RemainderHistory.objects.filter(shop=shop, imei=imei).latest('created')
+                    if rho_latest.current_remainder < 0:
+                        messages.error(request, "Данное наименование отсутствует на балансе данной торговой точки.")
+                        return redirect("signing_off", identifier.id)
                 if Register.objects.filter(identifier=identifier, product=product).exists():
                     register = Register.objects.get(identifier=identifier, product=product)
                     register.quantity += 1
@@ -4201,13 +4199,12 @@ def check_signing_off(request, identifier_id):
                         product=product,
                         quantity=1,
                     )
-                    # if shop.retail:
-                    #     register.price=remainder_current.retail_price
-                    # else:
-                    #     av_price=AvPrice.objects.get(imei=imei)
-                    #     register.price=av_price.av_price
-                    # register.sub_total=register.price*register.quantity
-                    # register.save()
+                    if shop.retail == True:
+                        register.price=rho_latest.retail_price
+                    else:
+                        register.price=rho_latest.wholesale_price
+                    register.sub_total=register.price*register.quantity
+                    register.save()
                 return redirect("signing_off", identifier.id)   
             else:
                 messages.error(request, "Данное наименование отсутствует в БД.")
@@ -5293,6 +5290,12 @@ def unpost_return(request, document_id):
     cho.delete()
     return redirect("log")
 #==========================================================================================
+# для изменения цены в документе Sale от предыдущих дат нет необходимости делать переоценку задней датой.
+# Админ может просто сделать документ непроведенным и поменять стоимость.
+# Проблема может возникнуть, если в документе ПРОДАЖА будет проставлена нестандартная цена, а следующий
+# документ ПРОДАЖА берет эту нестандратную цену. Нужно сделать так, чтобы цена в документ ПРОДАЖА
+# (check_sale) проставлялась только из документов Оприходование, Перемещение, Переоценка, Ввод остатков
+
 def revaluation_document (request):
     identifier = Identifier.objects.create()
     if request.method == "POST":
@@ -5323,45 +5326,6 @@ def revaluation_document (request):
         }
         return render (request, 'documents/revaluation.html', context)
 
-def identifier_revaluation(request):
-    if request.user.is_authenticated:
-        identifier = Identifier.objects.create()
-        return redirect("revaluation", identifier.id)
-    else:
-        return redirect("login")
-
-def revaluation_auto (request):
-    if request.user.is_authenticated:
-        shops=Shop.objects.all()
-        categories = ProductCategory.objects.all()
-
-        context = {
-            "shops": shops,
-            "categories": categories,
-            }
-        return render(request, "documents/revaluation_auto.html", context)
-    else:
-        return redirect ('login')
-
-# def check_revaluation(request, identifier_id):
-#    identifier = Identifier.objects.get(id=identifier_id)
-#    if request.method == "POST":
-#        imei = request.POST["imei"]
-#        product=Product.objects.get(imei=imei)
-#        if Register.objects.filter(identifier=identifier, product=product).exists():
-#                messages.error(request, "Вы уже ввели данное наименование")
-#                return redirect("revaluation", identifier.id)
-#        else:
-#            register = Register.objects.create(
-#                identifier=identifier,
-#                name=product.name,
-#                imei=product.imei,
-#            )
-#            return redirect("revaluation", identifier.id)
-
-def check_revaluating_unposted (request, document_id):
-    pass
-
 def revaluation(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     registers = Register.objects.filter(identifier=identifier)
@@ -5374,25 +5338,6 @@ def revaluation(request, identifier_id):
     }
     return render(request, "documents/revaluation.html", context)
 
-def delete_line_revaluation(request, imei, identifier_id, shop_id):
-    identifier = Identifier.objects.get(id=identifier_id)
-    product = Product.objects.get(imei=imei)
-    shop=Shop.objects.get(id=shop_id)
-    items = Register.objects.filter(identifier=identifier, product=product, shop=shop)
-    for item in items:
-        item.delete()
-    return redirect("revaluation", identifier.id)
-
-def delete_line_revaluation_unposted (request, imei, document_id):
-    pass
-
-def clear_revaluation(request, identifier_id):
-    identifier = Identifier.objects.get(id=identifier_id)
-    registers = Register.objects.filter(identifier=identifier)
-    for register in registers:
-        register.delete()
-    return redirect("revaluation", identifier.id)
-
 def revaluation_input(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     registers = Register.objects.filter(identifier=identifier)
@@ -5401,7 +5346,7 @@ def revaluation_input(request, identifier_id):
         shop = request.POST["shop"]
         shop=Shop.objects.get(id=shop)
         if shop.retail == False:
-            messages.success(request, "Вы не можете делать переоценку на розничном складе.")
+            messages.success(request, "Вы не можете делать переоценку на оптовом складе.")
             return redirect("revaluation", identifier.id)
         imeis = request.POST.getlist("imei", None)
         names = request.POST.getlist("name", None)
@@ -5439,12 +5384,28 @@ def revaluation_input(request, identifier_id):
         n = len(names)
         for i in range(n):
             product=Product.objects.get(imei=imeis[i])
+            #============check quantity module===================================
             if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                 rho_latest = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
-                pre_remainder=rho_latest.current_remainder
+                if rho_latest.current_remainder > 0:
+                    pre_remainder=rho_latest.current_remainder
+                else:
+                    if RemainderHistory.objects.filter(document=document).exists():
+                        rhos=RemainderHistory.objects.filter(document=document)
+                        for rho in rhos:
+                            rho.delete()
+                    document.delete()
+                    string=f'Документ не проведен. Кол-во товара с {imeis[i]} на складе равно 0'
+                    messages.error(request, string)
+                    return redirect("revaluation", identifier.id)
             else:
+                if RemainderHistory.objects.filter(document=document).exists():
+                    rhos=RemainderHistory.objects.filter(document=document)
+                    for rho in rhos:
+                        rho.delete()
                 document.delete()
-                messages.error(request, "Остатаки для переоценки отсутствуют.")
+                string=f'Документ не проведен. Товар с {imeis[i]} отсутствует наданном складе'
+                messages.error(request, string)
                 return redirect("revaluation", identifier.id)
             # creating remainder_history
             rho = RemainderHistory.objects.create(
@@ -5463,14 +5424,13 @@ def revaluation_input(request, identifier_id):
                 sub_total= int(pre_remainder)*int(prices_new[i]),
             )
             sum+=rho.sub_total
-            print(rho.imei)
         for register in registers:
             register.delete()
         identifier.delete()
         document.sum=sum
         document.save()
         return redirect("log")
-  
+
 def change_revaluation_posted (request, document_id):
     if request.user.is_authenticated:
         document = Document.objects.get(id=document_id)
@@ -5487,68 +5447,147 @@ def change_revaluation_posted (request, document_id):
             "rhos": rhos,
             "document": document,
             'dateTime': dateTime,
-            'shop': shop
+            'shop': shop,
         }
         return render(request, "documents/change_revaluation_posted.html", context)
     else:
         auth.logout(request)
         return redirect("login")
 
-def change_revaluation_unposted (request, document_id):
-    pass
+def revaluation_auto (request):
+    if request.user.is_authenticated:
+        shops=Shop.objects.all()
+        categories = ProductCategory.objects.all()
+
+        context = {
+            "shops": shops,
+            "categories": categories,
+            }
+        return render(request, "documents/revaluation_auto.html", context)
+    else:
+        return redirect ('login')
+
+def delete_line_revaluation(request, imei, identifier_id, shop_id):
+    identifier = Identifier.objects.get(id=identifier_id)
+    product = Product.objects.get(imei=imei)
+    shop=Shop.objects.get(id=shop_id)
+    items = Register.objects.filter(identifier=identifier, product=product, shop=shop)
+    for item in items:
+        item.delete()
+    return redirect("revaluation", identifier.id)
+
+def clear_revaluation(request, identifier_id):
+    identifier = Identifier.objects.get(id=identifier_id)
+    registers = Register.objects.filter(identifier=identifier)
+    for register in registers:
+        register.delete()
+    return redirect("revaluation", identifier.id)
 
 def unpost_revaluation (request, document_id):
+    if request.user.is_authenticated:
+        document = Document.objects.get(id=document_id)
+        rhos = RemainderHistory.objects.filter(document=document)
+        for rho in rhos:
+            product=Product.objects.get(imei=rho.imei)
+            register=Register.objects.create(
+                document=document,
+                product=product,
+                quantity=rho.current_remainder,
+                price=rho.retail_price,
+                sub_total=rho.sub_total
+            )
+            rho.delete()
+        document.posted=False
+        document.save()
+        return redirect ('log')
+    else:
+        return redirect ('login')
+
+def change_revaluation_unposted (request, document_id):
+    document = Document.objects.get(id=document_id)
+    registers=Register.objects.filter(document=document)
+    shop=document.shop_receiver
+    context = {
+        'document': document,
+        'registers': registers,
+        'shop': shop
+    }
+    return render (request, 'documents/change_revaluation_unposted.html', context)
+
+def delete_line_revaluation_unposted (request, imei, document_id):
     pass
 
-def update_retail_price(request):
-    group = Group.objects.get(name="admin").user_set.all()
-    doc_type = DocumentType.objects.get(name="Переоценка ТМЦ")
-    dateTime = datetime.datetime.now()
-    if request.user in group:
-        if request.method == "POST":
-            imei = request.POST["imei"]
-            retail_price = request.POST["retail_price"]
-            shop = request.POST["shop"]
-            shop = Shop.objects.get(name=shop)
+# def identifier_revaluation(request):
+#     if request.user.is_authenticated:
+#         identifier = Identifier.objects.create()
+#         return redirect("revaluation", identifier.id)
+#     else:
+#         return redirect("login")
 
-            category = request.POST["category"]
-            category = ProductCategory.objects.get(name=category)
 
-            product = Product.objects.get(imei=imei)
-            # remainder_current=RemainderCurrent.objects.get(imei=imei, shop=shop)
-            # remainder_current.retail_price=retail_price
-            # remainder_current.save()
-            document = Document.objects.create(
-                created=dateTime,
-                title=doc_type,
-                user=request.user,
-                posted=True,
-            )
-            rho_latest_before = RemainderHistory.objects.filter(
-                shop=shop, imei=imei, created__lt=dateTime
-            ).latest("created")
-            rho = RemainderHistory.objects.create(
-                document=document,
-                created=document.created,
-                rho_type=doc_type,
-                user=request.user,
-                shop=shop,
-                product_id=product,
-                category=product.category,
-                imei=imei,
-                name=product.name,
-                retail_price=retail_price,
-                pre_remainder=rho_latest_before.pre_remainder,
-                incoming_quantity=0,
-                outgoing_quantity=0,
-                current_remainder=rho_latest_before.current_remainder,
-            )
-            # rho.sub_total=rho.current_remainder*rho.retail_price
-            # return redirect ('remainder_list', shop.id , category.id )
-            return redirect("remainder_report_output", shop.id, category.id, dateTime)
-    else:
-        auth.logout(request)
-        return redirect("login")
+# def check_revaluation(request, identifier_id):
+#    identifier = Identifier.objects.get(id=identifier_id)
+#    if request.method == "POST":
+#        imei = request.POST["imei"]
+#        product=Product.objects.get(imei=imei)
+#        if Register.objects.filter(identifier=identifier, product=product).exists():
+#                messages.error(request, "Вы уже ввели данное наименование")
+#                return redirect("revaluation", identifier.id)
+#        else:
+#            register = Register.objects.create(
+#                identifier=identifier,
+#                name=product.name,
+#                imei=product.imei,
+#            )
+#            return redirect("revaluation", identifier.id)
+
+#def check_revaluating_unposted (request, document_id):
+#    pass
+
+# def update_retail_price(request):
+#     group = Group.objects.get(name="admin").user_set.all()
+#     doc_type = DocumentType.objects.get(name="Переоценка ТМЦ")
+#     dateTime = datetime.datetime.now()
+#     if request.user in group:
+#         if request.method == "POST":
+#             imei = request.POST["imei"]
+#             retail_price = request.POST["retail_price"]
+#             shop = request.POST["shop"]
+#             shop = Shop.objects.get(name=shop)
+
+#             category = request.POST["category"]
+#             category = ProductCategory.objects.get(name=category)
+
+#             product = Product.objects.get(imei=imei)
+#             document = Document.objects.create(
+#                 created=dateTime,
+#                 title=doc_type,
+#                 user=request.user,
+#                 posted=True,
+#             )
+#             rho_latest_before = RemainderHistory.objects.filter(
+#                 shop=shop, imei=imei, created__lt=dateTime
+#             ).latest("created")
+#             rho = RemainderHistory.objects.create(
+#                 document=document,
+#                 created=document.created,
+#                 rho_type=doc_type,
+#                 user=request.user,
+#                 shop=shop,
+#                 product_id=product,
+#                 category=product.category,
+#                 imei=imei,
+#                 name=product.name,
+#                 retail_price=retail_price,
+#                 pre_remainder=rho_latest_before.pre_remainder,
+#                 incoming_quantity=0,
+#                 outgoing_quantity=0,
+#                 current_remainder=rho_latest_before.current_remainder,
+#             )
+#             return redirect("remainder_report_output", shop.id, category.id, dateTime)
+#     else:
+#         auth.logout(request)
+#         return redirect("login")
 
 # =========================================Cash_off salary ===========================================
 
