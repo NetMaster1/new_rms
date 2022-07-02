@@ -89,13 +89,13 @@
                     <li><a class="dropdown-item" href="{% url 'remainder_input' %}" >Ввод остатков</a></li>
                     <li><a class="dropdown-item" href="{% url 'delivery_auto' %}" >Автоматический ввод поступления ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'transfer_auto' %}" >Автоматический ввод перемещения ТМЦ</a></li>
-                    <li><a class="dropdown-item" href="{% url 'revaluation_auto' %}" >Автоматический ввод переоцки ТМЦ</a></li>
+                    <li><a class="dropdown-item" href="{% url 'revaluation_auto' %}" >Автоматический ввод переоценки ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'identifier_delivery' %}" >Поступление ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'identifier_recognition' %}">Оприходование ТМЦ</a></li>
                         
                     <li><a class="dropdown-item" href="{% url 'identifier_transfer' %}">Перемещение ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'shop_choice_signing_off' %}">Списание ТМЦ</a></li>
-                    <!-- <li><a class="dropdown-item" href="{% url 'identifier_revaluation' %}">Переоценка ТМЦ</a></li> -->
+                  
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}
                     <li><a class="dropdown-item" href="{% url 'shop_choice' %}">Продажа ТМЦ</a></li>
