@@ -4957,7 +4957,7 @@ def return_input(request, identifier_id):
                             imei=imeis[i],
                             current_remainder=int(quantities[i]),
                             av_price=int(prices[i]),
-                            sum=int(quantities)*int(prices)
+                            sum=int(quantities[i])*int(prices[i])
                         )
                     av_price_obj.save()
                     # checking docs after remainder_history

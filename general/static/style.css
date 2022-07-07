@@ -424,8 +424,8 @@ ModalLogHide.openModal {
     border-color: red;
 }
 
-.row.highlights {
-    
-    background-color: aquamarine;
-
+.highlight {
+    background-color: rgb(255, 168, 127);
+    color: red;
 }
+
