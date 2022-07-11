@@ -772,6 +772,7 @@ def remainder_report_dynamic(request):
     shops = Shop.objects.all()
     if request.method == "POST":
         report_id = ReportTempId.objects.create()
+        #date indicates 00.00 (the beginning of the date indicated)
         date_start = request.POST["date_start"]
         date_start = datetime.datetime.strptime(date_start, "%Y-%m-%d")
         date_end = request.POST["date_end"]
@@ -781,6 +782,7 @@ def remainder_report_dynamic(request):
         shop = request.POST["shop"]
         shop = Shop.objects.get(id=shop)
         products = Product.objects.filter(category=category)
+        i=0
         for product in products:
             #checking rhos before the period indicated
             if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date_start).exists():
@@ -789,6 +791,8 @@ def remainder_report_dynamic(request):
                     remainder_start=rho_before_latest.current_remainder
                 else:
                     remainder_start=0
+            else:
+                remainder_start=0
             #checking rhos during the period indicated
             if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__gt=date_start, created__lt=date_end).exists():
                 queryset=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__gt=date_start, created__lt=date_end)
@@ -797,19 +801,23 @@ def remainder_report_dynamic(request):
                 for qs in queryset:
                     q_in += qs.incoming_quantity
                     q_out += qs.outgoing_quantity
-                remainder_end=remainder_start-q_out+q_in
-                if remainder_start == 0 and q_in==0 and q_out==0:
-                    pass
-                else:
-                    report = ReportTemp.objects.create(
-                        report_id=report_id,
-                        name=product.name,
-                        imei=product.imei,
-                        quantity_in=q_in,
-                        quantity_out=q_out,
-                        initial_remainder=remainder_start,
-                        end_remainder=remainder_end,
-                    )
+                remainder_end = remainder_start - q_out + q_in
+            else:
+                remainder_end=remainder_start
+                q_in=0
+                q_out=0
+            if remainder_start == 0 and q_in==0 and q_out==0:
+                pass
+            else: 
+                report = ReportTemp.objects.create(
+                    report_id=report_id,
+                    name=product.name,
+                    imei=product.imei,
+                    quantity_in=q_in,
+                    quantity_out=q_out,
+                    initial_remainder=remainder_start,
+                    end_remainder=remainder_end,
+                )        
         reports = ReportTemp.objects.filter(report_id=report_id)
         context = {
             "reports": reports,
