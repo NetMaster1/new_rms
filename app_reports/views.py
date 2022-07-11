@@ -782,8 +782,8 @@ def remainder_report_dynamic(request):
         products = Product.objects.filter(category=category)
         for product in products:
             #checking rhos before the period indicated
-            if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lte=date_start).exists():
-                rho_before_latest=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lte=date_start).latest('created')
+            if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date_start).exists():
+                rho_before_latest=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date_start).latest('created')
                 if rho_before_latest.current_remainder > 0:
                     remainder_start=rho_before_latest.current_remainder
                 else:
