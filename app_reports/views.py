@@ -818,7 +818,7 @@ def remainder_report_dynamic(request):
                     initial_remainder=remainder_start,
                     end_remainder=remainder_end,
                 )        
-        reports = ReportTemp.objects.filter(report_id=report_id)
+        reports = ReportTemp.objects.filter(report_id=report_id).order_by('name')
         context = {
             "reports": reports,
             "shops": shops,
