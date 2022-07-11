@@ -2,35 +2,35 @@
 {% block content %}
 <!-- <div class="hide"> -->
     <div class="container">
-        <div class="page_location">
+      
           
-        <div class="menu">
+        <div class="log mt-2 p-2">
             <h3>Отчет по движению ТМЦ</h3>
         </div>
 
 
-        <div class="menu">
+        <div class="log mt-2 p-2">
             <form action="{% url 'item_report' %}" method="POST">
                 {% csrf_token %}
 
                 <div class="row form-row m-auto">
                     <div class="col-2">
-                        <input type="date" id='start_date' name="start_date">
+                        <input type="date" id='start_date' class='form-control' name="start_date">
                     </div>
                     <div class="col-2">
-                        <input type="date" id='end_date' name="end_date">
+                        <input type="date" id='end_date' class='form-control' name="end_date">
                     </div>
 
                     <div class="col-2">
-                        <input type="text" name="imei" placeholder="IMEI">
+                        <input type="text" name="imei" class='form-control' placeholder="IMEI">
                     </div>
                 </div>
 
-                <div class="row form-row mt-3">
-                    <div class="col-2">
+                <div class="row m-auto mt-2">
+                    <div class="col-1">
                         <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
                     </div>
-                    <div class="col-2">
+                    <div class="col-1">
                         <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
                     </div>
                     <div class="col-2">
@@ -47,26 +47,33 @@
                         </a>
                     </div>
                 </form>
-                </div>
-                </div>
             </div>
-    <div class="log">
-        <div class="row">
-            <h5>Наименование: {{product.name}} IMEI: {{product.imei}} </h5>
         </div>
+               
+     
+
+    <div class="log mt-2 p-2">
+        <div class="row">
+            <div class="col-2"><h5>Наименование:</h5></div>
+            <div class="col-3">{{product.name}}</div>
+            <div class="col-1" style="font-size: 1.2rem">
+                IMEI:
+            </div>
+            <div class="col-3">{{product.imei}}</div>
+        </div>
+        <hr>
 
       
         <div class="row">
             <div class="col-2"><h5>Дата</h5></div>
             <div class="col-2"><h5>Документ</h5></div>
             <div class="col-2"><h5>Фирма</h5></div>
-            <div class="col-1"><h5>Начальный остаток</h5></div>
+            <div class="col-1"><h5>Нач. остаток</h5></div>
             <div class="col-1"><h5>Кол-во приход</h5></div>
             <div class="col-1"><h5>Кол-во расход</h5></div>
-            <div class="col-1"><h5>Конечный остаток</h5></div>
-            
-
+            <div class="col-1"><h5>Кон. остаток</h5></div>
         </div>
+        <hr>
         {% for item in queryset_list %}
         <div class="row m-auto">
             <div class="col-2">{{item.document.created}}</div>
@@ -102,6 +109,10 @@
             <div class="col-2">
                 <a href="{% url 'change_return_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
             </div>
+            {% elif item.document.title.name == 'Переоценка ТМЦ' %}
+            <div class="col-2">
+                <a href="{% url 'change_revaluation_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
+            </div>
             {% else %}
             <div class="col-2">{{item.document.title}}#{{item.document.id}}</div>
             {% endif %}
@@ -116,7 +127,7 @@
         </div>
         {% endfor %}
         </div>
-    </div>
+ 
 </div>
 <!-- </div> -->
 
