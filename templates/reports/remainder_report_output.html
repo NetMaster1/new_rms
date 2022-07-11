@@ -81,11 +81,11 @@
         {% csrf_token %}
 
     {% for arr in array %}
-        <div class="row m-auto">
+        <div class="row m-auto" id="row_highlight">
                 {% for group in request.user.groups.all %}
                 {% if group.name == 'admin' %}
                 <div class="col-1">
-                    <input type="checkbox" id="check_box" name="checked" value='{{arr.imei}}' class="form_checkup_input">
+                    <input type="checkbox" id="check_box" name="checked" value='{{arr.imei}}'>
                 </div>
                 <input type="shop" id="shop" name="shop" value='{{shop.id}}' hidden>
                 {% endif %}
@@ -116,20 +116,25 @@
 <script>
       console.log('Script works');
 
-        const row = document.querySelector('.row');
-        const form_checkup_input = document.querySelector('.form_checkup_input');
         
+        const row_highlights =document.querySelectorAll('#row_highlight');
+        //const rows = document.querySelector('.row');
+        const check_boxes = document.querySelectorAll('#check_box');
+        
+        for (let i = 0; i < check_boxes.length; i++) {
+            check_boxes[i].addEventListener('change', e => {
+                //row_highlights[i].className='highlight';
+                if(check_boxes[i].checked==true){
+                    row_highlights[i].style.backgroundColor='aquamarine';
+                }
+                else {
+                    row_highlights[i].style.backgroundColor = null;
+                }
+            })
+            }
 
-
-        form_checkup_input.addEventListener('click', highlight)
      
-
-        function highlight() {
-            row.classList.add('highlights')
-        }
-
-     
-
+console.log('Script ends')
 </script>
 
 {%endblock%}

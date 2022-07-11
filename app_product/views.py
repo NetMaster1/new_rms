@@ -628,6 +628,7 @@ def unpost_remainder_input (request, document_id):
     else:
         return redirect ('login')
 
+
 # ================================Sale Operations=================================
 def identifier_sale(request):
     if request.user.is_authenticated:
@@ -2682,7 +2683,7 @@ def change_delivery_unposted(request, document_id):
                                 sub_total=int(int(quantities[i]) * int(prices[i]))
                             )
                         document_sum+=rho.sub_total
-            #===========Av_price_module================
+                              #===========Av_price_module================
                         if AvPrice.objects.filter(imei=imeis[i]).exists():
                             av_price_obj = AvPrice.objects.get(imei=imeis[i])
                             av_price_obj.current_remainder += int(quantities[i])
@@ -3346,7 +3347,6 @@ def change_transfer_unposted(request, document_id):
                         product = Product.objects.get(imei=imeis[i])
                         register = Register.objects.get(document=document, product=product)
                         register.price = prices[i]
-                        register.new=False
                         register.quantity = quantities[i]
                         register.sub_total = int(prices[i]) * int(quantities[i])
                         register.new=False
