@@ -773,6 +773,7 @@ def remainder_report_dynamic(request):
     if request.method == "POST":
         report_id = ReportTempId.objects.create()
         date_start = request.POST["date_start"]
+        date_start = datetime.datetime.strptime(date_start, "%Y-%m-%d")
         date_end = request.POST["date_end"]
         date_end = datetime.datetime.strptime(date_end, "%Y-%m-%d")
         date_end = date_end + timedelta(days=1)
