@@ -19,7 +19,7 @@
                 <div class="row form-row m-auto">
 
                     <div class="col-2">
-                        <select name="category" class='form-inline' required>
+                        <select name="category" class='form-control' required>
                             <option value="">Выберите категорию</option>
                             {% for category in categories %}
                             <option value="{{category.id}}">{{category.name}}</option>
@@ -28,7 +28,7 @@
                     </div>
 
                     <div class="col-2">
-                        <select name="shop" id="shop" class='form-inline' required>
+                        <select name="shop" id="shop" class='form-control' required>
                         <option value="">Выберите торговую точку</option>
                             <!-- <option value="#">Выберите ТТ</option> -->
                             {% for shop in shops %}
@@ -37,10 +37,10 @@
                         </select>
                     </div>
                     <div class="col-2">
-                        <input type="date" id='date_start' name="date_start" required>
+                        <input type="date" id='date_start' name="date_start" class='form-control' required>
                     </div>
                     <div class="col-2">
-                        <input type="date" id='date_end' name="date_end" required>
+                        <input type="date" id='date_end' name="date_end" class='form-control' required>
                     </div>
                 </div>
 
@@ -69,7 +69,12 @@
 
     <div class="log mt-1 border rounded">  
         <div class="row m-auto">
-            <h5>Период с {{date_start}} по {{date_end}} по тт {{shop}}</h5>
+            <div class="col-2"><h5>Период с:</h5></div>
+            <div class="col-2">{{date_start}}</div>
+            <div class="col-1"><h5>по</h5></div>
+            <div class="col-2">{{date_end}}</div>
+            <div class="col-2"><h5>по ТТ</h5></div>
+            <div class="col-2">{{shop}}</div>
         </div>
 
         <div class="row m-auto">
@@ -114,6 +119,7 @@
             {% endif %}
             <div class="col-2">{{report.end_remainder}}</div>
         </div>
+        <hr>
         {% endfor %}
 
       
