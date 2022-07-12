@@ -17,12 +17,15 @@ from django.http import HttpResponse, JsonResponse
 def sim_return_list (request):
     category=ProductCategory.objects.get(name='Сим_карты')
     doc_type=DocumentType.objects.get(name='Сдача РФА')
+    tdelta=datetime.timedelta(hours=3)
+    dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+    dateTime=dT_utcnow+tdelta
     if request.method == "POST":
         file = request.FILES["file_name"]
         df1 = pandas.read_excel(file)
         cycle = len(df1)
         document = Document.objects.create(
-            created=datetime.datetime.now(),
+            created=dateTime,
             user=request.user, 
             title=doc_type,
             posted=True,
