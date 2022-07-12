@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'app_error',
     'app_wholesale',
     'app_tutorial',
+    'app_sims',
   
 ]
 

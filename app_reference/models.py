@@ -55,6 +55,7 @@ class Product (models.Model):
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=50)
     imei = models.CharField(max_length=50, unique=True)
+    #status = models.BooleanField(default=False)  # "True" for sent to T2 (for sim_cards)
     
 
     class Meta:

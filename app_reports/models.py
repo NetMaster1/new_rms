@@ -108,6 +108,7 @@ class SaleReport (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     category = models.CharField(max_length=50, null=True)#this field is needed to place SaleReports ordered by Category
     product = models.CharField(max_length=50, null=True)
+    imei = models.CharField(max_length=50, null=True)
     av_sum = models.IntegerField(default=0)
     quantity = models.IntegerField(default=0)
     retail_sum = models.IntegerField(default=0)
@@ -125,6 +126,22 @@ class PayCardReport (models.Model):
     incoming_quantity = models.IntegerField(default=0)
     outgoing_quantity = models.IntegerField(default=0)
     current_remainder = models.IntegerField(default=0)
+
+    def __int__(self):
+        return self.id
+
+class Sim_report (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    name = models.CharField(max_length=50, null=True)
+    imei = models.CharField(max_length=50, null=True)
+    shop = models.CharField(max_length=50, null=True)
+    #shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING, null=True)
+    date = models.CharField(max_length=50, null=True)
+    user = models.CharField(max_length=50, null=True)
+    document = models.CharField(max_length=50, null=True)
+    status = models.CharField(max_length=50, null=True)
+    return_mark = models.CharField(max_length=50, default='РФА не сдана')#indicated is the form has been returned to operator
+    price = models.IntegerField(null=True)
 
     def __int__(self):
         return self.id
