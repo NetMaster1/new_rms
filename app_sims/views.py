@@ -30,33 +30,23 @@ def sim_return_list (request):
         )
         for i in range(cycle):
             row = df1.iloc[i]#reads each row of the df1 one by one
-            if Product.objects.filter(imei=row.Imei).exists():
-                if SimReturnRecord.objects.filter(imei=row.Imei).exists():
-                    if SimReturnRecord.objects.filter(document=document).exists():
-                        srr_error=SimReturnRecord.objects.filter(document=document)
-                        for item in srr_error:
-                            item.delete()
-                    document.delete()
-                    string=f'Реестр не сформирован. РФА {row.Name} c IMEI: {row.Imei} уже сдана.'
-                    messages.error(request, string)
-                    return redirect("sim_return_list")
-                else: 
-                    srr = SimReturnRecord.objects.create(
-                        document=document,
-                        srr_type=document.title,
-                        imei=row.Imei,
-                        name=row.Name,
-                        user=request.user
-                    )
-            else:
+            if SimReturnRecord.objects.filter(imei=row.Imei).exists():
                 if SimReturnRecord.objects.filter(document=document).exists():
                     srr_error=SimReturnRecord.objects.filter(document=document)
                     for item in srr_error:
                         item.delete()
-                document.delete()
-                string=f'Реестр не сформирован. Товар {row.Name} c IMEI: {row.Imei} отсутствует в базе данных'
+                    document.delete()
+                string=f'Реестр не сформирован. РФА {row.Name} c IMEI: {row.Imei} уже сдана.'
                 messages.error(request, string)
                 return redirect("sim_return_list")
+            else: 
+                srr = SimReturnRecord.objects.create(
+                    document=document,
+                    srr_type=document.title,
+                    imei=row.Imei,
+                    name=row.Name,
+                    user=request.user
+                )
         return redirect("log")
     else:
         return render(request, "sims/sim_return_list.html")
