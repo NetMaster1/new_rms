@@ -550,6 +550,7 @@ def sale_report_analytic(request):
             sale_rep = SaleReport.objects.create(
                 report_id=report_id,
                 product=product.name,
+                imei=product.imei,
                 quantity=quantity_out,
                 av_sum=self_cost,
                 retail_sum=retail_sum,
@@ -580,7 +581,8 @@ def sale_report_analytic(request):
                 "suppliers": suppliers,
                 "users": users,
                 "total_sales": total_sales,
-                "shop": shop
+                "shop": shop,
+                
             }
             return render(request, "reports/sale_report_analytic.html", context)
     else:

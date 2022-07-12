@@ -474,6 +474,7 @@ def remainder_input (request):
 
                 # creating remainder_history
                 rho = RemainderHistory.objects.create(
+                    user=request.user,
                     document=document,
                     rho_type=document.title,
                     created=dateTime,
@@ -2196,6 +2197,7 @@ def delivery_auto(request):
                 pre_remainder=0
             # creating remainder_history
             rho = RemainderHistory.objects.create(
+                user=request.user,
                 document=document,
                 rho_type=document.title,
                 created=document.created,
