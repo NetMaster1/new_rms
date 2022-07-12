@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+
+    <div class="container">
+        <div class="page_location_posted">
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Документ {{document.title}} # {{document.id}} (проведен) </h3>
+                </div>
+                <!-- =====================Alert Messages Module=================== -->
+                <div class="container">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-info" role="alert">
+                        <!-- <button class="close" data-dismiss="alert">
+                    <small><sup>x</sup></small>
+                </button> -->
+                        {{ message }}
+                    </div>
+                    {% endfor%}
+                    {% endif%}
+                </div>
+                <!-- ===================End of Alert Messages Module================ -->
+
+            </div>
+
+            <div class="row m-2 pb-2">
+                <div class="col-12 border rounded p-3">
+
+                    <div class="form-row">
+                        <div class="col-6">
+                            <label for="date">
+                                <h5>Текущая дата документа: {{document.created}}</h5>
+                            </label>
+                        </div>
+                        <div class="col">
+                            <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
+                                value="{{dateTime}}">
+                        </div>
+                    </div>
+
+
+                    <div class='form-inline'>
+                        <div class="row m-1">
+                            <div class="col-1"><label for="title">
+                                    <h5>#</h5>
+                                </label></div>
+                            <div class="col-2"><label for="title">
+                                    <h5>IMEI</h5>
+                                </label></div>
+                            <div class="col-2"><label for="title">
+                                    <h5>Наименование</h5>
+                                </label></div>
+                            <div class="col-1"><label for="quantity">
+                                    <h5>Кол-во</h5>
+                                </label></div>
+                            <div class="col-2"><label for="price">
+                                    <h5>Цена</h5>
+                                </label>
+                            </div>
+                            <div class="col-2"><label for="sub_total">
+                                    <h5>Сумма</h5>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% for srr in srrs %}
+                    <div class="row m-auto mb-1">
+                        <div class="col-1">
+                            <input type="text" class='form-control' id="number" name="number" value='{{srr.enumerator}}'
+                                readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class='form-control' id="imei" name="imei" value='{{srr.imei}}' readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class='form-control' id="name" name="name" value='{{srr.name}}' readonly>
+                        </div>
+
+                    </div>
+                    {% endfor %}
+
+                    <div class="row m-auto mt-3 ">
+                        <!-- <div class="col-2">
+                <input type="submit" value="Сохранить и провести" class="btn btn-sm btn-block btn-outline-dark">
+            </div>
+            </form> -->
+
+                        {% for group in request.user.groups.all %}
+                        {% if group.name == 'admin' %}
+                        <div class="col-3">
+                            <a href="#">
+                                <input type="button" value="Сделать непроведенным"
+                                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+
+                        <div class="col-2">
+                            <a href="{% url 'close_edited_document' document.id %}">
+                                <input type="button" value="Закрыть без сохранения"
+                                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                            </a>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+{% endblock %}
