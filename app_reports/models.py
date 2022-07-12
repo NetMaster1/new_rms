@@ -128,3 +128,13 @@ class PayCardReport (models.Model):
 
     def __int__(self):
         return self.id
+
+class Sim_report (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    name = models.CharField(max_length=50, null=True)
+    imei = models.CharField(max_length=50, null=True)
+    status = models.CharField(max_length=50, null=True)
+    price = models.IntegerField(null=True)
+
+    def __int__(self):
+        return self.id
