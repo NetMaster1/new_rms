@@ -25,6 +25,7 @@ class MonthlyBonusAdmin(admin.ModelAdmin):
 
 class Sim_reportAdmin(admin.ModelAdmin):
     list_display = ('name', 'imei', 'shop', 'date')
+    list_per_page=500
 
 
 admin.site.register(ProductHistory, ProductHistoryAdmin)

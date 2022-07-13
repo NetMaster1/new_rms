@@ -85,7 +85,13 @@ def sim_return_report (request):
 def activation_list (request):
     report_id=ReportTempId.objects.create()
     category=ProductCategory.objects.get(name='Сим_карты')
+    reports=Sim_report.objects.all()
+    for i in reports:
+        i.delete()
     if request.method == 'POST':
+        reports=Sim_report.objects.all()
+        for i in reports:
+            i.delete()
         file = request.FILES["file_name"]
         df1 = pandas.read_excel(file)
         cycle = len(df1)
@@ -128,7 +134,7 @@ def activation_list (request):
                 #     report_id.delete()
                 # return redirect("activation_list")
 
-        #=======================Uploading to Excel Module===================================
+#=======================Uploading to Excel Module===================================
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (
             "attachment; filename=Remainder_" + str(datetime.date.today()) + ".xls"
