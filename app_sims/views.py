@@ -34,15 +34,8 @@ def sim_return_list (request):
         for i in range(cycle):
             row = df1.iloc[i]#reads each row of the df1 one by one
             if SimReturnRecord.objects.filter(imei=row.Imei).exists():
-                if SimReturnRecord.objects.filter(document=document).exists():
-                    srr_error=SimReturnRecord.objects.filter(document=document)
-                    for item in srr_error:
-                        item.delete()
-                    document.delete()
-                string=f'Реестр не сформирован. РФА {row.Name} c IMEI: {row.Imei} уже сдана.'
-                messages.error(request, string)
-                return redirect("sim_return_list")
-            else: 
+                pass
+            else:
                 srr = SimReturnRecord.objects.create(
                     document=document,
                     srr_type=document.title,
@@ -50,6 +43,17 @@ def sim_return_list (request):
                     name=row.Name,
                     user=request.user
                 )
+            # if SimReturnRecord.objects.filter(imei=row.Imei).exists():
+            #     if SimReturnRecord.objects.filter(document=document).exists():
+            #         srr_error=SimReturnRecord.objects.filter(document=document)
+            #         for item in srr_error:
+            #             item.delete()
+            #         document.delete()
+            #     string=f'Реестр не сформирован. РФА {row.Name} c IMEI: {row.Imei} уже сдана.'
+            #     messages.error(request, string)
+            #     return redirect("sim_return_list")
+            # else: 
+                
         return redirect("log")
     else:
         return render(request, "sims/sim_return_list.html")
