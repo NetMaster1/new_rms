@@ -1,4 +1,4 @@
-# from winreg import REG_WHOLE_HIVE_VOLATILE
+#from winreg import REG_WHOLE_HIVE_VOLATILE
 from django.forms import NullBooleanField
 from django.shortcuts import render, redirect, get_object_or_404
 from app_product.models import RemainderHistory, Document
@@ -85,7 +85,13 @@ def sim_return_report (request):
 def activation_list (request):
     report_id=ReportTempId.objects.create()
     category=ProductCategory.objects.get(name='Сим_карты')
+    reports=Sim_report.objects.all()
+    for i in reports:
+        i.delete()
     if request.method == 'POST':
+        reports=Sim_report.objects.all()
+        for i in reports:
+            i.delete()
         file = request.FILES["file_name"]
         df1 = pandas.read_excel(file)
         cycle = len(df1)
@@ -163,3 +169,8 @@ def activation_list (request):
 
 
     
+def delete_sim_reports (request):
+    reports=Sim_report.objects.all()
+    for i in reports:
+        i.delete()
+    return redirect ('activation_list')
