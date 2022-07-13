@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import PayCardReport, ProductHistory, ReportTemp, ReportTempId, DailySaleRep, SaleReport, MonthlyBonus
+from . models import PayCardReport, ProductHistory, ReportTemp, ReportTempId, DailySaleRep, SaleReport, MonthlyBonus, Sim_report
 
 
 class ProductHistoryAdmin(admin.ModelAdmin):
@@ -23,6 +23,9 @@ class SaleReportAdmin(admin.ModelAdmin):
 class MonthlyBonusAdmin(admin.ModelAdmin):
     list_display = ('id',)
 
+class Sim_reportAdmin(admin.ModelAdmin):
+    list_display = ('name', 'imei', 'shop', 'date')
+
 
 admin.site.register(ProductHistory, ProductHistoryAdmin)
 admin.site.register(ReportTemp, ReportTempAdmin)
@@ -31,3 +34,4 @@ admin.site.register(DailySaleRep, DailySaleRepAdmin)
 admin.site.register(PayCardReport, PayCardReportAdmin)
 admin.site.register(SaleReport, SaleReportAdmin)
 admin.site.register(MonthlyBonus, MonthlyBonusAdmin)
+admin.site.register(Sim_report, Sim_reportAdmin)
