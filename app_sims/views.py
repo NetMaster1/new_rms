@@ -1,4 +1,4 @@
-from winreg import REG_WHOLE_HIVE_VOLATILE
+#from winreg import REG_WHOLE_HIVE_VOLATILE
 from django.forms import NullBooleanField
 from django.shortcuts import render, redirect, get_object_or_404
 from app_product.models import RemainderHistory, Document
