@@ -1,3 +1,5 @@
+from winreg import REG_WHOLE_HIVE_VOLATILE
+from django.forms import NullBooleanField
 from django.shortcuts import render, redirect, get_object_or_404
 from app_product.models import RemainderHistory, Document
 from app_reference.models import Shop, Product, DocumentType, ProductCategory
@@ -96,24 +98,35 @@ def activation_list (request):
                     name=row.Name,
                     shop=rho_latest.shop.name,
                     date=rho_latest.created,
-                    user=rho_latest.user.last_name,
                     document=rho_latest.document.id,
                     imei=row.Imei,
                     status=rho_latest.rho_type.name,
                     price=rho_latest.retail_price
                 )
+                if rho_latest.user is None:
+                    sim_report.user is None
+                else:
+                    sim_report.user=rho_latest.user.last_name
+                sim_report.save()
+
                 if SimReturnRecord.objects.filter(imei=row.Imei).exists():
                     sim_report.return_mark="РФА сдана"
                     sim_report.save()
             else:
-                string=f'Отчет не сформирован. Товар {row.Name} с IMEI {row.Imei} отсутствует в базе данных.'
-                messages.error(request,  string)
-                if Sim_report.objects.filter(report_id=report_id).exists():
-                    sim_report=Sim_report.objects.filter(report_id=report_id)
-                    for sim in sim_report:
-                        sim.delete()
-                    report_id.delete()
-                return redirect("activation_list")
+                sim_report=Sim_report.objects.create(
+                    report_id=report_id,
+                    name=row.Name,
+                    imei=row.Imei,
+                    return_mark='Информация отсутствует'
+                )
+                # string=f'Отчет не сформирован. Товар {row.Name} с IMEI {row.Imei} отсутствует в базе данных.'
+                # messages.error(request,  string)
+                # if Sim_report.objects.filter(report_id=report_id).exists():
+                #     sim_report=Sim_report.objects.filter(report_id=report_id)
+                #     for sim in sim_report:
+                #         sim.delete()
+                #     report_id.delete()
+                # return redirect("activation_list")
 
         #=======================Uploading to Excel Module===================================
         response = HttpResponse(content_type="application/ms-excel")
