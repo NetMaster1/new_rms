@@ -325,6 +325,36 @@ def cashback_rep (request):
         auth.logout(request)
         return redirect("login")
 
+def cashback_history (request):
+    if request.method=="POST":
+        list=[]
+        clients=Customer.objects.all().exclude(phone='79200711112')
+        for client in clients:
+            arr=[]
+            arr.append(client.phone)#arr[0]
+            arr.append(client.created)#arr[1]
+            arr.append(client.user.last_name)#arr[2]
+            documents=Document.objects.filter(client=client)
+            number=documents.count()
+            arr.append(number)#arr[3]
+            cashback_off=0
+            for document in documents:
+                cashback_off+=document.cashback_off
+        
+                rhos=RemainderHistory.objects.filter(document=document)
+                for rho in rhos:
+                    cashback_awarded=0
+                    if rho.cash_back_awarded is not None:
+                        cashback_awarded+=rho.cash_back_awarded
+                        arr.append(cashback_awarded)#arr[4]
+                arr.append(cashback_off)#arr[5]
+            list.append(arr)
+        context = {
+            'list': list
+        }
+        return render (request, 'reports/cashback_history.html', context)
+    else:
+        return render (request, 'reports/cashback_history.html')
 
 def daily_report(request):
     return render(request, "reports/daily_report.html")
