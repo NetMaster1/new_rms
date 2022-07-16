@@ -65,9 +65,7 @@ def save_in_excel_daily_rep(request):
                     for rho in rhos:
                         sum += rho.sub_total
                 shop_row.append(sum)
-            print(shop_row)
             # ===================================================================================
-
             expenses_type = DocumentType.objects.get(name="РКО (хоз.расходы)")
             if Cash.objects.filter(cho_type=expenses_type, shop=shop, created__date=date).exists():
                 chos = Cash.objects.filter(cho_type=expenses_type, shop=shop, created__date=date)
@@ -180,7 +178,7 @@ def save_in_excel_daily_rep(request):
             )
             daily_rep.save()
          
-
+#==========================Convert to Excel module=========================================
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (
             "attachment; filename=DailRep_" + str(date) + ".xls"
@@ -265,7 +263,7 @@ def save_in_excel_daily_rep(request):
             "modems",
             "credit",
             "card",
-            "cashack"
+            "cashack",
             "salary",
             "expenses",
             "return_sum",
@@ -1124,55 +1122,149 @@ def daily_pay_card_rep_general(request):
         end_date = request.POST["end_date"]
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
         end_date = end_date + timedelta(days=1)
-
-
-        product = Product.objects.get(imei=11111)
+        #product = Product.objects.get(imei=11111)
+        items=['11111', '99999']
         report_id = ReportTempId.objects.create()
+        doc_type=DocumentType.objects.get(name='Переоценка ТМЦ')
         # ========================================================
         for shop in shops:
-            if RemainderHistory.objects.filter(imei=product.imei, created__lt=start_date, shop=shop).exists():
-                rho_latest = RemainderHistory.objects.filter(imei=product.imei, created__lt=start_date, shop=shop).latest('created')
-                pre_remainder=rho_latest.current_remainder
-            else:
-                pre_remainder=0
-            if RemainderHistory.objects.filter(imei=product.imei, created__lt=end_date, shop=shop).exists():
-                rho_last = RemainderHistory.objects.filter(imei=product.imei, created__lt=end_date, shop=shop).latest('created')
-                current_remainder=rho_last.current_remainder
-            else:
-                current_remainder=0
-            if RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__gt=start_date, created__lt=end_date).exists():
-                rhos = RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__gt=start_date, created__lt=end_date)
-                incoming_sum = 0
-                outgoing_sum = 0
-                for rho in rhos:
-                    incoming_sum += rho.incoming_quantity
-                    outgoing_sum += rho.outgoing_quantity
-            else:
-                incoming_sum = 0
-                outgoing_sum = 0
+            for item in items:
+                product=Product.objects.get(imei=item)
+                if RemainderHistory.objects.filter(imei=product.imei, created__lt=start_date, shop=shop).exists():
+                    rho_latest = RemainderHistory.objects.filter(imei=product.imei, created__lt=start_date, shop=shop).latest('created')
+                    pre_remainder=rho_latest.current_remainder
+                else:
+                    pre_remainder=0
+                if RemainderHistory.objects.filter(imei=product.imei, created__lt=end_date, shop=shop).exists():
+                    rho_last = RemainderHistory.objects.filter(imei=product.imei, created__lt=end_date, shop=shop).latest('created')
+                    current_remainder=rho_last.current_remainder
+                else:
+                    current_remainder=0
+                if RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__gt=start_date, created__lt=end_date).exclude(rho_type=doc_type).exists():
+                    rhos = RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__gt=start_date, created__lt=end_date).exclude(rho_type=doc_type)
+                    incoming_quantity = 0
+                    outgoing_quantity = 0
+                    for rho in rhos:
+                        incoming_quantity += rho.incoming_quantity
+                        outgoing_quantity += rho.outgoing_quantity
+                else:
+                    incoming_quantity = 0
+                    outgoing_quantity = 0
             # =========================================================
-            pay_card_rep = PayCardReport.objects.create(
-                report_id=report_id,
-                shop=shop,
-                product=product,
-                pre_remainder=pre_remainder,
-                incoming_quantity=incoming_sum,
-                outgoing_quantity=outgoing_sum,
-                current_remainder=current_remainder,
-            )
-        qs = PayCardReport.objects.filter(report_id=report_id).order_by("shop").values()
-        data = pd.DataFrame(qs)
-        data = data.drop("report_id_id", 1)  # deleting 'report_id' column
-        data = data.drop("product", 1)  # deleting 'report_id' column
-        data = data.drop("created", 1)  # deleting 'report_id' column
-        data.set_index("id", inplace=True)
-        data.set_index("shop", inplace=True)  # sets column as titles for rows & deletes
-        data = data.T  # transposing the dataframe
-        print(data)
-        context = {
-            "data": data.to_html(),
-        }
-        return render(request, "reports/daily_pay_card_rep.html", context)
+                pay_card_rep = PayCardReport.objects.create(
+                    report_id=report_id,
+                    shop=shop,
+                    product=product,
+                    pre_remainder=pre_remainder,
+                    incoming_quantity=incoming_quantity,
+                    outgoing_quantity=outgoing_quantity,
+                    current_remainder=current_remainder,
+                )
+        #==========================Convert to Excel module=========================================
+        response = HttpResponse(content_type="application/ms-excel")
+        response["Content-Disposition"] = (
+            "attachment; filename=DailRep_" + str(date) + ".xls"
+        )
+        # str(datetime.date.today())+'.xls'
+
+        wb = xlwt.Workbook(encoding="utf-8")
+        ws = wb.add_sheet('PayCardReport')
+
+
+
+        # ======================sheet header in the first row
+        row_num = 0
+        font_style = xlwt.XFStyle()
+        columns = []
+        for shop in shops:
+            columns.append(shop.name)
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num + 1, columns[col_num], font_style)
+        #===========================================================
+
+        # sheet body, remaining rows
+        font_style = xlwt.XFStyle()
+        daily_rep = PayCardReport.objects.filter(report_id=report_id)
+
+        #Creating table for pay_cards_100 =================================
+        col_num = 1
+        for shop in shops:
+            product=Product.objects.get(imei="11111")
+            query_list = daily_rep.get(shop=shop.name, product=product)
+            row_num = 1
+            ws.write(row_num, col_num, query_list.pre_remainder, font_style)
+            row_num += 1
+            ws.write(row_num, col_num, query_list.incoming_quantity, font_style)
+            row_num += 1
+            ws.write(row_num, col_num, query_list.outgoing_quantity, font_style)
+            row_num += 1
+            ws.write(row_num, col_num, query_list.current_remainder, font_style)
+            col_num += 1
+
+        #=========Creating first column========================
+        product_list = [
+            '100_остатко на утро',
+            '100_приход',
+            '100_расход',
+            '100_остаток на вечер',
+        ]
+        row_num = 1
+        for i in product_list:
+            ws.write(row_num, 0, i, font_style)
+            row_num = row_num + 1
+        #======================================================
+
+
+        #Creating table for pay_cards_500 =================================
+        col_num = 1
+        for shop in shops:
+            product=Product.objects.get(imei="99999")
+            query_list = daily_rep.get(shop=shop.name, product=product)
+            row_num = 6
+            ws.write(row_num, col_num, query_list.pre_remainder, font_style)
+            row_num += 1
+            ws.write(row_num, col_num, query_list.incoming_quantity, font_style)
+            row_num += 1
+            ws.write(row_num, col_num, query_list.outgoing_quantity, font_style)
+            row_num += 1
+            ws.write(row_num, col_num, query_list.current_remainder, font_style)
+            col_num += 1
+
+        #=========Creating first column========================
+        product_list = [
+            '500_остатко на утро',
+            '500_приход',
+            '500_расход',
+            '500_остаток на вечер',
+        ]
+        row_num = 6
+        for i in product_list:
+            ws.write(row_num, 0, i, font_style)
+            row_num = row_num + 1
+        #======================================================
+
+
+
+        wb.save(response)
+        return response
+
+
+        # qs = PayCardReport.objects.filter(report_id=report_id).order_by("shop").values()
+        # data = pd.DataFrame(qs)
+        # data = data.drop("report_id_id", 1)  # deleting 'report_id' column
+        # data = data.drop("product", 1)  # deleting 'report_id' column
+        # data = data.drop("created", 1)  # deleting 'report_id' column
+        # data.set_index("id", inplace=True)
+        # data.set_index("shop", inplace=True)  # sets column as titles for rows & deletes
+        # data = data.T  # transposing the dataframe
+        # print(data)
+        # context = {
+        #     "data": data.to_html(),
+        # }
+        # return render(request, "reports/daily_pay_card_rep.html", context)
+
+
+
     else:
         return render(request, "reports/daily_pay_card_rep.html")
 

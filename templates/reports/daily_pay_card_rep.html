@@ -6,23 +6,23 @@
 <!-- <div class="hide"> -->
 <div class="container">
     <div class="page_location">
-        <div class="menu">
-            <div class="row">
+        <div class="log">
+            <div class="row mt-1">
                 <h3>Остатки КЭО по всем точкам </h3>
             </div>
         </div>
 
-        <div class="menu">
+        <div class="log">
             <form action="#" method="POST">
                 {% csrf_token %}
 
-                <div class="row form-row m-auto">
+                <div class="row mt-2">
 
                     <div class="col-2">
-                        <input type="date" id='start_date' name="start_date" required>
+                        <input type="date" id='start_date' name="start_date" class='form-control' required>
                     </div>
                     <div class="col-2">
-                        <input type="date" id='end_date' name="end_date" required>
+                        <input type="date" id='end_date' name="end_date" class='form-control' required>
                     </div>
 
                  

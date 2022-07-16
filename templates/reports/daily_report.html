@@ -3,20 +3,20 @@
 <!-- <div class="hide"> -->
 <div class="container">
     <div class="page_location">
-        <div class="menu">
+        <div class="log">
             <div class="row">
                 <h3>Введите дату и сформируйте отчет за день.</h3>
             </div>
         </div>
 
-        <div class="menu">
+        <div class="log mt-2">
             <form action="{% url 'save_in_excel_daily_rep' %}" method="POST">
                 {% csrf_token %}
 
-                <div class="row form-row m-auto">
+                <div class="row m-auto">
 
                     <div class="col-2">
-                        <input type="date" id='date' name="date">
+                        <input type="date" id='date' class='form-control' name="date">
                     </div>
                     <!-- <div class="col-2">
                         <input type="date" id='end_date' name="end_date">
