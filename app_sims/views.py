@@ -134,7 +134,7 @@ def activation_list (request):
                 #     report_id.delete()
                 # return redirect("activation_list")
 
-        #=======================Uploading to Excel Module===================================
+#=======================Uploading to Excel Module===================================
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (
             "attachment; filename=Remainder_" + str(datetime.date.today()) + ".xls"
