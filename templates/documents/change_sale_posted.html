@@ -8,7 +8,7 @@
                 <div class="col">
                     {%for group in request.user.groups.all %}
                     {%if group.name == 'admin'%}
-                    <h3>Изменить документ {{document.title}} # {{document.id}}</h3>
+                    <h3>Изменить документ {{document.title}} # {{document.id}}</h3> {{document.client.phone}}
                     {%else%}
                     <h3>{{document.title}} # {{document.id}}</h3>
                     {%endif%}

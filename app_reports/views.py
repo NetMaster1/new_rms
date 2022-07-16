@@ -1186,6 +1186,8 @@ def daily_pay_card_rep_general(request):
         font_style = xlwt.XFStyle()
         daily_rep = PayCardReport.objects.filter(report_id=report_id)
 
+
+        
         #Creating table for pay_cards_100 =================================
         col_num = 1
         for shop in shops:
@@ -1203,7 +1205,7 @@ def daily_pay_card_rep_general(request):
 
         #=========Creating first column========================
         product_list = [
-            '100_остатко на утро',
+            '100_остаток на утро',
             '100_приход',
             '100_расход',
             '100_остаток на вечер',
@@ -1232,7 +1234,7 @@ def daily_pay_card_rep_general(request):
 
         #=========Creating first column========================
         product_list = [
-            '500_остатко на утро',
+            '500_остаток на утро',
             '500_приход',
             '500_расход',
             '500_остаток на вечер',
