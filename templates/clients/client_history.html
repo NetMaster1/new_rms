@@ -58,79 +58,56 @@
             <h5>Телефон:</h5>
         </div>
         <div class="col-1">
-            <h5>{{client.phone}}</h5>
+            {{client.phone}}
         </div>
-        <div class="col-2">
+        <div class="col-1">
             <h5>Имя:</h5>
         </div>
-        <div class="col-2">
+        <div class="col-1">
+            {{client.f_name}}
+        </div>
+        <div class="col-1">
             <h5>Фамилия:</h5>
         </div>
-        <div class="col-2">
-            <h5>Дата регистрации:</h5>
+        <div class="col-1">
+            {{client.l_name}}
+        </div>
+        <div class="col-1">
+            <h5>Дата рег.:</h5>
+        </div>
+        <div class="col-1">
+            {{client.created}}
         </div>
         <div class="col-2">
             <h5>Регистрация:</h5>
         </div>
+        <div class="col-2">
+            {{client.user}}
+        </div>
     </div>
 
+    <hr>
+    <div class="row">
+        <div class="col-2"><h5>Создан</h5></div>
+        <div class="col-2"><h5>Номер</h5></div>
+        <div class="col-2"><h5>Точка продажи</h5></div>
+        <div class="col-1"><h5>Сумма документа</h5></div>
+        <div class="col-1"><h5>Кэшбэк списанный</h5></div>
+        <div class="col-1"><h5>Продавец</h5></div>
+    </div>
 
     <hr>
     {% for document in documents %}
     <div class="row m-auto">
-        <div class="col-2">{{item.document.created}}</div>
-
-        {% if item.document.title.name == 'Перемещение ТМЦ' %}
+        <div class="col-2">{{document.created}}</div>
         <div class="col-2">
-            <a
-                href="{% url 'change_transfer_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
+        <a href="{% url 'change_sale_posted' document.id%}">{{document.title}} #{{document.id}}</a>
         </div>
-
-
-        {% elif item.document.title.name == 'Поступление ТМЦ' %}
-        <div class="col-2">
-            <a
-                href="{% url 'change_delivery_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
-        </div>
-
-        {% elif item.document.title.name == 'Продажа ТМЦ' %}
-        <div class="col-2">
-            <a href="{% url 'change_sale_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
-        </div>
-        {% elif item.document.title.name == 'Оприходование ТМЦ' %}
-        <div class="col-2">
-            <a
-                href="{% url 'change_recognition_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
-        </div>
-        {% elif item.document.title.name == 'Ввод остатков ТМЦ' %}
-        <div class="col-2">
-            <a
-                href="{% url 'change_remainder_input_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
-        </div>
-        {% elif item.document.title.name == 'Списание ТМЦ' %}
-        <div class="col-2">
-            <a
-                href="{% url 'change_signing_off_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
-        </div>
-        {% elif item.document.title.name == 'Возврат ТМЦ' %}
-        <div class="col-2">
-            <a href="{% url 'change_return_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
-        </div>
-        {% elif item.document.title.name == 'Переоценка ТМЦ' %}
-        <div class="col-2">
-            <a
-                href="{% url 'change_revaluation_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
-        </div>
-        {% else %}
-        <div class="col-2">{{item.document.title}}#{{item.document.id}}</div>
-        {% endif %}
-
-
-        <div class="col-2">{{item.shop}}</div>
-        <div class="col-1">{{item.pre_remainder}}</div>
-        <div class="col-1">{{item.incoming_quantity}}</div>
-        <div class="col-1">{{item.outgoing_quantity}}</div>
-        <div class="col-1">{{item.current_remainder}}</div>
+        <div class="col-2">{{document.shop_sender}}</div>
+        <div class="col-1">{{document.sum}}</div>
+        <div class="col-1">{{document.cashback_off}}</div>
+        <div class="col-1">{{document.user}}</div>
+        
 
     </div>
     {% endfor %}
