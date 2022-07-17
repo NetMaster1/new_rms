@@ -327,30 +327,44 @@ def cashback_rep (request):
 
 def cashback_history (request):
     if request.method=="POST":
+        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+        start_date = request.POST["start_date"]
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = request.POST["end_date"]
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = end_date + timedelta(days=1)
+        if Document.objects.filter(title=doc_type, created__gt=start_date, created__lt=end_date).exists():
+            documents_general=Document.objects.filter(title=doc_type, created__gt=start_date, created__lt=end_date)
+        else:
+            messages.error(request, "Продаж в данный период не было")
+            return redirect("cashback_history")
         list=[]
         clients=Customer.objects.all().exclude(phone='79200711112')
         for client in clients:
-            arr=[]
-            arr.append(client.phone)#arr[0]
-            arr.append(client.created)#arr[1]
-            arr.append(client.user.last_name)#arr[2]
-            documents=Document.objects.filter(client=client)
-            number=documents.count()
-            arr.append(number)#arr[3]
-            cashback_off=0
-            for document in documents:
-                cashback_off+=document.cashback_off
-        
-                rhos=RemainderHistory.objects.filter(document=document)
-                for rho in rhos:
-                    cashback_awarded=0
-                    if rho.cash_back_awarded is not None:
-                        cashback_awarded+=rho.cash_back_awarded
-                        arr.append(cashback_awarded)#arr[4]
-                arr.append(cashback_off)#arr[5]
-            list.append(arr)
+            if documents_general.filter(client=client).exists():
+                arr=[]
+                arr.append(client.phone)#arr[0]
+                arr.append(client.created)#arr[1]
+                arr.append(client.user.last_name)#arr[2]
+                documents=documents_general.filter(client=client)
+                number=documents.count()
+                arr.append(number)#arr[3]
+                cashback_off=0
+                for document in documents:
+                    cashback_off+=document.cashback_off
+            
+                    rhos=RemainderHistory.objects.filter(document=document)
+                    for rho in rhos:
+                        cashback_awarded=0
+                        if rho.cash_back_awarded is not None:
+                            cashback_awarded+=rho.cash_back_awarded
+                            arr.append(cashback_awarded)#arr[4]
+                    arr.append(cashback_off)#arr[5]
+                    arr.append(client.accum_cashback)#arr[6]
+                list.append(arr)
         context = {
-            'list': list
+            'list': list,
+            'documents_general': documents_general
         }
         return render (request, 'reports/cashback_history.html', context)
     else:

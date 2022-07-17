@@ -80,9 +80,11 @@
                     <div class="col-2">
                         {% for group in request.user.groups.all %}
                         {% if group.name == 'admin' %}
+    <!-- ===================Module Trigger ====================================== -->
                         <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{arr.imei}}">
                             {{arr.imei}}
                         </a>
+        <!-- =======================================End of module trigger============================ -->
                         {% else %}
                         <div class="col-3">{{arr.imei}}</div>
                         {% endif %}
@@ -153,7 +155,7 @@
                 </div>
 
                 {% endfor %}
-                <!-- ============================End of Document Bootstrap Modal======================================= -->
+ <!-- ============================End of Document Bootstrap Modal======================================= -->
             </div>
 
         </div>

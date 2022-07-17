@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- <div class="hide"> -->
+<div class="container">
+
+
+    <div class="log mt-2 p-2">
+        <h3>Выгрузить историю по клиенту</h3>
+    </div>
+
+
+    <div class="log mt-2 p-2">
+        <form action="{% url 'client_history' %}" method="POST">
+            {% csrf_token %}
+
+            <div class="row form-row m-auto">
+                <div class="col-2">
+                    <input type="date" id='start_date' class='form-control' name="start_date" required>
+                </div>
+                <div class="col-2">
+                    <input type="date" id='end_date' class='form-control' name="end_date" required>
+                </div>
+
+                <div class="col-2">
+                    <input type="text" name="phone" class='form-control' placeholder="Введите телефон">
+                </div>
+            </div>
+
+            <div class="row m-auto mt-2">
+                <div class="col-1">
+                    <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                </div>
+                <div class="col-1">
+                    <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                </div>
+                <div class="col-2">
+                    <a href="{% url 'close_report' %}">
+                        <input type="button" value="Закрыть без сохранения"
+                            class="btn btn-sm btn-block btn-outline-dark">
+                    </a>
+                </div>
+                <div class="col-2">
+                    <a href="#">
+                        <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                            Сохранить в Excel
+                        </button>
+                    </a>
+                </div>
+        </form>
+    </div>
+</div>
+
+
+
+<div class="log mt-2 p-2">
+    <div class="row">
+        <div class="col-1">
+            <h5>Телефон:</h5>
+        </div>
+        <div class="col-1">
+            <h5>{{client.phone}}</h5>
+        </div>
+        <div class="col-2">
+            <h5>Имя:</h5>
+        </div>
+        <div class="col-2">
+            <h5>Фамилия:</h5>
+        </div>
+        <div class="col-2">
+            <h5>Дата регистрации:</h5>
+        </div>
+        <div class="col-2">
+            <h5>Регистрация:</h5>
+        </div>
+    </div>
+
+
+    <hr>
+    {% for document in documents %}
+    <div class="row m-auto">
+        <div class="col-2">{{item.document.created}}</div>
+
+        {% if item.document.title.name == 'Перемещение ТМЦ' %}
+        <div class="col-2">
+            <a
+                href="{% url 'change_transfer_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
+        </div>
+
+
+        {% elif item.document.title.name == 'Поступление ТМЦ' %}
+        <div class="col-2">
+            <a
+                href="{% url 'change_delivery_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
+        </div>
+
+        {% elif item.document.title.name == 'Продажа ТМЦ' %}
+        <div class="col-2">
+            <a href="{% url 'change_sale_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
+        </div>
+        {% elif item.document.title.name == 'Оприходование ТМЦ' %}
+        <div class="col-2">
+            <a
+                href="{% url 'change_recognition_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
+        </div>
+        {% elif item.document.title.name == 'Ввод остатков ТМЦ' %}
+        <div class="col-2">
+            <a
+                href="{% url 'change_remainder_input_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
+        </div>
+        {% elif item.document.title.name == 'Списание ТМЦ' %}
+        <div class="col-2">
+            <a
+                href="{% url 'change_signing_off_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
+        </div>
+        {% elif item.document.title.name == 'Возврат ТМЦ' %}
+        <div class="col-2">
+            <a href="{% url 'change_return_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
+        </div>
+        {% elif item.document.title.name == 'Переоценка ТМЦ' %}
+        <div class="col-2">
+            <a
+                href="{% url 'change_revaluation_posted' item.document.id %}">{{item.document.title}}#{{item.document.id}}</a>
+        </div>
+        {% else %}
+        <div class="col-2">{{item.document.title}}#{{item.document.id}}</div>
+        {% endif %}
+
+
+        <div class="col-2">{{item.shop}}</div>
+        <div class="col-1">{{item.pre_remainder}}</div>
+        <div class="col-1">{{item.incoming_quantity}}</div>
+        <div class="col-1">{{item.outgoing_quantity}}</div>
+        <div class="col-1">{{item.current_remainder}}</div>
+
+    </div>
+    {% endfor %}
+</div>
+
+</div>
+
+
+{% endblock %}
