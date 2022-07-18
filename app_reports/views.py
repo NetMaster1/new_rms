@@ -350,17 +350,16 @@ def cashback_history (request):
                 number=documents.count()
                 arr.append(number)#arr[3]
                 cashback_off=0
+                cashback_awarded=0
                 for document in documents:
                     cashback_off+=document.cashback_off
-            
                     rhos=RemainderHistory.objects.filter(document=document)
                     for rho in rhos:
-                        cashback_awarded=0
                         if rho.cash_back_awarded is not None:
                             cashback_awarded+=rho.cash_back_awarded
-                            arr.append(cashback_awarded)#arr[4]
-                    arr.append(cashback_off)#arr[5]
-                    arr.append(client.accum_cashback)#arr[6]
+                arr.append(cashback_awarded)#arr[4]
+                arr.append(cashback_off)#arr[5]
+                arr.append(client.accum_cashback)#arr[6]
                 list.append(arr)
         context = {
             'list': list,
