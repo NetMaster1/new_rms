@@ -7,5 +7,3 @@ class CustomerAdmin(admin.ModelAdmin):
     list_per_page=100
 
 admin.site.register(Customer, CustomerAdmin)
-
-admin.site.register(Customer, CustomerAdmin)
