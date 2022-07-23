@@ -10,6 +10,9 @@ def new_client_sale (request, identifier_id):
         f_name=request.POST['f_name']
         l_name=request.POST['l_name']
         phone=request.POST['phone']
+        if Customer.objects.filter(phone=phone).exists():
+            messages.error(request, "Клиент с таким номером телефона уже существует")
+            return redirect("sale", identifier.id)
         new_client=Customer.objects.create(
             f_name=f_name,
             l_name=l_name,
