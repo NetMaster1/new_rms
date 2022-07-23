@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from . models import Customer
-from app_product.models import Identifier
+from app_product.models import Identifier, Document
+from django.contrib import messages
 
 # Create your views here.
 def new_client_sale (request, identifier_id):
@@ -16,6 +17,30 @@ def new_client_sale (request, identifier_id):
             user=request.user
         )
         return redirect('sale', identifier.id)
+
+def client_history (request):
+    if request.method == 'POST':
+        phone=request.POST['phone']
+        if Customer.objects.filter(phone=phone).exists():
+            client=Customer.objects.get(phone=phone)
+        else:
+            messages.error(request, "Клиента с таким номером телефона не существует")
+            return redirect("client_history")
+        if Document.objects.filter(client=client).exists():
+            documents=Document.objects.filter(client=client)
+        else:
+            messages.error(request, "Информация о покупках данного клиента в указанный период отсутствуе")
+            return redirect("client_history")
+
+        context = {
+            'client': client,
+            'documents': documents
+        }
+        return render (request, 'clients/client_history.html', context )
+
+
+    else:
+        return render (request, 'clients/client_history.html' )
 
 def new_client(request):
     pass
