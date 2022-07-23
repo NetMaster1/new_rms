@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <!-- <div class="hide"> -->
+    <div class="container">
+        <div class="page_location">
+            <div class="log">
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+            <div class="row">
+                <h3>Отчет по операциям с кэшбэк</h3>
+            </div>
+            </div>
+
+            <div class="log">
+                <div class="row m-auto p-2 mt-2"><h5>Введите временной период</h5>
+                    </div>
+                <form action="{% url 'cashback_history' %}" method="POST">
+                    {% csrf_token %}
+            
+                    <div class="row m-auto">
+            
+                        <div class="col-2">
+                            <input type="date" id='start_date' name="start_date" class='form-control' required>
+                        </div>
+                        <div class="col-2">
+                            <input type="date" id='end_date' name="end_date" class='form-control' required>
+                        </div>
+            
+                    </div>
+                    <div class="row m-auto mt-3">
+                        <div class="col-2">
+                            <input type="submit" value="Создать отчет" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                        <div class="col-2">
+                            <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                        <div class="col-2">
+                            <a href="{% url 'close_report' %}">
+                                <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                            </a>
+                        </div>
+            
+                    </form>
+                    </div>
+       
+
+        <div class="log">
+            <div class="row m-auto mt-2">
+                <div class="col-2">Телефон</div>
+                <div class="col-2">Дата создания</div>
+                <div class="col-2">Кем создан</div>
+                <div class="col-2">Начислено кэшбэка</div>
+                <div class="col-2">Кол-во документов</div>
+                <div class="col-1">Списано кэшбэка</div>
+                <div class="col-1">Текущий кэшбэк</div>
+            </div>
+        </div>
+
+    <div class="log">
+    <div class="border rounded p-3 overflow-scroll">
+    {% for arr in list %}
+            <div class="row">
+                <div class="col-2">
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{arr.0}}">
+                        {{arr.0}}
+                    </a>
+                </div>
+
+<!-- =======================Document Bootstrap Modal================================= -->
+<div class="modal fade" id="modal_{{arr.0}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" class="ModalLogHide">
+   
+    <div class="modal-dialog" style="min-width: 100%" >
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Клиент {{arr.0}} Текущий кэшбэк {{arr.6}} руб.</h5>
+                <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="row m-auto">
+                <div class="col">Документ</div>
+                <div class="col">Дата</div>
+                <div class="col">Автор</div>
+                <div class="col">Сумма документа</div>
+                <div class="col">Кэшбэк списанный</div>
+            </div>
+            <div class="modal-body">
+                {% for document in documents_general %}
+                <div class="row">
+                    {% if document.client.phone == arr.0 %}
+                <div class="col">
+                <a href="{% url 'change_sale_posted' document.id %}">Документ # {{document.id}}</a>
+                </div>
+                <div class="col">{{document.created}}</div>
+                <div class="col">{{document.user}}</div>
+                <div class="col">{{document.sum}}</div>
+                <div class="col">{{document.cashback_off}}</div>
+
+
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- ============================End of Document Bootstrap Modal======================================= -->
+
+                <div class="col-2">
+                    {{arr.1}}
+                </div>
+                <div class="col-2">
+                    {{arr.2}}
+                </div>
+                <div class="col-2">
+                    {{arr.4}}
+                </div>
+                <div class="col-2">
+                    {{arr.3}}
+                </div>
+                <div class="col-1">
+                    {{arr.5}}
+                </div>
+                <div class="col-1">
+                    {{arr.6}}
+                </div>
+            </div>
+
+    {% endfor %}
+
+
+    </div>
+
+        </div>
+    </div>
+    <!-- </div> -->
+
+{% endblock %}
