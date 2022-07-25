@@ -1400,7 +1400,7 @@ def bonus_report(request):
     users = User.objects.all()
     categories = ProductCategory.objects.all().exclude(name='КЭО').order_by('id')
     sims=ProductCategory.objects.get(name="Сим_карты")
-    shops = Shop.objects.all()
+    shops = Shop.objects.all().exclude(name='ООС')
     doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
     if request.method == "POST":
         report_id = ReportTempId.objects.create()
@@ -1432,7 +1432,8 @@ def bonus_report(request):
             if rhos.filter(category=sims, user=user).exists():
                 sim_rhos=rhos.filter(category=sims, user=user)
                 for rho in sim_rhos:
-                    n+=1
+                    if rho.retail_price >= bulk_sim_motivation.sim_price:
+                        n+=1
             monthly_bonus = MonthlyBonus.objects.create(
                 report_id=report_id,
                 user_name=user_row[0],
