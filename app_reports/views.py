@@ -1432,7 +1432,7 @@ def bonus_report(request):
             if rhos.filter(category=sims, user=user).exists():
                 sim_rhos=rhos.filter(category=sims, user=user)
                 for rho in sim_rhos:
-                    if rho.retail_price >= bulk_sim_motivation.sim_price:
+                    if rho.retail_price >= bulk_sim_motivation.sim_price and rho.retail_price<=600:
                         n+=1
             monthly_bonus = MonthlyBonus.objects.create(
                 report_id=report_id,
@@ -1470,8 +1470,8 @@ def bonus_report(request):
         columns = []
         for category in categories:
             columns.append(category.name)
-        columns.append('credit')
-        columns.append('bulk_sim')
+        columns.append('Кредиты %')
+        columns.append('Тяжелые тарифы (100)')
         for col_num in range(len(columns)):
             ws.write(row_num, col_num + 1, columns[col_num], font_style)
 
