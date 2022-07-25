@@ -1397,19 +1397,17 @@ def bonus_report_excel(request):
 
 def bonus_report(request):
     users = User.objects.all()
-    categories = ProductCategory.objects.all()
+    categories = ProductCategory.objects.all().exclude(name='КЭО').order_by('id')
     shops = Shop.objects.all()
     doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
     if request.method == "POST":
+        report_id = ReportTempId.objects.create()
         start_date = request.POST["start_date"]
         # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
         end_date = request.POST["end_date"]
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
-        rhos = RemainderHistory.objects.filter(
-            rho_type=doc_type, created__gte=start_date, created__lte=end_date
-        )
-
+        rhos = RemainderHistory.objects.filter(rho_type=doc_type, created__gte=start_date, created__lte=end_date)
         for user in users:
             user_row = [user.username]
             for category in categories:
@@ -1417,76 +1415,99 @@ def bonus_report(request):
                 for shop in shops:
                     rhos_new = rhos.filter(category=category, user=user, shop=shop)
                     for rho in rhos_new:
-                        sum += int(
-                            rho.retail_price * category.bonus_percent * shop.sale_k
-                        )
+                        sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
                 user_row.append(sum)
 
             if Credit.objects.filter(user=user).exists():
                 credits = Credit.objects.filter(user=user)
                 credit_sum = 0
                 for credit in credits:
-                    credit_sum + -credit.sum
+                    credit_sum+=credit.sum
             else:
                 credit_sum = 0
             n = len(user_row)
+
             monthly_bonus = MonthlyBonus.objects.create(
+                report_id=report_id,
                 user_name=user_row[0],
-                smarphones=user_row[1],
+                smartphones=user_row[1],
                 accessories=user_row[2],
                 sim_cards=user_row[3],
                 phones=user_row[4],
-                insuranсе=user_row[5],
-                wink=user_row[6],
-                services=user_row[7],
+                iphones=user_row[5],
+                insuranсе=user_row[6],
+                wink=user_row[7],
+                services=user_row[8],
+                gadgets=user_row[9],
+                modems=user_row[10],
                 credit=credit_sum * 0.03,
                 sub_total=0,
             )
-        query_set = MonthlyBonus.objects.filter().values()
-        # print(qs)
-        # n=qs.count()
-        data = pd.DataFrame(query_set)
-        data = data.drop("id", 1)
-        # data=data.drop('1', 0)
-        # data.set_index('user_name', inplace=True)
-        # data.set_index('Name', inplace=True, drop=False)
 
-        data = data.set_index("user_name")
-        # data=data.T #transposing the dataframe
-        data.to_excel("D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx")
+        #==========================Convert to Excel module=========================================
+        response = HttpResponse(content_type="application/ms-excel")
+        response["Content-Disposition"] = (
+            "attachment; filename=BonusRep_" + str(date) + ".xls"
+        )
+        # str(datetime.date.today())+'.xls'
+
+        wb = xlwt.Workbook(encoding="utf-8")
+        ws = wb.add_sheet('Report')
+
+        # sheet header in the first row
+        row_num = 0
+        col_num = 1
+        font_style = xlwt.XFStyle()
+        columns = []
+        for category in categories:
+            columns.append(category.name)
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num + 1, columns[col_num], font_style)
+
+        # sheet body, remaining rows
+        font_style = xlwt.XFStyle()
+        monthly_report = MonthlyBonus.objects.filter(report_id=report_id)
+
+        row_num = 1
+        for item in monthly_report:
+            col_num=0
+            ws.write(row_num, col_num, item.user_name, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.smartphones, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.accessories, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.sim_cards, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.phones, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.iphones, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.insuranсе, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.wink, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.services, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.gadgets, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.modems, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.credit, font_style)
+            row_num+= 1
+         
+        # query_set = MonthlyBonus.objects.filter().values()
+        # data = pd.DataFrame(query_set)
+        # data = data.drop("id", 1)
+        # data = data.set_index("user_name")
+        # data.to_excel("D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx")
 
         monthly_bonus_reports = MonthlyBonus.objects.all()
         for i in monthly_bonus_reports:
             i.delete()
 
-        context = {
-            "data": data.to_html(),
-        }
-        return render(request, "reports/bonus_report.html", context)
-
-    # ===================================Array Version==========================================
-    # gen_arr=[]
-    # for user in users:
-    #     arr=[]
-    #     for category in categories:
-    #         if rhos.filter(user=user, category=category).exists():
-    #             rhos=rhos.filter(user=user, category=category)
-    #             sales=0
-    #             for rho in rhos:
-    #                sales+=rho.retail_price*rho.outgoing_quantity*category.bonus_percent
-    #         else:
-    #             sales=0
-    #         dict={category: sales}
-    #         arr.append(dict)
-    #     user_arr = {user: arr}
-    #     gen_arr.append(user_arr)
-    # context = {
-    #     'gen_arr': gen_arr,
-    #     'categories': categories
-    # }
-    # return render(request, "reports/bonus_report.html", context)
-
-    # =============End of Array Version=====================================================
+        wb.save(response)
+        return response
 
     context = {
         "categories": categories,
