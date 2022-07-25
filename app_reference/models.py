@@ -17,7 +17,7 @@ class Supplier (models.Model):
 
 class Shop (models.Model):
     name = models.CharField(max_length=50)
-    sale_k=models.IntegerField(default=1)
+    sale_k=models.DecimalField(max_digits=3, decimal_places=2, default=1)
     retail = models.BooleanField(default=True)#mark for retail shops
 
     class Meta:
