@@ -1433,7 +1433,7 @@ def bonus_report(request):
             if rhos.filter(category=sims, user=user).exists():
                 sim_rhos=rhos.filter(category=sims, user=user)
                 for rho in sim_rhos:
-                    if rho.retail_price >= bulk_sim_motivation.sim_price:
+                    if rho.retail_price >= bulk_sim_motivation.sim_price and rho.retail_price <= 600:
                         n+=1
             monthly_bonus = MonthlyBonus.objects.create(
                 report_id=report_id,
