@@ -1,6 +1,6 @@
 import datetime
 from xml.dom.minidom import DocumentType
-from app_reference.models import Product, ProductCategory, Shop
+from app_reference.models import Product, ProductCategory, Shop, DocumentType
 from app_product.models import RemainderHistory
 from app_clients.models import Customer
 from django.shortcuts import render, redirect, get_object_or_404
