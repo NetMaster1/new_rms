@@ -1,4 +1,5 @@
 import datetime
+from xml.dom.minidom import DocumentType
 from app_reference.models import Product, ProductCategory, Shop
 from app_product.models import RemainderHistory
 from app_clients.models import Customer
@@ -104,9 +105,10 @@ def my_bonus(request):
     if request.user.is_authenticated:
         shops=Shop.objects.all()
         categories=ProductCategory.objects.all()
+        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
         month=datetime.datetime.now().month
         year=datetime.datetime.now().year
-        rhos=RemainderHistory.objects.filter(user=request.user, created__year=year, created__month=month)
+        rhos=RemainderHistory.objects.filter(rho_type=doc_type, user=request.user, created__year=year, created__month=month)
         sales_array=[]
         bonus_array=[]
         total_sales=0
@@ -114,11 +116,12 @@ def my_bonus(request):
         for category in categories:
             cat_sum=0
             bonus_sum=0
-            category=ProductCategory.objects.get(name=category)
+            #category=ProductCategory.objects.get(name=category)
             cat_rhos=rhos.filter(category=category)
             for cat_rho in cat_rhos:
                 cat_sum+=cat_rho.sub_total
-                bonus_sum=cat_sum*category.bonus_percent*cat_rho.shop.sale_k
+            for cat_rho in cat_rhos:
+                bonus_sum+=cat_rho.sub_total*category.bonus_percent*cat_rho.shop.sale_k
             sales_array.append(cat_sum)
             bonus_array.append(bonus_sum)
         for i in sales_array:
