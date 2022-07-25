@@ -1407,10 +1407,11 @@ def bonus_report(request):
         bulk_sim_motivation=BulkSimMotivation.objects.get(id=1)
         start_date = request.POST["start_date"]
         # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
         end_date = request.POST["end_date"]
-        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
-        rhos = RemainderHistory.objects.filter(rho_type=doc_type, created__gte=start_date, created__lte=end_date)
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = end_date + timedelta(days=1)
+        rhos = RemainderHistory.objects.filter(rho_type=doc_type, created__gt=start_date, created__lt=end_date)
         for user in users:
             user_row = [user.username]
             for category in categories:
@@ -1421,8 +1422,8 @@ def bonus_report(request):
                         sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
                 user_row.append(sum)
 
-            if Credit.objects.filter(created__gte=start_date, created__lte=end_date, user=user).exists():
-                credits = Credit.objects.filter(created__gte=start_date, created__lte=end_date, user=user)
+            if Credit.objects.filter(created__gt=start_date, created__lt=end_date, user=user).exists():
+                credits = Credit.objects.filter(created__gt=start_date, created__lt=end_date, user=user)
                 credit_sum = 0
                 for credit in credits:
                     credit_sum+=credit.sum
