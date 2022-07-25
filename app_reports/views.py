@@ -1418,11 +1418,12 @@ def bonus_report(request):
                         sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
                 user_row.append(sum)
 
-            if Credit.objects.filter(user=user).exists():
-                credits = Credit.objects.filter(user=user)
+            if Credit.objects.filter(created__gte=start_date, created__lte=end_date, user=user).exists():
+                credits = Credit.objects.filter(created__gte=start_date, created__lte=end_date, user=user)
                 credit_sum = 0
                 for credit in credits:
                     credit_sum+=credit.sum
+                print(credit_sum)
             else:
                 credit_sum = 0
             n = len(user_row)
