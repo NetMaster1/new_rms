@@ -23,6 +23,7 @@ from .models import (
     PayCardReport,
 )
 from app_clients.models import Customer
+from app_personnel.models import BulkSimMotivation
 from .models import ProductHistory
 from django.contrib import messages
 import pandas as pd
@@ -1398,10 +1399,12 @@ def bonus_report_excel(request):
 def bonus_report(request):
     users = User.objects.all()
     categories = ProductCategory.objects.all().exclude(name='КЭО').order_by('id')
+    sims=ProductCategory.objects.get(name="Сим_карты")
     shops = Shop.objects.all()
     doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
     if request.method == "POST":
         report_id = ReportTempId.objects.create()
+        bulk_sim_motivation=BulkSimMotivation.objects.get(id=1)
         start_date = request.POST["start_date"]
         # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
@@ -1423,11 +1426,13 @@ def bonus_report(request):
                 credit_sum = 0
                 for credit in credits:
                     credit_sum+=credit.sum
-                print(credit_sum)
             else:
                 credit_sum = 0
-            n = len(user_row)
-
+            n=0
+            if rhos.filter(category=sims, user=user).exists():
+                sim_rhos=rhos.filter(category=sims, user=user)
+                for rho in sim_rhos:
+                    n+=1
             monthly_bonus = MonthlyBonus.objects.create(
                 report_id=report_id,
                 user_name=user_row[0],
@@ -1442,8 +1447,10 @@ def bonus_report(request):
                 gadgets=user_row[9],
                 modems=user_row[10],
                 credit=credit_sum * 0.03,
+                bulk_sims= n * bulk_sim_motivation.bonus_per_sim,
                 sub_total=0,
             )
+
 
         #==========================Convert to Excel module=========================================
         response = HttpResponse(content_type="application/ms-excel")
@@ -1462,6 +1469,8 @@ def bonus_report(request):
         columns = []
         for category in categories:
             columns.append(category.name)
+        columns.append('credit')
+        columns.append('bulk_sim')
         for col_num in range(len(columns)):
             ws.write(row_num, col_num + 1, columns[col_num], font_style)
 
@@ -1495,7 +1504,9 @@ def bonus_report(request):
             ws.write(row_num, col_num, item.modems, font_style)
             col_num += 1
             ws.write(row_num, col_num, item.credit, font_style)
-            row_num+= 1
+            col_num +=1
+            ws.write(row_num, col_num, item.bulk_sims, font_style)
+            row_num += 1
          
         # query_set = MonthlyBonus.objects.filter().values()
         # data = pd.DataFrame(query_set)
