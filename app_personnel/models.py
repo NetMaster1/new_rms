@@ -30,3 +30,11 @@ class Salary (models.Model):
 
     def __int__(self):
         return self.id
+
+
+class BulkSimMotivation (models.Model):
+    sim_price=models.IntegerField(default=0)
+    bonus_per_sim=models.IntegerField(default=0)
+
+    def __int__(self):
+        return self.id
