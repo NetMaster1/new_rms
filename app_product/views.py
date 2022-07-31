@@ -3424,19 +3424,25 @@ def transfer_auto (request):
             if shop_sender == shop_receiver:
                 messages.error(request,"Документ не проведен.Выберите фирму получателя отличную от отправителя")
                 return redirect("transfer_auto")
-            dateTime = request.POST["dateTime"]
-            # converting dateTime from str format (2021-07-08T01:05) to django format ()
-            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
-            current_dt=datetime.datetime.now()
-            mics=current_dt.microsecond
-            tdelta_1=datetime.timedelta(microseconds=mics)
-            secs=current_dt.second
-            tdelta_2=datetime.timedelta(seconds=secs)
-            tdelta_3=tdelta_1+tdelta_2
-            dateTime=dateTime+tdelta_3
-            #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
-            #==================End of time module================================
+            #==============Time Module=========================================
+            dateTime=request.POST.get('dateTime', False)
+            if dateTime:
+                # converting dateTime from str format (2021-07-08T01:05) to django format ()
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
+            else:
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+                #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+                #==================End of time module================================
             # df1 = pandas.read_excel('Delivery_21_06_21.xlsx')
             df1 = pandas.read_excel(file)
             cycle = len(df1)#returns number of rows
@@ -3447,7 +3453,7 @@ def transfer_auto (request):
                     remainder_history= RemainderHistory.objects.filter(imei=row.Imei, shop=shop_sender, created__lt=dateTime).latest('created')
                     if remainder_history.current_remainder < int(row.Quantity):
                         #check_point.append(False)
-                        string=f'Документ не проведеден. Количество товара с данным IMEI {row.Imei} недостаточно для перемещения.'
+                        string=f'Документ не проведеден. Количество товара с данным IMEI {row.Imei} {dateTime} недостаточно для перемещения.'
                         messages.error(request,  string)
                         return redirect("transfer_auto")
                 else:
