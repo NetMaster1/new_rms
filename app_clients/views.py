@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from . models import Customer
 from app_product.models import Identifier, Document
-from django.contrib import messages
+from django.contrib import messages, auth
 
 # Create your views here.
 def new_client_sale (request, identifier_id):
@@ -48,6 +48,14 @@ def client_history (request):
 def new_client(request):
     pass
 
+def repeated_purchase (request):
+    if request.user.is_authenticate:
+        if request.method == 'POST':
+            phone=request.POST['phone']
+            pass
+    else:
+        auth.logout(request)
+        return redirect("login")
 
 def calculate_discount (request):
     bar_code=request.POST['bar_code']

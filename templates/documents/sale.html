@@ -256,7 +256,7 @@
             </div>
             <div class="modal-body">
     
-                <form action="{% 'trade_in' identifier.id %}" method="POST">
+                <form action="{%  url 'trade_in' identifier.id %}" method="POST">
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-3">
