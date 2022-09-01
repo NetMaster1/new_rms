@@ -1,3 +1,4 @@
+from pyexpat import model
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import manager
@@ -192,6 +193,18 @@ class AvPrice(models.Model):
     current_remainder = models.IntegerField(default=0)
     av_price = models.IntegerField(null=True)
     sum = models.IntegerField(null=True)
+
+    def __int__(self):
+        return self.id
+
+class TradeIn(models.Model):
+    created = models.DateTimeField(default=timezone.now, null=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)
+    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING, null=True)
+    imei = models.CharField(max_length=250)
+    model = models.CharField(max_length=250, null=True)
+    cost = models.IntegerField(null=True)
 
     def __int__(self):
         return self.id

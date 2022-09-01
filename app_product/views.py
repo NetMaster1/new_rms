@@ -7282,6 +7282,17 @@ class DownloadPDF(View):
         return response
 
 
+def trade_in(request, identifier_id):
+    if request.user.is_athenticated:
+        if request.method == "POST":
+           #  = request.POST["shop"]
+
+
+            pass
+
+    else:
+        return redirect ('login')
+
 # def email(request):
 #     send_mail(
 #         'Hello from DjangoDev',
