@@ -3427,7 +3427,7 @@ def transfer_auto (request):
             #==============Time Module=========================================
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
-                # converting dateTime from str format (2021-07-08T01:05) to django format ()
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
                 #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
                 current_dt=datetime.datetime.now()
@@ -3453,11 +3453,11 @@ def transfer_auto (request):
                     remainder_history= RemainderHistory.objects.filter(imei=row.Imei, shop=shop_sender, created__lt=dateTime).latest('created')
                     if remainder_history.current_remainder < int(row.Quantity):
                         #check_point.append(False)
-                        string=f'Документ не проведеден. Количество товара с данным IMEI {row.Imei} {dateTime} недостаточно для перемещения.'
+                        string=f'Документ не проведеден. Количество товара {row.Title} с данным IMEI {row.Imei} недостаточно для перемещения.'
                         messages.error(request,  string)
                         return redirect("transfer_auto")
                 else:
-                    string=f'Документ не проведеден. Товар с IMEI {row.Imei} отсутствует на балансе фирмы.'
+                    string=f'Документ не проведеден. Товар {row.Title} с IMEI {row.Imei} отсутствует на балансе фирмы.'
                     messages.error(request,  string)
                     return redirect("transfer_auto")
             document = Document.objects.create(
