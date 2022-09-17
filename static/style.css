@@ -381,6 +381,23 @@ footer {
 }
 /* ====================== End of Cashback_off Modal for Cash ==================================== */
 
+/* ====================== Trade_In Modal==================================== */
+.enterTradeInModal {
+    display: none;
+}
+
+.enterTradeInModal.openModal {
+    display: block;
+    position: absolute;
+    margin-top: 20rem;
+    background-color: whitesmoke;
+}
+
+/* ====================== End of Cashback_off Modal for Cash ==================================== */
+
+
+
+
 /* ====================== Modal for Delivery ==================================== */
 .ModalDeliveryHide{
     display: none;
