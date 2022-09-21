@@ -149,3 +149,20 @@ class Sim_report (models.Model):
 
     def __int__(self):
         return self.id
+
+class ClientReport (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    phone = models.CharField(max_length=50, null=True)
+    shop = models.CharField(max_length=50, null=True)
+    created = models.CharField(max_length=50, null=True)
+    user = models.CharField(max_length=50, null=True)
+    document = models.CharField(max_length=50, null=True)
+    cashback_awarded = models.CharField(max_length=50, null=True)
+    cashaback_off = models.CharField(max_length=50, null=True)
+    cashaback_remaining = models.CharField(max_length=50, null=True)
+    document = models.CharField(max_length=50, null=True)
+    count = models.IntegerField()
+    
+
+    def __int__(self):
+        return self.id

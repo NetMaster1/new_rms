@@ -1,3 +1,4 @@
+from multiprocessing.connection import Client
 from shutil import move
 from ssl import create_default_context
 from app_personnel.models import BonusAccount, Salary
@@ -21,6 +22,7 @@ from .models import (
     MonthlyBonus,
     SaleReport,
     PayCardReport,
+    ClientReport
 )
 from app_clients.models import Customer
 from app_personnel.models import BulkSimMotivation
@@ -31,6 +33,7 @@ from datetime import datetime, date, timedelta
 import xlwt
 import openpyxl
 from openpyxl import Workbook, load_workbook
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 
 # import xlwings as xw
 # import pro
@@ -339,17 +342,19 @@ def cashback_history (request):
         else:
             messages.error(request, "Продаж в данный период не было")
             return redirect("cashback_history")
-        list=[]
         clients=Customer.objects.all().exclude(phone='79200711112')
+        report_id=ReportTemp.objects.create()
         for client in clients:
             if documents_general.filter(client=client).exists():
-                arr=[]
-                arr.append(client.phone)#arr[0]
-                arr.append(client.created)#arr[1]
-                arr.append(client.user.last_name)#arr[2]
                 documents=documents_general.filter(client=client)
                 number=documents.count()
-                arr.append(number)#arr[3]
+                client=ClientReport.objects.create(
+                    report_id=report_id,
+                    phone=client.phone,
+                    user=client.user.last_name,
+                    created=client.created,
+                    count=documents.count()
+                )
                 cashback_off=0
                 cashback_awarded=0
                 for document in documents:
@@ -358,13 +363,20 @@ def cashback_history (request):
                     for rho in rhos:
                         if rho.cash_back_awarded is not None:
                             cashback_awarded+=rho.cash_back_awarded
-                arr.append(cashback_awarded)#arr[4]
-                arr.append(cashback_off)#arr[5]
-                arr.append(client.accum_cashback)#arr[6]
-                list.append(arr)
+                client.cashback_awarded=cashback_awarded
+                client.cashback_off=cashback_off
+                client.cashback_remaining=client.accum_cashback
+                client.save()
+                clients=ClientReport.objects.all().order_by('user')
+
+                # ============paginator module=================
+                paginator = Paginator(clients, 50)
+                page = request.GET.get('page')
+                paged_queryset_list = paginator.get_page(page)
+                # =============end of paginator module===============
         context = {
-            'list': list,
-            'documents_general': documents_general
+            'documents_general': documents_general,
+            'paged_queryset_list': paged_queryset_list
         }
         return render (request, 'reports/cashback_history.html', context)
     else:

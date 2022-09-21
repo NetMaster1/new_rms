@@ -71,21 +71,21 @@
 
     <div class="log">
     <div class="border rounded p-3 overflow-scroll">
-    {% for arr in list %}
+    {% for client in paged_queryset_list %}
             <div class="row">
                 <div class="col-2">
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{arr.0}}">
-                        {{arr.0}}
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{client.phone}}">
+                        {{client.phone}}
                     </a>
                 </div>
 
 <!-- =======================Document Bootstrap Modal================================= -->
-<div class="modal fade" id="modal_{{arr.0}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" class="ModalLogHide">
+<div class="modal fade" id="modal_{{client.phone}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" class="ModalLogHide">
    
     <div class="modal-dialog" style="min-width: 100%" >
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Клиент {{arr.0}} Текущий кэшбэк {{arr.6}} руб.</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Клиент{{client.phone}}  Текущий кэшбэк  {{client.cashabck_remaining}} руб.</h5>
                 <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
             <div class="row m-auto">
@@ -125,22 +125,25 @@
 <!-- ============================End of Document Bootstrap Modal======================================= -->
 
                 <div class="col-2">
-                    {{arr.1}}
+                    {{client.phone}}
                 </div>
                 <div class="col-2">
-                    {{arr.2}}
+                    {{client.create}}
                 </div>
                 <div class="col-2">
-                    {{arr.4}}
+                    {{client.user}}
                 </div>
                 <div class="col-2">
-                    {{arr.3}}
+                    {{client.cashback_awarded}}
                 </div>
                 <div class="col-1">
-                    {{arr.5}}
+                    {{client.count}}
                 </div>
                 <div class="col-1">
-                    {{arr.6}}
+                    {{client.cashback_off}}
+                </div>
+                <div class="col-1">
+                    {{client.cashabck_remaining}}
                 </div>
             </div>
 
