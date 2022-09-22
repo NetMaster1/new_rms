@@ -2,6 +2,10 @@ from django.shortcuts import render, redirect
 from . models import Customer
 from app_product.models import Identifier, Document
 from django.contrib import messages, auth
+from django.contrib.auth.models import User, Group
+from app_reference.models import DocumentType
+import datetime
+from datetime import date, timedelta
 
 # Create your views here.
 def new_client_sale (request, identifier_id):
@@ -23,16 +27,24 @@ def new_client_sale (request, identifier_id):
 
 def client_history (request):
     if request.method == 'POST':
+        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
         phone=request.POST['phone']
         if Customer.objects.filter(phone=phone).exists():
             client=Customer.objects.get(phone=phone)
         else:
             messages.error(request, "Клиента с таким номером телефона не существует")
             return redirect("client_history")
-        if Document.objects.filter(client=client).exists():
-            documents=Document.objects.filter(client=client)
+        # user = request.POST["user"]
+        # user=User.objects.get(id=user)
+        start_date = request.POST["start_date"]
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = request.POST["end_date"]
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = end_date + timedelta(days=1)
+        if Document.objects.filter(title=doc_type, client=client, created__gt=start_date, created__lt=end_date).exists():
+            documents=Document.objects.filter(title=doc_type, client=client, created__gt=start_date, created__lt=end_date)
         else:
-            messages.error(request, "Информация о покупках данного клиента в указанный период отсутствуе")
+            messages.error(request, "Информация о покупках данного клиента в указанный период отсутствуеn")
             return redirect("client_history")
 
         context = {
