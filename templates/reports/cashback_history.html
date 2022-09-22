@@ -38,6 +38,15 @@
                         <div class="col-2">
                             <input type="date" id='end_date' name="end_date" class='form-control' required>
                         </div>
+                        <div class="col-2">
+                            <select name="user" id="user" class='form-control' required>
+                                <option value="">Выберите продавца</option>
+                                {% for user in users %}
+                                <option value="{{user.id}}">{{user.last_name}} {{user.first_name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                 
             
                     </div>
                     <div class="row m-auto mt-3">
@@ -59,6 +68,11 @@
 
         <div class="log">
             <div class="row m-auto mt-2">
+                <div class="col-12">
+                Отчет по покупкам клиентов за период с <strong>{{start_date}} по {{end_date}}</strong>
+                </div>
+            </div>
+            <div class="row m-auto mt-2">
                 <div class="col-2">Телефон</div>
                 <div class="col-2">Дата создания</div>
                 <div class="col-2">Кем создан</div>
@@ -71,21 +85,21 @@
 
     <div class="log">
     <div class="border rounded p-3 overflow-scroll">
-    {% for arr in list %}
+    {% for client in queryset_list %}
             <div class="row">
                 <div class="col-2">
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{arr.0}}">
-                        {{arr.0}}
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{client.phone}}">
+                        {{client.phone}}
                     </a>
                 </div>
 
 <!-- =======================Document Bootstrap Modal================================= -->
-<div class="modal fade" id="modal_{{arr.0}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" class="ModalLogHide">
+<div class="modal fade" id="modal_{{client.phone}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" class="ModalLogHide">
    
     <div class="modal-dialog" style="min-width: 100%" >
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Клиент {{arr.0}} Текущий кэшбэк {{arr.6}} руб.</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Дата создания: {{client.created}}; Клиент: {{client.phone}}; Текущий кэшбэк:  {{client.cashback_remaining}} руб.</h5>
                 <button type="button" class="btn_close_log" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
             <div class="row m-auto">
@@ -93,12 +107,13 @@
                 <div class="col">Дата</div>
                 <div class="col">Автор</div>
                 <div class="col">Сумма документа</div>
+                <div class="col">Кэшбэк начисленный</div>
                 <div class="col">Кэшбэк списанный</div>
             </div>
             <div class="modal-body">
-                {% for document in documents_general %}
+                {% for document in documents_total %}
                 <div class="row">
-                    {% if document.client.phone == arr.0 %}
+                    {% if document.client.phone == client.phone %}
                 <div class="col">
                 <a href="{% url 'change_sale_posted' document.id %}">Документ # {{document.id}}</a>
                 </div>
@@ -125,22 +140,22 @@
 <!-- ============================End of Document Bootstrap Modal======================================= -->
 
                 <div class="col-2">
-                    {{arr.1}}
+                    {{client.created}}
                 </div>
                 <div class="col-2">
-                    {{arr.2}}
+                    {{client.user.last_name}} {{client.user.first_name}}
                 </div>
                 <div class="col-2">
-                    {{arr.4}}
+                    {{client.cashback_awarded}}
                 </div>
                 <div class="col-2">
-                    {{arr.3}}
+                    {{client.count}}
                 </div>
                 <div class="col-1">
-                    {{arr.5}}
+                    {{client.cashback_off}}
                 </div>
                 <div class="col-1">
-                    {{arr.6}}
+                    {{client.cashback_remaining}}
                 </div>
             </div>
 
@@ -153,4 +168,45 @@
     </div>
     <!-- </div> -->
 
+
+        <!-- ========================Pagination  module=============================== -->
+        <div class="row mt-1">
+            <div class="col-5 m-auto">
+                {% if queryset_list.has_other_pages %}
+                <ul class="pagination">
+                    {% if queryset_list.has_previous %}
+                    <li class="page-item">
+                        <a href="?page={{1}}" class="page-link">В начало</a>
+                    </li>
+                    <li class="page-item">
+                        <a href="?page={{queryset_list.previous_page_number}}" class="page-link">&laquo;</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link">&laquo;</a>
+                    </li>
+                    {% endif %}
+                    {% for i in queryset_list.paginator.page_range%}
+                    {% if queryset_list.number == i %}
+                    <li class="page-item active">
+                        <a class="page-link">{{i}}</a>
+                    </li>
+                    {% elif i > queryset_list.number|add:'-3' and i < queryset_list.number|add:'3' %} <li class="page-item">
+                        <a class='page-link' href="?page={{i}}" class="page-link">{{i}}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        {% if queryset_list.has_next %}
+                        <li class="page-item">
+                            <a href="?page={{queryset_list.next_page_number}}" class="page-link">&raquo;</a>
+                        </li>
+                        <li class="page-item">
+                            <a href="?page={{queryset_list.paginator.num_pages}}" class="page-link">В конец</a>
+                        </li>
+                        {% endif %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+        <!-- ==============================End of pagination module============================ -->
 {% endblock %}

@@ -67,7 +67,7 @@ def log(request):
         paged_queryset_list = paginator.get_page(page)
         #=============end of paginator module===============
         doc_types = DocumentType.objects.all()
-        users = User.objects.all()
+        users = User.objects.all().order_by('last_name')
         suppliers = Supplier.objects.all()
         shops = Shop.objects.all()
         if request.method == "POST":

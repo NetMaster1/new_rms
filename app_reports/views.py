@@ -1,3 +1,4 @@
+from multiprocessing.connection import Client
 from shutil import move
 from ssl import create_default_context
 from app_personnel.models import BonusAccount, Salary
@@ -21,6 +22,7 @@ from .models import (
     MonthlyBonus,
     SaleReport,
     PayCardReport,
+    ClientReport
 )
 from app_clients.models import Customer
 from app_personnel.models import BulkSimMotivation
@@ -31,6 +33,7 @@ from datetime import datetime, date, timedelta
 import xlwt
 import openpyxl
 from openpyxl import Workbook, load_workbook
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 
 # import xlwings as xw
 # import pro
@@ -327,48 +330,73 @@ def cashback_rep (request):
         return redirect("login")
 
 def cashback_history (request):
+    users=User.objects.all().order_by('last_name')
     if request.method=="POST":
         doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+        user = request.POST["user"]
+        user=User.objects.get(id=user)
         start_date = request.POST["start_date"]
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
         end_date = request.POST["end_date"]
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
         end_date = end_date + timedelta(days=1)
-        if Document.objects.filter(title=doc_type, created__gt=start_date, created__lt=end_date).exists():
-            documents_general=Document.objects.filter(title=doc_type, created__gt=start_date, created__lt=end_date)
+        if Document.objects.filter(title=doc_type, user=user, created__gt=start_date, created__lt=end_date).exists():
+            documents_general=Document.objects.filter(title=doc_type, user=user, created__gt=start_date, created__lt=end_date)
+            documents_total=Document.objects.filter(title=doc_type, created__gt=start_date, created__lt=end_date)
         else:
-            messages.error(request, "Продаж в данный период не было")
+            messages.error(request, "У данного пользователя не было продаж в данный период.")
             return redirect("cashback_history")
-        list=[]
         clients=Customer.objects.all().exclude(phone='79200711112')
+        report_id=ReportTempId.objects.create()
+
         for client in clients:
             if documents_general.filter(client=client).exists():
-                arr=[]
-                arr.append(client.phone)#arr[0]
-                arr.append(client.created)#arr[1]
-                arr.append(client.user.last_name)#arr[2]
                 documents=documents_general.filter(client=client)
                 number=documents.count()
-                arr.append(number)#arr[3]
+
+                client_rep=ClientReport.objects.create(
+                    report_id=report_id,
+                    phone=client.phone,
+                    user=user,
+                    created=client.created,
+                    count=number
+                )
                 cashback_off=0
                 cashback_awarded=0
                 for document in documents:
                     cashback_off+=document.cashback_off
+                client_rep.cashback_off=cashback_off
+                # client_rep.save()
+                for document in documents:
                     rhos=RemainderHistory.objects.filter(document=document)
                     for rho in rhos:
                         if rho.cash_back_awarded is not None:
                             cashback_awarded+=rho.cash_back_awarded
-                arr.append(cashback_awarded)#arr[4]
-                arr.append(cashback_off)#arr[5]
-                arr.append(client.accum_cashback)#arr[6]
-                list.append(arr)
+                client_rep.cashback_awarded=cashback_awarded
+                # client_rep.save()
+                client_rep.cashback_remaining=client.accum_cashback
+                client_rep.save()
+               
+        queryset_list=ClientReport.objects.filter(report_id=report_id).order_by('-count')
+        # ============paginator module=================
+        # paginator = Paginator(clients, 50)
+        # page = request.GET.get('page')
+        # queryset_list = paginator.get_page(page)
+        # =============end of paginator module===============
         context = {
-            'list': list,
-            'documents_general': documents_general
+            'documents_general': documents_general,
+            'documents_total': documents_total,
+            'queryset_list': queryset_list,
+            'start_date': start_date,
+            'end_date': end_date,
+            'users': users
         }
         return render (request, 'reports/cashback_history.html', context)
     else:
-        return render (request, 'reports/cashback_history.html')
+        context = {
+            'users': users
+        }
+        return render (request, 'reports/cashback_history.html', context)
 
 def daily_report(request):
     return render(request, "reports/daily_report.html")
