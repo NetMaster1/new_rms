@@ -249,7 +249,45 @@
     </div>
 
     <!-- ===========================Trade_in modal======================= -->
-
+    <div class="enterTradeInModal">
+    
+        <div class="modal-content-cash-back" style="min-height: 14rem; width:50rem">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Введите принимаемый телефон и его стоимость</h5>
+            </div>
+            <div class="modal-body">
+    
+                <form action="{%  url 'trade_in' identifier.id %}" method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-3">
+                            <input type="tel" id="model" name="model" minlength='11' maxlength='11' required pattern="^7\d{10}$"
+                                class='form-control' placeholder="Модель">
+                        </div>
+                        <div class="col-3">
+                            <input type="tel" id="imei" name="imei" minlength='11' maxlength='11' required pattern="^7\d{10}$"
+                                class='form-control' placeholder="IMEI">
+                        </div>
+                        <div class="col-3">
+                            <input type="tel" id="cost" name="cost" minlength='11' maxlength='11' required pattern="^7\d{10}$"
+                                class='form-control' placeholder="Стоимость">
+                        </div>
+                       
+                    </div>
+    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn_close_trade_in" data-bs-dismiss="modal">Закрыть
+                            без сохранения</button>
+                        <button type="submit" class="btn btn-secondary">Ввести</button>
+                    </div>
+    
+    
+                </form>
+    
+            </div>
+        </div>
+    
+    </div>
     <!-- ==============================End of Trade_in modal======================== -->
 
     <!-- ========================Trade-In Module Trigger============================ -->
