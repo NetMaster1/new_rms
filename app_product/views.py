@@ -2690,7 +2690,10 @@ def change_delivery_unposted(request, document_id):
                             av_price_obj = AvPrice.objects.get(imei=imeis[i])
                             av_price_obj.current_remainder += int(quantities[i])
                             av_price_obj.sum += int(quantities[i]) * int(prices[i])
-                            av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                            if av_price_obj.current_remainder < 0:
+                                av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                            else:
+                                av_price_obj.av_price = av_price_obj.sum / 1
                             av_price_obj.save()
                         else:
                             av_price_obj=AvPrice.objects.create(
