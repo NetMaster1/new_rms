@@ -269,7 +269,7 @@
     })
 
     
-    //creating session storage inputs on clicking "Check button"
+    //Making register_imei field red when entering the same imei in check_imei field
    // =================================================================================
     check_button.addEventListener('submit', e=> {
         imei_input=check_imei.value
@@ -281,8 +281,10 @@
             }
     } 
    })
+   //returning cursor back to check_imei field
+   check_imei.select();
 
-        //window.location.reload()
+    //window.location.reload()
 
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')
@@ -372,6 +374,8 @@
     save_button.addEventListener('submit', e=> {
         sessionStorage.clear();
    })
+
+
 
 console.log ('End of the script')
 </script>

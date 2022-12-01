@@ -2420,7 +2420,7 @@ def delivery_input(request, identifier_id):
             if dateTime:
                 # converting dateTime in str format (2021-07-08T01:05) to django format ()
                 dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need real value of seconds & microseconds
                 current_dt=datetime.datetime.now()
                 mics=current_dt.microsecond
                 tdelta_1=datetime.timedelta(microseconds=mics)
