@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- <div class="hide"> -->
+<div class="container">
+    <div class="page_location">
+
+        <div class="log border rounded">
+            <div class="row">
+                <h3>Отчет по продажам в разрезе поставщика </h3>
+            </div>
+        </div>
+
+        <div class="log border rounded">
+            <form action="{% url 'sale_report_per_supplier' %}" method="POST">
+                {% csrf_token %}
+
+                <div class="row m-auto mt-2 mb-1">
+                    <!-- <div class="-2">
+                <input type="text" name="imei" placeholder="IMEI">
+            </div> -->
+                    <div class="col-2">
+                        <input type="date" id='start_date' name="start_date" class='form-control' required>
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='end_date' name="end_date" class="form-control" required>
+                    </div>
+                    <div class="col-2">
+                        <select name="category" class='form-control' required>
+                            <option value="">Выберите вид ТМЦ</option>
+                            {% for category in categories %}
+                            <option value="{{category.id}}">{{category.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <div class="col-2">
+                        <select name="supplier" id="supplier" class='form-control' required>
+                            <option value="">Выберите поставщика</option>
+                            {% for supplier in suppliers %}
+                            <option value="{{supplier.id}}">{{supplier.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row m-auto mt-1 mb-2">
+                    <div class="col-2">
+                        <div class="row m-auto">
+                            <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="row m-auto">
+                            <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="row m-auto">
+                            <a href="{% url 'close_report' %}" class="btn btn-sm btn-block btn-outline-dark">
+                                Закрыть без сохранения
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <a href="#">
+                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                                Сохранить в Excel
+                            </button>
+                        </a>
+                    </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="log border rounded">
+       
+        <div class="row m-auto">
+            <div class="col-2">
+                <h5>Дата продажи</h5>
+            </div>
+            <div class="col-2">
+                <h5>Наименование</h5>
+            </div>
+            <div class="col-2">
+                <h5>IMEI</h5>
+            </div>
+            <div class="col-2">
+                <h5>Поставщик</h5>
+            </div>
+            <div class="col-2">
+                <h5>Дата поступления</h5>
+            </div>
+     
+        </div>
+
+
+        {% for key, value in arr.items %}
+        <div class="row m-auto">
+            <div class="col-2">{{key.created}}</div>
+            <div class="col-2">{{key.name}}</div>
+            <div class="col-2">{{key.imei}}</div>
+            <div class="col-2">{{value.supplier}}</div>
+            <div class="col-2">{{value.created}}</div>
+          
+
+
+        </div>
+        {%endfor%}
+
+
+    </div>
+</div>
+</div>
+
+{%endblock%}
