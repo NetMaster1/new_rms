@@ -9,6 +9,7 @@ from app_cash.models import Cash, Credit, Card
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages, auth
 from django.contrib.auth.models import User, Group
+from django.contrib.auth import logout, login
 from app_product.models import (
     Product,
     RemainderHistory,
@@ -663,6 +664,89 @@ def sale_report_analytic(request):
             "users": users,
         }
         return render(request, "reports/sale_report_analytic.html", context)
+
+def sale_report_per_supplier (request):
+    if request.user.is_authenticated:
+        suppliers=Supplier.objects.all()
+        categories = ProductCategory.objects.all()
+        products = Product.objects.all()
+        doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+        doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+        doc_type_supply = DocumentType.objects.get(name="Поступление ТМЦ")
+       
+        if request.method == "POST":
+            category = request.POST["category"]
+            supplier = request.POST["supplier"]
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+            query = RemainderHistory.objects.filter(rho_type=doc_type, category=category,created__gt=start_date,  created__lt=end_date)
+            arr ={}
+            for item in query:
+                if RemainderHistory.objects.filter(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier).exists():
+                    number_of_docs=RemainderHistory.objects.filter(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier).count()
+                    if number_of_docs < 2:
+                        product=RemainderHistory.objects.get(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier)
+                        arr[item]=product
+
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=SupplierRep_" + str(date) + ".xls"
+            )
+
+            # str(datetime.date.today())+'.xls'
+
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('Period')
+
+            # sheet header in the first row
+            row_num = 0
+            font_style = xlwt.XFStyle()
+            columns = ['Дата продажи', "Модель", 'IMEI', 'Поставщик', "Дата поставки"]
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num + 1, columns[col_num], font_style)
+            
+            # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+
+            row_num = 1
+            for key, value in arr.items():
+                col_num = 1
+                ws.write(row_num, col_num, str(key.created), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, key.name, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, key.imei, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, value.supplier.name, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(value.created), font_style)
+                row_num +=1
+
+            wb.save(response)
+            return response
+        else:
+            context = {
+                'suppliers': suppliers,
+                'categories': categories,
+                'products': products
+            }
+            return render (request, 'reports/sale_per_supplier.html' , context)
+    else:
+        logout(request)
+        return redirect('login')
+
+def supplier_report_excel (request):
+    if request.user.is_authenticated:
+        pass
+        
+
+    else:
+        logout(request)
+        return redirect('login')
 
 def delivery_report(request):
     categories = ProductCategory.objects.all()
