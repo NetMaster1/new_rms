@@ -9,6 +9,7 @@ from app_cash.models import Cash, Credit, Card
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages, auth
 from django.contrib.auth.models import User, Group
+from django.contrib.auth import logout, login
 from app_product.models import (
     Product,
     RemainderHistory,
@@ -663,6 +664,60 @@ def sale_report_analytic(request):
             "users": users,
         }
         return render(request, "reports/sale_report_analytic.html", context)
+
+def sale_report_per_supplier (request):
+    if request.user.is_authenticated:
+        suppliers=Supplier.objects.all()
+        categories = ProductCategory.objects.all()
+        products = Product.objects.all()
+        doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+        doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+        doc_type_supply = DocumentType.objects.get(name="Поступление ТМЦ")
+       
+        if request.method == "POST":
+            category = request.POST["category"]
+            supplier = request.POST["supplier"]
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+            query = RemainderHistory.objects.filter(rho_type=doc_type, category=category,created__gt=start_date,  created__lt=end_date)
+            arr ={}
+            for item in query:
+                if RemainderHistory.objects.filter(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier).exists():
+                    product=RemainderHistory.objects.get(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier)
+                    arr[item]=product
+            for item in arr:
+                print(item.imei)
+                print(item.name)
+                print(item.created)
+                print(arr[item].supplier)
+                print(arr[item].created)
+            context = {
+                'arr': arr,
+                'suppliers': suppliers,
+                'categories': categories,
+                'products': products
+            }
+            return render (request, 'reports/sale_per_supplier.html' , context)
+            
+
+        else:
+            context = {
+                'suppliers': suppliers,
+                'categories': categories,
+                'products': products
+            }
+            return render (request, 'reports/sale_per_supplier.html' , context)
+
+
+    else:
+        logout(request)
+        return redirect('login')
+
+    
+
 
 def delivery_report(request):
     categories = ProductCategory.objects.all()
