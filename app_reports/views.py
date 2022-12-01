@@ -686,23 +686,48 @@ def sale_report_per_supplier (request):
             arr ={}
             for item in query:
                 if RemainderHistory.objects.filter(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier).exists():
-                    product=RemainderHistory.objects.get(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier)
-                    arr[item]=product
-            for item in arr:
-                print(item.imei)
-                print(item.name)
-                print(item.created)
-                print(arr[item].supplier)
-                print(arr[item].created)
-            context = {
-                'arr': arr,
-                'suppliers': suppliers,
-                'categories': categories,
-                'products': products
-            }
-            return render (request, 'reports/sale_per_supplier.html' , context)
-            
+                    number_of_docs=RemainderHistory.objects.filter(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier).count()
+                    if number_of_docs < 2:
+                        product=RemainderHistory.objects.get(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier)
+                        arr[item]=product
 
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=SupplierRep_" + str(date) + ".xls"
+            )
+
+            # str(datetime.date.today())+'.xls'
+
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('Period')
+
+            # sheet header in the first row
+            row_num = 0
+            font_style = xlwt.XFStyle()
+            columns = ['Дата продажи', "Модель", 'IMEI', 'Поставщик', "Дата поставки"]
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num + 1, columns[col_num], font_style)
+            
+            # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+
+            row_num = 1
+            for key, value in arr.items():
+                col_num = 1
+                ws.write(row_num, col_num, str(key.created), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, key.name, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, key.imei, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, value.supplier.name, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(value.created), font_style)
+                row_num +=1
+
+            wb.save(response)
+            return response
         else:
             context = {
                 'suppliers': suppliers,
@@ -710,14 +735,18 @@ def sale_report_per_supplier (request):
                 'products': products
             }
             return render (request, 'reports/sale_per_supplier.html' , context)
-
-
     else:
         logout(request)
         return redirect('login')
 
-    
+def supplier_report_excel (request):
+    if request.user.is_authenticated:
+        pass
+        
 
+    else:
+        logout(request)
+        return redirect('login')
 
 def delivery_report(request):
     categories = ProductCategory.objects.all()
