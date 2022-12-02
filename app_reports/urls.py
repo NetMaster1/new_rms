@@ -28,6 +28,7 @@ urlpatterns = [
     path ('remainder_list/<int:shop_id>/<int:category_id>', views.remainder_list, name='remainder_list'),
     path ('remainder_report_dynamic)', views.remainder_report_dynamic, name='remainder_report_dynamic'),
     path ('remainder_report_excel/<int:shop_id>/<int:category_id>/<date>', views.remainder_report_excel, name='remainder_report_excel'),
+    path ('remainder_genearl_report', views.remainder_general_report, name='remainder_general_report'),
 
     path ('item_report', views.item_report, name='item_report'),
     path ('bonus_report', views.bonus_report, name='bonus_report'),
