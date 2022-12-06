@@ -1027,7 +1027,7 @@ def remainder_general_report (request):
                 # sheet header in the first row
                 row_num = 0
                 font_style = xlwt.XFStyle()
-                columns = ["Модель", 'IMEI', 'Кол-во']
+                columns = ["Модель", 'IMEI', 'Кол-во', 'Опт', 'Розница']
                 for col_num in range(len(columns)):
                     ws.write(row_num, col_num + 1, columns[col_num], font_style)
                 
@@ -1042,6 +1042,10 @@ def remainder_general_report (request):
                     ws.write(row_num, col_num, item.imei, font_style)
                     col_num +=1
                     ws.write(row_num, col_num, item.current_remainder, font_style)
+                    col_num +=1
+                    ws.write(row_num, col_num, item.wholesale_price, font_style)
+                    col_num +=1
+                    ws.write(row_num, col_num, item.retail_price, font_style)
                     row_num +=1
 
                 wb.save(response)
