@@ -990,6 +990,80 @@ def remainder_report_dynamic(request):
     }
     return render(request, "reports/remainder_report_dynamic.html", context)
 
+def remainder_general_report (request):
+    if request.user.is_authenticated:
+        users = Group.objects.get(name="sales").user_set.all()
+        group = Group.objects.get(name="admin").user_set.all()
+        categories = ProductCategory.objects.all()
+        shops = Shop.objects.all()
+        if request.method == "POST":
+            if request.user in group:
+                category = request.POST["category"]
+                category = ProductCategory.objects.get(id=category)
+                # ==============Time Module=========================================
+                date = request.POST["date"]
+                date = datetime.datetime.strptime(date, "%Y-%m-%d")
+                tdelta_1 = datetime.timedelta(days=1)
+                date = date + tdelta_1
+                products=Product.objects.filter(category=category)
+                arr =[]
+                for product in products:
+                    imei=product.imei
+                    if RemainderHistory.objects.filter(imei=imei, created__lte=date).exists():
+                        rho = RemainderHistory.objects.filter(imei=imei, created__lte=date).latest("created")
+                        if rho.current_remainder > 0:
+                            arr.append(rho)
+        #==========================Convert to Excel module=========================================
+                response = HttpResponse(content_type="application/ms-excel")
+                response["Content-Disposition"] = (
+                    "attachment; filename=RemainderRep_" + str(date) + ".xls"
+                )
+
+                # str(datetime.date.today())+'.xls'
+
+                wb = xlwt.Workbook(encoding="utf-8")
+                ws = wb.add_sheet('Period')
+
+                # sheet header in the first row
+                row_num = 0
+                font_style = xlwt.XFStyle()
+                columns = ["Модель", 'IMEI', 'Кол-во', 'Опт', 'Розница']
+                for col_num in range(len(columns)):
+                    ws.write(row_num, col_num + 1, columns[col_num], font_style)
+                
+                # sheet body, remaining rows
+                font_style = xlwt.XFStyle()
+
+                row_num = 1
+                for item in arr:
+                    col_num = 1
+                    ws.write(row_num, col_num, item.name, font_style)
+                    col_num +=1
+                    ws.write(row_num, col_num, item.imei, font_style)
+                    col_num +=1
+                    ws.write(row_num, col_num, item.current_remainder, font_style)
+                    col_num +=1
+                    ws.write(row_num, col_num, item.wholesale_price, font_style)
+                    col_num +=1
+                    ws.write(row_num, col_num, item.retail_price, font_style)
+                    row_num +=1
+
+                wb.save(response)
+                return response
+            else:
+                logout(request)
+                return redirect('login')
+        else:
+            context = {
+                'categories': categories
+            }
+            return render (request, 'reports/remainder_general_report.html', context)
+
+
+    else:
+        logout(request)
+        return redirect('login')
+
 # ==========================================================
 def remainder_list(request, shop_id, category_id):
     shop = Shop.objects.get(id=shop_id)
