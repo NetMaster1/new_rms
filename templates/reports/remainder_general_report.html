@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<body oncontextmenu="return false">
+
+    <div class="hide">
+        <div class="container">
+            <div class="page_location">
+                <div class="border rounded p-3">
+                    <!-- =====================Alert Messages Module=================== -->
+                    <div class="container">
+                        {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-info" role="alert">
+                            <!-- <button class="close" data-dismiss="alert">
+                                        <small><sup>x</sup></small>
+                                    </button> -->
+                            {{ message }}
+                        </div>
+                        {% endfor%}
+                        {% endif%}
+                    </div>
+                    <!-- ===================End of Alert Messages Module================ -->
+                    <h3>Отчет по остаткам общий по всем точкам. {{shop}} на дату: {{date}}</h3>
+                </div>
+
+                <div class="border rounded p-3">
+                    <form action="{% url 'remainder_general_report' %}" method="POST" class='clear_storage_on_submit'>
+                        {% csrf_token %}
+
+                        <div class="row form-row m-auto">
+                            <div class="col-3">
+                                <select name="category" class='form-control' id='category' required>
+                                    <option value="">Выберите категорию</option>
+                                    {% for category in categories %}
+                                    <option value="{{category.id}}">{{category.name}}</option>
+                                    {% endfor %}
+                                </select>
+
+
+                                <!-- <input type="datetime-local" id='date' name="date" class="form-control"> -->
+                                <input type="date" id='date' name="date" class='form-control' required>
+
+                            </div>
+
+
+
+                            <div class="col-2">
+                                <div class="row m-1">
+                                    <input type="reset" value="Сбросить"
+                                        class="btn btn-block btn-outline-dark clear_storage">
+                                </div>
+                                <div class="row m-1">
+                                    <input type="submit" value="Применить" class="btn btn-block btn-outline-dark">
+                                </div>
+                                <div class="row m-1">
+                                    <a href="{% url 'close_remainder_report' %}" class="btn btn-block btn-outline-dark">
+                                        Закрыть
+                                    </a>
+                                </div>
+
+                            </div>
+                    </form>
+                </div>
+            </div>
+
+
+
+
+        </div>
+
+    </div>
+    </div>
+    </div>
+
+    {%endblock%}
