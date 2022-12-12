@@ -82,11 +82,14 @@
                 </div>
                 </div>
                 <div class="col-2">
-                        <a href="#">
+                    {% if sale_report %}
+                        <a href="{% url 'sale_report_excel' report_id.id %}">
                             <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
                             Сохранить в Excel 
                             </button>
                         </a>
+                        {{sale_report.id}}
+                    {% endif %}
                 </div>
                 </form>
         </div>
