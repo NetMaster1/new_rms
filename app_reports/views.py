@@ -46,6 +46,9 @@ from django.db.models import Q
 
 # Create your views here.
 
+def daily_report(request):
+    return render(request, "reports/daily_report.html")
+
 def save_in_excel_daily_rep(request):
     categories = ProductCategory.objects.all().order_by('id')
     shops = Shop.objects.all().order_by("name").exclude(name="ООС")
@@ -399,9 +402,6 @@ def cashback_history (request):
         }
         return render (request, 'reports/cashback_history.html', context)
 
-def daily_report(request):
-    return render(request, "reports/daily_report.html")
-
 # ===============================================================
 
 def close_report(request):
@@ -583,23 +583,24 @@ def sale_report_analytic(request):
             end_date = end_date + timedelta(days=1)
 
         if category:
-            products=Product.objects.filter(category=category)
+            #products=Product.objects.filter(category=category)
             queryset = queryset.filter(category=category)
-        else:
-            products=Product.objects.all()
+        #else:
+            #products=Product.objects.all()
         if shop:
             queryset = queryset.filter(shop=shop)
         # if supplier:
         #     queryset_list = queryset_list.filter(supplier=supplier)
         if user:
             queryset = queryset.filter(user=user)
-            user = user
+            #user = user
         # if Q(start_date) | Q(end_date):
         #     queryset_list = queryset_list.filter(created__range=[start_date, end_date])
         if start_date:
             queryset = queryset.filter(created__gt=start_date)
         if end_date: 
             queryset = queryset.filter(created__lt=end_date)
+
         array=[]
         for i in queryset:
             array.append(i.imei)
@@ -641,7 +642,8 @@ def sale_report_analytic(request):
                 "suppliers": suppliers,
                 "users": users,
                 "total_sales": total_sales,
-                "shop": shop
+                "shop": shop,
+                "report_id": report_id,
             }
             return render(request, "reports/sale_report_analytic.html", context)
         else:
@@ -653,6 +655,7 @@ def sale_report_analytic(request):
                 "users": users,
                 "total_sales": total_sales,
                 "shop": shop,
+                "report_id": report_id,
                 
             }
             return render(request, "reports/sale_report_analytic.html", context)
@@ -665,6 +668,52 @@ def sale_report_analytic(request):
         }
         return render(request, "reports/sale_report_analytic.html", context)
 
+def sale_report_excel (request, report_id):
+    if request.user.is_authenticated:
+        report_items=SaleReport.objects.filter(report_id=report_id)
+        print(report_items.count())
+        #==========================Convert to Excel module=========================================
+        response = HttpResponse(content_type="application/ms-excel")
+        response["Content-Disposition"] = (
+            "attachment; filename=SupplierRep_" + str(date) + ".xls"
+        )
+
+        # str(datetime.date.today())+'.xls'
+
+        wb = xlwt.Workbook(encoding="utf-8")
+        ws = wb.add_sheet('Period')
+
+        # sheet header in the first row
+        row_num = 0
+        font_style = xlwt.XFStyle()
+        columns = ['Модель', "IMEI", 'Кол-во', 'Цена']
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num + 1, columns[col_num], font_style)
+
+        # sheet body, remaining rows
+        font_style = xlwt.XFStyle()
+
+        row_num = 1
+        for item in report_items:
+            col_num = 1
+            ws.write(row_num, col_num, item.product, font_style)
+            col_num +=1
+            ws.write(row_num, col_num, item.imei, font_style)
+            col_num +=1
+            ws.write(row_num, col_num, item.quantity, font_style)
+            col_num +=1
+            ws.write(row_num, col_num, item.retail_sum, font_style)
+            row_num +=1
+
+        wb.save(response)
+        return response
+
+    else:
+        logout(request)
+        return redirect('login')
+
+
+#work for smartphones with unique IMEIs
 def sale_report_per_supplier (request):
     if request.user.is_authenticated:
         suppliers=Supplier.objects.all()
@@ -687,7 +736,7 @@ def sale_report_per_supplier (request):
             for item in query:
                 if RemainderHistory.objects.filter(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier).exists():
                     number_of_docs=RemainderHistory.objects.filter(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier).count()
-                    if number_of_docs < 2:
+                    if number_of_docs < 2:#trying to eliminate 'returns' & next sales
                         product=RemainderHistory.objects.get(rho_type=doc_type_supply, category=category, imei=item.imei, supplier=supplier)
                         arr[item]=product
 
@@ -739,14 +788,6 @@ def sale_report_per_supplier (request):
         logout(request)
         return redirect('login')
 
-def supplier_report_excel (request):
-    if request.user.is_authenticated:
-        pass
-        
-
-    else:
-        logout(request)
-        return redirect('login')
 
 def delivery_report(request):
     categories = ProductCategory.objects.all()

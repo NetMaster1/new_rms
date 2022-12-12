@@ -9,8 +9,9 @@ urlpatterns = [
 
     path ('sale_report_per_shop', views.sale_report_per_shop, name='sale_report_per_shop'),
     path ('sale_report_analytic', views.sale_report_analytic, name='sale_report_analytic'),
+    path ('sale_report_excel/<int:report_id>/', views.sale_report_excel, name='sale_report_excel'),
     path ('sale_report_per_supplier', views.sale_report_per_supplier, name='sale_report_per_supplier'),
-    path ('supplier_report_excel', views.supplier_report_excel, name='supplier_report_excel'),
+    #path ('supplier_report_excel', views.supplier_report_excel, name='supplier_report_excel'),
 
     path ('daily_report', views.daily_report, name='daily_report'),
     path ('save_in_excel_daily_rep', views.save_in_excel_daily_rep, name='save_in_excel_daily_rep'),
