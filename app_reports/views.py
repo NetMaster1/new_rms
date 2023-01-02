@@ -290,7 +290,7 @@ def save_in_excel_daily_rep(request):
 
 def cashback_rep (request):
     if request.user.is_authenticated:
-        users=User.objects.all()
+        users=User.objects.all().order_by('last_name')
         if request.method == 'POST':
             start_date=request.POST ['start_date']
             start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
@@ -317,7 +317,8 @@ def cashback_rep (request):
                     if Document.objects.filter(client=customer).exists():
                         if customer.user == user:
                             counter +=1
-                dict[user]=counter
+                if counter > 0:
+                    dict[user]=counter
 
             context = {
                 'dict': dict
