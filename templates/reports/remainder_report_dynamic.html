@@ -81,11 +81,11 @@
             <div class="col-2">
                 <h5>IMEI</h5>
             </div>
-            <div class="col-2">
+            <div class="col-4">
                 <h5>Наименование</h5>
             </div>
           
-            <div class="col-2">
+            <div class="col-1">
                 <h5>Остаток на начало периода</h5>
             </div>
 
@@ -95,7 +95,7 @@
             <div class="col-2">
                 <h5>Расход</h5>
             </div>
-            <div class="col-2">
+            <div class="col-1">
                 <h5>Остаток на конец периода</h5>
             </div>
         </div>
@@ -105,8 +105,8 @@
         {% for report in reports %}
         <div class="row m-auto">
             <div class="col-2">{{report.imei}}</div>
-            <div class="col-2">{{report.name}}</div>
-            <div class="col-2">{{report.initial_remainder}}</div>
+            <div class="col-4">{{report.name}}</div>
+            <div class="col-1">{{report.initial_remainder}}</div>
             {% if report.quantity_in > 0%}
             <div class="col-2">{{report.quantity_in}}</div>
             {% else %}
@@ -117,7 +117,7 @@
             {% else %}
             <div class="col-2"></div>
             {% endif %}
-            <div class="col-2">{{report.end_remainder}}</div>
+            <div class="col-1">{{report.end_remainder}}</div>
         </div>
         <hr>
         {% endfor %}
