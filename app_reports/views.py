@@ -676,7 +676,7 @@ def sale_report_excel (request, report_id):
         #==========================Convert to Excel module=========================================
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (
-            "attachment; filename=SupplierRep_" + str(date) + ".xls"
+            "attachment; filename=SaleRep_" + str(date) + ".xls"
         )
 
         # str(datetime.date.today())+'.xls'
