@@ -60,7 +60,8 @@ def log(request):
     if request.user in group:
         month=datetime.datetime.now().month
         year=datetime.datetime.now().year
-        queryset_list = Document.objects.filter(created__year=year).order_by("-created")
+        #queryset_list = Document.objects.filter(created__year=year).order_by("-created")
+        queryset_list = Document.objects.all().order_by("-created")
         #============paginator module=================
         paginator = Paginator(queryset_list, 50)
         page = request.GET.get('page')
