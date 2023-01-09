@@ -687,7 +687,7 @@ def sale_report_excel (request, report_id):
         # sheet header in the first row
         row_num = 0
         font_style = xlwt.XFStyle()
-        columns = ['Модель', "IMEI", 'Кол-во', 'Цена']
+        columns = ['Модель', "IMEI", 'Кол-во', 'Опт', 'Розница', 'Прибыль']
         for col_num in range(len(columns)):
             ws.write(row_num, col_num + 1, columns[col_num], font_style)
 
@@ -703,7 +703,11 @@ def sale_report_excel (request, report_id):
             col_num +=1
             ws.write(row_num, col_num, item.quantity, font_style)
             col_num +=1
+            ws.write(row_num, col_num, item.av_sum, font_style)
+            col_num +=1
             ws.write(row_num, col_num, item.retail_sum, font_style)
+            col_num +=1
+            ws.write(row_num, col_num, item.margin, font_style)
             row_num +=1
 
         wb.save(response)
