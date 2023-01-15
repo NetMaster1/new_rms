@@ -40,4 +40,9 @@ urlpatterns = [
     path ('credit_report', views.credit_report, name='credit_report'),
     path ('payment_report', views.payment_report, name='payment_report'),
 
+    path ('account_report_60_excel', views.account_report_60_excel, name='account_report_60_excel'),
+    path ('account_report_62_excel', views.account_report_62_excel, name='account_report_62_excel'),
+    path ('account_report_90_excel', views.account_report_90_excel, name='account_report_90_excel'),
+   
+
 ]
