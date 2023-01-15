@@ -1922,7 +1922,7 @@ def account_report_90_excel(request):
             row_num = 0
             col_num=0
             font_style = xlwt.XFStyle()
-            columns = ["Дата", 'IMEI', 'Name', 'Quantity', 'Сумма', 'НДС', 'Расходы на продажу', 'Сальдо']
+            columns = ["Дата", 'IMEI', 'Name', 'Quantity', 'Сумма (90.1)', 'НДС (90.3)', 'Расходы на продажу (90.2)', 'Сальдо (90.9)']
             for col_num in range(len(columns)):
                 ws.write(row_num, col_num, columns[col_num], font_style)
                 col_num =+ 1
