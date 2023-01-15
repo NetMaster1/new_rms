@@ -819,7 +819,6 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 )
                 document_sum += int(quantities[i]) * int(prices[i])
                 #calculating av_price for the remainder
-                av_price_obj = AvPrice.objects.get(imei=imeis[i])
                 av_price_obj.current_remainder -= int(quantities[i])
                 av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
                 av_price_obj.save()
@@ -2686,7 +2685,7 @@ def change_delivery_unposted(request, document_id):
                                 sub_total=int(int(quantities[i]) * int(prices[i]))
                             )
                         document_sum+=rho.sub_total
-                              #===========Av_price_module================
+                        #===========Av_price_module================
                         if AvPrice.objects.filter(imei=imeis[i]).exists():
                             av_price_obj = AvPrice.objects.get(imei=imeis[i])
                             av_price_obj.current_remainder += int(quantities[i])
@@ -3255,6 +3254,11 @@ def change_transfer_unposted(request, document_id):
                     document_sum = 0
                     for i in range(n):
                         product=Product.objects.get(imei=imeis[i])
+                        if AvPrice.objects.filter(imei=imeis[i]).exists():
+                            av_price=AvPrice.objects.get(imei=imeis[i])
+                            av_price=av_price.av_price
+                        else:
+                            av_price=0
                         document_sum += int(prices[i]) * int(quantities[i])
                         # creating new rho
                         rho = RemainderHistory.objects.create(
@@ -3267,6 +3271,7 @@ def change_transfer_unposted(request, document_id):
                             imei=imeis[i],
                             name=names[i],
                             retail_price=prices[i],
+                            av_price=av_price,
                             incoming_quantity=0,
                             outgoing_quantity=quantities[i],
                             sub_total=int(prices[i]) * int(quantities[i])
@@ -3307,6 +3312,7 @@ def change_transfer_unposted(request, document_id):
                             imei=imeis[i],
                             name=names[i],
                             retail_price=prices[i],
+                            av_price=av_price,
                             incoming_quantity=quantities[i],
                             outgoing_quantity=0,
                             status=True,
