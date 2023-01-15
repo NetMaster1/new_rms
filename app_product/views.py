@@ -819,7 +819,6 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 )
                 document_sum += int(quantities[i]) * int(prices[i])
                 #calculating av_price for the remainder
-                av_price_obj = AvPrice.objects.get(imei=imeis[i])
                 av_price_obj.current_remainder -= int(quantities[i])
                 av_price_obj.sum -= int(quantities[i]) * av_price_obj.av_price
                 av_price_obj.save()
@@ -1533,9 +1532,9 @@ def change_sale_unposted (request, document_id):
                     av_price_obj=AvPrice.objects.get(imei=imeis[i])
                     av_price_obj.current_remainder -= int(quantities[i])
                     av_price_obj.sum = av_price_obj.current_remainder * av_price_obj.av_price
-                    if av_price_obj.sum<=0:
-                        av_price_obj.sum=0
-                        av_price_obj.av_price = 0
+                    # if av_price_obj.sum<=0:
+                    #     av_price_obj.sum=0
+                    #     av_price_obj.av_price = 0
                     av_price_obj.save()
                     #checking rhos before
                     rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
@@ -2686,7 +2685,7 @@ def change_delivery_unposted(request, document_id):
                                 sub_total=int(int(quantities[i]) * int(prices[i]))
                             )
                         document_sum+=rho.sub_total
-                              #===========Av_price_module================
+                        #===========Av_price_module================
                         if AvPrice.objects.filter(imei=imeis[i]).exists():
                             av_price_obj = AvPrice.objects.get(imei=imeis[i])
                             av_price_obj.current_remainder += int(quantities[i])
@@ -3255,6 +3254,11 @@ def change_transfer_unposted(request, document_id):
                     document_sum = 0
                     for i in range(n):
                         product=Product.objects.get(imei=imeis[i])
+                        if AvPrice.objects.filter(imei=imeis[i]).exists():
+                            av_price=AvPrice.objects.get(imei=imeis[i])
+                            av_price=av_price.av_price
+                        else:
+                            av_price=0
                         document_sum += int(prices[i]) * int(quantities[i])
                         # creating new rho
                         rho = RemainderHistory.objects.create(
@@ -3267,6 +3271,7 @@ def change_transfer_unposted(request, document_id):
                             imei=imeis[i],
                             name=names[i],
                             retail_price=prices[i],
+                            av_price=av_price,
                             incoming_quantity=0,
                             outgoing_quantity=quantities[i],
                             sub_total=int(prices[i]) * int(quantities[i])
@@ -3307,6 +3312,7 @@ def change_transfer_unposted(request, document_id):
                             imei=imeis[i],
                             name=names[i],
                             retail_price=prices[i],
+                            av_price=av_price,
                             incoming_quantity=quantities[i],
                             outgoing_quantity=0,
                             status=True,
@@ -4082,18 +4088,13 @@ def unpost_recognition(request, document_id):
             av_price_obj = AvPrice.objects.get(imei=rho.imei)
             av_price_obj.current_remainder -= rho.incoming_quantity
             shop=Shop.objects.get(id=rho.shop.id)
-            #if shop.retail == True:
-            av_price_obj.sum=av_price_obj.current_remainder * av_price_obj.av_price
-            if av_price_obj.sum==0:
-                av_price_obj.av_price=0
-            #else:
-            #    av_price_obj.sum-=av_price_obj.current_remainder * rho.wholesale_price
-            #if av_price_obj.current_remainder > 0:
-            #    av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
-            #else:
-            #    av_price_obj.av_price=0
-            #    av_price_obj.sum=0
+            if shop.retail == True:
+                av_price_obj.sum-= rho.retail_price * rho.incoming_quantity
+            else:
+                av_price_obj.sum-= rho.wholesale_price * rho.incoming_quantity
+            av_price_obj.av_price=av_price_obj.sum/av_price_obj.current_remainder
             av_price_obj.save()
+        
             register=Register.objects.create(
                 document=document,
                 product=product,
