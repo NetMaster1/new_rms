@@ -1532,9 +1532,9 @@ def change_sale_unposted (request, document_id):
                     av_price_obj=AvPrice.objects.get(imei=imeis[i])
                     av_price_obj.current_remainder -= int(quantities[i])
                     av_price_obj.sum = av_price_obj.current_remainder * av_price_obj.av_price
-                    if av_price_obj.sum<=0:
-                        av_price_obj.sum=0
-                        av_price_obj.av_price = 0
+                    # if av_price_obj.sum<=0:
+                    #     av_price_obj.sum=0
+                    #     av_price_obj.av_price = 0
                     av_price_obj.save()
                     #checking rhos before
                     rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
@@ -4088,18 +4088,13 @@ def unpost_recognition(request, document_id):
             av_price_obj = AvPrice.objects.get(imei=rho.imei)
             av_price_obj.current_remainder -= rho.incoming_quantity
             shop=Shop.objects.get(id=rho.shop.id)
-            #if shop.retail == True:
-            av_price_obj.sum=av_price_obj.current_remainder * av_price_obj.av_price
-            if av_price_obj.sum==0:
-                av_price_obj.av_price=0
-            #else:
-            #    av_price_obj.sum-=av_price_obj.current_remainder * rho.wholesale_price
-            #if av_price_obj.current_remainder > 0:
-            #    av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
-            #else:
-            #    av_price_obj.av_price=0
-            #    av_price_obj.sum=0
+            if shop.retail == True:
+                av_price_obj.sum-= rho.retail_price * rho.incoming_quantity
+            else:
+                av_price_obj.sum-= rho.wholesale_price * rho.incoming_quantity
+            av_price_obj.av_price=av_price_obj.sum/av_price_obj.current_remainder
             av_price_obj.save()
+        
             register=Register.objects.create(
                 document=document,
                 product=product,
