@@ -632,8 +632,12 @@ def sale_report_analytic(request):
         #calculating total sales sum
         sale_report=SaleReport.objects.filter(report_id=report_id.id).order_by('product')
         total_sales=0
+        av_sales=0
+        profit=0
         for item in sale_report:
             total_sales+=item.retail_sum
+            av_sales+=item.av_sum
+            profit+=item.margin
 
         if shop:
             context = {
@@ -655,6 +659,8 @@ def sale_report_analytic(request):
                 "suppliers": suppliers,
                 "users": users,
                 "total_sales": total_sales,
+                "av_sales": av_sales,
+                "profit": profit,
                 "shop": shop,
                 "report_id": report_id,
                 
@@ -1096,6 +1102,7 @@ def remainder_general_report (request):
 
                 wb.save(response)
                 return response
+        #================================End of Excel Module========================================
             else:
                 logout(request)
                 return redirect('login')
@@ -1760,3 +1767,335 @@ def bonus_report(request):
         #'users': users
     }
     return render(request, "reports/bonus_report.html", context)
+#======================================================================
+def account_report_60_excel(request):
+    if request.user.is_authenticated:
+        doc_type=DocumentType.objects.get(name='Поступление ТМЦ')
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            tdelta = datetime.timedelta(days=1)
+            end_date = end_date + tdelta
+            docs=Document.objects.filter(title=doc_type, created__gte=start_date, created__lte=end_date ).order_by('created')
+
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=_" + str(datetime.date.today()) + ".xls"
+                )
+
+            # str(datetime.date.today())+'.xls'
+
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('60')
+
+            # sheet header in the first row
+            row_num = 0
+            col_num=0
+            font_style = xlwt.XFStyle()
+            columns = ["Дата", 'Поставщик', 'Документ', 'Номер', 'Сумма']
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num, columns[col_num], font_style)
+                col_num =+ 1
+            
+           # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+            #docs = docs.values_list("created", "supplier", "title", "id", "sum")
+
+            row_num = 1
+            for item in docs:
+                col_num = 0
+                ws.write(row_num, col_num, str(item.created), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(item.supplier), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(item.title), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.id, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.sum, font_style)
+                row_num +=1
+
+
+            wb.save(response)
+            return response
+            #================================End of Excel Module========================================
+
+            return render(request, "reports/account_report_60.html")
+        
+
+        else:
+            return render(request, "reports/account_report_60.html")
+    else:
+        return redirect("login")
+    
+def account_report_62_excel(request):
+    if request.user.is_authenticated:
+        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            tdelta = datetime.timedelta(days=1)
+            end_date = end_date + tdelta
+            docs=Document.objects.filter(title=doc_type, created__gte=start_date, created__lte=end_date ).order_by('created')
+
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=_" + str(datetime.date.today()) + ".xls"
+                )
+
+            # str(datetime.date.today())+'.xls'
+
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('60')
+
+            # sheet header in the first row
+            row_num = 0
+            col_num=0
+            font_style = xlwt.XFStyle()
+            columns = ["Дата", 'Покупатель', 'Документ', 'Номер', 'Сумма']
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num, columns[col_num], font_style)
+                col_num =+ 1
+            
+           # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+            #docs = docs.values_list("created", "supplier", "title", "id", "sum")
+
+            row_num = 1
+            for item in docs:
+                col_num = 0
+                ws.write(row_num, col_num, str(item.created), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(item.client), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(item.title), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.id, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.sum, font_style)
+                row_num +=1
+
+
+            wb.save(response)
+            return response
+            #================================End of Excel Module========================================
+
+            return render(request, "reports/account_report_62.html")
+        
+
+        else:
+            return render(request, "reports/account_report_62.html")
+    else:
+        return redirect("login")
+
+def account_report_90_excel(request):
+    if request.user.is_authenticated:
+        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+        pay_cards=ProductCategory.objects.get(name='КЭО')
+        sim_cards=ProductCategory.objects.get(name='Сим_карты')
+        insurance=ProductCategory.objects.get(name='Страховки')
+        subscription=ProductCategory.objects.get(name='Подписки')
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            tdelta = datetime.timedelta(days=1)
+            end_date = end_date + tdelta
+            docs=RemainderHistory.objects.filter(rho_type=doc_type, created__gte=start_date, created__lte=end_date ).exclude(category=pay_cards).exclude(category=sim_cards).exclude(category=insurance).exclude(category=subscription).order_by('created')
+
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=_" + str(datetime.date.today()) + ".xls"
+                )
+
+            # str(datetime.date.today())+'.xls'
+
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('60')
+
+            # sheet header in the first row
+            row_num = 0
+            col_num=0
+            font_style = xlwt.XFStyle()
+            columns = ["Дата", 'IMEI', 'Name', 'Quantity', 'Сумма (90.1)', 'НДС (90.3)', 'Расходы на продажу (90.2)', 'Сальдо (90.9)']
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num, columns[col_num], font_style)
+                col_num =+ 1
+            
+           # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+            #docs = docs.values_list("created", "supplier", "title", "id", "sum")
+
+            row_num = 1
+            for item in docs:
+                col_num = 0
+                ws.write(row_num, col_num, str(item.created), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(item.imei), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(item.name), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.outgoing_quantity, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.sub_total, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.sub_total/120*20, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.av_price/120*100, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.sub_total/120*100 - item.av_price/120*100, font_style)
+                row_num +=1
+
+
+            wb.save(response)
+            return response
+            #================================End of Excel Module========================================
+
+            return render(request, "reports/account_report_90_1.html")
+        
+
+        else:
+            return render(request, "reports/account_report_90_1.html")
+    else:
+        return redirect("login")
+ 
+    if request.user.is_authenticated:
+        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+        pay_cards=ProductCategory.objects.get(name='КЭО')
+        sim_cards=ProductCategory.objects.get(name='Сим_карты')
+        insurance=ProductCategory.objects.get(name='Страховки')
+        subscription=ProductCategory.objects.get(name='Подписки')
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            tdelta = datetime.timedelta(days=1)
+            end_date = end_date + tdelta
+            docs=RemainderHistory.objects.filter(rho_type=doc_type, created__gte=start_date, created__lte=end_date ).exclude(category=pay_cards).exclude(category=sim_cards).exclude(category=insurance).exclude(category=subscription).order_by('created')
+
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=_" + str(datetime.date.today()) + ".xls"
+                )
+
+            # str(datetime.date.today())+'.xls'
+
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('60')
+
+            # sheet header in the first row
+            row_num = 0
+            col_num=0
+            font_style = xlwt.XFStyle()
+            columns = ["Дата", 'Покупатель', 'Документ', 'Номер', 'Сумма']
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num, columns[col_num], font_style)
+                col_num =+ 1
+            
+           # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+            #docs = docs.values_list("created", "supplier", "title", "id", "sum")
+
+            row_num = 1
+            for item in docs:
+                col_num = 0
+                ws.write(row_num, col_num, str(item.created), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(item.client), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(item.title), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.id, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.sum, font_style)
+                row_num +=1
+
+
+            wb.save(response)
+            return response
+            #================================End of Excel Module========================================
+
+            return render(request, "reports/account_report_90_2.html")
+        
+
+        else:
+            return render(request, "reports/account_report_90_2.html")
+    else:
+        return redirect("login")
+
+    if request.user.is_authenticated:
+        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            tdelta = datetime.timedelta(days=1)
+            end_date = end_date + tdelta
+            docs=Document.objects.filter(title=doc_type, created__gte=start_date, created__lte=end_date ).order_by('created')
+
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=_" + str(datetime.date.today()) + ".xls"
+                )
+
+            # str(datetime.date.today())+'.xls'
+
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('60')
+
+            # sheet header in the first row
+            row_num = 0
+            col_num=0
+            font_style = xlwt.XFStyle()
+            columns = ["Дата", 'Покупатель', 'Документ', 'Номер', 'Сумма']
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num, columns[col_num], font_style)
+                col_num =+ 1
+            
+           # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+            #docs = docs.values_list("created", "supplier", "title", "id", "sum")
+
+            row_num = 1
+            for item in docs:
+                col_num = 0
+                ws.write(row_num, col_num, str(item.created), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(item.client), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, str(item.title), font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.id, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.sum, font_style)
+                row_num +=1
+
+
+            wb.save(response)
+            return response
+            #================================End of Excel Module========================================
+
+            return render(request, "reports/account_report_90_3.html")
+        
+
+        else:
+            return render(request, "reports/account_report_90_3.html")
+    else:
+        return redirect("login")

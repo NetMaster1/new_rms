@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- <div class="hide"> -->
+<div class="container">
+    <div class="page_location">
+
+        <div class="log border rounded">
+            <div class="row">
+                <h3> Карточка счета 62 (Расчеты с покупателями)</h3>
+            </div>
+        </div>
+
+        <div class="log border rounded">
+            <form action="" method="POST">
+                {% csrf_token %}
+
+                <div class="row m-auto mt-2 mb-1">
+                    <!-- <div class="-2">
+                <input type="text" name="imei" placeholder="IMEI">
+            </div> -->
+                    <div class="col-2">
+                        <input type="date" id='start_date' name="start_date" class='form-control' required>
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='end_date' name="end_date" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="row m-auto mt-1 mb-2">
+                    <div class="col-2">
+                        <div class="row m-auto">
+                            <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="row m-auto">
+                            <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="row m-auto">
+                            <a href="{% url 'close_report' %}" class="btn btn-sm btn-block btn-outline-dark">
+                                Закрыть без сохранения
+                            </a>
+                        </div>
+                    </div>
+                    <!-- <div class="col-2">
+                        <a href="">
+                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                                Сохранить в Excel
+                            </button>
+                        </a>
+                    </div> -->
+            </form>
+        </div>
+    </div>
+
+
+    <div class="log border rounded">
+
+        <div class="row m-auto">
+            <div class="col-2">
+                <h5>Дата продажи</h5>
+            </div>
+            <div class="col-2">
+                <h5>Покупатель</h5>
+            </div>
+            <div class="col-2">
+                <h5>Документ</h5>
+            </div>
+            <div class="col-2">
+                <h5>Сумма</h5>
+            </div>
+
+
+        </div>
+
+
+
+
+    </div>
+</div>
+</div>
+
+{%endblock%}
