@@ -632,8 +632,12 @@ def sale_report_analytic(request):
         #calculating total sales sum
         sale_report=SaleReport.objects.filter(report_id=report_id.id).order_by('product')
         total_sales=0
+        av_sales=0
+        profit=0
         for item in sale_report:
             total_sales+=item.retail_sum
+            av_sales+=item.av_sum
+            profit+=item.margin
 
         if shop:
             context = {
@@ -655,6 +659,8 @@ def sale_report_analytic(request):
                 "suppliers": suppliers,
                 "users": users,
                 "total_sales": total_sales,
+                "av_sales": av_sales,
+                "profit": profit,
                 "shop": shop,
                 "report_id": report_id,
                 
