@@ -1962,11 +1962,11 @@ def account_report_90_excel(request):
             return response
             #================================End of Excel Module========================================
 
-            return render(request, "reports/account_report_90_1.html")
+            return render(request, "reports/account_report_90.html")
         
 
         else:
-            return render(request, "reports/account_report_90_1.html")
+            return render(request, "reports/account_report_90.html")
     else:
         return redirect("login")
  
