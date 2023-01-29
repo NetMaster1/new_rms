@@ -1044,6 +1044,7 @@ def remainder_report_dynamic(request):
 
 def remainder_general_report (request):
     if request.user.is_authenticated:
+        transfer= DocumentType.objects.get(name='Перемещение ТМЦ')
         users = Group.objects.get(name="sales").user_set.all()
         group = Group.objects.get(name="admin").user_set.all()
         categories = ProductCategory.objects.all()
@@ -1063,6 +1064,11 @@ def remainder_general_report (request):
                     imei=product.imei
                     if RemainderHistory.objects.filter(imei=imei, created__lte=date).exists():
                         rho = RemainderHistory.objects.filter(imei=imei, created__lte=date).latest("created")
+                        if rho.rho_type == transfer: #перемещение создает два rho с одинаковым временем и нам нужно их разделить.
+                            document=rho.document
+                            shop_receiver=document.shop_receiver
+                            rho=RemainderHistory.objects.get(document=document, imei = imei, shop=shop_receiver)
+                           
                         if rho.current_remainder > 0:
                             arr.append(rho)
         #==========================Convert to Excel module=========================================
