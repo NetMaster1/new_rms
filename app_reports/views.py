@@ -1569,7 +1569,7 @@ def salary_report(request):
             tdelta = datetime.timedelta(days=1)
             end_date = end_date + tdelta
             arr = []
-            users = User.objects.all()
+            users = User.objects.all().order_by('last_name')
             for user in users:
                 dict = {}
                 sum = 0
@@ -1578,7 +1578,10 @@ def salary_report(request):
                     sum += int(item.cash_out)
                 dict[user] = sum
                 arr.append(dict)
-            context = {"arr": arr}
+            context = {
+                "arr": arr,
+                "start_date": start_date,
+                "end_date": end_date}
             return render(request, "reports/salary_report.html", context)
         else:
             return render(request, "reports/salary_report.html")
