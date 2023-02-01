@@ -1562,24 +1562,18 @@ def salary_report(request):
     if request.user.is_authenticated:
         if request.method == "POST":
             start_date = request.POST["start_date"]
-            print(start_date)
             end_date = request.POST["end_date"]
-            print(end_date)
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
             start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
             end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
             tdelta = datetime.timedelta(days=1)
             end_date = end_date + tdelta
-            print(start_date)
-            print(end_date)
             arr = []
             users = User.objects.all()
             for user in users:
                 dict = {}
                 sum = 0
-                qs = user.cash_receiver.filter(
-                    created__gte=start_date, created__lte=end_date
-                )
+                qs = user.cash_receiver.filter(created__gte=start_date, created__lte=end_date)
                 for item in qs:
                     sum += int(item.cash_out)
                 dict[user] = sum
