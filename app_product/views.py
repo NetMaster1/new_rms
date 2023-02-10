@@ -3017,7 +3017,7 @@ def transfer_input(request, identifier_id):
                         remainder_history= RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender, created__lt=dateTime).latest('created')
                         if remainder_history.current_remainder < int(quantities[i]):
                             #check_point.append(False)
-                            string=f'Документ не проведеден. Товар с IMEI {imeis[i]} отсутствует на балансе фирмы.'
+                            string=f'Документ не проведеден. Количество товара с IMEI {imeis[i]} недостаточно.'
                             messages.error(request,  string)
                             return redirect("transfer", identifier.id)
                     else:
