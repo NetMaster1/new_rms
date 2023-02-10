@@ -1658,8 +1658,15 @@ def bonus_report(request):
                 sum = 0
                 for shop in shops:
                     rhos_new = rhos.filter(category=category, user=user, shop=shop)
-                    for rho in rhos_new:
-                        sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
+                    if category.name == "Сим_карты": #отсекаем из выручки интернет номера стоимостью > 550 руб
+                        for rho in rhos_new:
+                            if rho.sub_total <= 550:
+                                sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
+                            else:
+                                sum += int(550 * category.bonus_percent * shop.sale_k)
+                    else:
+                        for rho in rhos_new:
+                            sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
                 user_row.append(sum)
 
             if Credit.objects.filter(created__gt=start_date, created__lt=end_date, user=user).exists():
