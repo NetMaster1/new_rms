@@ -4092,7 +4092,10 @@ def unpost_recognition(request, document_id):
                 av_price_obj.sum-= rho.retail_price * rho.incoming_quantity
             else:
                 av_price_obj.sum-= rho.wholesale_price * rho.incoming_quantity
-            av_price_obj.av_price=av_price_obj.sum/av_price_obj.current_remainder
+            if av_price_obj.current_remainder > 0:
+                av_price_obj.av_price=av_price_obj.sum/av_price_obj.current_remainder
+            else:
+                av_price_obj.av_price=0
             av_price_obj.save()
         
             register=Register.objects.create(
