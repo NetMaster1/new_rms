@@ -10,6 +10,8 @@ class RemainderHistoryAdmin(admin.ModelAdmin):
     ordering = ('-created',)
     list_per_page=50
     list_select_related = True
+    list_editable = ('av_price',)
+    search_fields = ('imei', )
 
     #I don't know how it works, but this functions created a separate column based on column 'created', but with more precise time '19 Feb 2022 15:54:00' instead of  'Feb. 21, 2022, 3:11 p.m.' I deleted 'created' from display_list. Somehow it may influence to filtering, but so far I have not noticed anything.
     def time_seconds(self, obj):
@@ -27,6 +29,8 @@ class RemainderHistoryAdmin(admin.ModelAdmin):
 class AvPriceAdmin(admin.ModelAdmin):
     list_display = ('updated', 'name', 'imei', 'current_remainder', 'av_price', 'sum')  
     list_filter = ('name',)
+    list_editable= ('current_remainder', 'av_price', 'sum', )
+    search_fields = ('imei', )
 
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'time_seconds', 'title' , 'user', 'sum', 'client', 'base_doc')
