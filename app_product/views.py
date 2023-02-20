@@ -2494,7 +2494,9 @@ def delivery_input(request, identifier_id):
                     if AvPrice.objects.filter(imei=imeis[i]).exists():
                         av_price_obj = AvPrice.objects.get(imei=imeis[i])
                         av_price_obj.current_remainder += int(quantities[i])
+                        av_price_obj.save()
                         av_price_obj.sum += int(quantities[i]) * int(prices[i])
+                        av_price_obj.save()
                         av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
                         av_price_obj.save()
                     else:
