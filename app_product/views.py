@@ -2463,6 +2463,34 @@ def delivery_input(request, identifier_id):
                 for i in range(n):
                     # checking rhos before
                     product = Product.objects.get(imei=imeis[i])
+                    #==============av_price module====================
+                    if AvPrice.objects.filter(imei=imeis[i]).exists():
+                        av_price_obj = AvPrice.objects.get(imei=imeis[i])
+                        av_price_obj.current_remainder += int(quantities[i])
+                        av_price_obj.sum += int(quantities[i]) * int(prices[i])
+                        if av_price_obj.current_remainder > 0:
+                            av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                        elif av_price_obj.current_remainder == 0:
+                            av_price_obj.av_price= 0
+                            av_price_obj.sum =0
+                        else:
+                            #av_price_obj.av_price=0
+                            #av_price_obj.sum_price=0
+                            document.delete()
+                            rho.delete()
+                            # av_price_obj.save()
+                            messages.error(request, "Отрицательный остаток в таблице Av_price. Документ не проведен.")
+                            return redirect("delivery", identifier.id)
+                        av_price_obj.save()
+                    else:
+                        av_price_obj = AvPrice.objects.create(
+                            name=names[i],
+                            imei=imeis[i],
+                            current_remainder=int(quantities[i]),
+                            sum=int(quantities[i]) * int(prices[i]),
+                            av_price=int(prices[i]),
+                        )
+                    #=============End of Av_price Module=================
                     # creating remainder_history
                     rho = RemainderHistory.objects.create(
                         document=document,
@@ -2478,9 +2506,11 @@ def delivery_input(request, identifier_id):
                         incoming_quantity=quantities[i],
                         outgoing_quantity=0,
                         #current_remainder=rho_latest_before.current_remainder + int(quantities[i]),
+                        av_price=av_price_obj.av_price,
                         wholesale_price=int(prices[i]),
                         sub_total=int(int(quantities[i]) * int(prices[i])),
                     )
+                   
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=rho.created).exists():
                         rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=rho.created).latest('created')
                         rho.pre_remainder=rho_latest_before.current_remainder
@@ -2490,25 +2520,6 @@ def delivery_input(request, identifier_id):
                         rho.current_remainder= int(quantities[i])
                     rho.save()
                     document_sum+=rho.sub_total
-                #==============av_price module====================
-                    if AvPrice.objects.filter(imei=imeis[i]).exists():
-                        av_price_obj = AvPrice.objects.get(imei=imeis[i])
-                        av_price_obj.current_remainder += int(quantities[i])
-                        av_price_obj.save()
-                        av_price_obj.sum += int(quantities[i]) * int(prices[i])
-                        av_price_obj.save()
-                        av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
-                        av_price_obj.save()
-                    else:
-                        av_price_obj = AvPrice.objects.create(
-                            name=names[i],
-                            imei=imeis[i],
-                            current_remainder=int(quantities[i]),
-                            sum=int(quantities[i]) * int(prices[i]),
-                            av_price=int(prices[i]),
-                        )
-                    rho.av_price=av_price_obj.av_price
-                    rho.save()
                     # checking docs after remainder_history
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=dateTime).exists():
                         remainder=rho.current_remainder
@@ -2649,6 +2660,35 @@ def change_delivery_unposted(request, document_id):
                     document.save()
                     for i in range(n):
                         product = Product.objects.get(imei=imeis[i])
+                        #==============av_price module====================
+                        if AvPrice.objects.filter(imei=imeis[i]).exists():
+                            av_price_obj = AvPrice.objects.get(imei=imeis[i])
+                            av_price_obj.current_remainder += int(quantities[i])
+                            av_price_obj.sum += int(quantities[i]) * int(prices[i])
+                            if av_price_obj.current_remainder > 0:
+                                av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
+                            elif av_price_obj.current_remainder == 0:
+                                av_price_obj.av_price= 0
+                                av_price_obj.sum =0
+                            else:
+                                #av_price_obj.av_price=0
+                                #av_price_obj.sum_price=0
+                                document.posted = False
+                                document.save()
+                                # av_price_obj.save()
+                                messages.error(request, "Отрицательный остаток в таблице Av_price. Документ не проведен.")
+                                return redirect("change_delivery_uposted", document.id)
+                            av_price_obj.save()
+                        else:
+                            av_price_obj = AvPrice.objects.create(
+                                name=names[i],
+                                imei=imeis[i],
+                                current_remainder=int(quantities[i]),
+                                sum=int(quantities[i]) * int(prices[i]),
+                                av_price=int(prices[i]),
+                            )
+                        rho.av_price=av_price_obj.av_price
+                    #=============End of Av_price Module=================
                         # checking docs before remainder_history
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                             rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
@@ -2666,6 +2706,7 @@ def change_delivery_unposted(request, document_id):
                                 incoming_quantity=int(quantities[i]),
                                 outgoing_quantity=0,
                                 current_remainder=rho_latest_before.current_remainder + int(quantities[i]),
+                                av_price=av_price_obj.av_price,
                                 wholesale_price=int(prices[i]),
                                 sub_total=int(int(quantities[i]) * int(prices[i])),
                             )
@@ -2683,29 +2724,12 @@ def change_delivery_unposted(request, document_id):
                                 incoming_quantity=int(quantities[i]),
                                 outgoing_quantity=0,
                                 current_remainder=int(quantities[i]),
+                                av_price=av_price_obj.av_price,
                                 wholesale_price=int(prices[i]),
                                 sub_total=int(int(quantities[i]) * int(prices[i]))
                             )
                         document_sum+=rho.sub_total
-                        #===========Av_price_module================
-                        if AvPrice.objects.filter(imei=imeis[i]).exists():
-                            av_price_obj = AvPrice.objects.get(imei=imeis[i])
-                            av_price_obj.current_remainder += int(quantities[i])
-                            av_price_obj.sum += int(quantities[i]) * int(prices[i])
-                            if av_price_obj.current_remainder < 0:
-                                av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
-                            else:
-                                av_price_obj.av_price = av_price_obj.sum / 1
-                            av_price_obj.save()
-                        else:
-                            av_price_obj=AvPrice.objects.create(
-                                name=names[i],
-                                imei=imeis[i],
-                                current_remainder=quantities[i],
-                                sum=sub_totals[i],
-                                av_price=int(sub_totals[i])/ int(quantities[i])
-                            )
-                #===================End of Av_price module      
+     
                         # checking docs after remainder_history
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=rho.created).exists():
                             remainder=rho.current_remainder
