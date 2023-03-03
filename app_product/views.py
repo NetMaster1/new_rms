@@ -2687,7 +2687,6 @@ def change_delivery_unposted(request, document_id):
                                 sum=int(quantities[i]) * int(prices[i]),
                                 av_price=int(prices[i]),
                             )
-                        rho.av_price=av_price_obj.av_price
                     #=============End of Av_price Module=================
                         # checking docs before remainder_history
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
