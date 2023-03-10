@@ -634,7 +634,9 @@ def sale_report_analytic(request):
         total_sales=0
         av_sales=0
         profit=0
-        for item in sale_report:
+        for index, item in enumerate(sale_report):
+            item.index = index
+            item.save()
             total_sales+=item.retail_sum
             av_sales+=item.av_sum
             profit+=item.margin
