@@ -647,6 +647,8 @@ def sale_report_analytic(request):
                 "suppliers": suppliers,
                 "users": users,
                 "total_sales": total_sales,
+                "av_sales": av_sales,
+                "profit": profit,
                 "shop": shop,
                 "report_id": report_id,
             }
@@ -661,7 +663,7 @@ def sale_report_analytic(request):
                 "total_sales": total_sales,
                 "av_sales": av_sales,
                 "profit": profit,
-                "shop": shop,
+                #"shop": shop,
                 "report_id": report_id,
                 
             }
