@@ -110,23 +110,26 @@
         
         
     <div class="row m-auto">
+        <div class="col-1"><h5>#</h5></div>
         <div class="col-2"><h5>IMEI</h5></div>
         <div class="col-3"><h5>Наименование</h5></div>
         <div class="col-1"><h5>Количество</h5></div>
         <div class="col-2"><h5>Себестоимость</h5></div>
         <div class="col-2"><h5>Сумма продаж</h5></div>
-        <div class="col-2"><h5>Прибыль</h5></div>
+        <div class="col-1"><h5>Прибыль</h5></div>
     </div>
+
 
 
 {% for item in sale_report %}
 <div class="row m-auto">
+<div class="col-1">{{item.index}}</div>
 <div class="col-2">{{item.imei}}</div>
 <div class="col-3">{{item.product}}</div>
 <div class="col-1">{{item.quantity}}</div>
 <div class="col-2">{{item.av_sum}}</div>
 <div class="col-2">{{item.retail_sum}}</div>
-<div class="col-2">{{item.margin}}</div>
+<div class="col-1">{{item.margin}}</div>
 
 
 </div>
