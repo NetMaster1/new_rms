@@ -18,6 +18,7 @@ urlpatterns = [
 
     path ('cashback_rep', views.cashback_rep, name='cashback_rep'),
     path ('cashback_history', views.cashback_history, name='cashback_history'),
+    path ('clients_per_user', views.clients_per_user, name='clients_per_user'),
 
     path ('daily_pay_card_rep_general', views.daily_pay_card_rep_general, name='daily_pay_card_rep_general'),
     path ('daily_pay_card_rep_per_shop', views.daily_pay_card_rep_per_shop, name='daily_pay_card_rep_per_shop'),
