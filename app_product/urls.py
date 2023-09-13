@@ -199,4 +199,6 @@ urlpatterns = [
     path('GeneratePDF/<pk>', views.GeneratePDF.as_view(), name="GeneratePDF"),
     path('DownloadPDF/<int:document_id>', views.DownloadPDF.as_view(), name="DownloadPDF"),
 
+    path ('teko_pay', views.teko_pay, name='teko_pay'),
+
 ]

@@ -26,6 +26,7 @@ from app_reference.models import (
     Services,
     DocumentType,
     Expense,
+    Teko_pay,
     Voucher,
     Contributor,
 )
@@ -7336,3 +7337,86 @@ def trade_in(request, identifier_id):
 #     )
 
 #     return render(request, 'email/email.html')
+
+def teko_pay (request):
+    if request.user.is_authenticated:
+        teko_payments=Teko_pay.objects.all()
+        if request.method == "POST":
+            dateTime=request.POST.get('dateTime', False)
+            if dateTime:
+                # converting dateTime in str format (2021-07-08T01:05) to django format ()
+                dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+                #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+                current_dt=datetime.datetime.now()
+                mics=current_dt.microsecond
+                tdelta_1=datetime.timedelta(microseconds=mics)
+                secs=current_dt.second
+                tdelta_2=datetime.timedelta(seconds=secs)
+                tdelta_3=tdelta_1+tdelta_2
+                dateTime=dateTime+tdelta_3
+            else:
+                tdelta=datetime.timedelta(hours=3)
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                dateTime=dT_utcnow+tdelta
+            users_sales=Group.objects.get(name="sales").user_set.all()
+            users_admin=Group.objects.get(name="admin").user_set.all()
+            if request.user in users_sales:
+                session_shop=request.session['session_shop']
+                shop=Shop.objects.get(id=session_shop)
+            else:
+                shop=request.POST['shop']
+                shop=Shop.objects.get(id=shop)
+            sum = request.POST["sum"]
+            sum = int(sum)
+            doc_type = DocumentType.objects.get(name="Платежи Теко")
+            document = Document.objects.create(
+                created=dateTime,
+                shop_sender=shop,
+                title=doc_type,
+                user=request.user,
+                posted=True,
+                sum=sum,
+            )
+            if Cash.objects.filter(shop=shop, created__lt=document.created).exists():
+                cho_latest_before = Cash.objects.filter(shop=shop, created__lt=document.created).latest('created')
+                cash_remainder = cho_latest_before.current_remainder
+            else:
+                cash_remainder = 0
+
+            cho = Cash.objects.create(
+                shop=shop,
+                cho_type=doc_type,
+                created=document.created,
+                document=document,
+                user=request.user,
+                pre_remainder=cash_remainder,
+                cash_in=sum,
+                current_remainder=cash_remainder + sum,
+            )
+            if Cash.objects.filter(shop=shop, created__gt=document.created).exists():
+                sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
+                cash_remainder=cho.current_remainder
+                for obj in sequence_chos_after:
+                    obj.pre_remainder = cash_remainder
+                    obj.current_remainder = (
+                        cash_remainder + obj.cash_in - obj.cash_out
+                    )
+                    obj.save()
+                    cash_remainder = obj.current_remainder
+
+            
+
+            if request.user in users_sales:
+                return redirect ('sale_interface')
+            else:
+                return redirect ('log') 
+
+        else:
+            context = {
+                "teko_payments": teko_payments,
+            }
+            return render(request, 'documents/teko_pay.html', context)
+         
+
+    else:
+        return redirect ('login')

@@ -77,3 +77,9 @@ class Voucher (models.Model):
 
     def __str__(self):
         return self.name
+    
+class Teko_pay (models.Model):
+    name = models.CharField(max_length=50, null=True)
+    
+    def __str__(self):
+        return self.name
