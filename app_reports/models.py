@@ -15,7 +15,7 @@ class ProductHistory (models.Model):
     shop = models.CharField(max_length=50, null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
     supplier = models.ForeignKey(Supplier, on_delete=models.DO_NOTHING, null=True)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=80)
     imei = models.CharField(max_length=50)
     quantity_in = models.IntegerField(null=True)
     quantity_out = models.IntegerField(null=True)
@@ -33,7 +33,7 @@ class ReportTempId (models.Model):
 
 class ReportTemp (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
-    name = models.CharField(max_length=50, null=True)
+    name = models.CharField(max_length=80, null=True)
     imei = models.CharField(max_length=50, null=True)
     quantity_in = models.IntegerField(null=True)
     quantity_out = models.IntegerField(null=True)
@@ -112,7 +112,7 @@ class SaleReport (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     index = models.IntegerField(default=0)
     category = models.CharField(max_length=50, null=True)#this field is needed to place SaleReports ordered by Category
-    product = models.CharField(max_length=50, null=True)
+    product = models.CharField(max_length=80, null=True)
     imei = models.CharField(max_length=50, null=True)
     av_sum = models.IntegerField(default=0)
     quantity = models.IntegerField(default=0)
@@ -137,7 +137,7 @@ class PayCardReport (models.Model):
 
 class Sim_report (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
-    name = models.CharField(max_length=50, null=True)
+    name = models.CharField(max_length=80, null=True)
     imei = models.CharField(max_length=50, null=True)
     shop = models.CharField(max_length=50, null=True)
     #shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING, null=True)

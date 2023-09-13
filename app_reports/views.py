@@ -288,6 +288,36 @@ def save_in_excel_daily_rep(request):
 
 #=================CashBack Report================================
 
+def clients_per_user(request):
+    if request.user.is_authenticated:
+        users=User.objects.all().order_by('last_name')
+        if request.method == 'POST':
+            start_date=request.POST ['start_date']
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = request.POST ["end_date"]
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+            user = request.POST["user"]
+            user=User.objects.get(id=user)
+            if Customer.objects.filter(user=user, created__gte=start_date, created__lt=end_date).exists():
+                customers=Customer.objects.filter (user=user, created__gte=start_date, created__lt=end_date)
+            else:
+                messages.error(request, "Новые клиенты отсутствуют")
+                return redirect("clients_per_user")
+            
+                
+
+
+        else:
+            context = {
+                'users': users
+            }
+            return render (request, "reports/cashback_rep.html", context)
+
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 def cashback_rep (request):
     if request.user.is_authenticated:
         users=User.objects.all().order_by('last_name')
@@ -967,10 +997,15 @@ def remainder_report_output(request, shop_id, category_id, date):
                     shop=shop, imei=imei, created__lte=date).latest("created")
                 if rho.current_remainder > 0:
                     array.append(rho)
+        arr_length=len(array)
+        for arr, i in zip(array, range(arr_length)):
+            arr.number = i + 1
+            arr.save()
         context = {
             "date": date, 
             "shop": shop, 
             "array": array, 
+            #"arr_length": arr_length,
             "category": category
             }
         return render(request, "reports/remainder_report_output.html", context)

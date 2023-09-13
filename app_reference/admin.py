@@ -9,6 +9,11 @@ class SupplierAdmin(admin.ModelAdmin):
 
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'category', 'name', 'imei',)
+    search_fields = ('imei', 'name',)
+    list_select_related = True
+    list_editable = ('imei', 'category', 'name')
+
+
 
 class ProductCategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'bonus_percent')
