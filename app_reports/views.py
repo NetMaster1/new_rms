@@ -465,6 +465,7 @@ def sale_report_per_shop(request):
     shops = Shop.objects.all()
     if request.method == "POST":
         doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+        teko_cash_in=DocumentType.objects.get(name="Платежи Теко")
         shop = request.POST["shop"]
         shop = Shop.objects.get(id=shop)
         start_date = request.POST["start_date"]
@@ -509,6 +510,11 @@ def sale_report_per_shop(request):
             chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date)
             for i in chos:
                 cash_sum+=i.cash_in
+        teko_sum=0
+        if Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=teko_cash_in ).exists():
+            teko_chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type='Платежи Теко')
+            for i in teko_chos:
+                teko_sum+=i.cash_in
     #===========================Calculaing Incoming Card Payments per day=====================
         card_sum=0
         if Card.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date).exists():
@@ -559,8 +565,7 @@ def sale_report_per_shop(request):
         total_sales=0
         for item in sale_report:
             total_sales+=item.retail_sum
-
-        
+     
         context = {
             "sale_report": sale_report,
             "shops": shops,
@@ -569,6 +574,7 @@ def sale_report_per_shop(request):
             "pay_card_remainder_start": pay_card_remainder_start,
             "pay_card_remainder_current": pay_card_remainder_current,
             "cash_sum": cash_sum,
+            "teko_sum": teko_sum,
             "credit_sum": credit_sum,
             "card_sum": card_sum,
             "cash_start": cash_start,
