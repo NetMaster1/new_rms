@@ -512,7 +512,7 @@ def sale_report_per_shop(request):
                 cash_sum+=i.cash_in
         teko_sum=0
         if Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=teko_cash_in ).exists():
-            teko_chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type='Платежи Теко')
+            teko_chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=teko_cash_in)
             for i in teko_chos:
                 teko_sum+=i.cash_in
     #===========================Calculaing Incoming Card Payments per day=====================
