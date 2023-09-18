@@ -212,6 +212,15 @@
                 <a href="#">{{document.title}} {{document.id}}</a>
                 {% endif %}с
                 {% endif %}
+
+                {% elif document.title.name == 'Платежи Теко' %}
+                {% if document.posted == True %}
+                <a href="#">{{document.title}} {{document.id}}</a>
+                {% else %}
+                <a href="#">{{document.title}} {{document.id}}</a>
+                {% endif %}с
+                {% endif %}
+
             </div>
 
 
