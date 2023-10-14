@@ -674,6 +674,7 @@ def check_sale(request, identifier_id):
                             product=product,
                             price=rho_latest_before.retail_price,
                             sub_total=quantity * rho_latest_before.retail_price,
+                            real_quantity=rho_latest_before.current_remainder
                         )
                         return redirect("sale", identifier.id)
 

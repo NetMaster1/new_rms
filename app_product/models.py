@@ -51,6 +51,17 @@ class Document(models.Model):
 #         return self.id
 
 
+class AvPrice(models.Model):
+    updated = models.DateTimeField(auto_now=True)
+    imei = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, null=True)
+    current_remainder = models.IntegerField(default=0)
+    av_price = models.IntegerField(null=True)
+    sum = models.IntegerField(null=True)
+
+    def __int__(self):
+        return self.id
+
 class Register(models.Model):
     number = models.IntegerField(null=True)
     created = models.DateTimeField(default=timezone.now, null=True)
@@ -69,8 +80,9 @@ class Register(models.Model):
     doc_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     quantity = models.IntegerField(default=1)
     real_quantity = models.IntegerField(null=True)#used for inventory
-    current_price = models.IntegerField(null=True)#used for revalutaion document
+    current_price = models.IntegerField(null=True)#used for showing avprice in transfer document
     price = models.IntegerField(default=0)
+    av_price=models.ForeignKey(AvPrice, null=True, on_delete=models.DO_NOTHING)
     contributor = models.ForeignKey(Contributor, null=True, on_delete=models.DO_NOTHING)
     cash_receiver = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
     voucher = models.ForeignKey(Voucher, null=True, on_delete=models.DO_NOTHING)
@@ -169,7 +181,6 @@ class RemainderHistory(models.Model):
     def __int__(self):
         return self.id
 
-
 class RemainderCurrent(models.Model):
     updated = models.DateTimeField(auto_now=True)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
@@ -181,18 +192,6 @@ class RemainderCurrent(models.Model):
 
     class Meta:
         ordering = ('category', 'name',)  # sorting by date
-
-    def __int__(self):
-        return self.id
-
-
-class AvPrice(models.Model):
-    updated = models.DateTimeField(auto_now=True)
-    imei = models.CharField(max_length=250)
-    name = models.CharField(max_length=250, null=True)
-    current_remainder = models.IntegerField(default=0)
-    av_price = models.IntegerField(null=True)
-    sum = models.IntegerField(null=True)
 
     def __int__(self):
         return self.id
