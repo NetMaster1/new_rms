@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.shortcuts import render
 from . models import Product, ProductCategory
-from app_product.models import RemainderHistory, RemainderCurrent
+from app_product.models import RemainderHistory, AvPrice
 from app_clients.models import Customer
 from django.contrib import messages
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -67,13 +67,19 @@ def update_product (request, id):
         category=ProductCategory.objects.get(id=category)
         product.name=name
         product.category=category
-        product.imei=imei
+        #product.imei=imei
         product.save()
-        if RemainderCurrent.objects.filter(imei=product.imei).exists():
-            remainders=RemainderCurrent.objects.filter(imei=product.imei)
+        if RemainderHistory.objects.filter(imei=product.imei).exists():
+            remainders=RemainderHistory.objects.filter(imei=product.imei)
             for item in remainders:
                 item.category=category
+                item.name=name
                 item.save()
+        if AvPrice.objects.filter(imei=product.imei).exists():
+            item=AvPrice.objects.get(imei=product.imei)
+            item.name=name
+            item.save()
+
     return redirect ('products')
 
 def product_card (request, id):
