@@ -2881,12 +2881,14 @@ def check_transfer(request, identifier_id):
         imei = request.POST["check_imei"]
         if '/' in imei:
             imei=imei.replace('/', '_')
-        # quantity = request.POST["quantity"]
-        # quantity=int(quantity)
+        if AvPrice.objects.filter(imei=imei).exists():
+            avPrice=AvPrice.objects.get(imei=imei)
+        else:
+            messages.error(request,"AvPrice не существует для данного наименования.",)
+            return redirect("transfer", identifier.id)
         if Product.objects.filter(imei=imei).exists():
             product = Product.objects.get(imei=imei)
             if Register.objects.filter(identifier=identifier, product=product).exists():
-               
                 messages.error(request,"Вы уже ввели данное наименование. Запишите нужно кол-во в списке ниже",)
                 return redirect("transfer", identifier.id)
             else:
@@ -2909,7 +2911,9 @@ def check_transfer(request, identifier_id):
                         product=product,
                         identifier=identifier,
                         quantity=1,
+                        av_price=avPrice,
                     )
+
                 return redirect ("transfer", identifier.id)
         else:
             messages.error(request, "Данное наименование отсутствует в базе данных")
