@@ -114,7 +114,7 @@
               
                 {% for register in registers %}
 
-                <div class="row m-2" style="position: relative">
+                <div class="row m-2" style="position: relative;">
                         <div class="avPrice_popup">
                             <div class="row m-1">Наименование: {{register.product.name}}</div>
                             <div class="row m-1">Средневзвешенная стоимость: {{register.av_price.av_price}} руб.</div>
@@ -127,7 +127,7 @@
                         <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}' readonly>
                     </div>
                     <div class="col-2">
-                        <input type="text" class='form-control item_name' id="name" name="name" value='{{register.product.name}}' readonly>
+                        <input type="text" class='item_name form-control ' id="name" name="name" value='{{register.product.name}}' readonly>
                     </div>
                     <div class="col-1">
                         <input type="text" class='form-control' id="quantity" name="quantity" value={{register.quantity}} required>
