@@ -211,13 +211,13 @@ footer {
 }
 
 .remainder_popup.openModal {
-    display:block;
+    display: block;
     position: absolute;
     background-color: lightgreen;
-    width: 20rem;
-    height: 4rem;
+    width: 30rem;
+    height: 5rem;
     top: -3rem;
-    left:20rem;
+    left: 20rem;
     border-radius: 4%;
 }
 /* ====================End of Remainder Popup in Sale Doc ======================= */
@@ -231,8 +231,8 @@ footer {
     display: block;
     position: absolute;
     background-color: lightgreen;
-    width: 20rem;
-    height: 4rem;
+    width: 30rem;
+    height: 5rem;
     top: -3rem;
     left: 20rem;
     border-radius: 4%;
