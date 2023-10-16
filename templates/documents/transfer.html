@@ -328,15 +328,18 @@
         for (i = 0; i < item_name.length; i++) {
             item_name[i].addEventListener('mouseover', e => {
                 a = e.target.getAttribute('data-index')
+                /*document.body.style.cursor = 'pointer';*/
                 /*console.log(a)
                 console.log(item_name[a].value)*/
                 avPrice_popup[a].classList.add('openModal')
+                
             })
         }
 
         for (i = 0; i < item_name.length; i++) {
             item_name[i].addEventListener('mouseleave', e => {
                 a = e.target.getAttribute('data-index')
+                /*document.body.style.cursor = 'cursorurl';*/
                 avPrice_popup[a].classList.remove('openModal')
             })
         }
