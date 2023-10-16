@@ -2850,7 +2850,7 @@ def transfer(request, identifier_id):
         shops = Shop.objects.all()
         shop_default = Shop.objects.get(name="ООС")
         if Register.objects.filter(identifier=identifier).exists():
-            registers = Register.objects.filter(identifier=identifier).order_by('created')
+            registers = Register.objects.filter(identifier=identifier).order_by('-created')
             numbers = registers.count()
             for register, i in zip(registers, range(numbers)):
                 register.number = i + 1
