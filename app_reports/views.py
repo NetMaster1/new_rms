@@ -1203,6 +1203,7 @@ def item_report(request):
             start_date = request.POST["start_date"]
             end_date = request.POST["end_date"]
             imei = request.POST["imei"]
+            imei=imei.replace(" ","")#getting rid of spaces.
             try:
                 product=Product.objects.get(imei=imei)
                 queryset_list = RemainderHistory.objects.filter(imei=imei).order_by("created")

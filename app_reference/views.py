@@ -24,6 +24,7 @@ def product_list (request):
     if request.method == "POST":
         category = request.POST["category"]
         imei = request.POST["imei"]
+        imei=imei.replace(" ","")#getting rid of spaces.
         if imei:
             try:
                 product=Product.objects.get(imei=imei)
