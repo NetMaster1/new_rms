@@ -2939,6 +2939,11 @@ def check_transfer_unposted(request, document_id):
         quantity = request.POST["quantity_input"]
         # shop = request.GET["shop"]
         # shop = Shop.objects.get(id=shop)
+        if AvPrice.objects.filter(imei=imei).exists():
+            avPrice=AvPrice.objects.get(imei=imei)
+        else:
+            messages.error(request,"AvPrice не существует для данного наименования.",)
+            return redirect("chage_transfer_unposted", document.id)
         if Product.objects.filter(imei=imei).exists():
             if RemainderHistory.objects.filter(imei=imei, shop=shop_sender).exists():
                 rho=RemainderHistory.objects.filter(imei=imei, shop=shop_sender).latest('created')
@@ -2953,6 +2958,7 @@ def check_transfer_unposted(request, document_id):
                             document=document,
                             quantity=quantity,
                             new=True,
+                            av_price=avPrice,
                         )
                         if rho.retail_price:
                             register.price=rho.retail_price
