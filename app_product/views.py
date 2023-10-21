@@ -3216,7 +3216,7 @@ def change_transfer_posted(request, document_id):
 def change_transfer_unposted(request, document_id):
     if request.user.is_authenticated:
         document = Document.objects.get(id=document_id)
-        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("created")
+        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("-created")
         dateTime=document.created
         dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
         shop_receiver=document.shop_receiver
