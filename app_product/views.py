@@ -2586,12 +2586,12 @@ def change_delivery_posted(request, document_id):
         shop=document.shop_receiver
         dateTime=document.created
         dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
-        rhos = RemainderHistory.objects.filter(document=document).order_by("-created")
+        rhos = RemainderHistory.objects.filter(document=document).order_by("-name")
         numbers = rhos.count()
         for rho, i in zip(rhos, range(numbers)):
             rho.number = i + 1
             rho.save()
-        rhos = RemainderHistory.objects.filter(document=document).order_by("-created")
+        rhos = RemainderHistory.objects.filter(document=document).order_by("-name")
 
         context = {
             "document": document,
