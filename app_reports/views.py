@@ -4,7 +4,7 @@ from ssl import create_default_context
 from app_personnel.models import BonusAccount, Salary
 from django.db.models import query
 from app_product.views import change_cash_receipt_unposted
-from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product
+from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product, Expense
 from app_cash.models import Cash, Credit, Card
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages, auth
@@ -466,6 +466,10 @@ def sale_report_per_shop(request):
     if request.method == "POST":
         doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
         teko_cash_in=DocumentType.objects.get(name="Платежи Теко")
+        salary_cash_out=DocumentType.objects.get(name="РКО (зарплата)")
+        expenses_cash_out=DocumentType.objects.get(name="РКО (хоз.расходы)")
+        money_transfer_cash_out=DocumentType.objects.get(name="Перемещение денег")
+        money_return_cash_out=DocumentType.objects.get(name="Возврат ТМЦ")
         shop = request.POST["shop"]
         shop = Shop.objects.get(id=shop)
         start_date = request.POST["start_date"]
@@ -515,6 +519,33 @@ def sale_report_per_shop(request):
             teko_chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=teko_cash_in)
             for i in teko_chos:
                 teko_sum+=i.cash_in
+        #=====================Calculating Outgoing Cash per day=============================
+        total_expenses=0
+        if Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cash_out!=0).exists():
+            total_expenses_chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cash_out!=0):
+            for i in total_expenses_chos:
+                total_expenses+=i.cash_out
+        salary=0
+        if Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=salary_cash_out).exists():
+            salary_chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=salary_cash_out)
+            for i in salary_chos:
+                salary+=i.cash_out
+        expenses=0
+        if Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=expenses_cash_out).exists():
+            expenses_chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=expenses_cash_out)
+            for i in expenses_chos:
+                expenses+=i.cash_out
+        money_transfer=0
+        if Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=money_transfer_cash_out).exists():
+            money_transfer_chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=money_transfer_cash_out)
+            for i in money_transfer_chos:
+                money_transfer+=i.cash_out
+        money_return=0
+        if Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=money_return_cash_out).exists():
+            money_return_chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cho_type=money_return_cash_out)
+            for i in money_return_chos:
+                money_return+=i.cash_out
+   
     #===========================Calculaing Incoming Card Payments per day=====================
         card_sum=0
         if Card.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date).exists():
@@ -580,6 +611,11 @@ def sale_report_per_shop(request):
             "cash_start": cash_start,
             "cash_end": cash_end,
             "cashback": cashback,
+            "money_return": money_return,
+            "money_transfer": money_transfer,
+            "expenses": expenses,
+            "salary": salary,
+            "total_expenses": total_expenses,
         }
         return render(request, "reports/sale_report_per_shop.html", context)
     else:
