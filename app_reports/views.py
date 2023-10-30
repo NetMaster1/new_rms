@@ -521,8 +521,8 @@ def sale_report_per_shop(request):
                 teko_sum+=i.cash_in
         #=====================Calculating Outgoing Cash per day=============================
         total_expenses=0
-        if Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cash_out!=0).exists():
-            total_expenses_chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cash_out!=0):
+        if Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cash_out__gt=0).exists():
+            total_expenses_chos=Cash.objects.filter(shop=shop, created__gt=start_date, created__lt=end_date, cash_out__gt=0)
             for i in total_expenses_chos:
                 total_expenses+=i.cash_out
         salary=0
