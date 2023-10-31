@@ -32,7 +32,7 @@
                 <div class="col-12 border rounded ">
 
 
-                    <form action="{% url 'teko_pay'  %}" method="POST">
+                    <form action="{% url 'teko_pay'  %}" method="POST" class="teko_form">
                         {% csrf_token %}
 
                         {% for group in request.user.groups.all %}
@@ -99,7 +99,7 @@
 
                 <div class="row m-2 p-2">
                             <div class="col-1">
-                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark">
+                                <input type="submit" value="Провести" class="btn btn-sm btn-block btn-outline-dark pay_button">
                             </div>
                           
                         {% for group in request.user.groups.all %}
@@ -143,5 +143,17 @@
 </div>
 </div>
 
+<script>
+    const teko_form = document.querySelector('.teko_form')
+    const pay_button = document.querySelector('.pay_button')
+
+    sale_form.addEventListener('submit', blockButton)
+    function blockButton() {
+        console.log('clicked');
+        pay_button.disabled = true;
+    }
+
+</script>
+   
 
 {% endblock %}
