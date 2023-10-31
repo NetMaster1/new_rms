@@ -147,7 +147,7 @@
     const teko_form = document.querySelector('.teko_form')
     const pay_button = document.querySelector('.pay_button')
 
-    sale_form.addEventListener('submit', blockButton)
+    teko_form.addEventListener('submit', blockButton)
     function blockButton() {
         console.log('clicked');
         pay_button.disabled = true;
