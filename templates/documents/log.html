@@ -216,7 +216,7 @@
 
                 {% elif document.title.name == 'Платежи Теко' %}
                 {% if document.posted == True %}
-                <a href="#">{{document.title}} {{document.id}}</a>
+                <a href="{% url 'change_teko_pay_posted' document.id %}">{{document.title}} {{document.id}}</a>
                 {% else %}
                 <a href="#">{{document.title}} {{document.id}}</a>
                 {% endif %}

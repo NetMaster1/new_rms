@@ -160,7 +160,8 @@ def sale_interface (request):
             sales_sum+=rho.sub_total
          
 #==============Making a list of docs per pay=====================================================
-        queryset_list = Document.objects.filter(user=request.user, created__date=date, posted=True)
+        #queryset_list = Document.objects.filter(user=request.user, created__date=date, posted=True)
+        queryset_list = Document.objects.filter(created__date=date, posted=True)
         queryset_list=queryset_list.filter( Q(shop_sender=shop) | Q(shop_receiver=shop)).order_by("-created")
         cashback=0
         for doc in queryset_list:
@@ -7352,6 +7353,7 @@ def trade_in(request, identifier_id):
 def teko_pay (request):
     if request.user.is_authenticated:
         teko_payments=Teko_pay.objects.all()
+        shops=Shop.objects.all()
         if request.method == "POST":
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
@@ -7424,10 +7426,50 @@ def teko_pay (request):
 
         else:
             context = {
-                "teko_payments": teko_payments,
+                 "teko_payments": teko_payments,
+                 "shops": shops,
             }
             return render(request, 'documents/teko_pay.html', context)
          
+
+    else:
+        return redirect ('login')
+    
+def change_teko_pay_posted (request, document_id):
+    if request.user.is_authenticated:
+        document = Document.objects.get(id=document_id)
+        cho=Cash.objects.get(document=document)
+        shop=cho.shop
+        document_datetime=document.created
+        document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
+        if request.method == "POST":
+            #checking chos before
+            if Cash.objects.filter(shop=shop, created__lt=cho.created).exists():
+                cho_latest_before = Cash.objects.filter(shop=shop, created__lt=cho.created).latest('created')  
+                cash_remainder=cho_latest_before.current_remainder
+            else:
+                cash_remainder = 0 
+            #checking chos after
+            if Cash.objects.filter(shop=shop, created__gt=cho.created).exists():
+                cash_remainder=cash_remainder
+                sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=cho.created).order_by('created')
+                for obj in sequence_chos_after:
+                    obj.pre_remainder = cash_remainder
+                    obj.current_remainder = (
+                        cash_remainder + obj.cash_in - obj.cash_out
+                    )
+                    obj.save()
+                    cash_remainder = obj.current_remainder
+            cho.delete()
+            document.delete()
+            return redirect ('log')
+        else:
+            context = {
+                'cho': cho,
+                'document': document,
+                'document_datetime':document_datetime,
+                }
+            return render(request, 'documents/change_teko_pay_posted.html', context)
 
     else:
         return redirect ('login')
