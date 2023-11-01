@@ -200,5 +200,6 @@ urlpatterns = [
     path('DownloadPDF/<int:document_id>', views.DownloadPDF.as_view(), name="DownloadPDF"),
 
     path ('teko_pay', views.teko_pay, name='teko_pay'),
+    path ('change_teko_pay_posted/<document_id>', views.change_teko_pay_posted, name='change_teko_pay_posted'),
 
 ]
