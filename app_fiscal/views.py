@@ -10,6 +10,9 @@ import requests
 
 def get_shift_status (request):
     if request.method == "POST":
+        user_name = request.POST['user_name']
+        user_password = request.POST['user_password']
+
         auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
         uuid_number=uuid.uuid4()
 
@@ -93,9 +96,13 @@ def fiscal_day_close (request):
         auth.logout(request)
         return redirect("login")
     
-
-def X_report (request):
+def sell (request):
     pass
 
-def Z_report (request):
+
+
+def x_report (request):
+    pass
+
+def z_report (request):
     pass
