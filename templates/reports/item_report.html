@@ -3,11 +3,24 @@
 <!-- <div class="hide"> -->
     <div class="container">
       
+        <!-- =====================Alert Messages Module=================== -->
+        <div class="container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">
+                <!-- <button class="close" data-dismiss="alert">
+                                    <small><sup>x</sup></small>
+                                </button> -->
+                {{ message }}
+            </div>
+            {% endfor%}
+            {% endif%}
+        </div>
+        <!-- ===================End of Alert Messages Module================ -->
           
         <div class="log mt-2 p-2">
             <h3>Отчет по движению ТМЦ</h3>
         </div>
-
 
         <div class="log mt-2 p-2">
             <form action="{% url 'item_report' %}" method="POST">

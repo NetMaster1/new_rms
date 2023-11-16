@@ -23,10 +23,6 @@
                         </ul>
                      </li>
 
-                     
-
-
-
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false">
@@ -106,6 +102,7 @@
                   
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}
+                    <li><a class="dropdown-item" href="{% url 'teko_pay' %}">Прием платежей</a></li>
                     <li><a class="dropdown-item" href="{% url 'shop_choice' %}">Продажа ТМЦ</a></li>
                     {% else %}
                     <li><a class="dropdown-item" href="{% url 'identifier_sale' %}">Продажа ТМЦ</a></li>

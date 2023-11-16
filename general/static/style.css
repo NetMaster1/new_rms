@@ -205,6 +205,41 @@ footer {
     /* overflow-y: auto; */
 }
 
+/* ===================== Remainder Popup in Sale Doc========================= */
+.remainder_popup {
+    display: none;
+}
+
+.remainder_popup.openModal {
+    display: block;
+    position: absolute;
+    background-color: lightgreen;
+    width: 30rem;
+    height: 5rem;
+    top: -5rem;
+    left: 20rem;
+    border-radius: 4%;
+}
+/* ====================End of Remainder Popup in Sale Doc ======================= */
+
+/* ===================== avPrice Popup in Sale Doc========================= */
+.avPrice_popup {
+    display: none;
+}
+
+.avPrice_popup.openModal {
+    display: block;
+    position: absolute;
+    background-color: lightgreen;
+    width: 30rem;
+    height: 5rem;
+    top: -5rem;
+    left: 20rem;
+    border-radius: 4%;
+}
+
+/* ====================End of avPrice Popup in Sale Doc ======================= */
+
 /* ===================== Delivery Page Modal for Entering New Product========================= */
 .enterDeliveryModal {
     display: none;

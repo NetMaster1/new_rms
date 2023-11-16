@@ -13,11 +13,11 @@ footer {
     width: 100%;
 }
 
-.hide {      
+.hide {
     /* display: block; */
     /* display: none; */
     position: fixed;
-    top:0;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
@@ -107,7 +107,7 @@ footer {
 .shop_choice_page {
     display: block;
     position: fixed;
-    top:0;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
@@ -127,7 +127,7 @@ footer {
 .modal-search {
     display: block;
     position: fixed;
-    top:0;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
@@ -154,7 +154,7 @@ footer {
     text-align: center;
 }
 
-.page_location_posted{
+.page_location_posted {
     /* display: block; */
     margin-top: 3rem;
     margin-bottom: 1rem;
@@ -171,7 +171,7 @@ footer {
     /* overflow-y: auto; */
 }
 
-.page_location_unposted{
+.page_location_unposted {
     /* display: block; */
     margin-top: 3rem;
     margin-bottom: 1rem;
@@ -205,6 +205,42 @@ footer {
     /* overflow-y: auto; */
 }
 
+/* ===================== Remainder Popup in Sale Doc========================= */
+.remainder_popup {
+    display: none;
+}
+
+.remainder_popup.openModal {
+    display: block;
+    position: absolute;
+    background-color: lightgreen;
+    width: 30rem;
+    height: 5rem;
+    top: -5rem;
+    left: 20rem;
+    border-radius: 4%;
+}
+
+/* ====================End of Remainder Popup in Sale Doc ======================= */
+
+/* ===================== avPrice Popup in Sale Doc========================= */
+.avPrice_popup {
+    display: none;
+}
+
+.avPrice_popup.openModal {
+    display: block;
+    position: absolute;
+    background-color: lightgreen;
+    width: 30rem;
+    height: 5rem;
+    top: -5rem;
+    left: 20rem;
+    border-radius: 4%;
+}
+
+/* ====================End of avPrice Popup in Sale Doc ======================= */
+
 /* ===================== Delivery Page Modal for Entering New Product========================= */
 .enterDeliveryModal {
     display: none;
@@ -216,6 +252,7 @@ footer {
     /* top: 70mm;
     right: 0mm; */
 }
+
 /* ====================End of Delivery Page Modal for Entering New Product ======================= */
 
 /* ===================== Daily Sales Modal========================= */
@@ -241,7 +278,7 @@ footer {
 .enterCashbackModal.openModal {
     display: block;
     position: fixed;
-    top:0;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
@@ -259,6 +296,7 @@ footer {
     height: 22%;
     background-color: rgb(238, 240, 238);
 }
+
 /* ===========================Sale Page Modal for Entering client's phone for cashback================== */
 
 .enterModalCashbackNewClient {
@@ -268,7 +306,7 @@ footer {
 .enterModalCashbackNewClient.openModal {
     display: block;
     position: fixed;
-    top:0;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
@@ -297,7 +335,7 @@ footer {
 .enterModalCash.openModal {
     display: block;
     position: fixed;
-    top:0;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
@@ -323,7 +361,7 @@ footer {
 .enterModalCredit.openModal {
     display: block;
     position: fixed;
-    top:0;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
@@ -340,12 +378,13 @@ footer {
 .enterModalCard.openModal {
     display: block;
     position: fixed;
-    top:0;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
 }
+
 /* ====================== End of Payment Page Modal for Cards ==================================== */
 
 /* ====================== Payment Page Modal for Complex payment ==================================== */
@@ -356,29 +395,32 @@ footer {
 .enterModalComplex.openModal {
     display: block;
     position: fixed;
-    top:0;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
 }
+
 /* ==================== End of Payment Page Modal for Complex payment ==================================== */
 
 
 
 
 /* ====================== Cashback_off Modal for Cashback ==================================== */
-.cashback_off_modal{
+.cashback_off_modal {
     display: none;
 }
+
 .cashback_off_modal.openModal {
     display: block;
     position: absolute;
     margin-top: 20rem;
     background-color: whitesmoke;
-   
-  
+
+
 }
+
 /* ====================== End of Cashback_off Modal for Cash ==================================== */
 
 /* ====================== Trade_In Modal==================================== */
@@ -399,9 +441,10 @@ footer {
 
 
 /* ====================== Modal for Delivery ==================================== */
-.ModalDeliveryHide{
+.ModalDeliveryHide {
     display: none;
 }
+
 .ModalDeliveryHide.openModal {
     /* display: block;
     position: absolute;
@@ -410,16 +453,19 @@ footer {
     display: block;
     position: fixed;
 }
+
 /* ====================== End of Cashback_off Modal for Cash ==================================== */
 
 /* ====================== Modal for Log ==================================== */
-.ModalLogHide{
+.ModalLogHide {
     display: none;
 }
+
 ModalLogHide.openModal {
     display: block;
-  
+
 }
+
 /* ====================== End of Modal for Log ==================================== */
 
 /* ===================== Product Page Modal for Entering Product Card========================= */
@@ -433,6 +479,7 @@ ModalLogHide.openModal {
     /* top: 70mm;
     right: 0mm; */
 }
+
 /* ====================End of Product Page Modal for Entering Product Card ======================= */
 
 

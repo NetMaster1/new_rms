@@ -160,7 +160,8 @@ def sale_interface (request):
             sales_sum+=rho.sub_total
          
 #==============Making a list of docs per pay=====================================================
-        queryset_list = Document.objects.filter(user=request.user, created__date=date, posted=True)
+        #queryset_list = Document.objects.filter(user=request.user, created__date=date, posted=True)
+        queryset_list = Document.objects.filter(created__date=date, posted=True)
         queryset_list=queryset_list.filter( Q(shop_sender=shop) | Q(shop_receiver=shop)).order_by("-created")
         cashback=0
         for doc in queryset_list:
@@ -674,6 +675,7 @@ def check_sale(request, identifier_id):
                             product=product,
                             price=rho_latest_before.retail_price,
                             sub_total=quantity * rho_latest_before.retail_price,
+                            real_quantity=rho_latest_before.current_remainder
                         )
                         return redirect("sale", identifier.id)
 
@@ -1980,7 +1982,7 @@ def security_code(request, identifier_id, client_id):
         try:
             api=json.loads(api_request.content)
             code_string=api['code']
-            messages.success(request, "Сейчас покупатель получит звонок. Необходимо ввести последние 6 цифр номера, с которого будет звонок, чтобы подтвердить списание кэш-бэка.")
+            messages.success(request, "Сейчас покупатель получит звонок. Нужно снять трубку и выслушать код. Введите этот код.")
             print(api)
             print(code_string)
         except Exception as e:
@@ -2585,12 +2587,12 @@ def change_delivery_posted(request, document_id):
         shop=document.shop_receiver
         dateTime=document.created
         dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
-        rhos = RemainderHistory.objects.filter(document=document).order_by("-created")
+        rhos = RemainderHistory.objects.filter(document=document).order_by("-name")
         numbers = rhos.count()
         for rho, i in zip(rhos, range(numbers)):
             rho.number = i + 1
             rho.save()
-        rhos = RemainderHistory.objects.filter(document=document).order_by("-created")
+        rhos = RemainderHistory.objects.filter(document=document).order_by("-name")
 
         context = {
             "document": document,
@@ -2849,7 +2851,7 @@ def transfer(request, identifier_id):
         shops = Shop.objects.all()
         shop_default = Shop.objects.get(name="ООС")
         if Register.objects.filter(identifier=identifier).exists():
-            registers = Register.objects.filter(identifier=identifier).order_by('created')
+            registers = Register.objects.filter(identifier=identifier).order_by('-created')
             numbers = registers.count()
             for register, i in zip(registers, range(numbers)):
                 register.number = i + 1
@@ -2880,12 +2882,14 @@ def check_transfer(request, identifier_id):
         imei = request.POST["check_imei"]
         if '/' in imei:
             imei=imei.replace('/', '_')
-        # quantity = request.POST["quantity"]
-        # quantity=int(quantity)
+        if AvPrice.objects.filter(imei=imei).exists():
+            avPrice=AvPrice.objects.get(imei=imei)
+        else:
+            messages.error(request,"AvPrice не существует для данного наименования.",)
+            return redirect("transfer", identifier.id)
         if Product.objects.filter(imei=imei).exists():
             product = Product.objects.get(imei=imei)
             if Register.objects.filter(identifier=identifier, product=product).exists():
-               
                 messages.error(request,"Вы уже ввели данное наименование. Запишите нужно кол-во в списке ниже",)
                 return redirect("transfer", identifier.id)
             else:
@@ -2908,7 +2912,9 @@ def check_transfer(request, identifier_id):
                         product=product,
                         identifier=identifier,
                         quantity=1,
+                        av_price=avPrice,
                     )
+
                 return redirect ("transfer", identifier.id)
         else:
             messages.error(request, "Данное наименование отсутствует в базе данных")
@@ -2934,6 +2940,11 @@ def check_transfer_unposted(request, document_id):
         quantity = request.POST["quantity_input"]
         # shop = request.GET["shop"]
         # shop = Shop.objects.get(id=shop)
+        if AvPrice.objects.filter(imei=imei).exists():
+            avPrice=AvPrice.objects.get(imei=imei)
+        else:
+            messages.error(request,"AvPrice не существует для данного наименования.",)
+            return redirect("chage_transfer_unposted", document.id)
         if Product.objects.filter(imei=imei).exists():
             if RemainderHistory.objects.filter(imei=imei, shop=shop_sender).exists():
                 rho=RemainderHistory.objects.filter(imei=imei, shop=shop_sender).latest('created')
@@ -2948,6 +2959,7 @@ def check_transfer_unposted(request, document_id):
                             document=document,
                             quantity=quantity,
                             new=True,
+                            av_price=avPrice,
                         )
                         if rho.retail_price:
                             register.price=rho.retail_price
@@ -3211,7 +3223,7 @@ def change_transfer_posted(request, document_id):
 def change_transfer_unposted(request, document_id):
     if request.user.is_authenticated:
         document = Document.objects.get(id=document_id)
-        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("created")
+        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("-created")
         dateTime=document.created
         dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
         shop_receiver=document.shop_receiver
@@ -7341,6 +7353,7 @@ def trade_in(request, identifier_id):
 def teko_pay (request):
     if request.user.is_authenticated:
         teko_payments=Teko_pay.objects.all()
+        shops=Shop.objects.all()
         if request.method == "POST":
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
@@ -7413,10 +7426,50 @@ def teko_pay (request):
 
         else:
             context = {
-                "teko_payments": teko_payments,
+                 "teko_payments": teko_payments,
+                 "shops": shops,
             }
             return render(request, 'documents/teko_pay.html', context)
          
+
+    else:
+        return redirect ('login')
+    
+def change_teko_pay_posted (request, document_id):
+    if request.user.is_authenticated:
+        document = Document.objects.get(id=document_id)
+        cho=Cash.objects.get(document=document)
+        shop=cho.shop
+        document_datetime=document.created
+        document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
+        if request.method == "POST":
+            #checking chos before
+            if Cash.objects.filter(shop=shop, created__lt=cho.created).exists():
+                cho_latest_before = Cash.objects.filter(shop=shop, created__lt=cho.created).latest('created')  
+                cash_remainder=cho_latest_before.current_remainder
+            else:
+                cash_remainder = 0 
+            #checking chos after
+            if Cash.objects.filter(shop=shop, created__gt=cho.created).exists():
+                cash_remainder=cash_remainder
+                sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=cho.created).order_by('created')
+                for obj in sequence_chos_after:
+                    obj.pre_remainder = cash_remainder
+                    obj.current_remainder = (
+                        cash_remainder + obj.cash_in - obj.cash_out
+                    )
+                    obj.save()
+                    cash_remainder = obj.current_remainder
+            cho.delete()
+            document.delete()
+            return redirect ('log')
+        else:
+            context = {
+                'cho': cho,
+                'document': document,
+                'document_datetime':document_datetime,
+                }
+            return render(request, 'documents/change_teko_pay_posted.html', context)
 
     else:
         return redirect ('login')
