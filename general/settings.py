@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'app_wholesale',
     'app_tutorial',
     'app_sims',
+    'app_fiscal',
   
 ]
 
