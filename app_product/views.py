@@ -52,6 +52,10 @@ from .utils import render_to_pdf
 import xhtml2pdf.pisa as pisa
 from django.db.models import Q
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+import requests
+from requests.auth import HTTPBasicAuth
+import uuid
+import time
 
 
 # Create your views here.
@@ -820,6 +824,55 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                     - int(quantities[i]),
                     sub_total=int(int(quantities[i]) * int(prices[i])),
                 )
+                
+                    #================Cash Register Module / Sell ===================
+                time.sleep(1)
+                auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+                uuid_number=uuid.uuid4()
+                retail_price=float('18.28')
+                print(retail_price)
+
+                task3 = {
+                "uuid": str(uuid_number),
+                    "request": [   
+                    {
+                        "type": "sell",
+                        "items": [ 
+                            {
+                            "type": "position",
+                            "name": rho.name,
+                            "price": retail_price,
+                            "quantity": 1,
+                            "amount": retail_price,
+                            "tax": {
+                                "type": "vat0"
+                            }
+                            },
+                            {
+                            "type": "text"
+                            }
+
+                        ],
+                        "payments":[
+                            {
+                                "type": "cash",
+                                "sum": retail_price
+                            }
+                        ]
+                    }
+                ]
+                }
+            
+               
+                response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task3)
+                status_code=response.status_code
+                print(status_code)
+                text=response.text
+                print(text)
+                url=response.url
+                json=response.json()
+            #=================End of Cash Register Module==============
+
                 document_sum += int(quantities[i]) * int(prices[i])
                 #calculating av_price for the remainder
                 av_price_obj.current_remainder -= int(quantities[i])
@@ -881,6 +934,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             for register in registers:
                 register.delete()
             identifier.delete()
+
             if request.user in users:
                 return redirect ('sale_interface')
             else:
