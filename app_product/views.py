@@ -1982,7 +1982,7 @@ def security_code(request, identifier_id, client_id):
         try:
             api=json.loads(api_request.content)
             code_string=api['code']
-            messages.success(request, "Сейчас покупатель получит звонок. Необходимо ввести последние 6 цифр номера, с которого будет звонок, чтобы подтвердить списание кэш-бэка.")
+            messages.success(request, "Сейчас покупатель получит звонок. Нужно снять трубку и выслушать код. Введите этот код.")
             print(api)
             print(code_string)
         except Exception as e:
