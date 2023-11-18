@@ -796,7 +796,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 cashback_off=cashback_off,
                 client=client,
             )
-            
+            jsonData=[]#list for json structure for cash register
             document_sum = 0
             n = len(names)
             for i in range(n):
@@ -824,54 +824,27 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                     - int(quantities[i]),
                     sub_total=int(int(quantities[i]) * int(prices[i])),
                 )
-                
-                    #================Cash Register Module / Sell ===================
-                time.sleep(1)
-                auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
-                uuid_number=uuid.uuid4()
-                retail_price=float('18.28')
-                print(retail_price)
+                retail_price=round(float(rho.retail_price), 2)
+                sub_total=round(float(rho.sub_total), 2)
+                quantity=round(float(rho.outgoing_quantity), 3)
 
-                task3 = {
-                "uuid": str(uuid_number),
-                    "request": [   
-                    {
-                        "type": "sell",
-                        "items": [ 
-                            {
-                            "type": "position",
-                            "name": rho.name,
-                            "price": retail_price,
-                            "quantity": 1,
-                            "amount": retail_price,
-                            "tax": {
-                                "type": "vat0"
-                            }
-                            },
-                            {
-                            "type": "text"
-                            }
-
-                        ],
-                        "payments":[
-                            {
-                                "type": "cash",
-                                "sum": retail_price
-                            }
-                        ]
+                #creating dictionaries to insert in json structure for cash register 
+                json_dict={
+                    "type": "position",
+                    "name": rho.name,
+                    "price": retail_price,
+                    "quantity": quantity,
+                    "amount": sub_total,
+                    "tax": {
+                        "type": "vat0"
                     }
-                ]
-                }
-            
+                    }
+                json_type = {
+                    "type": "text"
+                    }
+                jsonData.append(json_dict)
+                jsonData.append(json_type)
                
-                response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task3)
-                status_code=response.status_code
-                print(status_code)
-                text=response.text
-                print(text)
-                url=response.url
-                json=response.json()
-            #=================End of Cash Register Module==============
 
                 document_sum += int(quantities[i]) * int(prices[i])
                 #calculating av_price for the remainder
@@ -903,7 +876,71 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             document.sum=document_sum
             document.sum_minus_cashback = document_sum - cashback_off
             document.save()
-            sum_to_pay = document.sum_minus_cashback       
+            sum_to_pay = document.sum_minus_cashback
+            sum_to_pay_json=round(float(sum_to_pay), 2) 
+
+            #================Cash Register Module / Sell ===================
+            #time.sleep(1)
+            auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+            uuid_number=uuid.uuid4()#creatring a unique identification number
+                
+                #retail_price=round(float(rho.retail_price), 2)#converts int to float & rounds it to 2 digits after point
+                #retail_price=float(rho.retail_price)
+                #retail_price=str(rho.retail_price)
+                #retail_price=retail_price+'.00'
+                #sub_total=round(float(rho.sub_total), 2)#converts int to float & rounds it to 2 digits after point
+                #sub_total=float(rho.sub_total)
+                #sub_total=str(rho.sub_total)
+                #sub_total=sub_total+'.00'
+                #quantity=round(float(rho.outgoing_quantity), 3)#converts int to float & rounds it to 2 digits after point
+
+            #print(f'Розничная цена: {retail_price}')
+
+
+            task = {
+            "uuid": str(uuid_number),
+            "request": [   
+            {
+            "type": "sell",
+            "items": jsonData,
+                 
+                #   [ 
+                #     {
+                #     "type": "position",
+                #     "name": rho.name,
+                #     "price": retail_price,
+                #     "quantity": quantity,
+                #     "amount": sub_total,
+                #     "tax": {
+                #         "type": "vat0"
+                #     }
+                #     },
+                #     {
+                #     "type": "text"
+                #     }
+                # ],
+
+                "payments":[
+                    {
+                        "type": "cash",
+                        "sum": sum_to_pay_json
+                    }
+                ]
+                }
+                ]
+                }
+    
+               
+                
+            response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+            status_code=response.status_code
+            print(status_code)
+            text=response.text
+            print(text)
+            url=response.url
+            json=response.json()
+            #=================End of Cash Register Module==============
+
             #checking chos before
             if Cash.objects.filter(shop=shop, created__lt=document.created).exists():
                 cho_latest_before = Cash.objects.filter(shop=shop, created__lt=document.created).latest('created')
