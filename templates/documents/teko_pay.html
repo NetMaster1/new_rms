@@ -84,7 +84,19 @@
                                 </select>
                             </div>
                         </div>
-
+                        {% if session_shop.cash_register == False %}
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="sum">
+                                    <h5>Номер телефона</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="text" class='form-control' id="phone_number" name="phone_number" required>
+                            </div>
+                        </div>
+                        {% endif %}
+                       
                         <div class="form-row m-2">
                             <div class="col-3">
                                 <label for="sum">
@@ -105,7 +117,7 @@
                     
 
                     {%for group in request.user.groups.all %}
-                    {%if group.name == 'admin'%}
+                    {% if group.name == 'admin'%}
                     <div class="col-2">
                         <a href="{% url 'log' %}">
                             <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">

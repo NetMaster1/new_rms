@@ -2,6 +2,20 @@
 {% block content %}
 <body oncontextmenu="return false">
 <div class="container">
+       <!-- =====================Alert Messages Module=================== -->
+       <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info" role="alert">
+            <!-- <button class="close" data-dismiss="alert">
+                <small><sup>x</sup></small>
+            </button> -->
+            {{ message }}
+        </div>
+        {% endfor%}
+        {% endif%}
+    </div>
+    <!-- ===================End of Alert Messages Module================ -->   
     <div class="log border m-auto mt-1 rounded" style="background-color:rgb(215, 215, 215); height: 12rem">
         <div class="row">
             <div class="col-2">
@@ -101,7 +115,7 @@
             <div class="col-2">{{cashback}} руб.</div>
         </div>
     </div>
-        
+   
 
     <div class="log border m-auto mt-1 rounded p-3" style="background-color:rgb(215, 215, 215); height: 6Vh">
         <div class="row">
@@ -125,6 +139,8 @@
             </div>
         </div>
     </div>
+
+      
 
 
     <div class="log border rounded mt-0 mb-2" style=" height: 60vh; overflow: auto;">

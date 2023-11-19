@@ -824,27 +824,6 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                     - int(quantities[i]),
                     sub_total=int(int(quantities[i]) * int(prices[i])),
                 )
-                retail_price=round(float(rho.retail_price), 2)
-                sub_total=round(float(rho.sub_total), 2)
-                quantity=round(float(rho.outgoing_quantity), 3)
-
-                #creating dictionaries to insert in json structure for cash register 
-                json_dict={
-                    "type": "position",
-                    "name": rho.name,
-                    "price": retail_price,
-                    "quantity": quantity,
-                    "amount": sub_total,
-                    "tax": {
-                        "type": "vat0"
-                    }
-                    }
-                json_type = {
-                    "type": "text"
-                    }
-                jsonData.append(json_dict)
-                jsonData.append(json_type)
-               
 
                 document_sum += int(quantities[i]) * int(prices[i])
                 #calculating av_price for the remainder
@@ -872,74 +851,78 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                         )
                         obj.save()
                         remainder = obj.current_remainder
+
+                #===============creating dictionaries to insert in json structure for cash register 
+                retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
+                #retail_price=float(rho.retail_price)#converts integer number to float number
+                #retail_price=str(rho.retail_price)#converts integer number to string
+                #retail_price=retail_price+'.00'#adds two zeros to the string
+                sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
+                quantity=round(float(rho.outgoing_quantity), 3)#converts integer number to float number with three digits after divider
+                json_dict={
+                    "type": "position",
+                    "name": rho.name,
+                    "price": retail_price,
+                    "quantity": quantity,
+                    "amount": sub_total,
+                    "tax": {
+                        "type": "none"
+                    }
+                    }
+                json_type = {
+                    "type": "text"
+                    }
+                jsonData.append(json_dict)
+                jsonData.append(json_type)
+                #==================end of dictionnaries to insert to json structure for cash register
             #paying with cashback
             document.sum=document_sum
             document.sum_minus_cashback = document_sum - cashback_off
             document.save()
             sum_to_pay = document.sum_minus_cashback
-            sum_to_pay_json=round(float(sum_to_pay), 2) 
-
             #================Cash Register Module / Sell ===================
-            #time.sleep(1)
-            auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
-            uuid_number=uuid.uuid4()#creatring a unique identification number
-                
-                #retail_price=round(float(rho.retail_price), 2)#converts int to float & rounds it to 2 digits after point
-                #retail_price=float(rho.retail_price)
-                #retail_price=str(rho.retail_price)
-                #retail_price=retail_price+'.00'
-                #sub_total=round(float(rho.sub_total), 2)#converts int to float & rounds it to 2 digits after point
-                #sub_total=float(rho.sub_total)
-                #sub_total=str(rho.sub_total)
-                #sub_total=sub_total+'.00'
-                #quantity=round(float(rho.outgoing_quantity), 3)#converts int to float & rounds it to 2 digits after point
+            if shop.cash_register==False:
+                sum_to_pay_json=round(float(sum_to_pay), 2)#total sum to pay to be inserted in json structure for cash register
+                #time.sleep(1)
+                auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+                uuid_number=uuid.uuid4()#creatring a unique identification number
+                task = {
+                "uuid": str(uuid_number),
+                "request": [   
+                {
+                "type": "sell",
+                "items": jsonData,
+                    #jsonData is a list containing a number of dictionnaries. As opposed to the list below, jasonData contains a least two items to sell
+                    #   [ 
+                    #     {
+                    #     "type": "position",
+                    #     "name": rho.name,
+                    #     "price": retail_price,
+                    #     "quantity": quantity,
+                    #     "amount": sub_total,
+                    #     "tax": {
+                    #         "type": "vat0"
+                    #     }
+                    #     },
+                    #     {
+                    #     "type": "text"
+                    #     }
+                    # ],
 
-            #print(f'Розничная цена: {retail_price}')
-
-
-            task = {
-            "uuid": str(uuid_number),
-            "request": [   
-            {
-            "type": "sell",
-            "items": jsonData,
-                 
-                #   [ 
-                #     {
-                #     "type": "position",
-                #     "name": rho.name,
-                #     "price": retail_price,
-                #     "quantity": quantity,
-                #     "amount": sub_total,
-                #     "tax": {
-                #         "type": "vat0"
-                #     }
-                #     },
-                #     {
-                #     "type": "text"
-                #     }
-                # ],
-
-                "payments":[
-                    {
-                        "type": "cash",
-                        "sum": sum_to_pay_json
-                    }
-                ]
-                }
-                ]
-                }
-    
-               
-                
-            response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
-            status_code=response.status_code
-            print(status_code)
-            text=response.text
-            print(text)
-            url=response.url
-            json=response.json()
-            #=================End of Cash Register Module==============
+                    "payments":[{
+                            "type": "cash",
+                            "sum": sum_to_pay_json
+                        }]
+                }]}
+        
+                response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                status_code=response.status_code
+                print(status_code)
+                text=response.text
+                print(text)
+                url=response.url
+                json=response.json()
+                #=================End of Cash Register Module==============
 
             #checking chos before
             if Cash.objects.filter(shop=shop, created__lt=document.created).exists():
@@ -5060,6 +5043,7 @@ def return_input(request, identifier_id):
                 )
                 n = len(names)
                 document_sum = 0
+                jsonData=[]#list for json structure for cash register
                 for i in range(n): 
                     product=Product.objects.get(imei=imeis[i])
                     # checking docs before remainder_history
@@ -5146,11 +5130,80 @@ def return_input(request, identifier_id):
                             obj.current_remainder = (cash_remainder+ obj.cash_in - obj.cash_out)
                             obj.save()
                             cash_remainder = obj.current_remainder
-                # end of operations with cash
+                    # end of operations with cash
+                    #===============creating dictionaries to insert in json structure for cash register 
+                    retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
+                    #retail_price=float(rho.retail_price)#converts integer number to float number
+                    #retail_price=str(rho.retail_price)#converts integer number to string
+                    #retail_price=retail_price+'.00'#adds two zeros to the string
+                    sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
+                    quantity=round(float(rho.incoming_quantity), 3)#converts integer number to float number with three digits after divider
+                    json_dict={
+                        "type": "position",
+                        "name": rho.name,
+                        "price": retail_price,
+                        "quantity": quantity,
+                        "amount": sub_total,
+                        "tax": {
+                            "type": "none"
+                        }
+                        }
+                    json_type = {
+                        "type": "text"
+                        }
+                    jsonData.append(json_dict)
+                    jsonData.append(json_type)
+                #==================end of dictionnaries to insert to json structure for cash register
+                #================Cash Register Module / Sell ===================
+                if shop.cash_register==False:
+                    sum_to_pay_json=round(float(document.sum), 2)#total sum to pay to be inserted in json structure for cash register
+                    #time.sleep(1)
+                    auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+                    uuid_number=uuid.uuid4()#creatring a unique identification number
+                    task = {
+                    "uuid": str(uuid_number),
+                    "request": [   
+                    {
+                    "type": "sellReturn",
+                    "items": jsonData,
+                        #jsonData is a list containing a number of dictionnaries. As opposed to the list below, jasonData contains a least two items to sell
+                        #   [ 
+                        #     {
+                        #     "type": "position",
+                        #     "name": rho.name,
+                        #     "price": retail_price,
+                        #     "quantity": quantity,
+                        #     "amount": sub_total,
+                        #     "tax": {
+                        #         "type": "vat0"
+                        #     }
+                        #     },
+                        #     {
+                        #     "type": "text"
+                        #     }
+                        # ],
+
+                        "payments":[{
+                                "type": "cash",
+                                "sum": sum_to_pay_json
+                            }]
+                    }]}
+            
+                    response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                    status_code=response.status_code
+                    print(status_code)
+                    text=response.text
+                    print(text)
+                    url=response.url
+                    json=response.json()
+                    #=================End of Cash Register Module==============
+
+
                 for register in registers:
                     register.delete()
                 identifier.delete()
                 return redirect ('log')
+            
             #saving registers without posting
             else:
                 document = Document.objects.create(
@@ -7445,6 +7498,8 @@ def teko_pay (request):
     if request.user.is_authenticated:
         teko_payments=Teko_pay.objects.all()
         shops=Shop.objects.all()
+        users_sales=Group.objects.get(name="sales").user_set.all()
+        users_admin=Group.objects.get(name="admin").user_set.all()
         if request.method == "POST":
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
@@ -7462,11 +7517,10 @@ def teko_pay (request):
                 tdelta=datetime.timedelta(hours=3)
                 dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
                 dateTime=dT_utcnow+tdelta
-            users_sales=Group.objects.get(name="sales").user_set.all()
-            users_admin=Group.objects.get(name="admin").user_set.all()
             if request.user in users_sales:
                 session_shop=request.session['session_shop']
                 shop=Shop.objects.get(id=session_shop)
+                phone_number=request.POST.get('phone_number', False)
             else:
                 shop=request.POST['shop']
                 shop=Shop.objects.get(id=shop)
@@ -7497,6 +7551,53 @@ def teko_pay (request):
                 cash_in=sum,
                 current_remainder=cash_remainder + sum,
             )
+
+            if shop.cash_register == False:
+                teko_cash=float(cho.cash_in)#converts integer number to float number
+                phone_number='Платеж на ' + phone_number
+                #retail_price=retail_price+'.00'#adds two zeros to the string
+
+                auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+                uuid_number=uuid.uuid4()#creatring a unique identification number
+
+                task = {
+                    "uuid": str(uuid_number),
+                    "request": [{
+               
+
+                    "type": "sell",
+                    "items": [ 
+                        {
+                        "type": "position",
+                        "name": phone_number,
+                        "price": teko_cash,
+                        "quantity": 1,
+                        "amount": teko_cash,
+                        "tax": {
+                            "type": "vat0"
+                        }
+                        },
+                    ],
+
+                    "payments":[{
+                            "type": "cash",
+                            "sum": teko_cash
+                        }]
+                }]}
+
+
+
+
+        
+                response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                status_code=response.status_code
+                print(status_code)
+                text=response.text
+                print(text)
+                url=response.url
+                json=response.json()
+                #=================End of Cash Register Module==============
+
             if Cash.objects.filter(shop=shop, created__gt=document.created).exists():
                 sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
                 cash_remainder=cho.current_remainder
@@ -7507,24 +7608,31 @@ def teko_pay (request):
                     )
                     obj.save()
                     cash_remainder = obj.current_remainder
-
-            
-
+        
             if request.user in users_sales:
                 return redirect ('sale_interface')
             else:
                 return redirect ('log') 
-
         else:
-            context = {
-                 "teko_payments": teko_payments,
-                 "shops": shops,
-            }
-            return render(request, 'documents/teko_pay.html', context)
-         
+            if request.user in users_sales:
+                session_shop=request.session['session_shop']
+                session_shop=Shop.objects.get(id=session_shop)
+                context = {
+                    "teko_payments": teko_payments,
+                    "shops": shops,
+                    "session_shop": session_shop,
+                }
+                return render(request, 'documents/teko_pay.html', context)
 
+            else:
+                context = {
+                    "teko_payments": teko_payments,
+                    "shops": shops,
+                }
+                return render(request, 'documents/teko_pay.html', context)
     else:
-        return redirect ('login')
+        auth.logout(request)
+        return redirect("login")
     
 def change_teko_pay_posted (request, document_id):
     if request.user.is_authenticated:
