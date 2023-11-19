@@ -169,6 +169,20 @@
                         <li><a class="dropdown-item" href="#">Отчет по остаткам КЭО</a></li>
                     </ul>
                 </li>
+                {% if shop.cash_register == False %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Касса
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <li><a class="dropdown-item" href="{% url 'fiscal_day_open' %}">Открыть смену</a></li>
+                        <li><a class="dropdown-item" href="{% url 'fiscal_day_close' %}">Закрыть смену</a></li>
+                        <li><a class="dropdown-item" href="{% url 'reportX' %}">Промежуточный отчет</a></li>
+                        <!-- <li><a class="dropdown-item" href="{% url 'get_shift_status' %}">Узнать статус смены</a></li> -->
+                    </ul>
+                </li>
+                {% endif %}
             </ul>
 {% elif group.name == 'manager' %}
 

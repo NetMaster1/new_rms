@@ -8,30 +8,8 @@ import requests
 
 # Create your views here.
 
-def get_shift_status (request):
-    if request.method == "POST":
-        user_name = request.POST['user_name']
-        user_password = request.POST['user_password']
-
-        auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
-        uuid_number=uuid.uuid4()
-
-        task = {
-        "uuid": str(uuid_number),
-        "request": 
-            {"type": "getShiftStatus"}
-        }
-
-
-
-
-    else:
-        auth.logout(request)
-        return redirect ('login')
-
-
 def fiscal_day_open (request):
-    if request.method == "POST":
+    if request.user.is_authenticated:
         auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
         uuid_number=uuid.uuid4()
 
@@ -42,8 +20,8 @@ def fiscal_day_open (request):
             "type": "openShift",
             "operator": 
             {
-                "name": "Иванов",
-                "vatin": "123654789507"
+                "name": request.user.last_name,
+                "vatin": "5257173237"
             }
         }]
         }
@@ -56,8 +34,7 @@ def fiscal_day_open (request):
 
         except:
             messages.error(request, "Не удалось открыть смену. Сообщите администратору.")
-            auth.logout(request)
-            return redirect ('login')
+            return redirect ('sale_interface')
 
     else:
         auth.logout(request)
@@ -65,7 +42,7 @@ def fiscal_day_open (request):
 
 
 def fiscal_day_close (request):
-    if request.method == "POST":
+    if request.user.is_authenticated:
         auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
         uuid_number=uuid.uuid4()
 
@@ -76,8 +53,8 @@ def fiscal_day_close (request):
             "type": "closeShift",
             "operator": 
             {
-                "name": "Иванов",
-                "vatin": "123654789507"
+                "name": request.user.last_name,
+                "vatin": "5257173237"
             }
         }]
         }
@@ -95,10 +72,70 @@ def fiscal_day_close (request):
     else:
         auth.logout(request)
         return redirect("login")
-    
-def sell (request):
-    pass
 
+def reportX (request):
+    if request.user.is_authenticated:
+        auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+        uuid_number=uuid.uuid4()
+
+        task = {
+        "uuid": str(uuid_number),
+        "request": 
+        [{
+            "type": "reportX",
+            "operator": 
+            {
+                "name": request.user.last_name,
+                "vatin": "5257173237"
+            }
+        }]
+        }
+
+        try:
+            response=requests.post('http://127.0.0.1:16732/api/v2/requests', json=task, auth=auth)
+
+            messages.error(request, "Отчет сфорирован.")
+            return redirect ('sale_interface')
+
+        except:
+            messages.error(request, "Не удалось сформировать отчет. Сообщите администратору.")
+            return redirect ('sale_interface')
+
+    else:
+        auth.logout(request)
+        return redirect ('login')
+
+def get_shift_status (request):
+    if request.user.is_authenticated:
+        auth_register=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+        uuid_number=uuid.uuid4()
+
+        task = {
+        "uuid": str(uuid_number),
+        "request": 
+            {"type": "getShiftStatus"}
+        }
+
+        try:
+            response=requests.post('http://127.0.0.1:16732/api/v2/requests', json=task, auth=auth_register)
+            status_code=response.status_code
+            print(status_code)
+            text=response.text
+            print(text)
+            url=response.url
+            json=response.json()
+            print(json)
+            print(response.content)
+            messages.error(request, "Посмотрите на чеке статус смены.")
+            return redirect ('sale_interface')
+
+        except:
+            messages.error(request, "Не удалось определить стстус смены. Сообщите администратору.")
+            return redirect ('sale_interface')
+
+    else:
+        auth.logout(request)
+        return redirect ('login')
 
 
 def x_report (request):
