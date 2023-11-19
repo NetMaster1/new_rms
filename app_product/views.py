@@ -1479,6 +1479,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
             )
             n = len(names)
             document_sum = 0
+            jsonData=[]#list for json structure for cash register
             for i in range(n):
                 product = Product.objects.get(imei=imeis[i])
                 av_price_obj=AvPrice.objects.get(imei=imeis[i])
@@ -1531,12 +1532,72 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                         )
                         obj.save()
                         remainder = obj.current_remainder
+                #===============creating dictionaries to insert in json structure for cash register 
+                retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
+                #retail_price=float(rho.retail_price)#converts integer number to float number
+                #retail_price=str(rho.retail_price)#converts integer number to string
+                #retail_price=retail_price+'.00'#adds two zeros to the string
+                sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
+                quantity=round(float(rho.outgoing_quantity), 3)#converts integer number to float number with three digits after divider
+                json_dict={
+                    "type": "position",
+                    "name": rho.name,
+                    "price": retail_price,
+                    "quantity": quantity,
+                    "amount": sub_total,
+                    "tax": {
+                        "type": "none"
+                    }
+                    }
+                json_type = {
+                    "type": "text"
+                    }
+                jsonData.append(json_dict)
+                jsonData.append(json_type)
+                #==================end of dictionnaries to insert to json structure for cash register
+            
             #paying with cashback
             document.sum=document_sum
             document.sum_minus_cashback = document_sum - cashback_off
             document.save()
             sum_to_pay = document.sum_minus_cashback
-               
+            #================Cash Register Module / Sell ===================
+            if shop.cash_register==False:
+                sum_to_pay_json=round(float(sum_to_pay), 2)#total sum to pay to be inserted in json structure for cash register
+                #time.sleep(1)
+                auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+                uuid_number=uuid.uuid4()#creatring a unique identification number
+                task = {
+                "uuid": str(uuid_number),
+                "request": [   
+                {
+                "type": "sell",
+                "items": jsonData,
+                    #jsonData is a list containing a number of dictionnaries. As opposed to the list below, jasonData contains a least two items to sell
+                    #   [ 
+                    #     {
+                    #     "type": "position",
+                    #     "name": rho.name,
+                    #     "price": retail_price,
+                    #     "quantity": quantity,
+                    #     "amount": sub_total,
+                    #     "tax": {
+                    #         "type": "vat0"
+                    #     }
+                    #     },
+                    #     {
+                    #     "type": "text"
+                    #     }
+                    # ],
+
+                    "payments":[{
+                            "type": "other",
+                            "sum": sum_to_pay_json
+                        }]
+                }]}
+        
+                response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                #=================End of Cash Register Module==============
         
             # checking chos before
             if cash > 0:
