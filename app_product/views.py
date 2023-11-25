@@ -915,7 +915,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                         }]
                 }]}
         
-                response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
                 status_code=response.status_code
                 print(status_code)
                 text=response.text
@@ -1146,7 +1146,7 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                         }]
                 }]}
         
-                response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
                 status_code=response.status_code
                 print(status_code)
                 text=response.text
@@ -1367,7 +1367,7 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                         }]
                 }]}
         
-                response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
                 #=================End of Cash Register Module==============
             #operations with card
             card = Card.objects.create(
@@ -1596,7 +1596,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                         }]
                 }]}
         
-                response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
                 #=================End of Cash Register Module==============
         
             # checking chos before
@@ -7777,8 +7777,13 @@ def teko_pay (request):
                         }]
                 }]}
 
-
-                response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                #url='http://localhost:16732/api/v2/requests'
+                #response=requests.post('http://91.219.59.191:16732/api/v2/requests', auth=auth, json=task)
+                #response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                #response=requests.post('http://localhost:16732', auth=auth, json=task)
+                #response=requests.post('http://localhost:16732/api/v2/requests', auth=auth, json=task)
+                response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
+                #response=requests.post(url, auth=auth, json=task)
                 status_code=response.status_code
                 print(status_code)
                 text=response.text
