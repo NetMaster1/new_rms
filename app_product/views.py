@@ -929,8 +929,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
         
                 #response=requests.post('http://185.177.114.226:16732/api/v2/requests', auth=auth, json=task)
                 response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
-                #response=requests.post('http://localhost:16732/api/v2/requests', auth=auth, json=task)
-                #response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                #response=requests.post('http://100.114.38.135:16732/api/v2/requests', auth=auth, json=task)
                 status_code=response.status_code
                 print(status_code)
                 text=response.text
@@ -7796,10 +7795,8 @@ def teko_pay (request):
                 #response=requests.post(url, auth=auth, json=task)
                 #response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
                 #response=requests.post('http://localhost:16732/api/v2/requests', auth=auth, json=task)
-                #response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
-                #response=requests.post('http://100.114.38.135:16732/api/v2/requests', auth=auth, json=task)
-                response=requests.post('http://91.219.59.191:16732/api/v2/requests', auth=auth, json=task)
-               
+                response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
+                #response=requests.post(url, auth=auth, json=task)
                 status_code=response.status_code
                 print(status_code)
                 text=response.text
