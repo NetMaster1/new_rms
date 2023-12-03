@@ -886,6 +886,8 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 #time.sleep(1)
                 auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
                 uuid_number=uuid.uuid4()#creatring a unique identification number
+
+
                 task = {
                 "uuid": str(uuid_number),
                 "request": [   
@@ -914,8 +916,21 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                             "sum": sum_to_pay_json
                         }]
                 }]}
+
+                #prints out (X-report). Also prints to 93.157.253.248
+                # task = {
+                # "uuid": str(uuid_number),
+                # "request": 
+                # {
+                #     "type": "reportX",  
+                # }
+                # }
+
         
+                #response=requests.post('http://185.177.114.226:16732/api/v2/requests', auth=auth, json=task)
                 response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
+                #response=requests.post('http://localhost:16732/api/v2/requests', auth=auth, json=task)
+                #response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
                 status_code=response.status_code
                 print(status_code)
                 text=response.text
@@ -7778,12 +7793,13 @@ def teko_pay (request):
                 }]}
 
                 #url='http://localhost:16732/api/v2/requests'
-                #response=requests.post('http://91.219.59.191:16732/api/v2/requests', auth=auth, json=task)
-                #response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
-                #response=requests.post('http://localhost:16732', auth=auth, json=task)
-                #response=requests.post('http://localhost:16732/api/v2/requests', auth=auth, json=task)
-                response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
                 #response=requests.post(url, auth=auth, json=task)
+                #response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                #response=requests.post('http://localhost:16732/api/v2/requests', auth=auth, json=task)
+                #response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
+                #response=requests.post('http://100.114.38.135:16732/api/v2/requests', auth=auth, json=task)
+                response=requests.post('http://91.219.59.191:16732/api/v2/requests', auth=auth, json=task)
+               
                 status_code=response.status_code
                 print(status_code)
                 text=response.text
