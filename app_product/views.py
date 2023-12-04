@@ -7746,6 +7746,10 @@ def teko_pay (request):
             )
 
             if shop.cash_register == False:
+                if shop.shift_status == False | shop.shift_status_updated >12: #if shift is open
+                    messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
+                    return redirect ('sale_interface')
+
                 teko_cash=float(cho.cash_in)#converts integer number to float number
                 phone_number='Платеж на ' + phone_number
                 #retail_price=retail_price+'.00'#adds two zeros to the string
