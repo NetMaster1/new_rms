@@ -91,31 +91,36 @@ def fiscal_day_close (request):
 
 def reportX (request):
     if request.user.is_authenticated:
-        auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
-        uuid_number=uuid.uuid4()
+        users_sales=Group.objects.get(name="sales").user_set.all()
+        #users_admin=Group.objects.get(name="admin").user_set.all()
+        if request.user in users_sales:
+            session_shop=request.session['session_shop']
+            shop=Shop.objects.get(id=session_shop)
+            auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+            uuid_number=uuid.uuid4()
 
-        task = {
-        "uuid": str(uuid_number),
-        "request": 
-        [{
-            "type": "reportX",
-            "operator": 
-            {
-                "name": request.user.last_name,
-                "vatin": "5257173237"
+            task = {
+            "uuid": str(uuid_number),
+            "request": 
+            [{
+                "type": "reportX",
+                "operator": 
+                {
+                    "name": request.user.last_name,
+                    "vatin": "5257173237"
+                }
+            }]
             }
-        }]
-        }
 
-        try:
-            response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
+            try:
+                response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
 
-            messages.error(request, "Отчет сфорирован.")
-            return redirect ('sale_interface')
+                messages.error(request, "Отчет сфорирован.")
+                return redirect ('sale_interface')
 
-        except:
-            messages.error(request, "Не удалось сформировать отчет. Возможная причина: смена закрыта. Сообщите администратору")
-            return redirect ('sale_interface')
+            except:
+                messages.error(request, "Не удалось сформировать отчет. Возможная причина: смена закрыта. Сообщите администратору")
+                return redirect ('sale_interface')
 
     else:
         auth.logout(request)
