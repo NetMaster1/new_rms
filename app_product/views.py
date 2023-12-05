@@ -775,6 +775,16 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             if not imeis:
                 messages.error(request,  'Вы не ввели ни одного наименования')
                 return redirect("sale", identifier.id)
+
+            #==First Section of Cash Register Module (Checking if the shift if open less than 12 hours. Otherwise it won't print)===========
+            if shop.cash_register==False:
+                #checking if shift is open for more than 12 hours
+                if shop.shift_status == False and (dT_utcnow - shop.shift_status_updated).total_seconds()/3600 > 12: #if shift is open for more than 12 hours
+                    print ('Смена открыта более 12 часов')
+                    messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
+                    return redirect ('sale_interface')
+            #=============End of First Section of Cash Register Module========================================
+
             n = len(names)
             for i in range(n):
                 if RemainderHistory.objects.filter(imei=imeis[i], shop=shop,created__lt=dateTime).exists():
@@ -854,9 +864,6 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
 
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
-                #retail_price=float(rho.retail_price)#converts integer number to float number
-                #retail_price=str(rho.retail_price)#converts integer number to string
-                #retail_price=retail_price+'.00'#adds two zeros to the string
                 sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
                 quantity=round(float(rho.outgoing_quantity), 3)#converts integer number to float number with three digits after divider
                 json_dict={
@@ -886,57 +893,26 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 #time.sleep(1)
                 auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
                 uuid_number=uuid.uuid4()#creatring a unique identification number
-
-
                 task = {
                 "uuid": str(uuid_number),
                 "request": [   
                 {
                 "type": "sell",
                 "items": jsonData,
-                    #jsonData is a list containing a number of dictionnaries. As opposed to the list below, jasonData contains a least two items to sell
-                    #   [ 
-                    #     {
-                    #     "type": "position",
-                    #     "name": rho.name,
-                    #     "price": retail_price,
-                    #     "quantity": quantity,
-                    #     "amount": sub_total,
-                    #     "tax": {
-                    #         "type": "vat0"
-                    #     }
-                    #     },
-                    #     {
-                    #     "type": "text"
-                    #     }
-                    # ],
 
                     "payments":[{
                             "type": "cash",
                             "sum": sum_to_pay_json
                         }]
                 }]}
-
-                #prints out (X-report). Also prints to 93.157.253.248
-                # task = {
-                # "uuid": str(uuid_number),
-                # "request": 
-                # {
-                #     "type": "reportX",  
-                # }
-                # }
-
-        
-                #response=requests.post('http://185.177.114.226:16732/api/v2/requests', auth=auth, json=task)
                 response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
-                #response=requests.post('http://100.114.38.135:16732/api/v2/requests', auth=auth, json=task)
-                status_code=response.status_code
-                print(status_code)
-                text=response.text
-                print(text)
-                url=response.url
-                json=response.json()
-                #=================End of Cash Register Module==============
+                # status_code=response.status_code
+                # print(status_code)
+                # text=response.text
+                # print(text)
+                # url=response.url
+                # json=response.json()
+            #=================End of Cash Register Module==============	
 
             #checking chos before
             if Cash.objects.filter(shop=shop, created__lt=document.created).exists():
@@ -1021,6 +997,16 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                 messages.error(request,  'Вы не ввели ни одного наименования')
                 return redirect("sale", identifier.id)
             n = len(names)
+
+            #==First Section of Cash Register Module (Checking if the shift if open less than 12 hours. Otherwise it won't print)===========
+            if shop.cash_register==False:
+                #checking if shift is open for more than 12 hours
+                if shop.shift_status == False and (dT_utcnow - shop.shift_status_updated).total_seconds()/3600 > 12: #if shift is open for more than 12 hours
+                    print ('Смена открыта более 12 часов')
+                    messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
+                    return redirect ('sale_interface')
+            #=============End of First Section of Cash Register Module========================================
+                
             for i in range(n):
                 if RemainderHistory.objects.filter(imei=imeis[i], shop=shop,created__lt=dateTime).exists():
                     rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
@@ -1097,9 +1083,6 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                         remainder = obj.current_remainder
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
-                #retail_price=float(rho.retail_price)#converts integer number to float number
-                #retail_price=str(rho.retail_price)#converts integer number to string
-                #retail_price=retail_price+'.00'#adds two zeros to the string
                 sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
                 quantity=round(float(rho.outgoing_quantity), 3)#converts integer number to float number with three digits after divider
                 json_dict={
@@ -1119,12 +1102,12 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                 jsonData.append(json_type)
                 #==================end of dictionnaries to insert to json structure for cash register
             
-            
             #paying with cashback
             document.sum=document_sum
             document.sum_minus_cashback = document_sum - cashback_off
             document.save()
             sum_to_pay = document.sum_minus_cashback
+
             #================Cash Register Module / Sell ===================
             if shop.cash_register==False:
                 sum_to_pay_json=round(float(sum_to_pay), 2)#total sum to pay to be inserted in json structure for cash register
@@ -1137,29 +1120,12 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                 {
                 "type": "sell",
                 "items": jsonData,
-                    #jsonData is a list containing a number of dictionnaries. As opposed to the list below, jasonData contains a least two items to sell
-                    #   [ 
-                    #     {
-                    #     "type": "position",
-                    #     "name": rho.name,
-                    #     "price": retail_price,
-                    #     "quantity": quantity,
-                    #     "amount": sub_total,
-                    #     "tax": {
-                    #         "type": "vat0"
-                    #     }
-                    #     },
-                    #     {
-                    #     "type": "text"
-                    #     }
-                    # ],
 
                     "payments":[{
                             "type": "credit",
                             "sum": sum_to_pay_json
                         }]
                 }]}
-        
                 response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
                 status_code=response.status_code
                 print(status_code)
@@ -1167,7 +1133,7 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                 print(text)
                 url=response.url
                 json=response.json()
-                #=================End of Cash Register Module==============	
+            #=================End of Cash Register Module==============	
 
             #operations with credit
             credit = Credit.objects.create(
@@ -1232,6 +1198,15 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                 messages.error(request,  'Вы не ввели ни одного наименования')
                 return redirect("sale", identifier.id)
             n = len(names)
+            #==First Section of Cash Register Module (Checking if the shift if open less than 12 hours. Otherwise it won't print)===========
+            if shop.cash_register==False:
+                #checking if shift is open for more than 12 hours
+                if shop.shift_status == False and (dT_utcnow - shop.shift_status_updated).total_seconds()/3600 > 12: #if shift is open for more than 12 hours
+                    print ('Смена открыта более 12 часов')
+                    messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
+                    return redirect ('sale_interface')
+            #=============End of First Section of Cash Register Module=======================================
+
             for i in range(n):
                 if RemainderHistory.objects.filter(imei=imeis[i], shop=shop,created__lt=dateTime).exists():
                     rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
@@ -1320,9 +1295,6 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                         remainder = obj.current_remainder
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
-                #retail_price=float(rho.retail_price)#converts integer number to float number
-                #retail_price=str(rho.retail_price)#converts integer number to string
-                #retail_price=retail_price+'.00'#adds two zeros to the string
                 sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
                 quantity=round(float(rho.outgoing_quantity), 3)#converts integer number to float number with three digits after divider
                 json_dict={
@@ -1346,7 +1318,7 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
             document.sum_minus_cashback = document_sum - cashback_off
             document.save()
             sum_to_pay = document.sum_minus_cashback
-            #================Cash Register Module / Sell ===================
+           #================Cash Register Module / Sell ===================
             if shop.cash_register==False:
                 sum_to_pay_json=round(float(sum_to_pay), 2)#total sum to pay to be inserted in json structure for cash register
                 #time.sleep(1)
@@ -1358,31 +1330,20 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                 {
                 "type": "sell",
                 "items": jsonData,
-                    #jsonData is a list containing a number of dictionnaries. As opposed to the list below, jasonData contains a least two items to sell
-                    #   [ 
-                    #     {
-                    #     "type": "position",
-                    #     "name": rho.name,
-                    #     "price": retail_price,
-                    #     "quantity": quantity,
-                    #     "amount": sub_total,
-                    #     "tax": {
-                    #         "type": "vat0"
-                    #     }
-                    #     },
-                    #     {
-                    #     "type": "text"
-                    #     }
-                    # ],
 
                     "payments":[{
                             "type": "electronically",
                             "sum": sum_to_pay_json
                         }]
                 }]}
-        
                 response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
-                #=================End of Cash Register Module==============
+                # status_code=response.status_code
+                # print(status_code)
+                # text=response.text
+                # print(text)
+                # url=response.url
+                # json=response.json()
+            #=================End of Cash Register Module==============	
             #operations with card
             card = Card.objects.create(
                 shop=shop,
@@ -1470,6 +1431,15 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                 messages.error(request,  'Вы не ввели ни одного наименования')
                 return redirect("sale", identifier.id)
             n = len(names)
+            #==First Section of Cash Register Module (Checking if the shift if open less than 12 hours. Otherwise it won't print)===========
+            if shop.cash_register==False:
+                #checking if shift is open for more than 12 hours
+                if shop.shift_status == False and (dT_utcnow - shop.shift_status_updated).total_seconds()/3600 > 12: #if shift is open for more than 12 hours
+                    print ('Смена открыта более 12 часов')
+                    messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
+                    return redirect ('sale_interface')
+            #=============End of First Section of Cash Register Module========================================
+
             for i in range(n):
                 if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                     rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
@@ -1546,11 +1516,9 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                         )
                         obj.save()
                         remainder = obj.current_remainder
+               
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
-                #retail_price=float(rho.retail_price)#converts integer number to float number
-                #retail_price=str(rho.retail_price)#converts integer number to string
-                #retail_price=retail_price+'.00'#adds two zeros to the string
                 sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
                 quantity=round(float(rho.outgoing_quantity), 3)#converts integer number to float number with three digits after divider
                 json_dict={
@@ -1569,6 +1537,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                 jsonData.append(json_dict)
                 jsonData.append(json_type)
                 #==================end of dictionnaries to insert to json structure for cash register
+
             
             #paying with cashback
             document.sum=document_sum
@@ -1587,31 +1556,20 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                 {
                 "type": "sell",
                 "items": jsonData,
-                    #jsonData is a list containing a number of dictionnaries. As opposed to the list below, jasonData contains a least two items to sell
-                    #   [ 
-                    #     {
-                    #     "type": "position",
-                    #     "name": rho.name,
-                    #     "price": retail_price,
-                    #     "quantity": quantity,
-                    #     "amount": sub_total,
-                    #     "tax": {
-                    #         "type": "vat0"
-                    #     }
-                    #     },
-                    #     {
-                    #     "type": "text"
-                    #     }
-                    # ],
 
                     "payments":[{
-                            "type": "other",
+                            "type": "electronically",
                             "sum": sum_to_pay_json
                         }]
                 }]}
-        
                 response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
-                #=================End of Cash Register Module==============
+                # status_code=response.status_code
+                # print(status_code)
+                # text=response.text
+                # print(text)
+                # url=response.url
+                # json=response.json()
+            #=================End of Cash Register Module==============	
         
             # checking chos before
             if cash > 0:
@@ -7736,15 +7694,16 @@ def teko_pay (request):
             if shop.cash_register == False:#if shop is equipped with erms cash register
                 dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
                 #dateTime=dT_utcnow+tdelta
-                if shop.shift_status == False and (dT_utcnow - shop.shift_status_updated) > timedelta(hours=12): #if shift is open for more than 12 hours
-                    #print ('Смена открыта более 12 часов')
-                    #a = dT_utcnow - shop.shift_status_updated
-                    #print(shop.shift_status_updated)
-                    #print(dT_utcnow)
-                    #print(a)
+                print(shop.shift_status_updated)
+                print(dT_utcnow)
+                a = dT_utcnow - shop.shift_status_updated
+                print(a)
+                if shop.shift_status == False and (dT_utcnow - shop.shift_status_updated).total_seconds()/3600 > 12: #if shift is open for more than 12 hours
+                    print ('Смена открыта более 12 часов')
                     messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
                     return redirect ('sale_interface')
-
+                
+               
                 #teko_cash=float(cho.cash_in)#converts integer number to float number
                 teko_cash=float(sum)#converts integer number to float number
                 phone_number='Платеж на ' + phone_number
