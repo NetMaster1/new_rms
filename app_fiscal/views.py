@@ -158,9 +158,5 @@ def get_shift_status (request):
         auth.logout(request)
         return redirect ('login')
 
-
-def x_report (request):
-    pass
-
 def z_report (request):
     pass
