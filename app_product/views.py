@@ -7732,6 +7732,69 @@ def teko_pay (request):
                 shop=Shop.objects.get(id=shop)
             sum = request.POST["sum"]
             sum = int(sum)
+
+            if shop.cash_register == False:#if shop is equipped with erms cash register
+                dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+                #dateTime=dT_utcnow+tdelta
+                if shop.shift_status == False and (dT_utcnow - shop.shift_status_updated) > timedelta(hours=12): #if shift is open for more than 12 hours
+                    #print ('Смена открыта более 12 часов')
+                    #a = dT_utcnow - shop.shift_status_updated
+                    #print(shop.shift_status_updated)
+                    #print(dT_utcnow)
+                    #print(a)
+                    messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
+                    return redirect ('sale_interface')
+
+                #teko_cash=float(cho.cash_in)#converts integer number to float number
+                teko_cash=float(sum)#converts integer number to float number
+                phone_number='Платеж на ' + phone_number
+                #retail_price=retail_price+'.00'#adds two zeros to the string
+                print('Смена открыта менее 12 часов')
+                try:
+                    auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+                    uuid_number=uuid.uuid4()#creatring a unique identification number
+
+                    task = {
+                        "uuid": str(uuid_number),
+                        "request": [{
+                
+
+                        "type": "sell",
+                        "items": [ 
+                            {
+                            "type": "position",
+                            "name": phone_number,
+                            "price": teko_cash,
+                            "quantity": 1,
+                            "amount": teko_cash,
+                            "tax": {
+                                "type": "vat0"
+                            }
+                            },
+                        ],
+
+                        "payments":[{
+                                "type": "cash",
+                                "sum": teko_cash
+                            }]
+                    }]}
+
+                   
+                    response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
+                    #response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
+                
+                    status_code=response.status_code
+                    print(status_code)
+                    text=response.text
+                    print(text)
+                    url=response.url
+                    json=response.json()
+                    
+                    #=================End of Cash Register Module==============
+                except:
+                    messages.error(request, "Платеж не проведен. Сообщите администратору.")
+                    return redirect ('sale_interface')
+
             doc_type = DocumentType.objects.get(name="Платежи Теко")
             document = Document.objects.create(
                 created=dateTime,
@@ -7758,56 +7821,7 @@ def teko_pay (request):
                 current_remainder=cash_remainder + sum,
             )
 
-            if shop.cash_register == False:
-                if shop.shift_status == False | shop.shift_status_updated >12: #if shift is open
-                    messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
-                    return redirect ('sale_interface')
-
-                teko_cash=float(cho.cash_in)#converts integer number to float number
-                phone_number='Платеж на ' + phone_number
-                #retail_price=retail_price+'.00'#adds two zeros to the string
-
-                auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
-                uuid_number=uuid.uuid4()#creatring a unique identification number
-
-                task = {
-                    "uuid": str(uuid_number),
-                    "request": [{
-               
-
-                    "type": "sell",
-                    "items": [ 
-                        {
-                        "type": "position",
-                        "name": phone_number,
-                        "price": teko_cash,
-                        "quantity": 1,
-                        "amount": teko_cash,
-                        "tax": {
-                            "type": "vat0"
-                        }
-                        },
-                    ],
-
-                    "payments":[{
-                            "type": "cash",
-                            "sum": teko_cash
-                        }]
-                }]}
-
-                #url='http://localhost:16732/api/v2/requests'
-                #response=requests.post(url, auth=auth, json=task)
-                #response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
-                #response=requests.post('http://localhost:16732/api/v2/requests', auth=auth, json=task)
-                response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
-                #response=requests.post(url, auth=auth, json=task)
-                status_code=response.status_code
-                print(status_code)
-                text=response.text
-                print(text)
-                url=response.url
-                json=response.json()
-                #=================End of Cash Register Module==============
+            
 
             if Cash.objects.filter(shop=shop, created__gt=document.created).exists():
                 sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
