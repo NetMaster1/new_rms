@@ -7702,7 +7702,7 @@ def teko_pay (request):
                 teko_cash=round(float(sum), 2)#converts integer number to float number
                 phone_number='Платеж на ' + phone_number
                 #retail_price=retail_price+'.00'#adds two zeros to the string
-                print('Смена открыта менее 12 часов')
+                #print('Смена открыта менее 12 часов')
                 try:
                     auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
                     uuid_number=uuid.uuid4()#creatring a unique identification number
