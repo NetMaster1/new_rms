@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from app_reference.models import Shop
 from django.contrib import messages, auth
 from requests.auth import HTTPBasicAuth
+from django.contrib.auth.models import User, Group
 import uuid
 import requests
 
@@ -43,36 +44,46 @@ def fiscal_day_open (request):
 
 def fiscal_day_close (request):
     if request.user.is_authenticated:
-        auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
-        uuid_number=uuid.uuid4()
-
-        task = {
-        "uuid": str(uuid_number),
-        "request": 
-        [{
-            "type": "closeShift",
-            "operator": 
-            {
-                "name": request.user.last_name,
-                "vatin": "5257173237"
-            }
-        }]
-        }
-
-        try:
-            response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
-
+        users_sales=Group.objects.get(name="sales").user_set.all()
+        #users_admin=Group.objects.get(name="admin").user_set.all()
+        if request.user in users_sales:
             session_shop=request.session['session_shop']
             shop=Shop.objects.get(id=session_shop)
-            shop.shift_status=True
-            shop.save()
 
-            messages.error(request, "Смена закрыта.")
-            return redirect ('sale_interface')
+            auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+            uuid_number=uuid.uuid4()
 
-        except:
-            messages.error(request, "Не удалось закрыть смену. Сообщите администратору.")
-            return redirect ('sale_interface')
+            task = {
+            "uuid": str(uuid_number),
+            "request": 
+            [{
+                "type": "closeShift",
+                "operator": 
+                {
+                    "name": request.user.last_name,
+                    "vatin": "5257173237"
+                }
+            }]
+            }
+
+            if shop.shift_status == True:
+                try:
+                    response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
+
+                    session_shop=request.session['session_shop']
+                    shop=Shop.objects.get(id=session_shop)
+                    shop.shift_status=True
+                    shop.save()
+
+                    messages.error(request, "Смена закрыта.")
+                    return redirect ('sale_interface')
+
+                except:
+                    messages.error(request, "Не удалось закрыть смену. Сообщите администратору.")
+                    return redirect ('sale_interface')
+            else:
+                messages.error(request, "Невозможно закрыть смену, так как смена уже закрыта.")
+                return redirect ('sale_interface')
 
     else:
         auth.logout(request)
