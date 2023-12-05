@@ -50,24 +50,24 @@ def fiscal_day_close (request):
             session_shop=request.session['session_shop']
             shop=Shop.objects.get(id=session_shop)
 
-            auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
-            uuid_number=uuid.uuid4()
-
-            task = {
-            "uuid": str(uuid_number),
-            "request": 
-            [{
-                "type": "closeShift",
-                "operator": 
-                {
-                    "name": request.user.last_name,
-                    "vatin": "5257173237"
-                }
-            }]
-            }
-
-            if shop.shift_status == True:
+            if shop.shift_status == False:#False means the shift is open
                 try:
+                    auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+                    uuid_number=uuid.uuid4()
+
+                    task = {
+                    "uuid": str(uuid_number),
+                    "request": 
+                    [{
+                        "type": "closeShift",
+                        "operator": 
+                        {
+                            "name": request.user.last_name,
+                            "vatin": "5257173237"
+                        }
+                    }]
+                    }
+               
                     response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
 
                     session_shop=request.session['session_shop']
@@ -84,6 +84,8 @@ def fiscal_day_close (request):
             else:
                 messages.error(request, "Невозможно закрыть смену, так как смена уже закрыта.")
                 return redirect ('sale_interface')
+        else:
+            return redirect ('sale_interface')
 
     else:
         auth.logout(request)
