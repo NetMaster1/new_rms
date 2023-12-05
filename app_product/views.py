@@ -5187,17 +5187,27 @@ def return_input(request, identifier_id):
             if not imeis:
                 messages.error(request,"Вы не ввели ни одного наименования",)
                 return redirect("return_doc", identifier.id)
+            #checking if return is based on sale for this shop
+            n = len(names)
+            for i in range(n):
+                if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, rho_type=base_doc_type, created__lt=dateTime,).exists():
+                    rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime, rho_type=base_doc_type).latest('created')
+                else:
+                    string=f'Документ не проведен. Товар с IMEI {imeis[i]} никогда не продавался с баланса данной фирмы.'
+                    messages.error(request,  string)
+                    return redirect("return_doc", identifier.id)
+
             # posting the document
             if post_check == True:
-                #checking if return is based on sale for this shop
-                # n = len(names)
-                # for i in range(n):
-                #     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime, rho_type=base_doc_type).exists():
-                #         rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime, rho_type=base_doc_type).latest('created')
-                #     else:
-                #         string=f'Документ не проведен. Товар с IMEI {imeis[i]} никогда не продавался с баланса данной фирмы.'
-                #         messages.error(request,  string)
-                #         return redirect("return_doc", identifier.id)       
+                
+                #==First Section of Cash Register Module (Checking if the shift if open less than 12 hours. Otherwise it won't print)===========
+                if shop.cash_register==False:
+                    #checking if shift is open for more than 12 hours
+                    if shop.shift_status == False and (dT_utcnow - shop.shift_status_updated).total_seconds()/3600 > 12: #if shift is open for more than 12 hours
+                        print ('Смена открыта более 12 часов')
+                        messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
+                        return redirect ('sale_interface')
+                #=============End of First Section of Cash Register Module========================================
                 document = Document.objects.create(
                     shop_receiver=shop,
                     title=doc_type, 
@@ -5297,9 +5307,6 @@ def return_input(request, identifier_id):
                     # end of operations with cash
                     #===============creating dictionaries to insert in json structure for cash register 
                     retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
-                    #retail_price=float(rho.retail_price)#converts integer number to float number
-                    #retail_price=str(rho.retail_price)#converts integer number to string
-                    #retail_price=retail_price+'.00'#adds two zeros to the string
                     sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
                     quantity=round(float(rho.incoming_quantity), 3)#converts integer number to float number with three digits after divider
                     json_dict={
@@ -5330,22 +5337,6 @@ def return_input(request, identifier_id):
                     {
                     "type": "sellReturn",
                     "items": jsonData,
-                        #jsonData is a list containing a number of dictionnaries. As opposed to the list below, jasonData contains a least two items to sell
-                        #   [ 
-                        #     {
-                        #     "type": "position",
-                        #     "name": rho.name,
-                        #     "price": retail_price,
-                        #     "quantity": quantity,
-                        #     "amount": sub_total,
-                        #     "tax": {
-                        #         "type": "vat0"
-                        #     }
-                        #     },
-                        #     {
-                        #     "type": "text"
-                        #     }
-                        # ],
 
                         "payments":[{
                                 "type": "cash",
@@ -5353,14 +5344,14 @@ def return_input(request, identifier_id):
                             }]
                     }]}
             
-                    response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
-                    status_code=response.status_code
-                    print(status_code)
-                    text=response.text
-                    print(text)
-                    url=response.url
-                    json=response.json()
-                    #=================End of Cash Register Module==============
+                    response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
+                    # status_code=response.status_code
+                    # print(status_code)
+                    # text=response.text
+                    # print(text)
+                    # url=response.url
+                    # json=response.json()
+                #=================End of Cash Register Module==============
 
 
                 for register in registers:
