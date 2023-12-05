@@ -28,7 +28,7 @@ def fiscal_day_open (request):
         }
 
         try:
-            response=requests.post('http://127.0.0.1:16732/api/v2/requests', json=task, auth=auth)
+            response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
 
             messages.error(request, "Смена открыта. Можете начинать работать.")
             return redirect ('sale_interface')
