@@ -7685,21 +7685,24 @@ def teko_pay (request):
             if shop.cash_register == False:#if shop is equipped with erms cash register
                 dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
                 #dateTime=dT_utcnow+tdelta
-                print(shop.shift_status_updated)
-                print(dT_utcnow)
-                a = dT_utcnow - shop.shift_status_updated
-                print(a)
+                # print(shop.shift_status_updated)
+                # print(dT_utcnow)
+                # a = dT_utcnow - shop.shift_status_updated
+                # print(a)
                 if shop.shift_status == False and (dT_utcnow - shop.shift_status_updated).total_seconds()/3600 > 12: #if shift is open for more than 12 hours
                     print ('Смена открыта более 12 часов')
                     messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
                     return redirect ('sale_interface')
+                else:
+                    if shop.shift_status == True:
+                        shop.shift_status = False
+                        shop.save()
                 
-               
                 #teko_cash=float(cho.cash_in)#converts integer number to float number
-                teko_cash=float(sum)#converts integer number to float number
+                teko_cash=round(float(sum), 2)#converts integer number to float number
                 phone_number='Платеж на ' + phone_number
                 #retail_price=retail_price+'.00'#adds two zeros to the string
-                print('Смена открыта менее 12 часов')
+                #print('Смена открыта менее 12 часов')
                 try:
                     auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
                     uuid_number=uuid.uuid4()#creatring a unique identification number
@@ -7715,7 +7718,7 @@ def teko_pay (request):
                             "type": "position",
                             "name": phone_number,
                             "price": teko_cash,
-                            "quantity": 1,
+                            "quantity": 1.000,
                             "amount": teko_cash,
                             "tax": {
                                 "type": "vat0"
@@ -7731,14 +7734,13 @@ def teko_pay (request):
 
                    
                     response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
-                    #response=requests.post('http://127.0.0.1:16732/api/v2/requests', auth=auth, json=task)
                 
                     status_code=response.status_code
-                    print(status_code)
-                    text=response.text
-                    print(text)
-                    url=response.url
-                    json=response.json()
+                    # print(status_code)
+                    # text=response.text
+                    # print(text)
+                    # url=response.url
+                    # json=response.json()
                     
                     #=================End of Cash Register Module==============
                 except:
