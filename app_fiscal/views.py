@@ -60,7 +60,12 @@ def fiscal_day_close (request):
         }
 
         try:
-            response=requests.post('http://127.0.0.1:16732/api/v2/requests', json=task, auth=auth)
+            response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
+
+            session_shop=request.session['session_shop']
+            shop=Shop.objects.get(id=session_shop)
+            shop.shift_status=True
+            shop.save()
 
             messages.error(request, "Смена закрыта.")
             return redirect ('sale_interface')
@@ -92,13 +97,13 @@ def reportX (request):
         }
 
         try:
-            response=requests.post('http://127.0.0.1:16732/api/v2/requests', json=task, auth=auth)
+            response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
 
             messages.error(request, "Отчет сфорирован.")
             return redirect ('sale_interface')
 
         except:
-            messages.error(request, "Не удалось сформировать отчет. Сообщите администратору.")
+            messages.error(request, "Не удалось сформировать отчет. Возможная причина: смена закрыта. Сообщите администратору")
             return redirect ('sale_interface')
 
     else:
