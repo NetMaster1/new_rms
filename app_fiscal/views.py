@@ -70,17 +70,17 @@ def fiscal_day_close (request):
                
                     response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
 
-                    session_shop=request.session['session_shop']
-                    shop=Shop.objects.get(id=session_shop)
-                    shop.shift_status=True
-                    shop.save()
-
-                    messages.error(request, "Смена закрыта.")
-                    return redirect ('sale_interface')
-
                 except:
                     messages.error(request, "Не удалось закрыть смену. Сообщите администратору.")
                     return redirect ('sale_interface')
+                
+                session_shop=request.session['session_shop']
+                shop=Shop.objects.get(id=session_shop)
+                shop.shift_status=True
+                shop.save()
+
+                messages.error(request, "Смена закрыта.")
+                return redirect ('sale_interface')
             else:
                 messages.error(request, "Невозможно закрыть смену, так как смена уже закрыта.")
                 return redirect ('sale_interface')

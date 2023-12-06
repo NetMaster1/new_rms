@@ -912,6 +912,9 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 # print(text)
                 # url=response.url
                 # json=response.json()
+                if shop.shift_status == True:
+                    shop.shift_status = False
+                    shop.save()
             #=================End of Cash Register Module==============	
 
             #checking chos before
@@ -1127,13 +1130,16 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                         }]
                 }]}
                 response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
-                status_code=response.status_code
-                print(status_code)
-                text=response.text
-                print(text)
-                url=response.url
-                json=response.json()
-            #=================End of Cash Register Module==============	
+                # status_code=response.status_code
+                # print(status_code)
+                # text=response.text
+                # print(text)
+                # url=response.url
+                # json=response.json()
+                if shop.shift_status == True:
+                    shop.shift_status = False
+                    shop.save()
+            #=================End of Cash Register Module=============
 
             #operations with credit
             credit = Credit.objects.create(
@@ -1343,6 +1349,10 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                 # print(text)
                 # url=response.url
                 # json=response.json()
+
+                if shop.shift_status == True:
+                    shop.shift_status = False
+                    shop.save()
             #=================End of Cash Register Module==============	
             #operations with card
             card = Card.objects.create(
@@ -1437,7 +1447,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                 if shop.shift_status == False and (dT_utcnow - shop.shift_status_updated).total_seconds()/3600 > 12: #if shift is open for more than 12 hours
                     print ('Смена открыта более 12 часов')
                     messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
-                    return redirect ('sale_interface')
+                    return redirect ('sale_interface')    
             #=============End of First Section of Cash Register Module========================================
 
             for i in range(n):
@@ -1451,6 +1461,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                     string=f'Документ не проведен. Товар с IMEI {imeis[i]} отсутствует на балансе фирмы.'
                     messages.error(request,  string)
                     return redirect("sale", identifier.id)
+
             #create document
             document = Document.objects.create(
                 title=doc_type,
@@ -1461,9 +1472,9 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                 cashback_off=cashback_off,
                 client=client
             )
+            jsonData=[]#list for json structure for cash register
             n = len(names)
             document_sum = 0
-            jsonData=[]#list for json structure for cash register
             for i in range(n):
                 product = Product.objects.get(imei=imeis[i])
                 av_price_obj=AvPrice.objects.get(imei=imeis[i])
@@ -1516,7 +1527,6 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                         )
                         obj.save()
                         remainder = obj.current_remainder
-               
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
                 sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
@@ -1537,8 +1547,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                 jsonData.append(json_dict)
                 jsonData.append(json_type)
                 #==================end of dictionnaries to insert to json structure for cash register
-
-            
+               
             #paying with cashback
             document.sum=document_sum
             document.sum_minus_cashback = document_sum - cashback_off
@@ -1569,7 +1578,10 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                 # print(text)
                 # url=response.url
                 # json=response.json()
-            #=================End of Cash Register Module==============	
+                if shop.shift_status == True:
+                    shop.shift_status = False
+                    shop.save()
+            #=================End of Cash Register Module=============
         
             # checking chos before
             if cash > 0:
@@ -5344,13 +5356,20 @@ def return_input(request, identifier_id):
                             }]
                     }]}
             
-                    response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
-                    # status_code=response.status_code
-                    # print(status_code)
-                    # text=response.text
-                    # print(text)
-                    # url=response.url
-                    # json=response.json()
+                    try:
+                        response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
+                        # status_code=response.status_code
+                        # print(status_code)
+                        # text=response.text
+                        # print(text)
+                        # url=response.url
+                        # json=response.json()
+                        if shop.shift_status == True:
+                            shop.shift_status = False
+                            shop.save()
+                    except:
+                        messages.error(request, "Документ не проведен. Сообщите администратору.")
+                        return redirect ('sale_interface')
                 #=================End of Cash Register Module==============
 
 
@@ -7693,59 +7712,57 @@ def teko_pay (request):
                     print ('Смена открыта более 12 часов')
                     messages.error(request, "Смена окрыта более 12 часов. Сначала закройте смену.")
                     return redirect ('sale_interface')
-                else:
-                    if shop.shift_status == True:
-                        shop.shift_status = False
-                        shop.save()
                 
                 #teko_cash=float(cho.cash_in)#converts integer number to float number
                 teko_cash=round(float(sum), 2)#converts integer number to float number
                 phone_number='Платеж на ' + phone_number
                 #retail_price=retail_price+'.00'#adds two zeros to the string
                 #print('Смена открыта менее 12 часов')
+
+                auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
+                uuid_number=uuid.uuid4()#creatring a unique identification number
+
+                task = {
+                    "uuid": str(uuid_number),
+                    "request": [{
+            
+
+                    "type": "sell",
+                    "items": [ 
+                        {
+                        "type": "position",
+                        "name": phone_number,
+                        "price": teko_cash,
+                        "quantity": 1.0,
+                        "amount": teko_cash,
+                        "tax": {
+                            "type": "vat0"
+                        }
+                        },
+                    ],
+
+                    "payments":[{
+                            "type": "cash",
+                            "sum": teko_cash
+                        }]
+                }]}
                 try:
-                    auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
-                    uuid_number=uuid.uuid4()#creatring a unique identification number
-
-                    task = {
-                        "uuid": str(uuid_number),
-                        "request": [{
-                
-
-                        "type": "sell",
-                        "items": [ 
-                            {
-                            "type": "position",
-                            "name": phone_number,
-                            "price": teko_cash,
-                            "quantity": 1.000,
-                            "amount": teko_cash,
-                            "tax": {
-                                "type": "vat0"
-                            }
-                            },
-                        ],
-
-                        "payments":[{
-                                "type": "cash",
-                                "sum": teko_cash
-                            }]
-                    }]}
-
                     response=requests.post('http://93.157.253.248:16732/api/v2/requests', auth=auth, json=task)
                 
-                    status_code=response.status_code
+                    #status_code=response.status_code
                     # print(status_code)
                     # text=response.text
                     # print(text)
                     # url=response.url
                     # json=response.json()
-                    
-                    #=================End of Cash Register Module==============
+                    if shop.shift_status == True:
+                        shop.shift_status = False
+                        shop.save()
                 except:
                     messages.error(request, "Платеж не проведен. Сообщите администратору.")
                     return redirect ('sale_interface')
-
+                #=================End of Cash Register Module==============
+                
             doc_type = DocumentType.objects.get(name="Платежи Теко")
             document = Document.objects.create(
                 created=dateTime,
