@@ -7,5 +7,6 @@ urlpatterns = [
     path ('change_sim_return_posted/<int:document_id>/', views.change_sim_return_posted, name='change_sim_return_posted'),
     path ('activation_list', views.activation_list, name='activation_list'),
     path ('delete_sim_reports', views.delete_sim_reports, name='delete_sim_reports'),
+    path ('sim_dispatch', views.sim_dispatch, name='sim_dispatch'),
   
 ]

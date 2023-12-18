@@ -13,31 +13,67 @@ import pytz
 import pandas
 import xlwt
 from django.http import HttpResponse, JsonResponse
+#from requests.auth import HTTPBasicAuth
+from django.contrib import messages, auth
 
 
 # Create your views here.
 def sim_return_list (request):
-    category=ProductCategory.objects.get(name='Сим_карты')
-    doc_type=DocumentType.objects.get(name='Сдача РФА')
-    tdelta=datetime.timedelta(hours=3)
-    dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
-    dateTime=dT_utcnow+tdelta
-    if request.method == "POST":
-        file = request.FILES["file_name"]
-        df1 = pandas.read_excel(file)
-        cycle = len(df1)
-        document = Document.objects.create(
-            created=dateTime,
-            user=request.user, 
-            title=doc_type,
-            posted=True,
-            sum=0
-        )
-        for i in range(cycle):
-            row = df1.iloc[i]#reads each row of the df1 one by one
-            if SimReturnRecord.objects.filter(imei=row.Imei).exists():
-                pass
-            else:
+    if request.user.is_authenticated:
+        category=ProductCategory.objects.get(name='Сим_карты')
+        doc_type=DocumentType.objects.get(name='Сдача РФА')
+        tdelta=datetime.timedelta(hours=3)
+        dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+        dateTime=dT_utcnow+tdelta
+        shops=Shop.objects.filter(subdealer=True)
+        if request.method == "POST":
+            file = request.FILES["file_name"]
+            df1 = pandas.read_excel(file)
+            cycle = len(df1)
+            document = Document.objects.create(
+                created=dateTime,
+                user=request.user, 
+                title=doc_type,
+                posted=True,
+                sum=0
+            )
+            for i in range(cycle):
+                row = df1.iloc[i]#reads each row of the df1 one by one
+                for shop in shops:
+                    if RemainderHistory.objects.filter(shop=shop, imei=row.Imei,created__lt=dateTime).exists():
+                        rho_latest_before= RemainderHistory.objects.filter(imei=row.Imei, created__lt=dateTime).latest('created')
+                        # creating remainder_history
+                        rho = RemainderHistory.objects.create(
+                            document=document,
+                            created=document.created,
+                            rho_type=doc_type,
+                            user=request.user,
+                            shop=rho_latest_before.shop,
+                            #product_id=product,
+                            category=rho_latest_before.category,
+                            imei=row.Imei,
+                            name=row.Name,
+                            retail_price=rho_latest_before.retail_price,
+                            #av_price=rho_latest_before.av_price,
+                            pre_remainder=rho_latest_before.current_remainder,
+                            incoming_quantity=0,
+                            outgoing_quantity=1,
+                            current_remainder=0,
+                            sub_total=rho_latest_before.retail_price,
+                        )
+                #if SimReturnRecord.objects.filter(imei=row.Imei).exists():
+                #     if SimReturnRecord.objects.filter(document=document).exists():
+                #         srr_error=SimReturnRecord.objects.filter(document=document)
+                #         for item in srr_error:
+                #             item.delete()
+                #         document.delete()
+                #     string=f'Реестр не сформирован. РФА {row.Name} c IMEI: {row.Imei} уже сдана.'
+                #     messages.error(request, string)
+                #     return redirect("sim_return_list")
+                # else: 
+                    
+                        
+                #creates a register of sims returned to operator including sims from monobrand shops
                 srr = SimReturnRecord.objects.create(
                     document=document,
                     srr_type=document.title,
@@ -45,20 +81,14 @@ def sim_return_list (request):
                     name=row.Name,
                     user=request.user
                 )
-            # if SimReturnRecord.objects.filter(imei=row.Imei).exists():
-            #     if SimReturnRecord.objects.filter(document=document).exists():
-            #         srr_error=SimReturnRecord.objects.filter(document=document)
-            #         for item in srr_error:
-            #             item.delete()
-            #         document.delete()
-            #     string=f'Реестр не сформирован. РФА {row.Name} c IMEI: {row.Imei} уже сдана.'
-            #     messages.error(request, string)
-            #     return redirect("sim_return_list")
-            # else: 
-                
-        return redirect("log")
+                #=======================================================
+                    
+            return redirect("log")
+        else:
+            return render(request, "sims/sim_return_list.html")
     else:
-        return render(request, "sims/sim_return_list.html")
+        auth.logout(request)
+        return redirect("login")
 
 def change_sim_return_posted (request, document_id):
     document=Document.objects.get(id=document_id)
@@ -172,3 +202,6 @@ def delete_sim_reports (request):
     for i in reports:
         i.delete()
     return redirect ('activation_list')
+
+def sim_dispatch (request):
+    pass

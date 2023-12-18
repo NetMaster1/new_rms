@@ -22,6 +22,7 @@ class Shop (models.Model):
     name = models.CharField(max_length=50)
     sale_k=models.DecimalField(max_digits=3, decimal_places=2, default=1)
     retail = models.BooleanField(default=True)#mark for retail shops
+    subdealer = models.BooleanField(default=False)#mark for subdealer shops. False for our shops. True for subdealer shops
     cash_register = models.BooleanField(default=True)#mark for monobrand without cash register. False means the shop is equipped with e-rms cash register
     shift_status = models.BooleanField(default=False)# shows shift status. False means shift is open.
     shift_status_updated = models.DateTimeField(auto_now=True, null=True)
@@ -31,6 +32,16 @@ class Shop (models.Model):
 
     def __str__(self):
         return self.name
+    
+
+# class Subdealer (models.Model):
+#     name = models.CharField(max_length=50)
+
+#     class Meta:
+#         ordering = ('name',)  # sorting by name
+
+#     def __str__(self):
+#         return self.name
 
 class ProductCategory (models.Model):
     name = models.CharField(max_length=250)
