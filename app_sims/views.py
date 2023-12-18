@@ -17,7 +17,7 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib import messages, auth
 
 
-# Create your views here.
+#creates a register of sim forms which has been returned to operator
 def sim_return_list (request):
     if request.user.is_authenticated:
         category=ProductCategory.objects.get(name='Сим_карты')
@@ -90,6 +90,7 @@ def sim_return_list (request):
         auth.logout(request)
         return redirect("login")
 
+#creates a register of sim forms which has been registered in WebDealer
 def sim_register_list(request):
     if request.user.is_authenticated:
         category=ProductCategory.objects.get(name='Сим_карты')
@@ -128,7 +129,8 @@ def sim_register_list(request):
         auth.logout(request)
         return redirect("login")
 
-
+#takes a list of forms to be returned & checks them agains sim_return_record, sim_register_record & rhos
+#returns an excel file with statuses of forms to be found & returned to operator 
 def activation_list (request):
     report_id=ReportTempId.objects.create()
     category=ProductCategory.objects.get(name='Сим_карты')
@@ -243,8 +245,6 @@ def sim_return_report (request):
 
     else:
         return render(request, "sims/sim_return_report.html")
-
-
 
 def delete_sim_reports (request):
     reports=Sim_report.objects.all()
