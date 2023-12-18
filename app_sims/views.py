@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from app_product.models import RemainderHistory, Document
 from app_reference.models import Shop, Product, DocumentType, ProductCategory
 from app_reports.models import ReportTempId, Sim_report
-from .models import SimReturnRecord
+from .models import SimReturnRecord, SimRegisterRecord
 from django.contrib import messages
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 import datetime
@@ -41,7 +41,7 @@ def sim_return_list (request):
                 row = df1.iloc[i]#reads each row of the df1 one by one
                 for shop in shops:
                     if RemainderHistory.objects.filter(shop=shop, imei=row.Imei,created__lt=dateTime).exists():
-                        rho_latest_before= RemainderHistory.objects.filter(imei=row.Imei, created__lt=dateTime).latest('created')
+                        rho_latest_before= RemainderHistory.objects.filter(shop=shop, imei=row.Imei, created__lt=dateTime).latest('created')
                         # creating remainder_history
                         rho = RemainderHistory.objects.create(
                             document=document,
@@ -74,9 +74,9 @@ def sim_return_list (request):
                     
                         
                 #creates a register of sims returned to operator including sims from monobrand shops
-                srr = SimReturnRecord.objects.create(
+                SimRetRec = SimReturnRecord.objects.create(
                     document=document,
-                    srr_type=document.title,
+                    sim_reg_type=document.title,
                     imei=row.Imei,
                     name=row.Name,
                     user=request.user
@@ -90,32 +90,50 @@ def sim_return_list (request):
         auth.logout(request)
         return redirect("login")
 
-def change_sim_return_posted (request, document_id):
-    document=Document.objects.get(id=document_id)
-    srrs=SimReturnRecord.objects.filter(document=document)
-    numbers = srrs.count()
-    for srr, i in zip(srrs, range(numbers)):
-        srr.enumerator = i + 1
-        srr.save()
-
-    context = {
-        'srrs': srrs,
-        'document': document
-    }
-    return render (request, 'sims/change_sim_return_posted.html', context )
-
-def sim_return_report (request):
-    category=ProductCategory.objects.get(name='Сим_карты')
-    if request.method == "POST":
-        pass
-
+def sim_register_list(request):
+    if request.user.is_authenticated:
+        category=ProductCategory.objects.get(name='Сим_карты')
+        doc_type=DocumentType.objects.get(name='Регистрация РФА')
+        tdelta=datetime.timedelta(hours=3)
+        dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+        dateTime=dT_utcnow+tdelta
+        if request.method == "POST":
+            file = request.FILES["file_name"]
+            df1 = pandas.read_excel(file)
+            cycle = len(df1)
+            document = Document.objects.create(
+                created=dateTime,
+                user=request.user, 
+                title=doc_type,
+                posted=True,
+                sum=0
+            )
+            for i in range(cycle):
+                row = df1.iloc[i]#reads each row of the df1 one by one
+                   
+                #creates a register of sims registered in WebDealer
+                SimRegRec = SimRegisterRecord.objects.create(
+                    document=document,
+                    sim_reg_type=document.title,
+                    imei=row.Imei,
+                    name=row.Name,
+                    user=request.user
+                )
+                #=======================================================
+                    
+            return redirect("log")
+        else:
+            return render(request, "sims/sim_register_list.html")
     else:
-        return render(request, "sims/sim_return_report.html")
+        auth.logout(request)
+        return redirect("login")
+
 
 def activation_list (request):
     report_id=ReportTempId.objects.create()
     category=ProductCategory.objects.get(name='Сим_карты')
     reports=Sim_report.objects.all()
+    doc_type=DocumentType.objects.get(name='Перемещение ТМЦ')
     for i in reports:
         i.delete()
     if request.method == 'POST':
@@ -125,10 +143,12 @@ def activation_list (request):
         file = request.FILES["file_name"]
         df1 = pandas.read_excel(file)
         cycle = len(df1)
+        #this is done to exclude transfer_sender rhos
+        rhos=RemainderHistory.objects.exclude(rho_type=doc_type, status=False)
         for i in range(cycle):
             row = df1.iloc[i]#reads each row of the df1 one by one
-            if RemainderHistory.objects.filter(imei=row.Imei).exists():
-                rho_latest=RemainderHistory.objects.filter(imei=row.Imei).latest('created')
+            if rhos.filter(imei=row.Imei).exists():
+                rho_latest=rhos.filter(imei=row.Imei).latest('created')
                 sim_report=Sim_report.objects.create(
                     report_id=report_id,
                     name=row.Name,
@@ -148,6 +168,8 @@ def activation_list (request):
                 if SimReturnRecord.objects.filter(imei=row.Imei).exists():
                     sim_report.return_mark="РФА сдана"
                     sim_report.save()
+                if SimRegisterRecord.objects.filter(imei=row.Imei).exists():
+                    sim_report.WD_status="РФА зарегистрирована"
             else:
                 sim_report=Sim_report.objects.create(
                     report_id=report_id,
@@ -176,7 +198,7 @@ def activation_list (request):
         # sheet header in the first row (column titles)
         row_num = 0
         font_style = xlwt.XFStyle()
-        columns = ["Name", "IMEI", "Status", "Price", "Shop", "Date", "User", "Document", "Return"]
+        columns = ["Name", "IMEI", "Status", "Price", "Shop", "Date", "User", "Document", "Return", "WebDealer"]
         for col_num in range(len(columns)):
             ws.write(row_num, col_num, columns[col_num], font_style)
 
@@ -184,7 +206,7 @@ def activation_list (request):
         # sheet body, remaining rows
         font_style = xlwt.XFStyle()
         report_query = Sim_reports=Sim_report.objects.filter(report_id=report_id)
-        query = report_query.values_list("name", "imei", "status", "price", "shop", "date", "user", "document", "return_mark")
+        query = report_query.values_list("name", "imei", "status", "price", "shop", "date", "user", "document", "return_mark", "WD_status")
 
         for row in query:
             row_num += 1
@@ -196,6 +218,33 @@ def activation_list (request):
 
     else:
         return render(request, 'sims/activation_list.html')
+
+
+
+
+def change_sim_return_posted (request, document_id):
+    document=Document.objects.get(id=document_id)
+    srrs=SimReturnRecord.objects.filter(document=document)
+    numbers = srrs.count()
+    for srr, i in zip(srrs, range(numbers)):
+        srr.enumerator = i + 1
+        srr.save()
+
+    context = {
+        'srrs': srrs,
+        'document': document
+    }
+    return render (request, 'sims/change_sim_return_posted.html', context )
+
+def sim_return_report (request):
+    category=ProductCategory.objects.get(name='Сим_карты')
+    if request.method == "POST":
+        pass
+
+    else:
+        return render(request, "sims/sim_return_report.html")
+
+
 
 def delete_sim_reports (request):
     reports=Sim_report.objects.all()

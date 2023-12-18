@@ -136,7 +136,7 @@ class CashOff(models.Model):
         return self.id
 
 class RemainderHistory(models.Model):
-    #temporary utility field for numbering rhos while displaying the at change_sale_posted html page
+    #temporary utility field for numbering rhos while displaying them at change_sale_posted html page
     number = models.IntegerField(default=0, null=True)#service field for enumerating selected rhos in arrays
     #number = models.IntegerField(default=0, required=False, read_only=True)#just an example
     created = models.DateTimeField(default=timezone.now, null=True)
