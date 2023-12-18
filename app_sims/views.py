@@ -167,8 +167,6 @@ def activation_list (request):
     else:
         return render(request, 'sims/activation_list.html')
 
-
-    
 def delete_sim_reports (request):
     reports=Sim_report.objects.all()
     for i in reports:
