@@ -221,9 +221,6 @@ def activation_list (request):
     else:
         return render(request, 'sims/activation_list.html')
 
-
-
-
 def change_sim_return_posted (request, document_id):
     document=Document.objects.get(id=document_id)
     srrs=SimReturnRecord.objects.filter(document=document)
@@ -237,6 +234,21 @@ def change_sim_return_posted (request, document_id):
         'document': document
     }
     return render (request, 'sims/change_sim_return_posted.html', context )
+
+def change_sim_register_posted(request, document_id):
+    document=Document.objects.get(id=document_id)
+    sim_reg_recs=SimRegisterRecord.objects.filter(document=document)
+    numbers = sim_reg_recs.count()
+    for srr, i in zip(sim_reg_recs, range(numbers)):
+        srr.enumerator = i + 1
+        srr.save()
+
+    context = {
+        'srrs': sim_reg_recs,
+        'document': document
+    }
+    return render (request, 'sims/change_sim_register_posted.html', context )
+
 
 def sim_return_report (request):
     category=ProductCategory.objects.get(name='Сим_карты')
