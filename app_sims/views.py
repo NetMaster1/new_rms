@@ -129,7 +129,7 @@ def sim_register_list(request):
         auth.logout(request)
         return redirect("login")
 
-#takes a list of forms to be returned & checks them agains sim_return_record, sim_register_record & rhos
+#takes a list of forms to be returned to operator & checks them against sim_return_record, sim_register_record & rhos
 #returns an excel file with statuses of forms to be found & returned to operator 
 def activation_list (request):
     report_id=ReportTempId.objects.create()
@@ -221,33 +221,47 @@ def activation_list (request):
     else:
         return render(request, 'sims/activation_list.html')
 
-def change_sim_return_posted (request, document_id):
-    document=Document.objects.get(id=document_id)
-    srrs=SimReturnRecord.objects.filter(document=document)
-    numbers = srrs.count()
-    for srr, i in zip(srrs, range(numbers)):
-        srr.enumerator = i + 1
-        srr.save()
-
-    context = {
-        'srrs': srrs,
-        'document': document
-    }
-    return render (request, 'sims/change_sim_return_posted.html', context )
-
 def change_sim_register_posted(request, document_id):
-    document=Document.objects.get(id=document_id)
-    sim_reg_recs=SimRegisterRecord.objects.filter(document=document)
-    numbers = sim_reg_recs.count()
-    for srr, i in zip(sim_reg_recs, range(numbers)):
-        srr.enumerator = i + 1
-        srr.save()
+    if request.user.is_authenticated:
+        document=Document.objects.get(id=document_id)
+        sim_reg_recs=SimRegisterRecord.objects.filter(document=document)
+        numbers = sim_reg_recs.count()
+        for srr, i in zip(sim_reg_recs, range(numbers)):
+            srr.enumerator = i + 1
+            srr.save()
 
-    context = {
-        'srrs': sim_reg_recs,
-        'document': document
-    }
-    return render (request, 'sims/change_sim_register_posted.html', context )
+        context = {
+            'srrs': sim_reg_recs,
+            'document': document
+        }
+        return render (request, 'sims/change_sim_register_posted.html', context )
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+def delete_sim_register_posted (request, document_id):
+    if request.user.is_authenticated:
+        document=Document.objects.get(id=document_id)
+        srrs=SimRegisterRecord.objects.filter(document=document)
+        for i in srrs:
+            i.delete()
+        document.delete()
+        
+           
+        return redirect("log")
+    else:
+        auth.logout(request)
+        return redirect("login")
+    
+
+
+def change_sim_return_posted(request, document_id):
+    pass
+
+def delete_sim_return_posted(request, document_id):
+    pass
+
+
 
 
 def sim_return_report (request):
