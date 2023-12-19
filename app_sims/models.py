@@ -16,3 +16,16 @@ class SimReturnRecord(models.Model):
 
     def __int__(self):
         return self.id
+
+
+class SimRegisterRecord(models.Model):
+    enumerator = models.IntegerField(default=0, null=True)
+    document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
+    sim_reg_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
+    created = models.DateTimeField(default=timezone.now, null=True)
+    name = models.CharField(max_length=50)
+    imei = models.CharField(max_length=50)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+
+    def __int__(self):
+        return self.id

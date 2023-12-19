@@ -145,7 +145,8 @@ class Sim_report (models.Model):
     user = models.CharField(max_length=50, null=True)
     document = models.CharField(max_length=50, null=True)
     status = models.CharField(max_length=50, null=True)
-    return_mark = models.CharField(max_length=50, default='РФА не сдана')#indicated is the form has been returned to operator
+    return_mark = models.CharField(max_length=50, default='РФА не сдана')#indicates if the form has been returned to operator
+    WD_status = models.CharField(max_length=50, null=True)#indicated weather & when the form has been registered in WD
     price = models.IntegerField(null=True)
 
     def __int__(self):
