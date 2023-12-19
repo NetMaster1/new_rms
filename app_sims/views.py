@@ -134,7 +134,7 @@ def sim_register_list(request):
 def activation_list (request):
     report_id=ReportTempId.objects.create()
     category=ProductCategory.objects.get(name='Сим_карты')
-    #reports=Sim_report.objects.all()
+    reports=Sim_report.objects.all()
     doc_type=DocumentType.objects.get(name='Перемещение ТМЦ')
     tdelta=datetime.timedelta(hours=3)
     dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
