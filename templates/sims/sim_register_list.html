@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Ввод реестра сим, зарегистрированных в WebDealer</h3>
+                </div>
+            </div>
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                    <small><sup>x</sup></small>
+                </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
+            <div class="row m-2 pb-2">
+                <div class="col-12 border rounded p-3">
+
+                    <form action="{% url 'sim_register_list' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+
+                        <!-- <div class="form-row">
+                            <div class="col-3">
+                                <label for="shop_receiver">
+                                    <h5>Торговая точка</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <select name="shop_receiver" id="shop_receiver" class='form-control' required>
+                                    <option value="">Выберите фирму</option>
+                                    {% for shop in shops %}
+                                    <option value="{{shop.id}}">{{shop.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div> -->
+
+
+                        <div class="form-row mt-2">
+                            <div class="col-3">
+                                <label for="file_name">
+                                    <h5>Введите файл в формате Excel</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="file" class='form-control' id="file_name" name="file_name" required>
+                            </div>
+                        </div>
+
+
+                        <div class="row m-auto mt-3 ">
+                            <div class="col-2">
+                                <input type="submit" value="Провести"
+                                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                            </div>
+                    </form>
+
+                    <div class="col-2">
+                        <a href="#">
+                            <input type="button" value="Очистить форму"
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        </a>
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'log' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock %}
