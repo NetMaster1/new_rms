@@ -258,12 +258,12 @@ def sim_delivery_MB(request):
     if request.user.is_authenticated:
         category=ProductCategory.objects.get(name="Сим_карты")
         doc_type=DocumentType.objects.get(name="Поступление ТМЦ")
-        rhos=RemainderHistory.objects.filter(category=category, doc_type=doc_type)
+        rhos=RemainderHistory.objects.filter(category=category, rho_type=doc_type)
 
         #=======================Uploading to Excel Module===================================
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (
-            "attachment; filename=Remainder_" + Отчет поступление sim + str(datetime.date.today()) + ".xls"
+            "attachment; filename=Remainder_" + str(datetime.date.today()) + ".xls"
         )
 
         wb = xlwt.Workbook(encoding="utf-8")
