@@ -61,6 +61,7 @@ urlpatterns = [
     path ('change_signing_off_posted/<int:document_id>', views.change_signing_off_posted, name='change_signing_off_posted'),
     path ('change_signing_off_unposted/<int:document_id>', views.change_signing_off_unposted, name='change_signing_off_unposted'),
     path ('unpost_signing_off/<int:document_id>', views.unpost_signing_off, name='unpost_signing_off'),
+    path ('signing_off_sim_auto', views.signing_off_sim_auto, name='signing_off_sim_auto'),
 
     # =====================Sale===============================================
     path ('identifier_sale', views.identifier_sale, name='identifier_sale'),
@@ -88,6 +89,11 @@ urlpatterns = [
     path ('service/<int:identifier_id>', views.service, name='service'), 
     path ('check_service/<int:identifier_id>', views.check_service, name='check_service'),
 
+    # ==============================Supplier Return====================================
+    path ('identifier_supplier_return', views.identifier_supplier_return, name='identifier_supplier_return'),
+    path ('identifier_supplier_return', views.identifier_supplier_return, name='identifier_supplier_return'),
+    path ('supplier_return_sim_auto', views.supplier_return_sim_auto, name='supplier_return_sim_auto'),
+  
     # ==============================Return====================================
     path ('identifier_return', views.identifier_return, name='identifier_return'),
     path ('return_doc/<int:identifier_id>', views.return_doc, name='return_doc'),
