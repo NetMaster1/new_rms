@@ -263,7 +263,7 @@ def sim_delivery_MB(request):
         #=======================Uploading to Excel Module===================================
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (
-            "attachment; filename=Remainder_" + Отчет поступление sim + str(datetime.date.today()) + ".xls"
+            "attachment; filename=Remainder_" + str(datetime.date.today()) + ".xls"
         )
 
         wb = xlwt.Workbook(encoding="utf-8")
