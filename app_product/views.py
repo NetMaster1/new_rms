@@ -4505,7 +4505,7 @@ def signing_off_sim_auto(request):
             row = df1.iloc[i]#reads each row of the df1 one by one
             # checking docs before remainder_history
             if rhos.filter(imei=row.Imei, created__lt=document.created).exists():
-                rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, created__lt=document.created).latest('created')
+                rho_latest_before = rhos.filter(imei=row.Imei, created__lt=document.created).latest('created')
                 if rho_latest_before.current_remainder >0:
                     # creating remainder_history
                     rho = RemainderHistory.objects.create(
@@ -4517,7 +4517,7 @@ def signing_off_sim_auto(request):
                         category=rho_latest_before.category,
                         supplier=rho_latest_before.supplier,
                         #product_id=product,
-                        imei=row.imei,
+                        imei=row.Imei,
                         name=rho_latest_before.name,
                         pre_remainder=rho_latest_before.current_remainder,
                         incoming_quantity=0,
@@ -4570,7 +4570,7 @@ def signing_off_sim_auto(request):
         #     "suppliers": suppliers, 
         #     "categories": categories,
         #     }
-        return render(request, "documents/signing_off_auto.html")
+        return render(request, "documents/signing_off_sim_auto.html")
 
 
 
