@@ -15,5 +15,8 @@ urlpatterns = [
     path ('activation_list', views.activation_list, name='activation_list'),
     path ('delete_sim_reports', views.delete_sim_reports, name='delete_sim_reports'),
     path ('sim_dispatch', views.sim_dispatch, name='sim_dispatch'),
-  
+    #====================================
+    path ('sim_sales_MB', views.sim_sales_MB, name='sim_sales_MB'),
+    path ('sim_delivery_MB', views.sim_delivery_MB, name='sim_delivery_MB'),
+    path ('sim_sign_off_MB', views.sim_sign_off_MB, name='sim_sign_off_MB'),
 ]
