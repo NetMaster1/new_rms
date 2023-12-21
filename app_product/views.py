@@ -5,6 +5,7 @@ from app_product.admin import RemainderHistoryAdmin
 from app_clients.models import Customer
 from app_personnel.models import BonusAccount
 from app_error.models import ErrorLog
+from app_sims.models import SimSupplierReturnRecord, SimSigningOffRecord
 from django.shortcuts import render, redirect, get_object_or_404
 from .smsc_api import *
 from .models import (
@@ -4547,6 +4548,14 @@ def signing_off_sim_auto(request):
                     #     )
                     #rho.av_price=av_price_obj.av_price
                     rho.save()
+            sim_signing_off_record=SimSigningOffRecord.objects.create(
+                user=request.user,
+                document=document,
+                doc_type=doc_type,
+                created=document.created,
+                name=row.Title,
+                imei=row.Imei,
+            )
             # checking docs after remainder_history
             # if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__gt=rho.created).exists():
             #     sequence_rhos_after = RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__gt=rho.created).order_by('created')
@@ -4571,10 +4580,6 @@ def signing_off_sim_auto(request):
         #     "categories": categories,
         #     }
         return render(request, "documents/signing_off_sim_auto.html")
-
-
-
-
 
 def identifier_signing_off(request):
     if request.user.is_authenticated:
@@ -5779,7 +5784,120 @@ def identifier_supplier_return(request):
         return redirect("login")
 
 def supplier_return_sim_auto(request):
-    pass
+    doc_type = DocumentType.objects.get(name="Возврат ТМЦ поставщику")
+    doc_type_transfer = DocumentType.objects.get(name="Перемещение ТМЦ")
+    #this is done to exclude transfer_sender rhos
+    # "False" for Transfer(send) "True" for Transfer(receive)
+    rhos=RemainderHistory.objects.exclude(rho_type=doc_type_transfer, status=False)
+    if request.method == "POST":
+        dateTime=request.POST.get('dateTime', False)
+        if dateTime:
+            # converting dateTime in str format (2021-07-08T01:05) to django format ()
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+        else:
+            tdelta=datetime.timedelta(hours=3)
+            dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+            dateTime=dT_utcnow+tdelta
+        file = request.FILES["file_name"]
+        # print(file)
+        # df1 = pandas.read_excel('Delivery_21_06_21.xlsx')
+        df1 = pandas.read_excel(file)
+        cycle = len(df1)
+        document = Document.objects.create(
+            created=dateTime,
+            user=request.user, 
+            title=doc_type,
+            posted=True
+        )
+        document_sum = 0
+        for i in range(cycle):
+            row = df1.iloc[i]#reads each row of the df1 one by one
+            # checking docs before remainder_history
+            if rhos.filter(imei=row.Imei, created__lt=document.created).exists():
+                rho_latest_before = rhos.filter(imei=row.Imei, created__lt=document.created).latest('created')
+                if rho_latest_before.current_remainder >0:
+                    # creating remainder_history
+                    rho = RemainderHistory.objects.create(
+                        user=request.user,
+                        document=document,
+                        rho_type=document.title,
+                        created=document.created,
+                        shop=rho_latest_before.shop,
+                        category=rho_latest_before.category,
+                        supplier=rho_latest_before.supplier,
+                        #product_id=product,
+                        imei=row.Imei,
+                        name=rho_latest_before.name,
+                        pre_remainder=rho_latest_before.current_remainder,
+                        incoming_quantity=0,
+                        outgoing_quantity=row.Quantity,
+                        current_remainder=rho_latest_before.current_remainder - int(row.Quantity),
+                        wholesale_price=int(row.Price),
+                        sub_total=int(row.Price) * int(row.Quantity),
+                    )
+                    document_sum += int(rho.sub_total)
+    #============Av_price_module====================
+                    if AvPrice.objects.filter(imei=row.Imei).exists():
+                        av_price_obj = AvPrice.objects.get(imei=row.Imei)
+                        av_price_obj.current_remainder -= int(row.Quantity)
+                        av_price_obj.sum -= int(row.Quantity) * int(row.Price)
+                    #     if av_price_obj.current_remainder > 0:
+                    #         av_price_obj.av_price = int(av_price_obj.sum) / int(av_price_obj.current_remainder)
+                    #     else:
+                    #         av_price_obj.av_price=int(row.Price)
+                    #     av_price_obj.save()
+                    # else:
+                    #     av_price_obj = AvPrice.objects.create(
+                    #         name=product.name,
+                    #         imei=product.imei,
+                    #         current_remainder=int(row.Quantity),
+                    #         sum=int(row.Quantity) * int(row.Price),
+                    #         av_price=int(row.Price),
+                    #     )
+                    #rho.av_price=av_price_obj.av_price
+                    rho.save()
+            # checking docs after remainder_history
+            # if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__gt=rho.created).exists():
+            #     sequence_rhos_after = RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__gt=rho.created).order_by('created')
+            #     pre_remainder=rho.current_remainder
+            #     for obj in sequence_rhos_after:
+            #         obj.pre_remainder = pre_remainder
+            #         obj.current_remainder = (
+            #             pre_remainder
+            #             + obj.incoming_quantity
+            #             - obj.outgoing_quantity
+            #         )
+            #         obj.save()
+            # pre_remainder = obj.current_remainder
+            
+            sim_supplier_return=SimSupplierReturnRecord.objects.create(
+                user=request.user,
+                document=document,
+                doc_type=doc_type,
+                created=document.created,
+                name=row.Title,
+                imei=row.Imei,
+            )
+                            
+        document.sum = document_sum
+        document.save()
+        return redirect("log")
+    else:
+        # context = {
+        #     "shops": shops,
+        #     'shop_default': shop_default,
+        #     "suppliers": suppliers, 
+        #     "categories": categories,
+        #     }
+        return render(request, "documents/supplier_return_sim_auto.html")
 
 def supplier_return(request):
     pass

@@ -5,7 +5,7 @@
         <div class="page_location">
             <div class="row m-2 pt-2">
                 <div class="col">
-                    <h3>Автоматическое списание сим карт</h3>
+                    <h3>Возврат сим карт оператору</h3>
                 </div>
             </div>
             <!-- =====================Alert Messages Module=================== -->
@@ -26,7 +26,7 @@
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'signing_off_sim_auto' %}" method="POST" enctype="multipart/form-data">
+                    <form action="{% url 'supplier_return_sim_auto' %}" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
 
 
