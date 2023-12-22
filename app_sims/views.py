@@ -293,6 +293,47 @@ def sim_delivery_MB(request):
     else:
         auth.logout(request)
         return redirect("login")
+    
+
+def sim_initial_input_report(request):
+    if request.user.is_authenticated:
+        category=ProductCategory.objects.get(name="Ввод остатков ТМЦ")
+        doc_type=DocumentType.objects.get(name="Поступление ТМЦ")
+        rhos=RemainderHistory.objects.filter(category=category, rho_type=doc_type)
+
+        #=======================Uploading to Excel Module===================================
+        response = HttpResponse(content_type="application/ms-excel")
+        response["Content-Disposition"] = (
+            "attachment; filename=Remainder_" + str(datetime.date.today()) + ".xls"
+        )
+
+        wb = xlwt.Workbook(encoding="utf-8")
+        ws = wb.add_sheet("Activation")
+
+        # sheet header in the first row (column titles)
+        row_num = 0
+        font_style = xlwt.XFStyle()
+        columns = ["Date", "IMEI", "Name"]
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num, columns[col_num], font_style)
+
+
+        # sheet body, remaining rows
+        font_style = xlwt.XFStyle()
+       
+        query = rhos.values_list("created", "imei", "name")
+
+        for row in query:
+            row_num += 1
+            for col_num in range(len(row)):
+                ws.write(row_num, col_num, str(row[col_num]), font_style)
+        wb.save(response)
+        return response
+#=======================End of Excel Upload Module================================
+
+    else:
+        auth.logout(request)
+        return redirect("login")
 
 def sim_sales_MB(request):
     pass
