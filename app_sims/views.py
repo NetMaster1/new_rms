@@ -242,6 +242,12 @@ def change_sim_return_posted(request, document_id):
         auth.logout(request)
         return redirect("login")
 
+def change_sim_register_posted (request, document_id):
+    pass
+
+def delete_sim_return_posted(request, document_id):
+    pass
+
 def delete_sim_register_posted (request, document_id):
     if request.user.is_authenticated:
         document=Document.objects.get(id=document_id)
@@ -255,7 +261,11 @@ def delete_sim_register_posted (request, document_id):
     else:
         auth.logout(request)
         return redirect("login")
-    
+
+
+
+
+
 def sim_delivery_MB(request):
     if request.user.is_authenticated:
         category=ProductCategory.objects.get(name="Сим_карты")
@@ -341,15 +351,6 @@ def sim_sales_MB(request):
     pass
 
 def sim_sign_off_MB(request):
-    pass
-
-
-
-
-def change_sim_return_posted(request, document_id):
-    pass
-
-def delete_sim_return_posted(request, document_id):
     pass
 
 
