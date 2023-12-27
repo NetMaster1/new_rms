@@ -243,7 +243,18 @@ def change_sim_return_posted(request, document_id):
         return redirect("login")
 
 def change_sim_register_posted (request, document_id):
-    pass
+    if request.user.is_authenticated:
+        document=Document.objects.get(id=document_id)
+        sim_reg_recs=SimRegisterRecord.objects.filter(document=document)
+        numbers = sim_reg_recs.count()
+        for srr, i in zip(sim_reg_recs, range(numbers)):
+            srr.enumerator = i + 1
+            srr.save()
+
+        context = {
+            'srrs': sim_reg_recs,
+            'document': document
+        }
 
 def delete_sim_return_posted(request, document_id):
     pass
