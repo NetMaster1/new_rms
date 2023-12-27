@@ -76,7 +76,7 @@ def sim_return_list (request):
                 #creates a register of sims returned to operator including sims from monobrand shops
                 SimRetRec = SimReturnRecord.objects.create(
                     document=document,
-                    sim_reg_type=document.title,
+                    srr_type=document.title,
                     imei=row.Imei,
                     name=row.Name,
                     user=request.user
