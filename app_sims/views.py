@@ -25,6 +25,7 @@ def sim_return_list (request):
         tdelta=datetime.timedelta(hours=3)
         dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
         dateTime=dT_utcnow+tdelta
+        #forms a list of subdealer shops
         shops=Shop.objects.filter(subdealer=True)
         if request.method == "POST":
             file = request.FILES["file_name"]
@@ -39,6 +40,7 @@ def sim_return_list (request):
             )
             for i in range(cycle):
                 row = df1.iloc[i]#reads each row of the df1 one by one
+                #creates rhos only for subdealer shops making corrents remainder for subdealers
                 for shop in shops:
                     if RemainderHistory.objects.filter(shop=shop, imei=row.Imei,created__lt=dateTime).exists():
                         rho_latest_before= RemainderHistory.objects.filter(shop=shop, imei=row.Imei, created__lt=dateTime).latest('created')
@@ -76,7 +78,7 @@ def sim_return_list (request):
                 #creates a register of sims returned to operator including sims from monobrand shops
                 SimRetRec = SimReturnRecord.objects.create(
                     document=document,
-                    sim_reg_type=document.title,
+                    srr_type=document.title,
                     imei=row.Imei,
                     name=row.Name,
                     user=request.user
@@ -222,20 +224,20 @@ def activation_list (request):
     else:
         return render(request, 'sims/activation_list.html')
 
-def change_sim_register_posted(request, document_id):
+def change_sim_return_posted(request, document_id):
     if request.user.is_authenticated:
         document=Document.objects.get(id=document_id)
-        sim_reg_recs=SimRegisterRecord.objects.filter(document=document)
-        numbers = sim_reg_recs.count()
-        for srr, i in zip(sim_reg_recs, range(numbers)):
+        sim_ret_recs=SimReturnRecord.objects.filter(document=document)
+        numbers = sim_ret_recs.count()
+        for srr, i in zip(sim_ret_recs, range(numbers)):
             srr.enumerator = i + 1
             srr.save()
 
         context = {
-            'srrs': sim_reg_recs,
+            'srrs': sim_ret_recs,
             'document': document
         }
-        return render (request, 'sims/change_sim_register_posted.html', context )
+        return render (request, 'sims/change_sim_return_posted.html', context )
     else:
         auth.logout(request)
         return redirect("login")
