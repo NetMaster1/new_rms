@@ -86,6 +86,8 @@ class DailySaleRep (models.Model):
 class MonthlyBonus (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     user_name = models.CharField(max_length=50, null=True)
+    number_of_work_days = models.IntegerField(null=True)
+    cashback = models.IntegerField(null=True)
     smartphones = models.IntegerField(null=True)
     accessories = models.IntegerField(null=True)
     sim_cards = models.IntegerField(null=True)

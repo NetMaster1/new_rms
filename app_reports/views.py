@@ -30,6 +30,7 @@ from app_personnel.models import BulkSimMotivation
 from .models import ProductHistory
 from django.contrib import messages
 import pandas as pd
+import numpy as np
 from datetime import datetime, date, timedelta
 import xlwt
 import openpyxl
@@ -329,7 +330,7 @@ def cashback_rep (request):
             end_date = end_date + timedelta(days=1)
             print(start_date)
             print(end_date)
-            if Customer.objects.filter(created__gte=start_date, created__lt=end_date).exists():
+            if Customer.objects.filter(created__gte=start_date, created__lt=end_date).exists():#look for new clients who were created in this time period
                 customers=Customer.objects.filter (created__gte=start_date, created__lt=end_date)
             else:
                 messages.error(request, "Новые клиенты отсутствуют")
@@ -344,7 +345,7 @@ def cashback_rep (request):
             for user in users:
                 counter=0
                 for customer in customers:
-                    if Document.objects.filter(client=customer).exists():
+                    if Document.objects.filter(client=customer).exists():#we add 1 to the counter even if the customer exists in more than one document
                         if customer.user == user:
                             counter +=1
                 if counter > 0:
@@ -1723,7 +1724,11 @@ def bonus_report_excel(request):
     return redirect("log")
 
 def bonus_report(request):
-    users = User.objects.all()
+    # users = User.objects.all().exclude(is_active=False)
+    #users = User.objects.all()
+    #users = User.objects.all().exclude(active=False)
+    group_sales=Group.objects.get(name='sales')
+    users = User.objects.filter(is_active=True, groups=group_sales ).order_by('last_name')
     categories = ProductCategory.objects.all().exclude(name='КЭО').order_by('id')
     sims=ProductCategory.objects.get(name="Сим_карты")
     shops = Shop.objects.all().exclude(name='ООС')
@@ -1737,19 +1742,55 @@ def bonus_report(request):
         end_date = request.POST["end_date"]
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
         end_date = end_date + timedelta(days=1)
+
         rhos = RemainderHistory.objects.filter(rho_type=doc_type, created__gt=start_date, created__lt=end_date)
+
+        if Customer.objects.filter(created__gte=start_date, created__lt=end_date).exists():#look for new clients who were created in this time period
+            customers=Customer.objects.filter (created__gte=start_date, created__lt=end_date)
+        else:
+            messages.error(request, "Новые клиенты отсутствуют")
+            return redirect("cashback_rep")
+        if Document.objects.filter(created__gte=start_date, created__lt=end_date, title=doc_type).exists():
+            documents=Document.objects.filter(created__gte=start_date, created__lt=end_date, title=doc_type)
+
         for user in users:
+            #first column "username"
             user_row = [user.username]
+
+            #"number of work days" column
+            dates=[]
+            list=[]
+            user_rows=rhos.filter(user=user)
+            for row in user_rows:
+                #we format 'row.created' field from <class 'datetime.datetime'> to '<str>' & cut off time values in order to receive date in <str> format for further comparaison. Then we save the date in 'dates' array
+                date=row.created.strftime('%Y-%m-%d')
+                dates.append(date)
+                #we use 'numpy.unique' function to count unique values
+                list=np.unique(dates)
+            number_of_wd=len(list)
+            user_row.append(number_of_wd)
+
+            #cashback column
+            counter=0
+            for customer in customers:
+                if Document.objects.filter(client=customer).exists():#search all documents within the time period fo new customer. 
+                    if customer.user == user: #we add 1 to the counter even if the customer exists in more than one document
+                        counter +=1
+            cash_back_bonus = counter * 15
+            user_row.append(cash_back_bonus)
+
+
+
             for category in categories:
                 sum = 0
                 for shop in shops:
                     rhos_new = rhos.filter(category=category, user=user, shop=shop)
-                    if category.name == "Сим_карты": #отсекаем из выручки интернет номера стоимостью > 550 руб
+                    if category.name == "Сим_карты": #отсекаем из выручки интернет номера стоимостью > 700 руб
                         for rho in rhos_new:
-                            if rho.sub_total <= 550:
+                            if rho.sub_total <= 700:
                                 sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
                             else:
-                                sum += int(550 * category.bonus_percent * shop.sale_k)
+                                sum += int(700 * category.bonus_percent * shop.sale_k)
                     else:
                         for rho in rhos_new:
                             sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
@@ -1771,16 +1812,18 @@ def bonus_report(request):
             monthly_bonus = MonthlyBonus.objects.create(
                 report_id=report_id,
                 user_name=user_row[0],
-                smartphones=user_row[1],
-                accessories=user_row[2],
-                sim_cards=user_row[3],
-                phones=user_row[4],
-                iphones=user_row[5],
-                insuranсе=user_row[6],
-                wink=user_row[7],
-                services=user_row[8],
-                gadgets=user_row[9],
-                modems=user_row[10],
+                number_of_work_days=user_row[1],
+                cashback=user_row[2],
+                smartphones=user_row[3],
+                accessories=user_row[4],
+                sim_cards=user_row[5],
+                phones=user_row[6],
+                iphones=user_row[7],
+                insuranсе=user_row[8],
+                wink=user_row[9],
+                services=user_row[10],
+                gadgets=user_row[11],
+                modems=user_row[12],
                 credit=credit_sum * 0.03,
                 bulk_sims= n * bulk_sim_motivation.bonus_per_sim,
                 sub_total=0,
@@ -1801,7 +1844,7 @@ def bonus_report(request):
         row_num = 0
         col_num = 1
         font_style = xlwt.XFStyle()
-        columns = []
+        columns = ['Кол-во смен','Кэшбэк']
         for category in categories:
             columns.append(category.name)
         columns.append('Кредиты %')
@@ -1817,6 +1860,10 @@ def bonus_report(request):
         for item in monthly_report:
             col_num=0
             ws.write(row_num, col_num, item.user_name, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.number_of_work_days, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.cashback, font_style)
             col_num += 1
             ws.write(row_num, col_num, item.smartphones, font_style)
             col_num += 1
