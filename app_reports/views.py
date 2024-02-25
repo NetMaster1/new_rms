@@ -1779,8 +1779,6 @@ def bonus_report(request):
             cash_back_bonus = counter * 15
             user_row.append(cash_back_bonus)
 
-
-
             for category in categories:
                 sum = 0
                 for shop in shops:
