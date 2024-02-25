@@ -1723,7 +1723,7 @@ def bonus_report_excel(request):
     return redirect("log")
 
 def bonus_report(request):
-    users = User.objects.all()
+    users = User.objects.all().exclude(active=False)
     categories = ProductCategory.objects.all().exclude(name='КЭО').order_by('id')
     sims=ProductCategory.objects.get(name="Сим_карты")
     shops = Shop.objects.all().exclude(name='ООС')

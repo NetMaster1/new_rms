@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'app_tutorial',
     'app_sims',
     'app_fiscal',
+    'dbbackup' #django dbbackup
   
 ]
 
@@ -163,6 +164,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # MESSAGE_TAGS = {
 #     messages.ERROR: 'danger'
 # }
+
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': 'backup/'}
 
 try:
    from .local_settings import *
