@@ -52,7 +52,8 @@ def daily_report(request):
 
 def save_in_excel_daily_rep(request):
     categories = ProductCategory.objects.all().order_by('id')
-    shops = Shop.objects.all().order_by("name").exclude(name="ООС")
+    #shops = Shop.objects.all().order_by("name").exclude(name="ООС")
+    shops = Shop.objects.filter(active=True, retail=True).order_by("name")
     # length=shops.count()
     doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
     if request.method == "POST":
@@ -258,26 +259,26 @@ def save_in_excel_daily_rep(request):
             col_num += 1
 
         criteria_list = [
-            "opening_balance",
-            "smartphones",
-            "accessories",
-            "sim_cards",
-            "phones",
-            "iphone",
-            "insuranсе",
+            "Остаток на начало смены",
+            "Смартфоны",
+            "Аксы",
+            "Сим_карты",
+            "Трубки",
+            "Iphone",
+            "Страховка",
             "wink",
-            "services",
-            "pay_cards",
-            "gadgets",
-            "modems",
-            "credit",
-            "card",
-            "cashack",
-            "salary",
-            "expenses",
-            "return_sum",
-            "cash_move",
-            "final_balance",
+            "услуги",
+            "КЭО",
+            "Гаджеты",
+            "Модемы",
+            "Продажа в кредит",
+            "Экваиринг",
+            "Кэшбэк",
+            "Зар. плата",
+            "Расходы",
+            "Возврат",
+            "Перемещение ден. средств",
+            "Остаток на конец смены",
         ]
         row_num = 1
         for i in criteria_list:

@@ -3098,7 +3098,7 @@ def identifier_transfer(request):
 def transfer(request, identifier_id):
     if request.user.is_authenticated:
         identifier = Identifier.objects.get(id=identifier_id)
-        shops = Shop.objects.all()
+        shops = Shop.objects.all().exclude(active=False)
         shop_default = Shop.objects.get(name="ООС")
         if Register.objects.filter(identifier=identifier).exists():
             registers = Register.objects.filter(identifier=identifier).order_by('-created')
@@ -3124,7 +3124,7 @@ def transfer(request, identifier_id):
         return redirect("login")
 
 def check_transfer(request, identifier_id):
-    shops = Shop.objects.all()
+    shops = Shop.objects.all().exclude(active=False)
     identifier = Identifier.objects.get(id=identifier_id)
     #if "check_imei" in request.GET:
     #shop = request.GET["shop"]
@@ -3175,7 +3175,7 @@ def check_transfer(request, identifier_id):
 def check_transfer_unposted(request, document_id):
     users = Group.objects.get(name='sales').user_set.all()
     group = Group.objects.get(name='admin').user_set.all()
-    shops = Shop.objects.all()
+    shops = Shop.objects.all().exclude(active=False)
     document = Document.objects.get(id=document_id)
     registers = Register.objects.filter(document=document)
     for register in registers:
@@ -3478,7 +3478,7 @@ def change_transfer_unposted(request, document_id):
         dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
         shop_receiver=document.shop_receiver
         shop_sender=document.shop_sender
-        shops = Shop.objects.all()
+        shops = Shop.objects.all().exclude(active=False)
         doc_type = DocumentType.objects.get(name="Перемещение ТМЦ")
         numbers = registers.count()
         for register, i in zip(registers, range(numbers)):
@@ -3711,7 +3711,7 @@ def unpost_transfer(request, document_id):
 def transfer_auto (request):
     group=Group.objects.get(name="admin").user_set.all()
     if request.user in group:
-        shops=Shop.objects.all()
+        shops = Shop.objects.all().exclude(active=False)
         doc_type = DocumentType.objects.get(name="Перемещение ТМЦ")
         if request.method == "POST":
             file = request.FILES["file_name"]
