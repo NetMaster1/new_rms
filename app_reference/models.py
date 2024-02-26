@@ -43,6 +43,19 @@ class Shop (models.Model):
 
 #     def __str__(self):
 #         return self.name
+    
+class AcquiringTerminal (models.Model):
+    TID = models.CharField(max_length=50)
+    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING, null=True)
+    commission=models.DecimalField(max_digits=3, decimal_places=2, default=1)
+  
+    class Meta:
+        ordering = ('TID',)  # sorting by name
+
+    def __str__(self):
+        return self.TID
+
+
 
 class ProductCategory (models.Model):
     name = models.CharField(max_length=250)

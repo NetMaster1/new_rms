@@ -137,6 +137,16 @@ class PayCardReport (models.Model):
     def __int__(self):
         return self.id
 
+class AcquiringReport (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    sum = models.IntegerField(default=0)
+    TID = models.CharField(max_length=200, null=True)
+
+    def __int__(self):
+        return self.id
+
+
 class Sim_report (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     name = models.CharField(max_length=80, null=True)
