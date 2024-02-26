@@ -1839,7 +1839,7 @@ def bonus_report(request):
     #users = User.objects.all()
     #users = User.objects.all().exclude(active=False)
     group_sales=Group.objects.get(name='sales')
-    users = User.objects.filter(is_active=True, groups=group_sales ).order_by('last_name')
+    users = User.objects.filter(is_active=True, groups=group_sales ).order_by('username')
     categories = ProductCategory.objects.all().exclude(name='КЭО').order_by('id')
     sims=ProductCategory.objects.get(name="Сим_карты")
     shops = Shop.objects.all().exclude(name='ООС')
@@ -1856,13 +1856,13 @@ def bonus_report(request):
 
         rhos = RemainderHistory.objects.filter(rho_type=doc_type, created__gt=start_date, created__lt=end_date)
 
-        if Customer.objects.filter(created__gte=start_date, created__lt=end_date).exists():#look for new clients who were created in this time period
-            customers=Customer.objects.filter (created__gte=start_date, created__lt=end_date)
+        if Customer.objects.filter(created__gt=start_date, created__lt=end_date).exists():#look for new clients who were created in this time period
+            customers=Customer.objects.filter (created__gt=start_date, created__lt=end_date)
         else:
             messages.error(request, "Новые клиенты отсутствуют")
             return redirect("cashback_rep")
-        if Document.objects.filter(created__gte=start_date, created__lt=end_date, title=doc_type).exists():
-            documents=Document.objects.filter(created__gte=start_date, created__lt=end_date, title=doc_type)
+        if Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type).exists():
+            documents=Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type)
 
         for user in users:
             #first column "username"
@@ -1894,12 +1894,12 @@ def bonus_report(request):
                 sum = 0
                 for shop in shops:
                     rhos_new = rhos.filter(category=category, user=user, shop=shop)
-                    if category.name == "Сим_карты": #отсекаем из выручки интернет номера стоимостью > 700 руб
+                    if category.name == "Сим_карты": #отсекаем из выручки интернет номера стоимостью > 1550 (Тариф премимум) руб
                         for rho in rhos_new:
-                            if rho.sub_total <= 700:
+                            if rho.sub_total <= 1550:
                                 sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
                             else:
-                                sum += int(700 * category.bonus_percent * shop.sale_k)
+                                sum += int(1550 * category.bonus_percent * shop.sale_k)
                     else:
                         for rho in rhos_new:
                             sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
@@ -1916,7 +1916,7 @@ def bonus_report(request):
             if rhos.filter(category=sims, user=user).exists():
                 sim_rhos=rhos.filter(category=sims, user=user)
                 for rho in sim_rhos:
-                    if rho.retail_price >= bulk_sim_motivation.sim_price and rho.retail_price <= 600:
+                    if rho.retail_price >= bulk_sim_motivation.sim_price and rho.retail_price <= 1550:
                         n+=1
             monthly_bonus = MonthlyBonus.objects.create(
                 report_id=report_id,

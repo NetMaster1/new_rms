@@ -11,7 +11,7 @@ DATABASES = {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE':   'django.db.backends.postgresql',
-            'NAME': 'rms_new',
+            'NAME': 'new_rms',
             'USER': 'postgres',
             'PASSWORD': 'ylhio65v',
             'HOST': 'localhost',
