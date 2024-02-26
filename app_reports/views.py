@@ -24,7 +24,7 @@ from .models import (
     SaleReport,
     PayCardReport,
     ClientReport,
-    AcquiringReport
+    AcquiringReport,
 )
 from app_clients.models import Customer
 from app_personnel.models import BulkSimMotivation
@@ -1435,19 +1435,24 @@ def card_report(request):
             dict_bank={}
             for i in range(cycle):
                 row = df1.iloc[i]#reads each row of the df1 one by one
-                item = AcquiringReport.objects.create (
+                item= AcquiringReport.objects.create (
                     report_id=report_id,
-                    sum=row.Зачисление,
-                    TID=row.НазначениеПлатежа,
+                    sum=row.Sum,
+                    TID=row.TID,
                 )
             TIDS=AcquiringTerminal.objects.all()
             report=AcquiringReport.objects.filter(report_id=report_id)
+
             for i in TIDS:
+                print('Терминал ' + i.TID)
                 total_sum=0
                 report_per_tid=report.filter(TID__contains=i.TID)
                 for c in report_per_tid:
-                    total_sum+=c.sum
-                dict_bank[i.shop]=total_sum
+                    total_sum+=int(c.sum)
+                print(total_sum)
+                shop=str(i.shop)
+                dict_bank[shop]=total_sum
+            print(dict_bank)
 
             #processing card report
             our_card_report=Card.objects.filter(created__gte=start_date, created__lte=end_date)
@@ -1456,82 +1461,64 @@ def card_report(request):
                 total_sum=0
                 our_card_report_per_shop=our_card_report.filter(shop=shop)
                 for i in our_card_report_per_shop:
-                    total_sum+=i.sum
+                    total_sum+=int(i.sum)
+                shop=str(i.shop)
                 dict_our[shop]=total_sum
+            print(dict_our)
 
 
-        #==========================Convert to Excel module=========================================
-        response = HttpResponse(content_type="application/ms-excel")
-        response["Content-Disposition"] = (
-            "attachment; filename=BonusRep_" + str(date) + ".xls"
-        )
-        # str(datetime.date.today())+'.xls'
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=BonusRep_" + str(date) + ".xls"
+            )
+            # str(datetime.date.today())+'.xls'
 
-        wb = xlwt.Workbook(encoding="utf-8")
-        ws = wb.add_sheet('Сверка')
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('Сверка')
 
-        # sheet header in the first row
-        row_num = 0
-        col_num = 1
-        font_style = xlwt.XFStyle()
-        columns = ['Кол-во смен','Кэшбэк']
-        # for category in categories:
-        #     columns.append(category.name)
-        columns.append('Кредиты %')
-        columns.append('Тяжелые тарифы (100)')
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num + 1, columns[col_num], font_style)
+            # sheet header in the first row
+            row_num = 0
+            col_num = 0
+            font_style = xlwt.XFStyle()
+            columns = ['TID','Сумма_банк', "Сумма_Ритейл", ]
+            # for category in categories:
+            #     columns.append(category.name)
+            # columns.append('Кредиты %')
+            # columns.append('Тяжелые тарифы (100)')
+            for col_num in range(len(columns)):
+                #ws.write(row_num, col_num + 1, columns[col_num], font_style)
+                ws.write(row_num, col_num, columns[col_num], font_style)
 
-        # sheet body, remaining rows
-        font_style = xlwt.XFStyle()
-        monthly_report = MonthlyBonus.objects.filter(report_id=report_id)
+            # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
 
-        row_num = 1
-        for item in monthly_report:
-            col_num=0
-            ws.write(row_num, col_num, item.user_name, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.number_of_work_days, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.cashback, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.smartphones, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.accessories, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.sim_cards, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.phones, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.iphones, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.insuranсе, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.wink, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.services, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.gadgets, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.modems, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.credit, font_style)
-            col_num +=1
-            ws.write(row_num, col_num, item.bulk_sims, font_style)
-            row_num += 1
-         
-        # query_set = MonthlyBonus.objects.filter().values()
-        # data = pd.DataFrame(query_set)
-        # data = data.drop("id", 1)
-        # data = data.set_index("user_name")
-        # data.to_excel("D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx")
+            row_num = 1
+            #for item in monthly_report:
+            #for i, c, x, y in zip(dict_bank.items(), dict_our.items()):
+            #for i in dict_bank:
+            for key, key1 in zip(dict_bank, dict_our):
+                col_num=0
+                ws.write(row_num, col_num, key, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, dict_bank[key], font_style)
+                col_num += 1
+                ws.write(row_num, col_num, dict_our[key1], font_style)
+                row_num += 1
+                
+            
+            # query_set = MonthlyBonus.objects.filter().values()
+            # data = pd.DataFrame(query_set)
+            # data = data.drop("id", 1)
+            # data = data.set_index("user_name")
+            # data.to_excel("D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx")
 
-        monthly_bonus_reports = MonthlyBonus.objects.all()
-        for i in monthly_bonus_reports:
-            i.delete()
+            # monthly_bonus_reports = MonthlyBonus.objects.all()
+            # for i in monthly_bonus_reports:
+            #     i.delete()
 
-        wb.save(response)
-        return response
+            wb.save(response)
+            return response
 
 
             
@@ -1553,11 +1540,13 @@ def card_report(request):
         #         "total_sum": total_sum
         #         }
         #     return render(request, "reports/card_report.html", context)
-        # else:
-        #     context = {
-        #         "shops": shops, 
-        #     }
-        #     return render(request, "reports/card_report.html", context)
+        else:
+            context = {
+                "shops": shops, 
+            }
+            return render(request, "reports/card_report.html", context)
+    
+
     else:
         auth.logout(request)
         return redirect("login")
