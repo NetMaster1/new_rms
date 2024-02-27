@@ -21,7 +21,7 @@ class Supplier (models.Model):
 class Shop (models.Model):
     name = models.CharField(max_length=50)
     TID = models.CharField(max_length=50, null=True)#acquiring terminal number (TID)
-    commission=models.DecimalField(max_digits=3, decimal_places=2, default=1)#acquiring terminal commission rate
+    commission=models.DecimalField(max_digits=3, decimal_places=2, default=2.1)#acquiring terminal commission rate
     sale_k=models.DecimalField(max_digits=3, decimal_places=2, default=1)
     retail = models.BooleanField(default=True)#mark for retail shops
     active = models.BooleanField(default=True)#mark for active shops
