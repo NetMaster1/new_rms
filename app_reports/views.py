@@ -23,7 +23,8 @@ from .models import (
     MonthlyBonus,
     SaleReport,
     PayCardReport,
-    ClientReport
+    ClientReport,
+    AcquiringReport,
 )
 from app_clients.models import Customer
 from app_personnel.models import BulkSimMotivation
@@ -1417,7 +1418,7 @@ def credit_report(request):
 #====================Pay_Card_Reports==============================
 def card_report(request):
     if request.user.is_authenticated:
-        shops = Shop.objects.all()
+        shops = Shop.objects.filter(active=True, retail=True)
         cards = Card.objects.all()
         if request.method == "POST":
             start_date = request.POST["start_date"]
@@ -1425,29 +1426,130 @@ def card_report(request):
             end_date = request.POST["end_date"]
             end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
             end_date = end_date + timedelta(days=1)
-            shop = request.POST.get("shop", False)
-            if shop:
-                shop = Shop.objects.get(id=shop)
+            file = request.FILES["file_name"]
+
+            report_id = ReportTempId.objects.create()
+
+            df1 = pd.read_excel(file)
+            cycle = len(df1)
+            #processing data from Card reports from shops
+            our_card_report=Card.objects.filter(created__gte=start_date, created__lte=end_date)
+            for shop in shops:
+                total_sum_retail=0
+                our_card_report_per_shop=our_card_report.filter(shop=shop)
+                for i in our_card_report_per_shop:
+                    total_sum_retail+=int(i.sum)
+                
+                item= AcquiringReport.objects.create (
+                    report_id=report_id,
+                    sum_retail=total_sum_retail,
+                    TID=shop.TID,
+                    shop=str(shop.name)
+                )
+            
+                for i in range(cycle):
+                    row = df1.iloc[i]#reads each row of the df1 one by one
+                    description=row.TID
+                    sum=row.Sum
+                    if str(shop.TID) in description:
+                        item.sum_bank+=int(row.Sum)
+                        item.save()
     
-            card_report = Card.objects.filter(
-                created__gte=start_date, created__lte=end_date
-            )
-            if shop:
-                card_report = card_report.filter(shop=shop)
-                total_sum=0
-                for item in card_report:
-                    total_sum+=item.sum
+            #qs=AcquiringReport.objects.filter(report_id=report_id).values_list()
+            report=AcquiringReport.objects.filter(report_id=report_id)
+            qs=report.values('TID', 'shop', 'sum_bank', 'sum_retail')
+            data=pd.DataFrame.from_records(qs)
+            data.to_excel('data.xlsx')
+
             context = {
-                "shops": shops,
-                "card_report": card_report,
-                "total_sum": total_sum
-                }
+                "shops": shops, 
+            }
             return render(request, "reports/card_report.html", context)
+
+            # #==========================Convert to Excel module=========================================
+            # response = HttpResponse(content_type="application/ms-excel")
+            # response["Content-Disposition"] = (
+            #     "attachment; filename=BonusRep_" + str(date) + ".xls"
+            # )
+            # # str(datetime.date.today())+'.xls'
+
+            # wb = xlwt.Workbook(encoding="utf-8")
+            # ws = wb.add_sheet('Сверка')
+
+            # # sheet header in the first row
+            # row_num = 0
+            # col_num = 0
+            # font_style = xlwt.XFStyle()
+            # columns = ['TID','Сумма_банк', "Сумма_Ритейл", ]
+            # # for category in categories:
+            # #     columns.append(category.name)
+            # # columns.append('Кредиты %')
+            # # columns.append('Тяжелые тарифы (100)')
+            # for col_num in range(len(columns)):
+            #     #ws.write(row_num, col_num + 1, columns[col_num], font_style)
+            #     ws.write(row_num, col_num, columns[col_num], font_style)
+
+            # sheet body, remaining rows
+            # font_style = xlwt.XFStyle()
+
+            # row_num = 1
+            #for item in monthly_report:
+            #for i, c, x, y in zip(dict_bank.items(), dict_our.items()):
+            #for i in dict_bank:
+            # for i in range(cycle)
+            #     col_num=0
+            #     ws.write(row_num, col_num, key, font_style)
+            #     col_num += 1
+            #     ws.write(row_num, col_num, dict_bank[key], font_style)
+            #     col_num += 1
+            #     ws.write(row_num, col_num, dict_our[key1], font_style)
+            #     row_num += 1
+                
+            
+            # query_set = MonthlyBonus.objects.filter().values()
+            # data = pd.DataFrame(query_set)
+            # data = data.drop("id", 1)
+            # data = data.set_index("user_name")
+            # data.to_excel("D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx")
+
+            # monthly_bonus_reports = MonthlyBonus.objects.all()
+            # for i in monthly_bonus_reports:
+            #     i.delete()
+
+            # monthly_bonus_reports = AcquiringReport.objects.all()
+            # for i in monthly_bonus_reports:
+            #     i.delete()
+
+            # wb.save(response)
+            # return response
+
+
+            
+
+
+        #     shop = request.POST.get("shop", False)
+        #     if shop:
+        #         shop = Shop.objects.get(id=shop)
+    
+        #     card_report = Card.objects.filter(created__gte=start_date, created__lte=end_date)
+        #     if shop:
+        #         card_report = card_report.filter(shop=shop)
+        #         total_sum=0
+        #         for item in card_report:
+        #             total_sum+=item.sum
+        #     context = {
+        #         "shops": shops,
+        #         "card_report": card_report,
+        #         "total_sum": total_sum
+        #         }
+        #     return render(request, "reports/card_report.html", context)
         else:
             context = {
                 "shops": shops, 
             }
             return render(request, "reports/card_report.html", context)
+    
+
     else:
         auth.logout(request)
         return redirect("login")
@@ -1729,7 +1831,7 @@ def bonus_report(request):
     #users = User.objects.all()
     #users = User.objects.all().exclude(active=False)
     group_sales=Group.objects.get(name='sales')
-    users = User.objects.filter(is_active=True, groups=group_sales ).order_by('last_name')
+    users = User.objects.filter(is_active=True, groups=group_sales ).order_by('username')
     categories = ProductCategory.objects.all().exclude(name='КЭО').order_by('id')
     sims=ProductCategory.objects.get(name="Сим_карты")
     shops = Shop.objects.all().exclude(name='ООС')
@@ -1746,13 +1848,13 @@ def bonus_report(request):
 
         rhos = RemainderHistory.objects.filter(rho_type=doc_type, created__gt=start_date, created__lt=end_date)
 
-        if Customer.objects.filter(created__gte=start_date, created__lt=end_date).exists():#look for new clients who were created in this time period
-            customers=Customer.objects.filter (created__gte=start_date, created__lt=end_date)
+        if Customer.objects.filter(created__gt=start_date, created__lt=end_date).exists():#look for new clients who were created in this time period
+            customers=Customer.objects.filter (created__gt=start_date, created__lt=end_date)
         else:
             messages.error(request, "Новые клиенты отсутствуют")
             return redirect("cashback_rep")
-        if Document.objects.filter(created__gte=start_date, created__lt=end_date, title=doc_type).exists():
-            documents=Document.objects.filter(created__gte=start_date, created__lt=end_date, title=doc_type)
+        if Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type).exists():
+            documents=Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type)
 
         for user in users:
             #first column "username"
@@ -1784,12 +1886,12 @@ def bonus_report(request):
                 sum = 0
                 for shop in shops:
                     rhos_new = rhos.filter(category=category, user=user, shop=shop)
-                    if category.name == "Сим_карты": #отсекаем из выручки интернет номера стоимостью > 700 руб
+                    if category.name == "Сим_карты": #отсекаем из выручки интернет номера стоимостью > 1550 (Тариф премимум) руб
                         for rho in rhos_new:
-                            if rho.sub_total <= 700:
+                            if rho.sub_total <= 1550:
                                 sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
                             else:
-                                sum += int(700 * category.bonus_percent * shop.sale_k)
+                                sum += int(1550 * category.bonus_percent * shop.sale_k)
                     else:
                         for rho in rhos_new:
                             sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
@@ -1806,7 +1908,7 @@ def bonus_report(request):
             if rhos.filter(category=sims, user=user).exists():
                 sim_rhos=rhos.filter(category=sims, user=user)
                 for rho in sim_rhos:
-                    if rho.retail_price >= bulk_sim_motivation.sim_price and rho.retail_price <= 600:
+                    if rho.retail_price >= bulk_sim_motivation.sim_price and rho.retail_price <= 1550:
                         n+=1
             monthly_bonus = MonthlyBonus.objects.create(
                 report_id=report_id,
