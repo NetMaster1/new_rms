@@ -4,7 +4,7 @@ from ssl import create_default_context
 from app_personnel.models import BonusAccount, Salary
 from django.db.models import query
 from app_product.views import change_cash_receipt_unposted
-from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product, Expense, AcquiringTerminal
+from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product, Expense
 from app_cash.models import Cash, Credit, Card
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages, auth
@@ -1428,83 +1428,83 @@ def card_report(request):
             end_date = end_date + timedelta(days=1)
             file = request.FILES["file_name"]
 
-            #processing file from bank
+            report_id = ReportTempId.objects.create()
+
             df1 = pd.read_excel(file)
             cycle = len(df1)
-            report_id = ReportTempId.objects.create()
-            dict_bank={}
-            for i in range(cycle):
-                row = df1.iloc[i]#reads each row of the df1 one by one
-                item= AcquiringReport.objects.create (
-                    report_id=report_id,
-                    sum=row.Sum,
-                    TID=row.TID,
-                )
-            TIDS=AcquiringTerminal.objects.all()
-            report=AcquiringReport.objects.filter(report_id=report_id)
-
-            for i in TIDS:
-                print('Терминал ' + i.TID)
-                total_sum=0
-                report_per_tid=report.filter(TID__contains=i.TID)
-                for c in report_per_tid:
-                    total_sum+=int(c.sum)
-                print(total_sum)
-                shop=str(i.shop)
-                dict_bank[shop]=total_sum
-            print(dict_bank)
-
-            #processing card report
+            #processing data from Card reports from shops
             our_card_report=Card.objects.filter(created__gte=start_date, created__lte=end_date)
-            dict_our={}
             for shop in shops:
-                total_sum=0
+                total_sum_retail=0
                 our_card_report_per_shop=our_card_report.filter(shop=shop)
                 for i in our_card_report_per_shop:
-                    total_sum+=int(i.sum)
-                shop=str(i.shop)
-                dict_our[shop]=total_sum
-            print(dict_our)
+                    total_sum_retail+=int(i.sum)
+                
+                item= AcquiringReport.objects.create (
+                    report_id=report_id,
+                    sum_retail=total_sum_retail,
+                    TID=shop.TID,
+                    shop=str(shop.name)
+                )
+            
+                for i in range(cycle):
+                    row = df1.iloc[i]#reads each row of the df1 one by one
+                    description=row.TID
+                    sum=row.Sum
+                    if str(shop.TID) in description:
+                        item.sum_bank+=int(row.Sum)
+                        item.save()
+    
+            #qs=AcquiringReport.objects.filter(report_id=report_id).values_list()
+            report=AcquiringReport.objects.filter(report_id=report_id)
+            for i in report:
+            qs=report.values('TID', 'shop', 'sum_bank', 'sum_retail')
+            data=pd.DataFrame.from_records(qs)
+            data.to_excel('data.xlsx')
 
+            context = {
+                "shops": shops, 
+            }
+            return render(request, "reports/card_report.html", context)
 
-            #==========================Convert to Excel module=========================================
-            response = HttpResponse(content_type="application/ms-excel")
-            response["Content-Disposition"] = (
-                "attachment; filename=BonusRep_" + str(date) + ".xls"
-            )
-            # str(datetime.date.today())+'.xls'
+            # #==========================Convert to Excel module=========================================
+            # response = HttpResponse(content_type="application/ms-excel")
+            # response["Content-Disposition"] = (
+            #     "attachment; filename=BonusRep_" + str(date) + ".xls"
+            # )
+            # # str(datetime.date.today())+'.xls'
 
-            wb = xlwt.Workbook(encoding="utf-8")
-            ws = wb.add_sheet('Сверка')
+            # wb = xlwt.Workbook(encoding="utf-8")
+            # ws = wb.add_sheet('Сверка')
 
-            # sheet header in the first row
-            row_num = 0
-            col_num = 0
-            font_style = xlwt.XFStyle()
-            columns = ['TID','Сумма_банк', "Сумма_Ритейл", ]
-            # for category in categories:
-            #     columns.append(category.name)
-            # columns.append('Кредиты %')
-            # columns.append('Тяжелые тарифы (100)')
-            for col_num in range(len(columns)):
-                #ws.write(row_num, col_num + 1, columns[col_num], font_style)
-                ws.write(row_num, col_num, columns[col_num], font_style)
+            # # sheet header in the first row
+            # row_num = 0
+            # col_num = 0
+            # font_style = xlwt.XFStyle()
+            # columns = ['TID','Сумма_банк', "Сумма_Ритейл", ]
+            # # for category in categories:
+            # #     columns.append(category.name)
+            # # columns.append('Кредиты %')
+            # # columns.append('Тяжелые тарифы (100)')
+            # for col_num in range(len(columns)):
+            #     #ws.write(row_num, col_num + 1, columns[col_num], font_style)
+            #     ws.write(row_num, col_num, columns[col_num], font_style)
 
             # sheet body, remaining rows
-            font_style = xlwt.XFStyle()
+            # font_style = xlwt.XFStyle()
 
-            row_num = 1
+            # row_num = 1
             #for item in monthly_report:
             #for i, c, x, y in zip(dict_bank.items(), dict_our.items()):
             #for i in dict_bank:
-            for key, key1 in zip(dict_bank, dict_our):
-                col_num=0
-                ws.write(row_num, col_num, key, font_style)
-                col_num += 1
-                ws.write(row_num, col_num, dict_bank[key], font_style)
-                col_num += 1
-                ws.write(row_num, col_num, dict_our[key1], font_style)
-                row_num += 1
+            # for i in range(cycle)
+            #     col_num=0
+            #     ws.write(row_num, col_num, key, font_style)
+            #     col_num += 1
+            #     ws.write(row_num, col_num, dict_bank[key], font_style)
+            #     col_num += 1
+            #     ws.write(row_num, col_num, dict_our[key1], font_style)
+            #     row_num += 1
                 
             
             # query_set = MonthlyBonus.objects.filter().values()
@@ -1517,8 +1517,12 @@ def card_report(request):
             # for i in monthly_bonus_reports:
             #     i.delete()
 
-            wb.save(response)
-            return response
+            # monthly_bonus_reports = AcquiringReport.objects.all()
+            # for i in monthly_bonus_reports:
+            #     i.delete()
+
+            # wb.save(response)
+            # return response
 
 
             

@@ -1,11 +1,8 @@
 from django.contrib import admin
-from . models import Expense, Shop, AcquiringTerminal, Supplier, Product, ProductCategory, Services, DocumentType, Expense, Teko_pay, Voucher, Contributor
+from . models import Expense, Shop, Supplier, Product, ProductCategory, Services, DocumentType, Expense, Teko_pay, Voucher, Contributor
 
 class ShopAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'sale_k', 'retail', 'subdealer', 'cash_register', 'shift_status', 'active', 'shift_status_updated',)
-
-class AcquiringTerminalAdmin(admin.ModelAdmin):
-    list_display = ('id', 'TID', 'shop', 'commission',)
+    list_display = ('id', 'name', 'sale_k', 'TID', 'commission', 'retail', 'subdealer', 'cash_register', 'shift_status', 'active', 'shift_status_updated',)
 
 class SupplierAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
@@ -15,7 +12,6 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('imei', 'name',)
     list_select_related = True
     list_editable = ('imei', 'category', 'name')
-
 
 class ProductCategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'bonus_percent')
@@ -39,7 +35,6 @@ class ContributorAdmin(admin.ModelAdmin):
     list_display = ('id', 'name',)
 
 admin.site.register(Shop, ShopAdmin)
-admin.site.register(AcquiringTerminal, AcquiringTerminalAdmin)
 admin.site.register(Supplier, SupplierAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductCategory, ProductCategoryAdmin)

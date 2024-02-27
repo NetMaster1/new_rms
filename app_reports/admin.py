@@ -6,7 +6,7 @@ class ProductHistoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'document', 'name', 'imei', 'quantity_in', 'quantity_out')
 
 class AcquiringReportAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created', 'TID', 'sum')
+    list_display = ('id', 'created', 'TID', 'sum_bank', 'sum_retail',)
 
 class ReportTempIdAdmin(admin.ModelAdmin):
     list_display = ('id', 'created')
