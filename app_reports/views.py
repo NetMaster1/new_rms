@@ -900,7 +900,7 @@ def delivery_report(request):
                 counter=0
                 for item in queryset_list:
                     if item.supplier == supplier:
-                        counter+=item.wholesale_price                
+                        counter+=item.sub_total                
                 report_item=DeliveryReport.objects.create(
                     report_id=report_id,
                     supplier=supplier.name,
