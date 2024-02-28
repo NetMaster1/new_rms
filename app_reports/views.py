@@ -25,6 +25,7 @@ from .models import (
     PayCardReport,
     ClientReport,
     AcquiringReport,
+    DeliveryReport,
 )
 from app_clients.models import Customer
 from app_personnel.models import BulkSimMotivation
@@ -880,6 +881,45 @@ def sale_report_per_supplier (request):
 
 
 def delivery_report(request):
+    if request.user.is_authenticated:
+        suppliers = Supplier.objects.all()
+        # deliveries = Delivery.objects.all()
+        doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
+        queryset_list = RemainderHistory.objects.filter(rho_type=doc_type.id)
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = request.POST["end_date"]
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+            queryset_list = queryset_list.filter(created__gte=start_date, created__lte=end_date)
+            report_id = ReportTempId.objects.create()
+            for supplier in suppliers:
+                counter=0
+                for item in queryset_list:
+                    if item.supplier == supplier:
+                        counter+=item.wholesale_price                
+                report_item=DeliveryReport.objects.create(
+                    report_id=report_id,
+                    supplier=supplier.name,
+                    sum=counter
+                )
+            
+            query=DeliveryReport.objects.filter(report_id=report_id)
+            qs=query.values('supplier', 'sum',)
+            data=pd.DataFrame.from_records(qs)
+            data.to_excel('delivery.xlsx')
+           
+            return render(request, "reports/delivery_report.html")
+        
+        else:
+            return render(request, "reports/delivery_report.html")
+    else:
+        logout(request)
+        return redirect('login')
+
+
+def delivery_report_per_supplier(request):
     categories = ProductCategory.objects.all()
     suppliers = Supplier.objects.all()
     # deliveries = Delivery.objects.all()

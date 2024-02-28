@@ -182,3 +182,12 @@ class ClientReport (models.Model):
 
     def __int__(self):
         return self.id
+    
+class DeliveryReport (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    supplier = models.CharField(max_length=100, null=True)
+    sum = models.IntegerField(null=True)
+
+    def __int__(self):
+        return self.id

@@ -23,7 +23,9 @@ urlpatterns = [
     path ('daily_pay_card_rep_general', views.daily_pay_card_rep_general, name='daily_pay_card_rep_general'),
     path ('daily_pay_card_rep_per_shop', views.daily_pay_card_rep_per_shop, name='daily_pay_card_rep_per_shop'),
     path ('daily_shop_rep', views.daily_shop_rep, name='daily_shop_rep'),
+
     path ('delivery_report', views.delivery_report, name='delivery_report'),
+    path ('delivery_report_per_supplier', views.delivery_report_per_supplier, name='delivery_report_per_supplier'),
 
     path ('remainder_report', views.remainder_report, name='remainder_report'),
     path ('remainder_report_output/<int:shop_id>/<int:category_id>/<date>', views.remainder_report_output, name='remainder_report_output'),
@@ -44,6 +46,7 @@ urlpatterns = [
     path ('account_report_60_excel', views.account_report_60_excel, name='account_report_60_excel'),
     path ('account_report_62_excel', views.account_report_62_excel, name='account_report_62_excel'),
     path ('account_report_90_excel', views.account_report_90_excel, name='account_report_90_excel'),
+
    
 
 ]
