@@ -29,7 +29,6 @@ urlpatterns = [
     path ('change_delivery_unposted/<int:document_id>', views.change_delivery_unposted, name='change_delivery_unposted'),
     path ('change_delivery_posted/<int:document_id>', views.change_delivery_posted, name='change_delivery_posted'),
     path ('enter_new_product_from_unposted/<int:document_id>', views.enter_new_product_from_unposted, name='enter_new_product_from_unposted'),
-   
     path ('unpost_delivery/<int:document_id>', views.unpost_delivery, name='unpost_delivery'),
    
     # ======================Recognition=========================
@@ -122,7 +121,6 @@ urlpatterns = [
     path ('check_transfer_unposted/<int:document_id>', views.check_transfer_unposted, name='check_transfer_unposted'),
     # path ('delete_line_posted_transfer/<int:document_id>/<str:imei>', views.delete_line_posted_transfer, name='delete_line_posted_transfer'),
     path ('delete_line_unposted_transfer/<int:document_id>/<str:imei>', views.delete_line_unposted_transfer, name='delete_line_unposted_transfer'),
-
     path ('transfer_auto', views.transfer_auto, name='transfer_auto'),
 
     # ===============================Revaluation==================================

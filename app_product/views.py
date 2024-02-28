@@ -7061,6 +7061,16 @@ def cash_movement(request):
                             )
                         obj.save()
                         cash_remainder = obj.current_remainder
+
+                #=============================Smsc API=======================
+                #В сообщении нужно обязательно указать отправителя, иначе спам фильтр не пропустит его.
+                phone='79519125000'
+                message=f'ООО Ритейл. РКО {sum} руб. {shop_cash_sender}; {dateTime}; {request.user.last_name}'
+                #base_url="https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={}&mes=OOO Ритейл. Ваш телефон готов."
+                base_url="https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={}&mes={}"
+                url=base_url.format(phone, message)
+                api_request=requests.get(url)
+
                 # SHOP RECEIVER OPERATIONS
                 if Cash.objects.filter(shop=shop_cash_receiver, created__lt=dateTime).exists():
                     cho_latest_before = Cash.objects.filter(shop=shop_cash_receiver, created__lt=dateTime).latest('created')
@@ -7090,6 +7100,7 @@ def cash_movement(request):
                         cash_remainder = obj.current_remainder
                 document.sum = sum
                 document.save()
+
                 if request.user in users:
                     return redirect ('sale_interface')
                 else:
@@ -7104,6 +7115,7 @@ def cash_movement(request):
                     posted=False,
                     sum=sum
                 )
+
                 if request.user in users:
                     return redirect ('sale_interface')
                 else:

@@ -168,6 +168,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': 'backup/'}
 
+# EMAIL_HOST = 'smtp.yandex.ru'
+# EMAIL_POSRT = 537
+# EMAIL_HOST_USER = '79200711112@yandex.ru'
+# EMAIL_HOST_PASSWORD = '39aZifol_01'
+# EMAIL_USE_TLS = True
+# EMAIL_USE_SSL = False
+
+
+
+
 try:
    from .local_settings import *
 except ImportError:
