@@ -191,3 +191,21 @@ class DeliveryReport (models.Model):
 
     def __int__(self):
         return self.id
+    
+class ExpensesReport (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    shop = models.CharField(max_length=50, null=True)
+    sum = models.IntegerField(null=True)
+
+    def __int__(self):
+        return self.id
+    
+class SalaryReport (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    user = models.CharField(max_length=50, null=True)
+    sum = models.IntegerField(null=True)
+
+    def __int__(self):
+        return self.id

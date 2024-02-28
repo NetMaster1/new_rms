@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import AcquiringReport, PayCardReport, ProductHistory, ReportTemp, ReportTempId, DailySaleRep, SaleReport, MonthlyBonus, Sim_report, ClientReport
+from . models import AcquiringReport, PayCardReport, ProductHistory, ReportTemp, ReportTempId, DailySaleRep, SaleReport, MonthlyBonus, Sim_report, ClientReport, SalaryReport
 
 
 class ProductHistoryAdmin(admin.ModelAdmin):
@@ -34,6 +34,10 @@ class ClientReportAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'phone', 'user', 'cashback_awarded', 'cashback_off', 'cashback_remaining' ) 
     list_per_page=500
 
+class SalaryReportAdmin(admin.ModelAdmin):
+    list_display = ('id', 'created', 'user', 'sum') 
+   
+
 
 admin.site.register(ProductHistory, ProductHistoryAdmin)
 admin.site.register(AcquiringReport, AcquiringReportAdmin)
@@ -45,3 +49,4 @@ admin.site.register(SaleReport, SaleReportAdmin)
 admin.site.register(MonthlyBonus, MonthlyBonusAdmin)
 admin.site.register(Sim_report, Sim_reportAdmin)
 admin.site.register(ClientReport, ClientReportAdmin)
+admin.site.register(SalaryReport, SalaryReportAdmin)

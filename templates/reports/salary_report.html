@@ -1,80 +1,89 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="hide">
-    <div class="container">
-        <div class="page_location">
-            <div class="border rounded p-3">
-    <!-- =====================Alert Messages Module=================== -->
-    <div class="container">
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-info" role="alert">
-            <!-- <button class="close" data-dismiss="alert">
-                                            <small><sup>x</sup></small>
-                                        </button> -->
-            {{ message }}
+<!-- <div class="hide"> -->
+<div class="container">
+<div class="page_location">
+
+    <div class="menu">
+            <div class="row">
+                <h3>Отчет по выплатам зп с точек</h3>
+            </div>
+    </div>
+    <div class="menu">
+            <form action="{% url 'salary_report' %}" method="POST">
+                {% csrf_token %}
+
+                <div class="row form-row">
+                    <!-- <div class="col">
+                        <input type="text" name="imei" placeholder="IMEI">
+                    </div> -->
+
+                    <!-- <div class="col-2">
+                        <select name="user" id="user" class='form-inline'>
+                            <option value="">Выберите магазин</option>
+                            {% for user in users %}
+                            <option value="{{user.id}}">{{user}}</option>
+                            {% endfor %}
+                        </select>
+                    </div> -->
+
+                </div>
+
+                <div class="row form-row mt-3">
+                    <div class="col-2">
+                        <input type="date" id='start_date' name="start_date">
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='end_date' name="end_date">
+                    </div>
+
+
+                    <div class="col-2">
+                        <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'close_report' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                  
+            </form>
         </div>
-        {% endfor%}
-        {% endif%}
-    </div>
-    <!-- ===================End of Alert Messages Module================ -->
-        <h5>Ведомость по выплате заработной платы за период с {{start_date}} {{end_date}}</h5>
-
-        </div>
-
-        <div class="border rounded p-3">
-        <div class="row form-row m-auto">
-            <div class="col-3">
-        <form action="{% url 'salary_report' %}" method="POST">
-            {% csrf_token %}
-        
-            <div class="row form-row m-auto">
-                    <input type="date" id='start_date' class='form-control' name="start_date" required>
-               
-                    <input type="date" id='end_date' class='form-control' name="end_date" required>
-                </div>
-            </div>
-        
-
-            <div class="col-2">
-                <div class="row">
-                <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
-                </div>
-                <div class="row">
-                <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
-                </div>
-                <div class="row">
-                <a href="{% url 'close_report' %}"class="btn btn-sm btn-block btn-outline-dark" >
-                  Закрыть без сохранения
-                </a>
-                </div>
-                <div class="row">
-                <a href="#"class="btn btn-sm btn-block btn-outline-dark" >
-                    Сохранить в Excel
-                </a>
-                </div>
-            </div>
-        </form>
-    </div>
-    </div>
-
-        <div class="border rounded p-3">
-            <div class="row form-row m-auto">
-                {% for i in arr %}
-                {% for key, value in i.items %}
-                <div class="row">
-                    <div class="col-2">{{key}}:</div>
-                    <div class="col-2">{{value}}</div>
-                </div>
-                
-                {%endfor%}
-                {% endfor %}
-            </div>
         </div>
 
-</div>
-</div>
-</div>
+    <div class="log">
+     
+
+
+        <!-- <div class="row">
+            <div class="col-2"><h5>Дата</h5></div>
+            <div class="col-1"><h5>Документ</h5></div>
+            <div class="col-2"><h5>IMEI</h5></div>
+            <div class="col-2"><h5>Наименование</h5></div>
+            <div class="col-1"><h5>Кол-во</h5></div>
+            <div class="col-2"><h5>Оптовая цена</h5></div>
+            <div class="col-2"><h5>Поставщик</h5></div>
+          
+        </div> -->
+        <!-- {% for item in queryset_list %}
+    <div class="row mt-1">
+            <div class="col-2">{{item.created}}</div>
+            <div class="col-1">{{item.document}}</div>
+            <div class="col-2">{{item.imei}}</div>
+            <div class="col-2">{{item.name}}</div>
+            <div class="col-1">{{item.incoming_quantity}} шт. </div>
+            <div class="col-2">{{item.wholesale_price}} руб.</div>
+            <div class="col-2">{{item.supplier}} руб.</div>
+    </div>
+        {% endfor %} -->
+    </div>
+
+    </div>
+
 
 
 

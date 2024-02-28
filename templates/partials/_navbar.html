@@ -31,17 +31,23 @@
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                     <li><a class="dropdown-item" href="{% url 'sale_report_analytic' %}">Аналитика в разрезе продаж</a></li>
                     <li><a class="dropdown-item" href="{% url 'sale_report_per_shop' %}">Продажи по точкам для Арины</a></li>
-                    <li><a class="dropdown-item" href="{% url 'delivery_report' %}">Отчет по закупкам</a></li>
                     <li><a class="dropdown-item" href="{% url 'sale_report_per_supplier' %}">Продажи по поставщикам</a></li>
                     <li><a class="dropdown-item" href="{% url 'daily_report' %}">Отчет за день в Excel</a></li>
+                    <hr>
+                    <li><a class="dropdown-item" href="{% url 'delivery_report' %}">Отчет по закупкам</a></li>
+                    <li><a class="dropdown-item" href="{% url 'expenses_report' %}">Отчет по расходам на точках</a></li>
+                    <li><a class="dropdown-item" href="{% url 'salary_report' %}">Отчет по выдаче зар. платы на точках</a></li>
+                    <hr>
                     <li><a class="dropdown-item" href="{% url 'daily_pay_card_rep_general' %}">Отчет по КЭО в Excel</a></li>
                     <li><a class="dropdown-item" href="{% url 'remainder_report' %}" >Отчет по остаткам на на точке на дату</a></li>
                     <li><a class="dropdown-item" href="{% url 'remainder_general_report' %}" >Отчет по остаткам общий по всем точкам</a></li>
                     <li><a class="dropdown-item" href="{% url 'remainder_report_dynamic' %}">Отчет по остаткам динамический</a></li>
                     <li><a class="dropdown-item" href="{% url 'item_report' %}">Отчет по движению ТМЦ</a></li>
+                    <hr>
                     <li><a class="dropdown-item" href="{% url 'bonus_report' %}">Общий бонус за месяц</a></li>
                     <li><a class="dropdown-item" href="{% url 'number_of_work_days' %}">Кол-во смен в месяц</a></li>
-                    <li><a class="dropdown-item" href="{% url 'salary_report' %}">Отчет по ФОТ</a></li>
+                    <hr>
+                    
                     <li><a class="dropdown-item" href="{% url 'payment_report' %}">Отчет по типам оплаты</a></li>
                     <li><a class="dropdown-item" href="{% url 'cash_report' %}">Отчет по движению наличных</a></li>
                     <li><a class="dropdown-item" href="{% url 'card_report' %}">Отчет по оплате картами</a></li>

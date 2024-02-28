@@ -26,6 +26,8 @@ from .models import (
     ClientReport,
     AcquiringReport,
     DeliveryReport,
+    ExpensesReport,
+    SalaryReport,
 )
 from app_clients.models import Customer
 from app_personnel.models import BulkSimMotivation
@@ -955,6 +957,84 @@ def delivery_report_per_supplier(request):
         }
     return render(request, "reports/delivery_report.html", context)
 
+def expenses_report(request):
+    if request.user.is_authenticated:
+        #users=User.objects.all()
+        doc_type = DocumentType.objects.get(name="РКО (хоз.расходы)")
+        shops = Shop.objects.filter(active=True, retail=True).order_by("name")
+        queryset_list = Cash.objects.filter(cho_type=doc_type.id)
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = request.POST["end_date"]
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+            queryset_list = queryset_list.filter(created__gte=start_date, created__lte=end_date)
+            report_id = ReportTempId.objects.create()
+            for shop in shops:
+                counter=0
+                for item in queryset_list:
+                    if item.shop == shop:
+                        counter+=item.cash_out               
+                report_item=ExpensesReport.objects.create(
+                    report_id=report_id,
+                    shop=shop.name,
+                    sum=counter,
+                )
+            
+            query=ExpensesReport.objects.filter(report_id=report_id)
+            qs=query.values('shop', 'sum',)
+            data=pd.DataFrame.from_records(qs)
+            data.to_excel('expenses.xlsx')
+            return render(request, "reports/expenses_report.html")
+        
+        else:
+            return render(request, "reports/expenses_report.html")
+    else:
+        logout(request)
+        return redirect('login')
+
+def salary_report(request):
+    if request.user.is_authenticated:
+        group_sales=Group.objects.get(name='sales')
+        users = User.objects.filter(is_active=True, groups=group_sales ).order_by('last_name')
+        doc_type = DocumentType.objects.get(name="РКО (зарплата)")
+        # shops = Shop.objects.filter(active=True, retail=True).order_by("name")
+        queryset_list = Cash.objects.filter(cho_type=doc_type.id)
+        if request.method == "POST":
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            tdelta = datetime.timedelta(days=1)
+            end_date = end_date + tdelta
+            queryset_list = queryset_list.filter(created__gte=start_date, created__lte=end_date)
+            report_id = ReportTempId.objects.create()
+            for user in users:
+                counter=0
+                for item in queryset_list:
+                    if item.cash_receiver == user:
+                        counter+=item.cash_out               
+                report_item=SalaryReport.objects.create(
+                    report_id=report_id,
+                    user=user.last_name,
+                    sum=counter,
+                )
+            
+            query=SalaryReport.objects.filter(report_id=report_id)
+            qs=query.values('user', 'sum',)
+            data=pd.DataFrame.from_records(qs)
+            data.to_excel('salary.xlsx')
+            return render(request, "reports/salary_report.html")
+        else:
+            # context = {
+            #     'users': users
+            # }
+            return render(request, "reports/salary_report.html")
+    else:
+        logout(request)
+        return redirect('login')
 # =======================================================
 def remainder_report(request):
     if request.user.is_authenticated:
@@ -1788,35 +1868,6 @@ def daily_pay_card_rep_general(request):
         return render(request, "reports/daily_pay_card_rep.html")
 
 # =====================================================================
-def salary_report(request):
-    if request.user.is_authenticated:
-        if request.method == "POST":
-            start_date = request.POST["start_date"]
-            end_date = request.POST["end_date"]
-            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-            tdelta = datetime.timedelta(days=1)
-            end_date = end_date + tdelta
-            arr = []
-            users = User.objects.all().order_by('last_name')
-            for user in users:
-                dict = {}
-                sum = 0
-                qs = user.cash_receiver.filter(created__gte=start_date, created__lte=end_date)
-                for item in qs:
-                    sum += int(item.cash_out)
-                dict[user] = sum
-                arr.append(dict)
-            context = {
-                "arr": arr,
-                "start_date": start_date,
-                "end_date": end_date}
-            return render(request, "reports/salary_report.html", context)
-        else:
-            return render(request, "reports/salary_report.html")
-    else:
-        return redirect("login")
 
 def bonus_report_excel(request):
     users = User.objects.all()
