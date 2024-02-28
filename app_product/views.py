@@ -117,7 +117,8 @@ def log(request):
                 queryset_list = queryset_list.filter(user=user)
             if supplier:
                 supplier = Supplier.objects.get(id=supplier)
-                doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
+                #doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
+                queryset_list = queryset_list.filter(supplier=supplier)
               
                 
             context = {
