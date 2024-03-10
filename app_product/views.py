@@ -778,7 +778,8 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 messages.error(request,  'Вы не ввели ни одного наименования')
                 return redirect("sale", identifier.id)
 
-            #==First Section of Cash Register Module (Checking if the shift if open less than 12 hours. Otherwise it won't print)===========
+            #First Section of Cash Register Module (Checking if the shift if open less than 12 hours. Otherwise it won't print)===========
+            #Checking if the shop is equipped with cash register working through web requests server
             if shop.cash_register==False:
                 #checking if shift is open for more than 12 hours
                 if shop.shift_status == False and (dT_utcnow - shop.shift_status_updated).total_seconds()/3600 > 12: #if shift is open for more than 12 hours
@@ -915,7 +916,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 # url=response.url
                 # json=response.json()
                 if shop.shift_status == True:
-                    shop.shift_status = False
+                    shop.shift_status = False #False means the shift is open
                     shop.save()
             #=================End of Cash Register Module==============	
 
