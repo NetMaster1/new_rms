@@ -12,6 +12,8 @@ from app_reference.models import ProductCategory
 import numpy as np
 import datetime
 from datetime import date, timedelta
+import xlwt
+from django.http import HttpResponse, JsonResponse
 
 # def index (request):
 #     return render (request, 'index.html')
@@ -144,7 +146,9 @@ def motivation (request):
     return render(request, 'personnel/motivation.html')
 
 def number_of_work_days (request):
-    users=User.objects.all()
+    #users=User.objects.all()
+    group_sales=Group.objects.get(name='sales')
+    users = User.objects.filter(is_active=True, groups=group_sales ).order_by('username')
     work_days={}
     if request.method=="POST":
         start_date=request.POST ['start_date']
@@ -165,11 +169,43 @@ def number_of_work_days (request):
                 #we use 'numpy.unique' function to count unique values
                 list=np.unique(dates)
             n=len(list)
-            work_days[user]=n
-        context = {
-            'work_days': work_days,
-        }
-        return render (request, 'personnel/work_days.html', context)
+            work_days[user.last_name]=n
+
+
+        #==========================Convert to Excel module=========================================
+        response = HttpResponse(content_type="application/ms-excel")
+        response["Content-Disposition"] = (
+            "attachment; filename=Work_days_" + str(end_date) + ".xls"
+        )
+        # str(datetime.date.today())+'.xls'
+
+        wb = xlwt.Workbook(encoding="utf-8")
+        ws = wb.add_sheet('Report')
+
+        # sheet header in the first row
+        row_num = 0
+        col_num = 0
+        font_style = xlwt.XFStyle()
+        columns = ['ФИО', 'Кол-во смен',]
+        
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num, columns[col_num], font_style)
+
+        # sheet body, remaining rows
+        font_style = xlwt.XFStyle()
+
+        row_num = 1
+        for key, value in work_days.items():
+            col_num=0
+            ws.write(row_num, col_num, key, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, value, font_style)
+            row_num += 1
+         
+        wb.save(response)
+        return response
+
+        return render (request, 'personnel/work_days.html')
     else:
         return render (request, 'personnel/work_days.html')
   
