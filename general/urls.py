@@ -33,4 +33,5 @@ urlpatterns = [
     path('tutorial', include ('app_tutorial.urls')),
     path('sims', include ('app_sims.urls')),
     path('fiscal', include ('app_fiscal.urls')),
+    path('kpi', include ('app_kpi.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
