@@ -80,8 +80,9 @@ class Register(models.Model):
     doc_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     quantity = models.IntegerField(default=1)
     real_quantity = models.IntegerField(null=True)#used for inventory
-    current_price = models.IntegerField(null=True)#used for showing avprice in transfer document
     price = models.IntegerField(default=0)
+    reevaluation_price = models.IntegerField(null=True)#used to reevaluate an item in the process of inventory
+    current_price = models.IntegerField(null=True)#used for showing avprice in transfer document
     av_price=models.ForeignKey(AvPrice, null=True, on_delete=models.DO_NOTHING)
     contributor = models.ForeignKey(Contributor, null=True, on_delete=models.DO_NOTHING)
     cash_receiver = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)

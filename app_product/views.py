@@ -7321,17 +7321,21 @@ def inventory(request, identifier_id):
 
         products=Product.objects.filter(category=category)
         for obj in products:
-            sequence_rhos_before = RemainderHistory.objects.filter(imei=obj.imei, shop=shop, created__lt=dateTime)
-            remainder_history = sequence_rhos_before.latest("created")
-            register=Register.objects.create(
-                identifier=identifier,
-                shop=shop,
-                name=remainder_history.name,
-                imei=remainder_history.imei,
-                quantity=remainder_history.current_remainder,
-                price=remainder_history.retail_price
-            )
+            if RemainderHistory.objects.filter(imei=obj.imei, shop=shop, current_remainder__gt=0, created__lt=dateTime).exists():
+                sequence_rhos_before = RemainderHistory.objects.filter(imei=obj.imei, shop=shop, current_remainder__gt=0, created__lt=dateTime)
+                remainder_history = sequence_rhos_before.latest("created")
+                
+                register=Register.objects.create(
+                    identifier=identifier,
+                    shop=shop,
+                    name=remainder_history.name,
+                    imei=remainder_history.imei,
+                    quantity=remainder_history.current_remainder,
+                    price=remainder_history.retail_price,
+                    real_quantity=0,
+                )
         registers=Register.objects.filter(identifier=identifier)
+
         сontext = {
             "registers": registers, 
             "shops": shops, 
@@ -7350,16 +7354,73 @@ def inventory(request, identifier_id):
 
 def inventory_list (request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
-    registers=Register.objects.filter(identifier=identifier)
+    categories = ProductCategory.objects.all()
+   
+    registers=Register.objects.filter(identifier=identifier).order_by("name")
+    counter=1
+    for i in registers:
+        i.number=counter
+        counter=counter + 1
+        i.save()
     context = {
         'registers': registers,
-        'identifier': identifier
+        'identifier': identifier,
+        'categories': categories,
     }
     return render (request, 'documents/inventory_list.html', context)
+
+def check_inventory_unposted (request, identifier_id):
+    identifier=Identifier.objects.get(id=identifier_id)
+    registers = Register.objects.filter(identifier=identifier)
+    if request.method == "POST":
+        imei = request.POST["imei"]
+        if registers.filter(imei=imei).exists():
+            item=Register.objects.get(identifier=identifier, imei=imei)
+            item.real_quantity+=1
+            item.save()
+            return redirect("inventory_list", identifier.id)
+        else:
+            if Product.objects.filter(imei=imei).exists():
+                product=Product.objects.get(imei=imei)
+                register = Register.objects.create(
+                    identifier=identifier, 
+                    imei=product.imei, 
+                    name=product.name,
+                    quantity=0,
+                    real_quantity=1,
+                    new=True
+                )
+                return redirect("inventory_list", identifier.id)
+            else:
+                messages.error(request, "Данное наименование отсутствует в БД. Введите его, а затем повторите операцию.")
+                return redirect ('inventory_list', identifier.id)
+
+def enter_new_product_inventory_unposted (request, identifier_id):
+    identifier = Identifier.objects.get(id=identifier_id)
+    categories = ProductCategory.objects.all()
+    if request.method == "POST":
+        name = request.POST["name"]
+        imei = request.POST["imei"]
+        category = request.POST["category"]
+        category = ProductCategory.objects.get(id=category)
+
+        if Product.objects.filter(imei=imei).exists():
+            messages.error(request,"Наименование в базу данных не введено, так как IMEI не является уникальным")
+            return redirect("inventory_list", identifier.id)
+        else:
+            product = Product.objects.create(
+                name=name,
+                imei=imei,
+                category=category,
+            )
+            return redirect("inventory_list", identifier.id)      
+
 
 def inventory_input (request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     doc_type=DocumentType.objects.get(name='Инвентаризация ТМЦ')
+    doc_type_1=DocumentType.objects.get(name='Списание ТМЦ')
+    doc_type_2=DocumentType.objects.get(name='Оприходование ТМЦ')
     registers=Register.objects.filter(identifier=identifier)
     shop = registers.first().shop
     #dateTime = registers.first().created
@@ -7371,6 +7432,7 @@ def inventory_input (request, identifier_id):
         quantities = request.POST.getlist("quantity", None)
         real_qnts = request.POST.getlist("real_qnt", None)
         prices=request.POST.getlist('price', None)
+        reevaluation_prices=request.POST.getlist('reevalutaion_price', None)
         #sub_totals=request.POST.getlist('sub_total', None)
         # category=ProductCategory.objects.get(id=category)
         # if dateTime:
@@ -7390,19 +7452,31 @@ def inventory_input (request, identifier_id):
                 created=dateTime,
                 posted=True
             )
+            document_sign_off = Document.objects.create(
+                title=doc_type_1, 
+                user=request.user, 
+                created=dateTime,
+                posted=True
+            )
+            document_recognition = Document.objects.create(
+                title=doc_type_2, 
+                user=request.user, 
+                created=dateTime,
+                posted=True
+            )
+
             n=len(names)
-            sign_off_doc =[]
-            recogn_doc=[]
             for i in range(n):
                 if quantities[i]>real_qnts[i]:
-                    doc_type_1=DocumentType.objects.get(name='Списание ТМЦ')
                     # checking docs before remainder_history
-                    sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)
-                    remainder_history = sequence_rhos_before.latest("created")
-                    # remainder_current = RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
-                    # remainder_current.current_remainder = remainder_history.current_remainder
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
+                        sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)
+                        remainder_history = sequence_rhos_before.latest("created")
+                        remainder_current = remainder_history.current_remainder
+                    else:
+                        remainder_current=0
                     new_rho = RemainderHistory.objects.create(
-                        document=document,
+                        document=document_sign_off,
                         created=dateTime,
                         shop=shop,
                         rho_type=doc_type_1,
@@ -7410,76 +7484,50 @@ def inventory_input (request, identifier_id):
                         # category=category,
                         imei=imeis[i],
                         name=names[i],
-                        pre_remainder=remainder_history.current_remainder,
+                        pre_remainder=remainder_current,
                         incoming_quantity=0,
                         outgoing_quantity=int(quantities[i])-int(real_qnts[i]),
                         current_remainder=real_qnts[i],
                         #wholesale_price=int(prices[i]),
                         #sub_total= int(real_qnts[i])*av_price_obj.av_price,
                     )
-                    remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
-                    remainder_current.current_remainder=new_rho.current_remainder
-                    remainder_current.save()
                     #remainder_current.total_av_price=remainder_current.current_remainder*remainder_current.av_price
                     #document_sum=remainder_history.sub_total
-                    sign_off_doc.append(new_rho)
                 elif quantities[i]<real_qnts[i]:
-                    doc_type_2=DocumentType.objects.get(name='Оприходование ТМЦ')
+                    
                     # checking docs before remainder_history
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                         sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)
                         remainder_history = sequence_rhos_before.latest("created")
-                        remainder_current = RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
-                        remainder_current.current_remainder = remainder_history.current_remainder
+                        remainder_current = remainder_history.current_remainder
                     else:
-                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
-                            remainder_current=RemainderCurrent.objects.filter(imei=imeis[i], shop=shop)
-                            remainder_current.current_remainder=0
-                        else:
-                            remainder_current=RemainderCurrent.objects.create(
-                                shop=shop,
-                                imei=imeis[i],
-                                current_remainder=0
-                            )
-                    new_rho = RemainderHistory.objects.create(
-                        document=document,
-                        created=dateTime,
-                        shop=shop,
-                        rho_type=doc_type_2,
-                        # category=category,
-                        imei=imeis[i],
-                        name=names[i],
-                        pre_remainder=remainder_history.current_remainder,
-                        incoming_quantity=int(real_qnts[i])-int(quantities[i]),
-                        outgoing_quantity=0,
-                        current_remainder=real_qnts[i],
-                        #wholesale_price=int(prices[i]),
-                        #sub_total=int(real_qnts[i]) * av_price_obj.av_price,
-                    )
-                    #document_sum=remainder_history.sub_total
-                    remainder_current=RemainderCurrent.objects.get(shop=shop, imei=imeis[i])
-                    remainder_current.current_remainder=new_rho.current_remainder
-                    remainder_current.save()
-                    #remainder_current.total_av_price=int(remainder_current.current_remainder)*int(remainder_current.av_price)
-                    recogn_doc.append(new_rho)
+                        remainder_current=0
+                        new_rho = RemainderHistory.objects.create(
+                            document=document_recognition,
+                            created=dateTime,
+                            shop=shop,
+                            rho_type=doc_type_2,
+                            # category=category,
+                            imei=imeis[i],
+                            name=names[i],
+                            pre_remainder=remainder_current,
+                            incoming_quantity=int(real_qnts[i])-int(quantities[i]),
+                            outgoing_quantity=0,
+                            current_remainder=real_qnts[i],
+                            #wholesale_price=int(prices[i]),
+                            #sub_total=int(real_qnts[i]) * av_price_obj.av_price,
+                        )
+                        #document_sum=remainder_history.sub_tota
+                        #remainder_current.total_av_price=int(remainder_current.current_remainder)*int(remainder_current.av_price)
                 else:
-                    sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)
-                    remainder_history = sequence_rhos_before.latest("created")
-                    remainder_history.inventory_doc=document
-                    remainder_history.save()
-            if len(sign_off_doc)>0:
-                doc_type_sign_off=DocumentType.objects.get(name='Списание ТМЦ')
-                doc_sign_off = Document.objects.create(
-                    title=doc_type_sign_off, 
-                    user=request.user, 
-                    created=dateTime,
-                    posted=True,
-                    base_doc=document.id
-                )
-                for i in sign_off_doc:
-                    i.inventory_doc=doc_sign_off
-                    i.save()
-            if len(recogn_doc)>0:
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
+                        sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)
+                        remainder_history = sequence_rhos_before.latest("created")
+
+
+                        remainder_history.inventory_doc=document
+                        remainder_history.save()
+           
                 doc_type_recogn=DocumentType.objects.get(name='Оприходование ТМЦ')
                 doc_recogn = Document.objects.create(
                     title=doc_type_recogn, 
@@ -7488,9 +7536,6 @@ def inventory_input (request, identifier_id):
                     posted=True,
                     base_doc=document.id
                 )
-                for i in recogn_doc:
-                    i.inventory_doc=doc_recogn
-                    i.save()
             for register in registers:
                 register.delete()
             identifier.delete(0)           
@@ -7513,8 +7558,9 @@ def inventory_input (request, identifier_id):
                 register.quantity=quantities[i]
                 register.real_quantity=real_qnts[i]
                 register.price=prices[i]
+                register.reevaluation_price=reevaluation_prices[i]
                 register.save()
-                #identifier.delete()
+            identifier.delete()
             return redirect ('log')
     
 def change_inventory_posted(request, document_id):
@@ -7710,27 +7756,9 @@ def change_inventory_unposted(request, document_id):
         }
         return render(request, "documents/change_inventory_unposted.html", context)
 
-def enter_new_product_inventory (request, identifier_id):
-    identifier = Identifier.objects.get(id=identifier_id)
-    categories = ProductCategory.objects.all()
-    if request.method == "POST":
-        name = request.POST["name"]
-        imei = request.POST["imei"]
-        category = request.POST["category"]
-        category = ProductCategory.objects.get(id=category)
 
-        if Product.objects.filter(imei=imei).exists():
-            messages.error(request,"Наименование в базу данных не введено, так как IMEI не является уникальным")
-            return redirect("inventory_list", identifier.id)
-        else:
-            product = Product.objects.create(
-                name=name,
-                imei=imei,
-                category=category,
-            )
-            return redirect("inventory_list", identifier.id)
 
-def check_inventory_unposted (request, document_id):
+def check_inventory (request, document_id):
     document=Document.objects.get(id=document_id)
     registers = Register.objects.filter(document=document)
     if request.method == "POST":
@@ -7754,31 +7782,7 @@ def check_inventory_unposted (request, document_id):
             messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
             return redirect("change_inventory_unposted", document.id)
 
-def check_inventory (request, identifier_id):
-    identifier=Identifier.objects.get(id=identifier_id)
-    registers = Register.objects.filter(identifier=identifier)
-    if request.method == "POST":
-        imei = request.POST["imei"]
-        if Product.objects.filter(imei=imei).exists():
-            product=Product.objects.get(imei=imei)
-            if Register.objects.filter(identifier=identifier,imei=product.imei).exists():
-                messages.error(request, "Вы уже ввели данное наименование.")
-                return redirect ('inventory_list', identifier.id)
-            else:
-                product=Product.objects.get(imei=imei)
-                register = Register.objects.create(
-                    identifier=identifier, 
-                    imei=product.imei, 
-                    name=product.name,
-                    quantity=0,
-                    new=True
-                )
-                return redirect ('inventory_list', identifier.id)
-        else:
-            messages.error(request, "Данное наименование отсутствует в БД. Введите его.")
-            return redirect("inventory_list", identifier.id)
-
-def enter_new_product_inventory_unposted(request, document_id):
+def enter_new_product_inventory(request, document_id):
     document = Document.objects.get(id=document_id)
     categories = ProductCategory.objects.all()
     if request.method == "POST":

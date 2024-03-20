@@ -17,18 +17,18 @@
                 {% endif%}
             </div>
             <!-- ===================End of Alert Messages Module================ -->
-
             <div class="menu">
+            <div class="row pt-2 mb-2" style="text-align: center;">
                 <h3>Инвентаризационная ведомость</h3>
             </div>
 
-            <div class="menu">
+           
                 <form action="{% url 'inventory' identifier.id %}" method="POST" class='clear_storage_on_submit'>
                     {% csrf_token %}
 
-                    <div class="row form-row m-auto">
+                    <div class="row form-row">
                         <div class="col-3">
-                            <select name="category" class='form-inline' id='category'>
+                            <select name="category" class='form-inline' id='category' required>
                                 <option value="#">Выберите категорию</option>
                                 {% for category in categories %}
                                 <option value="{{category.id}}">{{category.name}}</option>
@@ -37,7 +37,7 @@
                         </div>
 
                         <div class="col-3">
-                            <select name="shop" id="shop" class='form-inline'>
+                            <select name="shop" id="shop" class='form-inline' required>
                                 <option selected="false" disabled="disabled">Выберите торговую точку</option>
                                 <!-- <option value="#">Выберите ТТ</option> -->
                                 {% for shop in shops %}
@@ -45,14 +45,13 @@
                                 {% endfor %}
                             </select>
                         </div>
-                    </div>
-
-                    <div class="row form-row mt-3">
                         <div class="col-3">
                             <input type="datetime-local" id='dateTime' name="dateTime">
                         </div>
+                    </div>
 
-
+                    <div class="row form-row mt-3">
+                      
                         <div class="col-2">
                             <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
                         </div>
@@ -66,43 +65,14 @@
                                     class="btn btn-sm btn-block btn-outline-dark clear_storage">
                             </a>
                         </div>
-                        <!-- <div class="col-2">
-                            <a href="{% url 'save_in_excel' %}">
-                                <button type="button" name="button"
-                                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
-                                    Сохранить в Excel
-                                </button>
-                            </a>
-                        </div> -->
+                    </div>
+                     
                 </form>
             </div>
         </div>
 
         <div class="log">
-            <div class="row m-auto">
-                <div class="col">
-                    <h5>Остатки по торговой точке {{shop}} на дату: {{date}}</h5>
-                </div>
-            </div>
-
-
-    <div class="row">
-        <div class="col-2">
-            <h5>IMEI</h5>
-        </div>
-        <div class="col-2">
-            <h5>Наименование</h5>
-        </div>
-        <div class="col-2">
-            <h5>Количество</h5>
-        </div>
-        <div class="col-2">
-            <h5>Цена розничная</h5>
-        </div>
-        <div class="col-2">
-            <h5>Реальное количество</h5>
-        </div>
-    </div>
+        
 
 <form action="{% url 'inventory_input' identifier.id %}" method="POST">
     {% csrf_token %}

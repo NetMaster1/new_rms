@@ -23,7 +23,7 @@
             </div>
             <div class="row">
                 <div class="col-5 border rounded p-3">
-                    <form action="{% url 'check_inventory' identifier.id %}" method="POST" id="check_button">
+                    <form action="{% url 'check_inventory_unposted' identifier.id %}" method="POST" id="check_button">
                         {% csrf_token %}
                         <div class="row m-1">
                             <div class="col-6">
@@ -57,7 +57,7 @@
                             <!-- <button type="button" class="btn_close"></button> -->
                         </div>
                         <div class="modal-body">
-                            <form action="{% url 'enter_new_product_inventory' identifier.id %}" method="POST">
+                            <form action="{% url 'enter_new_product_inventory_unposted' identifier.id %}" method="POST">
                                 {% csrf_token %}
 
                                 <div class="form-row">
@@ -106,25 +106,27 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row m-auto">
                 <div class="col-1">
-                    <h5>#</h5>
-                    </label>
+                    <b>#</b>
                 </div>
-                <div class="col-2">
-                    <h5>IMEI</h5>
+                <div class="col-3">
+                    <b>IMEI</b>
                 </div>
-                <div class="col-2">
-                    <h5>Наименование</h5>
+                <div class="col-3">
+                    <b>Наименование</b>
                 </div>
-                <div class="col-2">
-                    <h5>Количество</h5>
+                <div class="col-1">
+                    <b>Количество</b>
                 </div>
-                <div class="col-2">
-                    <h5>Цена розничная</h5>
+                <div class="col-1">
+                    <b>Цена розничная</b>
                 </div>
-                <div class="col-2">
-                    <h5>Реальное количество</h5>
+                <div class="col-1">
+                    <b>Реальное количество</b>
+                </div>
+                <div class="col-1">
+                    <b>Переоценка</b>
                 </div>
             </div>
 
@@ -136,23 +138,27 @@
                         <input type="text" class='form-control' id="number" name="number" value='{{item.number}}'
                             readonly>
                     </div>
-                    <div class="col-2">
+                    <div class="col-3">
                         <input type="text" class='form-control' id="imei" name="imei" value='{{item.imei}}' readonly>
                     </div>
-                    <div class="col-2">
+                    <div class="col-3">
                         <input type="text" class='form-control' id="name" name="name" value='{{item.name}}' readonly>
                     </div>
-                    <div class="col-2">
+                    <div class="col-1">
                         <input type="number" class='form-control' id="quantity" name="quantity"
-                            value='{{item.quantity}}' required>
+                            value='{{item.quantity}}' readonly>
                     </div>
-                    <div class="col-2">
+                    <div class="col-1">
                         <input type="number" class='form-control' id="price" name="price" value='{{item.price}}'
-                            maxlength='50' required>
+                            maxlength='50' readonly>
                     </div>
-                    <div class="col-2">
+                    <div class="col-1">
                         <input type="number" class='form-control' id="real_qnt" name="real_qnt" maxlength='50'
                             value='{{item.real_quantity}}' required>
+                    </div>
+                    <div class="col-1">
+                        <input type="number" class='form-control' id="reevaluation_price" name="reevaluation_price" maxlength='50'
+                            value='{{item.reevaluation_price}}'>
                     </div>
                 </div>
                 {% endfor %}
@@ -173,13 +179,7 @@
                         class="btn btn-sm btn-block btn-outline-dark clear_storage">
                 </a>
             </div>
-            <div class="col-2">
-                <a href="{% url 'save_in_excel' %}">
-                    <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark clear_storage">
-                        Сохранить в Excel
-                    </button>
-                </a>
-            </div>
+          
         </div>
 
     </div>
