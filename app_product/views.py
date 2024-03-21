@@ -4184,23 +4184,27 @@ def change_recognition_posted(request, document_id):
         shop=document.shop_receiver
         if document.base_doc:
             base_document=Document.objects.get(id=document.base_doc)
-        if RemainderHistory.objects.filter(inventory_doc=document).exists():
-            rhos = RemainderHistory.objects.filter(inventory_doc=document).order_by("created")
         else:
-            rhos = RemainderHistory.objects.filter(document=document).order_by("created")
-            base_document=None
-        numbers = rhos.count()
-        for rho, i in zip(rhos, range(numbers)):
-            rho.number = i + 1
-            rho.save()
-        context = {
-            "rhos": rhos,
-            "document": document,
-            "base_document": base_document,
-            'dateTime': dateTime,
-            'shop': shop
-        }
-        return render(request, "documents/change_recognition_posted.html", context)
+            base_document="Not Existing"
+        if RemainderHistory.objects.filter(document=document).exists():
+            rhos = RemainderHistory.objects.filter(document=document).order_by("name")
+            dateTime=document.created
+            dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
+            numbers = rhos.count()
+            for rho, i in zip(rhos, range(numbers)):
+                rho.number = i + 1
+                rho.save()
+            context = {
+                "rhos": rhos,
+                "document": document,
+                'base_document': base_document,
+                'shop': shop,
+                "dateTime": dateTime,
+            }
+            return render(request, "documents/change_recognition_posted.html", context)
+        else:
+            messages.error(request, "В ходе инвентаризации не было излишков и оприходований")
+            return redirect ('log')
     else:
         auth.logout(request)
         return redirect("login")
@@ -4932,24 +4936,21 @@ def delete_signing_off(request, document_id):
 
 def change_signing_off_posted (request, document_id):
     document = Document.objects.get(id=document_id)
+    #doc_type=DocumentType.objects.get(name='Списание ТМЦ')
     if document.base_doc:
         base_document=Document.objects.get(id=document.base_doc)
-    if RemainderHistory.objects.filter(inventory_doc=document).exists():
-        rhos = RemainderHistory.objects.filter(inventory_doc=document).order_by("created")
     else:
-        rhos = RemainderHistory.objects.filter(document=document).order_by("created")
-        base_document=None
-    categories = ProductCategory.objects.all()
-    shops = Shop.objects.all()
-    shop = document.shop_sender
-    dateTime=document.created
-    dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
-    numbers = rhos.count()
-    for rho, i in zip(rhos, range(numbers)):
-        rho.number = i + 1
-        rho.save()
-    
-    else:
+        base_document="Not Existing"
+    if RemainderHistory.objects.filter(document=document).exists():
+        rhos = RemainderHistory.objects.filter(document=document).order_by("name")
+        shop = document.shop_sender
+        dateTime=document.created
+        dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
+        numbers = rhos.count()
+        for rho, i in zip(rhos, range(numbers)):
+            rho.number = i + 1
+            rho.save()
+
         context = {
             "rhos": rhos,
             "document": document,
@@ -4958,7 +4959,10 @@ def change_signing_off_posted (request, document_id):
             "dateTime": dateTime,
         }
         return render(request, "documents/change_signing_off_posted.html", context)
-    
+    else:
+        messages.error(request, "В ходе инвентаризации недостач и списаний выявлено не было")
+        return redirect ('log')
+       
 def change_signing_off_unposted (request, document_id):
     group=Group.objects.get(name="admin").user_set.all()
     if request.user in group:
@@ -7333,6 +7337,7 @@ def inventory(request, identifier_id):
                         quantity=remainder_history.current_remainder,
                         price=remainder_history.retail_price,
                         real_quantity=0,
+                        reevaluation_price=remainder_history.retail_price,
                     )
         registers=Register.objects.filter(identifier=identifier)
 
@@ -7431,7 +7436,7 @@ def inventory_input (request, identifier_id):
         quantities = request.POST.getlist("quantity", None)
         real_qnts = request.POST.getlist("real_qnt", None)
         prices=request.POST.getlist('price', None)
-        reevaluation_prices=request.POST.getlist('reevalutaion_price', None)
+        reevaluation_prices=request.POST.getlist('reevaluation_price', None)
         #sub_totals=request.POST.getlist('sub_total', None)
         # category=ProductCategory.objects.get(id=category)
         # if dateTime:
@@ -7455,7 +7460,7 @@ def inventory_input (request, identifier_id):
             document_sign_off = Document.objects.create(
                 title=doc_type_1, 
                 base_doc=document.id,
-                shop_receiver=shop,
+                shop_sender=shop,
                 user=request.user, 
                 created=dateTime,
                 posted=True
@@ -7468,7 +7473,8 @@ def inventory_input (request, identifier_id):
                 created=dateTime,
                 posted=True
             )
-
+            document_sum_1=0
+            document_sum_2=0
             n=len(names)
             for i in range(n):
                 product=Product.objects.get(imei=imeis[i])
@@ -7494,13 +7500,17 @@ def inventory_input (request, identifier_id):
                         incoming_quantity=0,
                         outgoing_quantity=int(quantities[i])-int(real_qnts[i]),
                         current_remainder=real_qnts[i],
+                        retail_price=reevaluation_prices[i],
                         #wholesale_price=int(prices[i]),
-                        #sub_total= int(real_qnts[i])*av_price_obj.av_price,
+                        #sub_total= int(quantities[i]) * int(prices[i]),
+                        sub_total=(int(quantities[i])-int(real_qnts[i])) * int(reevaluation_prices[i]),
                     )
+                    document_sum_1+=new_rho.sub_total 
+                    document_sign_off.sum=document_sum_1
+                    document_sign_off.save()
                     #remainder_current.total_av_price=remainder_current.current_remainder*remainder_current.av_price
                     #document_sum=remainder_history.sub_total
                 elif quantities[i]<real_qnts[i]:
-                    
                     # checking docs before remainder_history
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                         sequence_rhos_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime)
@@ -7509,7 +7519,6 @@ def inventory_input (request, identifier_id):
                         retail_price=remainder_history.retail_price
                     else:
                         remainder_current=0
-                        retail_price=reevaluation_prices[i]
                     new_rho = RemainderHistory.objects.create(
                         document=document_recognition,
                         created=dateTime,
@@ -7523,12 +7532,14 @@ def inventory_input (request, identifier_id):
                         incoming_quantity=int(real_qnts[i])-int(quantities[i]),
                         outgoing_quantity=0,
                         current_remainder=real_qnts[i],
-                        retail_price=retail_price
+                        retail_price=reevaluation_prices[i],
                         #wholesale_price=int(prices[i]),
-                        #sub_total=int(real_qnts[i]) * av_price_obj.av_price,
+                        #sub_total= int(quantities[i]) * int(prices[i]),
+                        sub_total=(int(real_qnts[i])-int(quantities[i])) * int(reevaluation_prices[i]),
                     )
-                    #document_sum=remainder_history.sub_tota
-                    #remainder_current.total_av_price=int(remainder_current.current_remainder)*int(remainder_current.av_price)
+                    document_sum_2+=new_rho.sub_total 
+                    document_recognition.sum=document_sum_2
+                    document_recognition.save()
                 
             for register in registers:
                 register.delete()
