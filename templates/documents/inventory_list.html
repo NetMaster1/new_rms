@@ -23,7 +23,7 @@
             </div>
             <div class="row">
                 <div class="col-5 border rounded p-3">
-                    <form action="{% url 'check_inventory_unposted' identifier.id %}" method="POST" id="check_button">
+                    <form action="{% url 'check_inventory' identifier.id %}" method="POST" id="check_button">
                         {% csrf_token %}
                         <div class="row m-1">
                             <div class="col-6">
@@ -57,7 +57,7 @@
                             <!-- <button type="button" class="btn_close"></button> -->
                         </div>
                         <div class="modal-body">
-                            <form action="{% url 'enter_new_product_inventory_unposted' identifier.id %}" method="POST">
+                            <form action="{% url 'enter_new_product_inventory' identifier.id %}" method="POST">
                                 {% csrf_token %}
 
                                 <div class="form-row">
