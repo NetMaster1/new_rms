@@ -19,16 +19,11 @@
             <!-- ===================End of Alert Messages Module================ -->
     <div class="row m-2 pt-2">
         <div class="col">
-            <h3>Инвентаризационная ведомость</h3>
+            <h3>Инвентаризационная ведомость #{{document.id}} от {{document.created}}</h3>
         </div>
     </div>
               
           
-            <div class="row m-auto">
-                <div class="col">
-                    <h5>Остатки по торговой точке {{shop}} на дату: {{registers.first.created}}</h5>
-                </div>
-            </div>
         <div class="row m-2 pb-2">
         <div class="col-12 border rounded p-3">
             <div class="row m-auto">
@@ -55,7 +50,7 @@
 
     <!-- <form action="{% url 'change_inventory_posted' document.id %}" method="POST">
         {% csrf_token %} -->
-        {% for item in registers %}
+        {% for item in rhos %}
         <div class="row m-auto mb-1">
             <div class="col-1">
                 <input type="text" class='form-control' id="number" name="number" value='{{item.number}}'
@@ -101,13 +96,7 @@
                         class="btn btn-sm btn-block btn-outline-dark clear_storage">
                 </a>
             </div>
-            <div class="col-2">
-                <a href="{% url 'save_in_excel' %}">
-                    <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark clear_storage">
-                        Сохранить в Excel
-                    </button>
-                </a>
-            </div>
+          \
         </div>
         </div>
         </div>

@@ -22,9 +22,9 @@ class Document(models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     shop_sender = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name='shop_sender')
-    shop_receiver = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_receiver")
+    shop_receiver = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_receiver")#also used for inventory doc
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
-    base_doc = models.IntegerField(null=True)#link between different documents
+    base_doc = models.IntegerField(null=True)#link between inventory doc & sign_off & recognition docs
     posted = models.BooleanField(default=False)
     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
     client = models.ForeignKey(Customer, null=True, on_delete=models.DO_NOTHING)
