@@ -12,6 +12,7 @@ from .models import (
     Document,
     # IntegratedDailySaleDoc,
     RemainderHistory,
+    InventoryList,
     Register,
     Identifier,
     RemainderCurrent,
@@ -637,7 +638,6 @@ def unpost_remainder_input (request, document_id):
 
     else:
         return redirect ('login')
-
 
 # ================================Sale Operations=================================
 def identifier_sale(request):
@@ -7400,6 +7400,32 @@ def check_inventory (request, identifier_id):
                 messages.error(request, "Данное наименование отсутствует в БД. Введите его, а затем повторите операцию.")
                 return redirect ('inventory_list', identifier.id)
 
+def check_inventory_unposted (request, document_id):
+    document=Document.objects.get(id=document_id)
+    registers = Register.objects.filter(document=document)
+    if request.method == "POST":
+        imei = request.POST["imei"]
+        if registers.filter(imei=imei).exists():
+            item=Register.objects.get(document=document, imei=imei)
+            item.real_quantity+=1
+            item.save()
+            return redirect("change_inventory_unposted", document.id)
+        else:
+            if Product.objects.filter(imei=imei).exists():
+                product=Product.objects.get(imei=imei)
+                register = Register.objects.create(
+                    document=document, 
+                    imei=product.imei, 
+                    name=product.name,
+                    quantity=0,
+                    real_quantity=1,
+                    new=True
+                )
+                return redirect("change_inventory_unposted", document.id)
+            else:
+                messages.error(request, "Данное наименование отсутствует в БД. Введите его, а затем повторите операцию.")
+                return redirect("change_inventory_unposted", document.id)
+
 def enter_new_product_inventory(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     categories = ProductCategory.objects.all()
@@ -7418,7 +7444,27 @@ def enter_new_product_inventory(request, identifier_id):
                 imei=imei,
                 category=category,
             )
-            return redirect("inventory_list", identifier.id)      
+            return redirect("inventory_list", identifier.id)  
+
+def enter_new_product_inventory_unposted(request, document_id):
+    document = Document.objects.get(id=document_id)
+    categories = ProductCategory.objects.all()
+    if request.method == "POST":
+        name = request.POST["name"]
+        imei = request.POST["imei"]
+        category = request.POST["category"]
+        category = ProductCategory.objects.get(id=category)
+
+        if Product.objects.filter(imei=imei).exists():
+            messages.error(request,"Наименование в базу данных не введено, так как IMEI не является уникальным")
+            return redirect("change_inventory_unposted", document.id)
+        else:
+            product = Product.objects.create(
+                name=name,
+                imei=imei,
+                category=category,
+            )
+            return redirect("change_inventory_unposted", document.id)   
 
 def inventory_input (request, identifier_id):
     if request.user.is_authenticated:
@@ -7544,6 +7590,18 @@ def inventory_input (request, identifier_id):
                         document_sum_2+=new_rho.sub_total 
                         document_recognition.sum=document_sum_2
                         document_recognition.save()
+
+                    inventory_item=InventoryList.objects.create(
+                        document=document,
+                        created=dateTime,
+                        shop=shop,
+                        imei=imeis[i],
+                        name=names[i],
+                        quantity=quantities[i],
+                        real_quantity=real_qnts[i],
+                        price=prices[i],
+                        reevaluation_price=reevaluation_prices[i]
+                    )
                     
                 for register in registers:
                     register.delete()
@@ -7577,24 +7635,6 @@ def inventory_input (request, identifier_id):
     else:
         auth.logout(request)
         return redirect ('login')
-    
-def change_inventory_posted(request, document_id):
-    if request.user.is_authenticated:
-        document = Document.objects.get(id=document_id)
-        rhos=RemainderHistory.objects.filter(document=document)
-        
-        numbers = rhos.count()
-        for rho, i in zip(rhos, range(numbers)):
-            rho.number = i + 1
-            rho.save()
-        context = {
-            'rhos': rhos,
-            'document': document,
-        }
-        return render (request, 'documents/change_inventory_posted.html', context)
-    else:
-        auth.logout(request)
-        return redirect ('login')
         
 def change_inventory_unposted(request, document_id):
     if request.user.is_authenticated:
@@ -7605,6 +7645,7 @@ def change_inventory_unposted(request, document_id):
         doc_type_2=DocumentType.objects.get(name='Оприходование ТМЦ')
         registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("name")
         shop=registers.first().shop
+        identifier=registers.first().identifier
         numbers = registers.count()
         for register, i in zip(registers, range(numbers)):
             register.number = i + 1
@@ -7624,7 +7665,9 @@ def change_inventory_unposted(request, document_id):
             # posting the document
             if post_check == True:
                 document_sum_1=0
-                document_sum_2=0   
+                document_sum_2=0
+                document.posted=True
+                document.save()
                 #creates sign off document
                 document_sign_off = Document.objects.create(
                     title=doc_type_1, 
@@ -7708,8 +7751,22 @@ def change_inventory_unposted(request, document_id):
                         document_sum_2+=new_rho.sub_total 
                         document_recognition.sum=document_sum_2
                         document_recognition.save()
-                    return redirect ('log')
-                # else:
+                    inventory_item=InventoryList.objects.create(
+                        document=document,
+                        created=dateTime,
+                        shop=document.shop_receiver,
+                        imei=imeis[i],
+                        name=names[i],
+                        quantity=quantities[i],
+                        real_quantity=real_qnts[i],
+                        price=prices[i],
+                        reevaluation_price=reevaluation_prices[i]
+                    )
+                for register in registers:
+                    register.delete()
+                identifier.delete()           
+                return redirect ('log')
+            # else:
                 #     messages.error(request, "Вы не ввели ни одного наименования.")
                 #     return redirect("change_inventory_unposted", document.id)
             else:
@@ -7750,51 +7807,25 @@ def change_inventory_unposted(request, document_id):
         auth.logout(request)
         return redirect ('login')
 
-def check_inventory_unposted (request, document_id):
-    document=Document.objects.get(id=document_id)
-    registers = Register.objects.filter(document=document)
-    if request.method == "POST":
-        imei = request.POST["imei"]
-        if registers.filter(imei=imei).exists():
-            item=Register.objects.get(document=document, imei=imei)
-            item.real_quantity+=1
+def change_inventory_posted(request, document_id):
+    if request.user.is_authenticated:
+        document = Document.objects.get(id=document_id)
+        inventory_list=InventoryList.objects.filter(document=document)
+        shop=inventory_list.first().shop
+        numbers = inventory_list.count()
+        for item, i in zip(inventory_list, range(numbers)):
+            item.number = i + 1
             item.save()
-            return redirect("change_inventory_unposted", document.id)
-        else:
-            if Product.objects.filter(imei=imei).exists():
-                product=Product.objects.get(imei=imei)
-                register = Register.objects.create(
-                    document=document, 
-                    imei=product.imei, 
-                    name=product.name,
-                    quantity=0,
-                    real_quantity=1,
-                    new=True
-                )
-                return redirect("change_inventory_unposted", document.id)
-            else:
-                messages.error(request, "Данное наименование отсутствует в БД. Введите его, а затем повторите операцию.")
-                return redirect("change_inventory_unposted", document.id)
-
-def enter_new_product_inventory_unposted(request, document_id):
-    document = Document.objects.get(id=document_id)
-    categories = ProductCategory.objects.all()
-    if request.method == "POST":
-        name = request.POST["name"]
-        imei = request.POST["imei"]
-        category = request.POST["category"]
-        category = ProductCategory.objects.get(id=category)
-
-        if Product.objects.filter(imei=imei).exists():
-            messages.error(request,"Наименование в базу данных не введено, так как IMEI не является уникальным")
-            return redirect("change_inventory_unposted", document.id)
-        else:
-            product = Product.objects.create(
-                name=name,
-                imei=imei,
-                category=category,
-            )
-            return redirect("change_inventory_unposted", document.id)    
+        context = {
+            'inventory_list': inventory_list,
+            'document': document,
+            'shop': shop,
+            'numbers': numbers,
+        }
+        return render (request, 'documents/change_inventory_posted.html', context)
+    else:
+        auth.logout(request)
+        return redirect ('login')
 
 def unpost_inventory(request, document_id):
     document = Document.objects.get(id=document_id)

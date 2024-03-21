@@ -98,6 +98,26 @@ class Register(models.Model):
     def __int__(self):
         return self.id
 
+class InventoryList(models.Model):
+    number = models.IntegerField(null=True)
+    created = models.DateTimeField(default=timezone.now, null=True)
+    # serves to pass the shop in sales/payment
+    shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)
+    product = models.ForeignKey(Product, null=True, on_delete=models.DO_NOTHING)
+    imei=models.CharField(max_length=250, null=True)
+    name=models.CharField(max_length=250, null=True)
+    document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
+    doc_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
+    quantity = models.IntegerField(default=1)
+    real_quantity = models.IntegerField(null=True)#used for inventory
+    price = models.IntegerField(default=0)
+    reevaluation_price = models.IntegerField(default=0)#used to reevaluate an item in the process of inventory
+    sub_total = models.BigIntegerField(default=0)
+
+    def __int__(self):
+        return self.id
+
+
 # class Revaluation(models.Model):
 #     created = models.DateTimeField(default=timezone.now, null=True)
 #     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
@@ -181,6 +201,9 @@ class RemainderHistory(models.Model):
 
     def __int__(self):
         return self.id
+
+
+
 
 class RemainderCurrent(models.Model):
     updated = models.DateTimeField(auto_now=True)
