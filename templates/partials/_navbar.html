@@ -53,6 +53,9 @@
                     <li><a class="dropdown-item" href="{% url 'card_report' %}">Отчет по оплате картами</a></li>
                     <li><a class="dropdown-item" href="{% url 'credit_report' %}">Отчет по продажам в кредит</a></li>
                     <hr>
+                    <li><a class="dropdown-item" href="{% url 'kpi_excel_input' %}">Автоматическмй ввод KPI на месяц</a></li>
+                    <li><a class="dropdown-item" href="{% url 'cash_report' %}">Отчет по движению наличных</a></li>
+                    <hr>
                     <li><a class="dropdown-item" href="{% url 'cashback_rep' %}">Новые клиенты кэшбэк</a></li>
                     <li><a class="dropdown-item" href="{% url 'cashback_history' %}">Отчет по кол-ву повторных покупок</a></li>
                     <li><a class="dropdown-item" href="{% url 'client_history' %}">История покупок по клиенту</a></li>
@@ -178,7 +181,11 @@
                         <li><a class="dropdown-item" href="#">Отчет по кассе</a></li>
                         <li><a class="dropdown-item" href="#">Отчет по остаткам КЭО</a></li>
                     </ul>
+                  
                 </li>
+                <a class="nav-link text-light"href="{% url 'monthly_kpi' %}">Планы на текущий месяц (KPI)</a>
+
+
                 {% if shop.cash_register == False %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
