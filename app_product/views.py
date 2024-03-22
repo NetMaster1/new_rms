@@ -7356,7 +7356,7 @@ def inventory_list (request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     categories = ProductCategory.objects.all()
    
-    registers=Register.objects.filter(identifier=identifier).order_by("-created")
+    registers=Register.objects.filter(identifier=identifier).order_by("name")
     counter=1
     for i in registers:
         i.number=counter
@@ -7651,7 +7651,7 @@ def change_inventory_unposted(request, document_id):
         document = Document.objects.get(id=document_id)
         doc_type_1=DocumentType.objects.get(name='Списание ТМЦ')
         doc_type_2=DocumentType.objects.get(name='Оприходование ТМЦ')
-        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("-created")
+        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("name")
         shop = registers.first().shop
         identifier=registers.first().identifier
         numbers = registers.count()
