@@ -43,7 +43,8 @@ class DocumentAdmin(admin.ModelAdmin):
     time_seconds.short_description = 'Precise Time'
 
 class RegisterAdmin(admin.ModelAdmin):
-    list_display = ('created', 'document', 'doc_type', 'product', 'sub_total', 'identifier', 'new', 'deleted')
+    list_display = ('created', 'document', 'doc_type', 'product', 'imei', 'sub_total', 'identifier', 'new', 'deleted')
+    search_fields = ('imei', )
 
 class IdentifierAdmin(admin.ModelAdmin):
     list_display = ('id', 'created')
