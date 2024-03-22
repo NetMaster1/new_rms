@@ -239,6 +239,22 @@ footer {
 }
 
 /* ====================End of avPrice Popup in Sale Doc ======================= */
+/* ===================== Close Without Save Button Modal Warning========================= */
+.enterMessageModal {
+    display: none;
+}
+
+.enterMessageModal.openModal {
+    display: block;
+    position: fixed;
+    top: 12rem;
+    width: 100rem;
+    min-height: 10rem;
+    left: 15rem;
+}
+/* ====================End of Close Without Save Button Modal Warning ======================= */
+
+
 
 /* ===================== Delivery Page Modal for Entering New Product========================= */
 .enterDeliveryModal {

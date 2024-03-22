@@ -175,7 +175,10 @@ DBBACKUP_STORAGE_OPTIONS = {'location': 'backup/'}
 # EMAIL_USE_TLS = True
 # EMAIL_USE_SSL = False
 
-
+# higher than the count of fields
+#DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240 
+# to disable the check
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 
 try:

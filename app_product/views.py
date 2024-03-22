@@ -325,9 +325,11 @@ def close_edited_document(request, document_id):
 def close_unposted_document(request, document_id):
     document = Document.objects.get(id=document_id)
     users=Group.objects.get(name="sales").user_set.all()
+    #getting rid of registers which has been added but not saved yet
     registers = Register.objects.filter(document=document, new=True)
     for register in registers:
         register.delete()
+    #restoring registers which has been deleted but not yet saved
     registers = Register.objects.filter(document=document, deleted=True)
     for register in registers:
         register.deleted = False
@@ -7339,14 +7341,7 @@ def inventory(request, identifier_id):
                         real_quantity=0,
                         reevaluation_price=remainder_history.retail_price,
                     )
-        registers=Register.objects.filter(identifier=identifier)
-
-        сontext = {
-            "registers": registers, 
-            "shops": shops, 
-            "categories": categories,
-            'identifier': identifier
-            }
+      
         return redirect("inventory_list", identifier.id)
 
     else:
@@ -7361,7 +7356,7 @@ def inventory_list (request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     categories = ProductCategory.objects.all()
    
-    registers=Register.objects.filter(identifier=identifier).order_by("name")
+    registers=Register.objects.filter(identifier=identifier).order_by("-created")
     counter=1
     for i in registers:
         i.number=counter
@@ -7377,6 +7372,7 @@ def inventory_list (request, identifier_id):
 def check_inventory (request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     registers = Register.objects.filter(identifier=identifier)
+    shop=registers.first().shop
     if request.method == "POST":
         imei = request.POST["imei"]
         if registers.filter(imei=imei).exists():
@@ -7388,7 +7384,8 @@ def check_inventory (request, identifier_id):
             if Product.objects.filter(imei=imei).exists():
                 product=Product.objects.get(imei=imei)
                 register = Register.objects.create(
-                    identifier=identifier, 
+                    identifier=identifier,
+                    shop=shop,
                     imei=product.imei, 
                     name=product.name,
                     quantity=0,
@@ -7403,6 +7400,7 @@ def check_inventory (request, identifier_id):
 def check_inventory_unposted (request, document_id):
     document=Document.objects.get(id=document_id)
     registers = Register.objects.filter(document=document)
+    shop=registers.first().shop
     if request.method == "POST":
         imei = request.POST["imei"]
         if registers.filter(imei=imei).exists():
@@ -7414,7 +7412,8 @@ def check_inventory_unposted (request, document_id):
             if Product.objects.filter(imei=imei).exists():
                 product=Product.objects.get(imei=imei)
                 register = Register.objects.create(
-                    document=document, 
+                    document=document,
+                    shop=shop,
                     imei=product.imei, 
                     name=product.name,
                     quantity=0,
@@ -7477,15 +7476,12 @@ def inventory_input (request, identifier_id):
         #dateTime = registers.first().created
         dateTime = datetime.datetime.now()
         if request.method == "POST":
-            # category=request.POST['category']
             imeis = request.POST.getlist("imei", None)
             names = request.POST.getlist("name", None)
             quantities = request.POST.getlist("quantity", None)
             real_qnts = request.POST.getlist("real_qnt", None)
             prices=request.POST.getlist('price', None)
             reevaluation_prices=request.POST.getlist('reevaluation_price', None)
-            #sub_totals=request.POST.getlist('sub_total', None)
-            # category=ProductCategory.objects.get(id=category)
             # if dateTime:
             #     # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
             #     dateTime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
@@ -7523,6 +7519,7 @@ def inventory_input (request, identifier_id):
                     created=dateTime,
                     posted=True
                 )
+                document_sum=0
                 document_sum_1=0
                 document_sum_2=0
                 n=len(names)
@@ -7556,8 +7553,7 @@ def inventory_input (request, identifier_id):
                             sub_total=(int(quantities[i])-int(real_qnts[i])) * int(reevaluation_prices[i]),
                         )
                         document_sum_1+=new_rho.sub_total 
-                        document_sign_off.sum=document_sum_1
-                        document_sign_off.save()
+                       
                         #remainder_current.total_av_price=remainder_current.current_remainder*remainder_current.av_price
                         #document_sum=remainder_history.sub_total
                     elif quantities[i]<real_qnts[i]:
@@ -7588,8 +7584,6 @@ def inventory_input (request, identifier_id):
                             sub_total=(int(real_qnts[i])-int(quantities[i])) * int(reevaluation_prices[i]),
                         )
                         document_sum_2+=new_rho.sub_total 
-                        document_recognition.sum=document_sum_2
-                        document_recognition.save()
 
                     inventory_item=InventoryList.objects.create(
                         document=document,
@@ -7600,9 +7594,17 @@ def inventory_input (request, identifier_id):
                         quantity=quantities[i],
                         real_quantity=real_qnts[i],
                         price=prices[i],
-                        reevaluation_price=reevaluation_prices[i]
+                        reevaluation_price=reevaluation_prices[i],
+                        sub_total=int(real_qnts[i])*int(reevaluation_prices[i])
                     )
+                    document_sum+=inventory_item.sub_total 
                     
+                document_sign_off.sum=document_sum_1
+                document_sign_off.save()
+                document_recognition.sum=document_sum_2
+                document_recognition.save()
+                document.sum=document_sum
+                document.save()
                 for register in registers:
                     register.delete()
                 identifier.delete()           
@@ -7616,19 +7618,25 @@ def inventory_input (request, identifier_id):
                     created=dateTime,
                     posted=False
                 )
+                document_sum=0
                 n = len(names)
                 #document_sum = 0
                 for i in range(n):
                     register = Register.objects.get(identifier=identifier, imei=imeis[i])
                     register.document=document
                     register.shop=shop
+                    register.new=False
                     register.name=names[i]
                     register.imei=imeis[i]
                     register.quantity=quantities[i]
                     register.real_quantity=real_qnts[i]
                     register.price=prices[i]
                     register.reevaluation_price=reevaluation_prices[i]
+                    register.sub_total=int(real_qnts[i])*int(reevaluation_prices[i])
                     register.save()
+                    document_sum+=register.sub_total
+                document.sum=document_sum
+                document.save()
                 #we can't delete identifier at this moment since register still has links to it
                 #identifier.delete()
                 return redirect ('log')
@@ -7643,8 +7651,8 @@ def change_inventory_unposted(request, document_id):
         document = Document.objects.get(id=document_id)
         doc_type_1=DocumentType.objects.get(name='Списание ТМЦ')
         doc_type_2=DocumentType.objects.get(name='Оприходование ТМЦ')
-        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("name")
-        shop=registers.first().shop
+        registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("-created")
+        shop = registers.first().shop
         identifier=registers.first().identifier
         numbers = registers.count()
         for register, i in zip(registers, range(numbers)):
@@ -7664,6 +7672,7 @@ def change_inventory_unposted(request, document_id):
                 post_check = False
             # posting the document
             if post_check == True:
+                document_sum=0
                 document_sum_1=0
                 document_sum_2=0
                 document.posted=True
@@ -7717,8 +7726,7 @@ def change_inventory_unposted(request, document_id):
                             sub_total=(int(quantities[i])-int(real_qnts[i])) * int(reevaluation_prices[i]),
                         )
                         document_sum_1+=new_rho.sub_total 
-                        document_sign_off.sum=document_sum_1
-                        document_sign_off.save()
+                        
                         #remainder_current.total_av_price=remainder_current.current_remainder*remainder_current.av_price
                         #document_sum=remainder_history.sub_total
                     elif quantities[i]<real_qnts[i]:
@@ -7749,8 +7757,7 @@ def change_inventory_unposted(request, document_id):
                             sub_total=(int(real_qnts[i])-int(quantities[i])) * int(reevaluation_prices[i]),
                         )
                         document_sum_2+=new_rho.sub_total 
-                        document_recognition.sum=document_sum_2
-                        document_recognition.save()
+            
                     inventory_item=InventoryList.objects.create(
                         document=document,
                         created=dateTime,
@@ -7760,8 +7767,18 @@ def change_inventory_unposted(request, document_id):
                         quantity=quantities[i],
                         real_quantity=real_qnts[i],
                         price=prices[i],
-                        reevaluation_price=reevaluation_prices[i]
+                        reevaluation_price=reevaluation_prices[i],
+                        sub_total=int(real_qnts[i])*int(reevaluation_prices[i])
                     )
+                    document_sum+=inventory_item.sub_total
+
+                document_sign_off.sum=document_sum_1
+                document_sign_off.save()
+                document_recognition.sum=document_sum_2
+                document_recognition.save()
+                document.sum=document_sum
+                document.save()
+
                 for register in registers:
                     register.delete()
                 identifier.delete()           
@@ -7774,23 +7791,27 @@ def change_inventory_unposted(request, document_id):
                     n = len(names)
                     document_sum = 0
                     for i in range(n):
-                        register.document=document
-                        register.shop=shop
+                        register=Register.objects.get(document=document, imei=imeis[i])
+                        #register.document=document
+                        #register.shop=shop
                         register.name=names[i]
                         register.imei=imeis[i]
                         register.quantity=quantities[i]
                         register.real_quantity=real_qnts[i]
                         register.price=prices[i]
                         register.reevaluation_price=reevaluation_prices[i]
+                        register.sub_total=int(real_qnts[i])*int(reevaluation_prices[i])
+                        #register.new=False
                         register.save()
+                        document_sum+=register.sub_total
                         #register.new = False
                         #document_sum += int(register.sub_total)
                         if Register.objects.filter(document=document, deleted=True).exists():
                             registers=Register.objects.filter(document=document, deleted=True)
                             for register in registers:
                                 register.delete()
-                    #document.sum = document_sum
-                    #document.save()
+                    document.sum=document_sum
+                    document.save()
                     return redirect("log")
                 else:
                     messages.error(request, "Вы не ввели ни одного наименования.")

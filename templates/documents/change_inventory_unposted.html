@@ -18,9 +18,12 @@
             </div>
             <!-- ===================End of Alert Messages Module================ -->
 
-            <div class="menu">
-                <h3>Инвентаризационная ведомость</h3>
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Инвентаризационная ведомость #{{document.id}} от {{document.created}} по ТТ {{shop}}</h3>
+                </div>
             </div>
+
         <div class="row">
             <div class="col-5 border rounded p-3">
                 <form action="{% url 'check_inventory_unposted' document.id %}" method="POST" id="check_button">
@@ -92,15 +95,8 @@
     </div>
 <!-- =================================End of Modal Body======================================== -->
 
-            </div>
-
-
-        <div class="log">
-            <div class="row m-auto">
-                <div class="col">
-                    <h5>Инветаризационная ведомость по ТТ {{shop}} на дату: {{registers.first.created}}</h5>
-                </div>
-            </div>
+           
+     
 
             <div class="row m-auto">
                 <div class="col-1">
@@ -141,11 +137,11 @@
                     </div>
                     <div class="col-1">
                         <input type="number" class='form-control' id="quantity" name="quantity"
-                            value='{{item.quantity}}' required>
+                            value='{{item.quantity}}' readonly>
                     </div>
                     <div class="col-1">
                         <input type="number" class='form-control' id="price" name="price" value='{{item.price}}'
-                            maxlength='50' required>
+                            maxlength='50' readonly>
                     </div>
                     <div class="col-1">
                         <input type="number" class='form-control' id="real_qnt" name="real_qnt" maxlength='50' value='{{item.real_quantity}}'required>
@@ -156,7 +152,8 @@
                     </div>
                 </div>
                 {% endfor %}
-                <div class="row m-auto mt-3 ">
+
+        <div class="row m-auto pb-3 mt-3">
                     <div class="col-1">
                         <input type="submit" value="Сохранить"
                             class="btn btn-sm btn-block btn-outline-dark clear_storage">
@@ -176,23 +173,38 @@
 
                 <div class="col-3">
                     <a href="{% url 'delete_unposted_document' document.id %}">
-                        <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage button_message">
                     </a>
                 </div>
+                <div class="enterMessageModal">
+                    sdfsdfsdfsdfsd
+                </div>
+      
         </div>
+       
 
+    </div>
     </div>
 </div>
 
 
 <script>
     const btn_modal = document.querySelector('.btn_modal');
+    const button_message = document.querySelector('.button_message');
+    const enterMessageModal = document.querySelector('.enterMessageModal');
     const enterDeliveryModal = document.querySelector('.enterDeliveryModal');
     const btn_close = document.querySelector('.btn_close');
     const category = document.querySelector('#category');
     const shop = document.querySelector('#shop');
     const buttons = document.querySelectorAll('.clear_storage');
     //const submit_button = document.querySelector('.clear_storage_on_submit');
+
+    //close without save warning
+    button_message.addEventListener('mouseover', openMessageModal)
+    function openMessageModal() {
+        enterMessageModal.classList.add('openModal')
+    }
+    
 
     //enter_new_product
     btn_modal.addEventListener('click', openModal)
