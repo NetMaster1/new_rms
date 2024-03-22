@@ -19,43 +19,40 @@
             <!-- ===================End of Alert Messages Module================ -->
     <div class="row m-2 pt-2">
         <div class="col">
-            <h3>Инвентаризационная ведомость</h3>
+            <h3>Инвентаризационная ведомость #{{document.id}} от {{document.created}} по ТТ {{shop}}</h3>
         </div>
     </div>
               
           
-            <div class="row m-auto">
-                <div class="col">
-                    <h5>Остатки по торговой точке {{shop}} на дату: {{registers.first.created}}</h5>
-                </div>
-            </div>
         <div class="row m-2 pb-2">
         <div class="col-12 border rounded p-3">
             <div class="row m-auto">
                 <div class="col-1">
-                    <h5>#</h5>
-                    </label>
+                    <b>#</b>
                 </div>
                 <div class="col-2">
-                    <h5>IMEI</h5>
+                    <b>IMEI</b>
                 </div>
                 <div class="col-2">
-                    <h5>Наименование</h5>
+                    <b>Наименование</b>
+                </div>
+                <div class="col-1">
+                    <b>Количество</b>
                 </div>
                 <div class="col-2">
-                    <h5>Количество</h5>
+                    <b>Цена розничная</b>
+                </div>
+                <div class="col-1">
+                    <b>Реальное количество</b>
                 </div>
                 <div class="col-2">
-                    <h5>Цена розничная</h5>
-                </div>
-                <div class="col-2">
-                    <h5>Реальное количество</h5>
+                    <b>Переоценка</b>
                 </div>
             </div>
 
     <!-- <form action="{% url 'change_inventory_posted' document.id %}" method="POST">
         {% csrf_token %} -->
-        {% for item in registers %}
+        {% for item in inventory_list %}
         <div class="row m-auto mb-1">
             <div class="col-1">
                 <input type="text" class='form-control' id="number" name="number" value='{{item.number}}'
@@ -67,17 +64,21 @@
             <div class="col-2">
                 <input type="text" class='form-control' id="name" name="name" value='{{item.name}}' readonly>
             </div>
-            <div class="col-2">
+            <div class="col-1">
                 <input type="number" class='form-control' id="quantity" name="quantity"
-                    value='{{item.quantity}}' required>
+                    value='{{item.quantity}}' readonly>
             </div>
             <div class="col-2">
                 <input type="number" class='form-control' id="price" name="price" value='{{item.price}}'
-                    maxlength='50' required>
+                    maxlength='50' readonly>
+            </div>
+            <div class="col-1">
+                <input type="number" class='form-control' id="real_qnt" name="real_qnt" maxlength='50'
+                    value='{{item.real_quantity}}' readonly>
             </div>
             <div class="col-2">
-                <input type="number" class='form-control' id="real_qnt" name="real_qnt" maxlength='50'
-                    value='{{item.real_quantity}}' required>
+                <input type="number" class='form-control' id="reevaluation_price" name="reevaluation_price" value='{{item.reevaluation_price}}'
+                    maxlength='50' readonly>
             </div>
         </div>
         {% endfor %}
@@ -89,11 +90,11 @@
             </div> -->
  
 
-            <div class="col-3">
+            <!-- <div class="col-3">
                 <a href="{% url 'unpost_inventory' document.id %}">
                     <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
                 </a>
-            </div>
+            </div> -->
 
             <div class="col-2">
                 <a href="{% url 'close_edited_document' document.id %}">
@@ -101,13 +102,7 @@
                         class="btn btn-sm btn-block btn-outline-dark clear_storage">
                 </a>
             </div>
-            <div class="col-2">
-                <a href="{% url 'save_in_excel' %}">
-                    <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark clear_storage">
-                        Сохранить в Excel
-                    </button>
-                </a>
-            </div>
+          
         </div>
         </div>
         </div>

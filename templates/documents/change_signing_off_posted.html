@@ -6,8 +6,8 @@
         <div class="page_location_posted">
             <div class="row m-2 pt-2">
                 <div class="col">
-                    <h3>Документ {{document.title}} # {{document.id}} (проведен) </h3>
-                    <h3>Основание {{base_document.title}} #{{document.base_doc}} от {{base_document.created}}</h3>
+                    <h3>Документ: {{document.title}} # {{document.id}} </h3>
+                    <h3>Основание: {{base_document.title}} #{{document.base_doc}} от {{base_document.created}}</h3>
                 </div>
                 <!-- =====================Alert Messages Module=================== -->
                 <div class="container">
@@ -49,7 +49,7 @@
                             <div class="col">
                                 <select name="shop" id="shop" class='form-control' readonly>
                                     <option selected="true" value="{{shop.id}}">
-                                        {{shop.name}}</option>
+                                        {{shop}}</option>
                                     <!-- {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %} -->
@@ -129,7 +129,7 @@
 
                     <div class="col-2 mt-3">
                         <a href="{% url 'close_edited_document' document.id %}">
-                            <input type="button" value="Закрыть без сохранения"
+                            <input type="button" value="Закрыть"
                                 class="btn btn-sm btn-block btn-outline-dark clear_storage">
                         </a>
                     </div>

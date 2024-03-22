@@ -6,7 +6,7 @@
         <div class="page_location_posted">
             <div class="row m-2 pt-2">
                 <div class="col">
-                    <h3>Документ {{document.title}} # {{document.id}} (проведен) </h3>
+                    <h3>Документ {{document.title}} # {{document.id}} </h3>
                     <h3>Основание {{base_document.title}} #{{document.base_doc}} от {{base_document.created}}</h3>
                 </div>
         <!-- =====================Alert Messages Module=================== -->
@@ -48,8 +48,8 @@
                             </div>
                             <div class="col">
                                 <select name="shop" id="shop" class='form-control' readonly>
-                                    <option selected="true" value="{{.shop.id}}">
-                                        {{shop.name}}</option>
+                                    <option selected="true" value="{{shop.id}}">
+                                        {{shop}}</option>
                                     <!-- {% for shop in shops %}
                                     <option value="{{shop.id}}">{{shop.name}}</option>
                                     {% endfor %} -->

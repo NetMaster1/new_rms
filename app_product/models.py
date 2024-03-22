@@ -22,9 +22,9 @@ class Document(models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     shop_sender = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name='shop_sender')
-    shop_receiver = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_receiver")
+    shop_receiver = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop_receiver")#also used for inventory doc
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.DO_NOTHING)
-    base_doc = models.IntegerField(null=True)#link between different documents
+    base_doc = models.IntegerField(null=True)#link between inventory doc & sign_off & recognition docs
     posted = models.BooleanField(default=False)
     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
     client = models.ForeignKey(Customer, null=True, on_delete=models.DO_NOTHING)
@@ -80,8 +80,9 @@ class Register(models.Model):
     doc_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     quantity = models.IntegerField(default=1)
     real_quantity = models.IntegerField(null=True)#used for inventory
-    current_price = models.IntegerField(null=True)#used for showing avprice in transfer document
     price = models.IntegerField(default=0)
+    reevaluation_price = models.IntegerField(default=0)#used to reevaluate an item in the process of inventory
+    current_price = models.IntegerField(null=True)#used for showing avprice in transfer document
     av_price=models.ForeignKey(AvPrice, null=True, on_delete=models.DO_NOTHING)
     contributor = models.ForeignKey(Contributor, null=True, on_delete=models.DO_NOTHING)
     cash_receiver = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)
@@ -96,6 +97,26 @@ class Register(models.Model):
 
     def __int__(self):
         return self.id
+
+class InventoryList(models.Model):
+    number = models.IntegerField(null=True)
+    created = models.DateTimeField(default=timezone.now, null=True)
+    # serves to pass the shop in sales/payment
+    shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)
+    product = models.ForeignKey(Product, null=True, on_delete=models.DO_NOTHING)
+    imei=models.CharField(max_length=250, null=True)
+    name=models.CharField(max_length=250, null=True)
+    document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
+    doc_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
+    quantity = models.IntegerField(default=1)
+    real_quantity = models.IntegerField(null=True)#used for inventory
+    price = models.IntegerField(default=0)
+    reevaluation_price = models.IntegerField(default=0)#used to reevaluate an item in the process of inventory
+    sub_total = models.BigIntegerField(default=0)
+
+    def __int__(self):
+        return self.id
+
 
 # class Revaluation(models.Model):
 #     created = models.DateTimeField(default=timezone.now, null=True)
@@ -180,6 +201,9 @@ class RemainderHistory(models.Model):
 
     def __int__(self):
         return self.id
+
+
+
 
 class RemainderCurrent(models.Model):
     updated = models.DateTimeField(auto_now=True)

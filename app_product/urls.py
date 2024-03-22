@@ -196,7 +196,7 @@ urlpatterns = [
     path ('check_inventory/<int:identifier_id>', views.check_inventory, name='check_inventory'),
 
     path ('enter_new_product_inventory_unposted/<int:document_id>', views.enter_new_product_inventory_unposted, name='enter_new_product_inventory_unposted'),
-    path ('enter_new_product_inventory/<int:document_id>', views.enter_new_product_inventory, name='enter_new_product_inventory'),
+    path ('enter_new_product_inventory/<int:identifier_id>', views.enter_new_product_inventory, name='enter_new_product_inventory'),
     #=====================================trade-in===============================
     path ('trade_in/<int:identifier_id>', views.trade_in, name='trade_in'),
     
