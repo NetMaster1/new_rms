@@ -71,49 +71,13 @@
             </div>
         </div>
 
-        <div class="log">
-        
-
-<form action="{% url 'inventory_input' identifier.id %}" method="POST">
-    {% csrf_token %}
-        {% for item in registers %}
-        <div class="row m-auto mb-1">
-            <div class="col-2">
-                <input type="text" class='form-control' id="imei" name="imei" value='{{item.imei}}' readonly>
-            </div>
-            <div class="col-2">
-                <input type="text" class='form-control' id="name" name="name" value='{{item.name}}' readonly>
-            </div>
-            <div class="col-2">
-                <input type="number" class='form-control' id="quantity" name="quantity" value='{{item.quantity}}' required>
-            </div>
-            <div class="col-2">
-                <input type="number" class='form-control' id="price" name="price" value='{{item.price}}' maxlength='50'
-                    required>
-            </div>
-            <div class="col-2">
-                <input type="number" class='form-control' id="real_qnt" name="real_qnt" maxlength='50'
-                    required>
-            </div>
-        </div>
-        {% endfor %}
-        <div class="row m-auto mt-3 ">
-            <!-- <div class="col-1">
-                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
-            </div>
-            <div class="col-2">
-                <label for="post_check"> С проведением </label>
-                <input type="checkbox" id="post_check" name="post_check" value='checked'>
-            </div>
-     -->
-            </form>
-        </div>
+      
     </div>
       
         </div>
 
-    </div>
-</div>
+
+
 <script>
 
     const category = document.querySelector('#category');
