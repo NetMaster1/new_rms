@@ -17,30 +17,27 @@
                 {% endif%}
             </div>
             <!-- ===================End of Alert Messages Module================ -->
-
-            <div class="menu">
+    <div class="log">
+            <div class="row m-auto pt-2 pb-2">
                 <h3>Инвентаризационная ведомость</h3>
             </div>
-            <div class="row">
-                <div class="col-5 border rounded p-3">
-                    <form action="{% url 'check_inventory' identifier.id %}" method="POST" id="check_button">
-                        {% csrf_token %}
-                        <div class="row m-1">
-                            <div class="col-6">
-                                <input type="text" class='form-control' id="check_imei" name="imei" maxlength='50'
-                                    required placeholder="Введите IMEI" autofocus>
-                            </div>
+            <div class="row m-auto pb-3">
+                <form action="{% url 'check_inventory' identifier.id %}" method="POST" id="check_button"></form>
+                    <div class="col-3">
+                        <input type="text" class='form-control' id="check_imei" name="imei" maxlength='50'
+                            required placeholder="Введите IMEI" autofocus>
+                    </div>
 
-                            <div class="col-6">
-                                <input type="submit" value="Внести наименование в документ"
-                                    class="btn btn-sm btn-outline-dark ">
-                            </div>
-                        </div>
+                    <div class="col-3">
+                        <input type="submit" value="Внести наименование в документ"
+                            class="btn btn-sm btn-outline-dark ">
+                    </div>
+                    
                     </form>
-                </div>
+        
 
                 <!-- ==============================Modal Trigger================================= -->
-                <div class="col-5 border rounded p-3">
+                <div class="col-3">
                     <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
                         Внести новое наименование в базу данных
                     </button>
@@ -99,7 +96,7 @@
         </div>
 
 
-        <div class="log">
+            <hr>
             <div class="row m-auto">
                 <div class="col">
                     <h5>Остатки по торговой точке {{shop}} на дату: {{registers.first.created}}</h5>
@@ -162,7 +159,7 @@
                     </div>
                 </div>
                 {% endfor %}
-                <div class="row m-auto mt-3 ">
+                <div class="row m-auto mt-3 pb-3">
                     <div class="col-1">
                         <input type="submit" value="Сохранить"
                             class="btn btn-sm btn-block btn-outline-dark clear_storage">
@@ -176,74 +173,149 @@
             <div class="col-2">
                 <a href="{% url 'close_without_save' identifier.id %}">
                     <input type="button" value="Закрыть без сохранения"
-                        class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        class="btn btn-sm btn-block btn-outline-dark clear_storage button_message">
                 </a>
             </div>
+            <div class="enterMessageModal">    
+                При нажатии данной кнопки все несохраненные данные, внесенные вручную без использования кнопки "Внести наименование в документ", будут потеряны. Нажать кнопку?
+            </div>
+
           
         </div>
-
     </div>
 </div>
 
-
 <script>
+    //const category = document.querySelector('#category');
+    //const shop = document.querySelector('#shop');
+    //const submit_button = document.querySelector('.clear_storage_on_submit');
     const btn_modal = document.querySelector('.btn_modal');
     const enterDeliveryModal = document.querySelector('.enterDeliveryModal');
     const btn_close = document.querySelector('.btn_close');
-    const category = document.querySelector('#category');
-    const shop = document.querySelector('#shop');
+    const button_message = document.querySelector('.button_message');
+    const enterMessageModal = document.querySelector('.enterMessageModal');
+    const imeis = document.querySelectorAll("#imei");
+    const quantities = document.querySelectorAll("#quantity");
+    const reevaluation_prices = document.querySelectorAll("#reevaluation_price");
+    const real_qnts = document.querySelectorAll("#real_qnt");
+    const prices = document.querySelectorAll("#price");
     const buttons = document.querySelectorAll('.clear_storage');
-    //const submit_button = document.querySelector('.clear_storage_on_submit');
+    const check_button = document.querySelector('#check_button');
 
-    //enter_new_product
+
+    //enter_new_product module
     btn_modal.addEventListener('click', openModal)
     btn_close.addEventListener('click', closeModal)
-
     function openModal() {
         enterDeliveryModal.classList.add('openModal')
     }
-
     function closeModal() {
         enterDeliveryModal.classList.remove('openModal')
     }
 
-    //saving "Category select option" from switching to default when updating the page
-    //===========================================================================
-    category.addEventListener('change', e => {
-        choice = category.value;
-        sessionStorage.setItem('category', choice);
-    })
+    //close without save warning
+    button_message.addEventListener('mouseover', openMessageModal)
+    button_message.addEventListener('mouseout', closeMessageModal)
+    function openMessageModal() {
+        enterMessageModal.classList.add('openModal')
+    }
+    function closeMessageModal() {
+        enterMessageModal.classList.remove('openModal')
+    }
+
 
     //saving "Category select option" from switching to default when updating the page
     //===========================================================================
-    shop.addEventListener('change', e => {
-        choice = shop.value;
-        sessionStorage.setItem('shop', choice);
+    //category.addEventListener('change', e => {
+    //    choice = category.value;
+    //    sessionStorage.setItem('category', choice);
+    //})
+
+    //saving "Shop select option" from switching to default when updating the page
+    //===========================================================================
+    //shop.addEventListener('change', e => {
+    //   choice = shop.value;
+    //    sessionStorage.setItem('shop', choice);
+    //})
+
+
+    //changing inputs & loading changed input to session storage (via changing 'quantities' & 'reevalution_prices')   
+       for (let i = 0; i < real_qnts.length; i++) {
+        real_qnts[i].addEventListener('change', e => {
+            console.log('ok')
+            //sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(real_qnts[i].value)
+            arr.push(reevaluation_prices[i].value)
+            //local storage receives data as dictionnary with imeis[i] as a key and valume may be a variable or array
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+  //changing inputs & loading changed input to session storage (via changing 'prices')
+    for (let i = 0; i < reevaluation_prices.length; i++) {
+        reevaluation_prices[i].addEventListener('change', e => {
+            //sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(quantities[i].value)
+            arr.push(prices[i].value)
+            arr.push(real_qnts[i].value)
+            arr.push(reevaluation_prices[i].value)
+            //local storage receives data as dictionnary with imeis[i] as a key and valume may be a variable or array
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+    //getting data from session storage & passing it to html code on page reload
+    document.addEventListener('DOMContentLoaded', e => {
+        for (j=0; j<imeis.length; j++){
+            for (i = 0; i < sessionStorage.length; i++) {
+                if (JSON.parse(sessionStorage.getItem(imeis[j].value))){
+                    a = JSON.parse(sessionStorage.getItem(imeis[j].value));
+                    if (imeis[j].value == a[0]) {
+                        quantities[j].value=a[1]
+                        prices[j].value=a[2]
+                        real_qnts[j].value=a[3]
+                        reevaluation_prices[j].value=a[4]
+                    }
+                }
+            }
+        }
+        if (sessionStorage.getItem('supplier') === null) {
+            console.log('No supplier choice')
+        }
+        else {
+            choice = sessionStorage.getItem('supplier');
+            supplier.value = choice
+        }
     })
+//=====================================================================================================
 
 
     // getting data from session storage & passing it to html code on page reload
     //=================================================================================
-    document.addEventListener('DOMContentLoaded', e => {
-        if (sessionStorage.getItem('category') === null) {
-            console.log('No category choice')
-        }
-        else {
-            choice = sessionStorage.getItem('category');
-            category.value = choice
-        }
-        if (sessionStorage.getItem('shop') === null) {
-            console.log('No shop choice')
-        }
-        else {
-            choice = sessionStorage.getItem('shop');
-            shop.value = choice
-        }
-    })
+    //document.addEventListener('DOMContentLoaded', e => {
+    //    if (sessionStorage.getItem('category') === null) {
+    //        console.log('No category choice')
+    //    }
+    //    else {
+    //        choice = sessionStorage.getItem('category');
+    //        category.value = choice
+    //    }
+    //    if (sessionStorage.getItem('shop') === null) {
+    //        console.log('No shop choice')
+    //    }
+    //    else {
+    //        choice = sessionStorage.getItem('shop');
+    //        shop.value = choice
+    //    }
+    //})
 
     //clearing session storage on pushing 'Submit' & 'Close without save' buttons
-    //===========================================================================
-    for (let button of buttons) {
+    //(Close without save & Save buttons)
+       for (let button of buttons) {
         button.addEventListener('click', clearStorage);
     }
     function clearStorage(e) {
@@ -254,7 +326,21 @@
         sessionStorage.clear();
     })*/
 
+    //returning cursor back to check_imei field
+    //check_imei.select();
 
+    ///Making register_imei field red when entering the same imei in check_imei field
+        check_button.addEventListener('submit', e=> {
+        imei_input=check_imei.value
+        for (i=0; i<imeis.length; i++){
+            if (imeis[i].value == imei_input) {
+                imeis[i].classList.add('imei')
+                //check_imei.value.clear()
+                //e.preventDefault()
+            }
+    } 
+   })
 </script>
+
 
 {%endblock%}

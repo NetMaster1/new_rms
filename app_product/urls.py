@@ -5,10 +5,14 @@ urlpatterns = [
     # path ('', views.index, name='index'),
     path ('search', views.search, name='search'),
     path ('close_search', views.close_search, name='close_search'),
-    path ('close_unposted_document/<int:document_id>', views.close_unposted_document, name='close_unposted_document'),
     path ('delete_unposted_document/<int:document_id>', views.delete_unposted_document, name='delete_unposted_document'),
     path ('log', views.log, name='log'),
     path ('close_log', views.close_log, name='close_log'),
+    #=======================================================
+    path ('close_unposted_document/<int:document_id>', views.close_unposted_document, name='close_unposted_document'),
+    path ('close_edited_document/<int:document_id>', views.close_edited_document, name='close_edited_document'),
+    path ('close_without_save/<int:identifier_id>', views.close_without_save, name='close_without_save'),
+
     #==================Remainde Input=====================================
     path ('remainder_input', views.remainder_input, name='remainder_input'),
     path ('change_remainder_input_posted/int<document_id>', views.change_remainder_input_posted, name='change_remainder_input_posted'),
@@ -138,7 +142,6 @@ urlpatterns = [
 
     #======================================================================================
     path ('open_document/<int:document_id>', views.open_document, name='open_document'),
-    path ('close_without_save/<int:identifier_id>', views.close_without_save, name='close_without_save'),
     # ==================================================================================
 
     path ('cash_off_salary', views.cash_off_salary, name='cash_off_salary'),
@@ -182,7 +185,7 @@ urlpatterns = [
    
 
    #=========================================================================
-    path ('close_edited_document/<int:document_id>', views.close_edited_document, name='close_edited_document'),
+  
     
     path ('identifier_inventory', views.identifier_inventory, name='identifier_inventory'),
     path ('inventory/<int:identifier_id>', views.inventory, name='inventory'),

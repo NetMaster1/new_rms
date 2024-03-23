@@ -248,10 +248,10 @@ footer {
 .enterMessageModal.openModal {
     display: block;
     position: fixed;
-    top: 12rem;
+    top: 15rem;
     width: 100rem;
-    min-height: 10rem;
-    left: 15rem;
+    min-height: 12rem;
+    left: 20rem;
 }
 /* ====================End of Close Without Save Button Modal Warning ======================= */
 

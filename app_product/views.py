@@ -7402,15 +7402,30 @@ def check_inventory_unposted (request, document_id):
     registers = Register.objects.filter(document=document)
     shop=registers.first().shop
     if request.method == "POST":
-        imei = request.POST["imei"]
-        if registers.filter(imei=imei).exists():
-            item=Register.objects.get(document=document, imei=imei)
+       
+        check_imei = request.POST["check_imei"]
+        imeis_hidden = request.POST.getlist("imei_hidden", None)
+        real_qnts_hidden = request.POST.getlist("real_qnt_hidden", None)
+        reevaluation_prices_hidden=request.POST.getlist("reevaluation_price_hidden", None)
+        
+        n = len(imeis_hidden)
+        for i in range(n):
+            #register=Register.objects.get(document=document, imei=imeis_hidden[i])
+            register=registers.get(imei=imeis_hidden[i])
+            register.real_quantity=real_qnts_hidden[i]
+            register.reevaluation_price=reevaluation_prices_hidden[i]
+            register.sub_total=int(real_qnts_hidden[i])*int(reevaluation_prices_hidden[i])
+            #register.new=False
+            register.save()
+        registers=Register.objects.filter(document=document)
+        if registers.filter(imei=check_imei).exists():
+            item=Register.objects.get(document=document, imei=check_imei)
             item.real_quantity+=1
             item.save()
             return redirect("change_inventory_unposted", document.id)
         else:
-            if Product.objects.filter(imei=imei).exists():
-                product=Product.objects.get(imei=imei)
+            if Product.objects.filter(imei=check_imei).exists():
+                product=Product.objects.get(imei=check_imei)
                 register = Register.objects.create(
                     document=document,
                     shop=shop,
@@ -7418,7 +7433,7 @@ def check_inventory_unposted (request, document_id):
                     name=product.name,
                     quantity=0,
                     real_quantity=1,
-                    new=True
+                    #new=True
                 )
                 return redirect("change_inventory_unposted", document.id)
             else:
@@ -7676,6 +7691,7 @@ def change_inventory_unposted(request, document_id):
                 document_sum_1=0
                 document_sum_2=0
                 document.posted=True
+                document.created=dateTime
                 document.save()
                 #creates sign off document
                 document_sign_off = Document.objects.create(

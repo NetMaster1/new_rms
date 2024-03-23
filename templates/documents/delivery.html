@@ -269,7 +269,7 @@
     })
 
     
-    //Making register_imei field red when entering the same imei in check_imei field
+   //Making register_imei field red when entering the same imei in check_imei field
    // =================================================================================
     check_button.addEventListener('submit', e=> {
         imei_input=check_imei.value
@@ -363,7 +363,7 @@
     })
         
     //clearing session storage on pushing 'Submit' & 'Close without save' buttons
-    //===========================================================================
+    //buttons correspond to .clear_storage class
     for (let button of buttons) {
         button.addEventListener('click', clearStorage);
     }

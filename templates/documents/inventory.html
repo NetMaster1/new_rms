@@ -17,8 +17,8 @@
                 {% endif%}
             </div>
             <!-- ===================End of Alert Messages Module================ -->
-            <div class="menu">
-            <div class="row pt-2 mb-2" style="text-align: center;">
+           
+            <div class="row pt-2 m-auto">
                 <h3>Инвентаризационная ведомость</h3>
             </div>
 
@@ -26,7 +26,7 @@
                 <form action="{% url 'inventory' identifier.id %}" method="POST" class='clear_storage_on_submit'>
                     {% csrf_token %}
 
-                    <div class="row form-row">
+                    <div class="row form-row m-auto pt-2">
                         <div class="col-3">
                             <select name="category" class='form-inline' id='category' required>
                                 <option value="#">Выберите категорию</option>
@@ -45,12 +45,12 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-3">
+                        <!-- <div class="col-3">
                             <input type="datetime-local" id='dateTime' name="dateTime">
-                        </div>
+                        </div> -->
                     </div>
 
-                    <div class="row form-row mt-3">
+                    <div class="row form-row m-auto pt-3 pb-3">
                       
                         <div class="col-2">
                             <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
@@ -68,13 +68,12 @@
                     </div>
                      
                 </form>
-            </div>
+            
         </div>
 
       
-    </div>
-      
-        </div>
+    </div> 
+</div>
 
 
 
