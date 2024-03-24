@@ -34,9 +34,13 @@
                             <input type="text" class='form-control' id="check_imei" name="check_imei" maxlength='50' required
                                 placeholder="Введите IMEI" autofocus>
                         </div>
+        {% for item in registers %}
+            <input type="number" class='form-control' id="real_qnt_hidden" name="real_qnt_hidden" maxlength='50' value='{{item.real_quantity}}' hidden>
+            <input type="number" class='form-control' id="reevaluation_price_hidden" name="reevaluation_price_hidden" maxlength='50' value='{{item.reevaluation_price}}' hidden>
+            <input type="number" class='form-control' id="imei_hidden" name="imei_hidden" maxlength='50' value='{{item.imei}}' hidden>
+        {% endfor %}
 
-                        <input type="number" class='form-control' id="real_qnty_hidden_to_post" name="real_qnty_hidden_to_post" maxlength='50' hidden>
-                  
+
 
                         <div class="col-6">
                             <input type="button" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark check_imei_button">
@@ -149,7 +153,7 @@
                             maxlength='50' readonly>
                     </div>
                     <div class="col-1">
-                        <input type="number" class='form-control' id="real_qnt" name="real_qnt" maxlength='50' value='{{item.real_quantity}}'>
+                        <input type="number" class='form-control' id="real_qnt" name="real_qnt" maxlength='50' value='{{item.real_quantity}}'required>
                     </div>
                     <div class="col-1">
                         <input type="number" class='form-control' id="reevaluation_price" name="reevaluation_price" value='{{item.reevaluation_price}}'
@@ -193,17 +197,17 @@
 
 
 <script>
-    //there are two forms on the page which use the same data. One sends data to {% url 'check_inventory_unposted' document.id %}.
-    //Another to {% url 'change_inventory_unposted' document.id %}. Data within {% url 'change_inventory_unposted' document.id %} is visible.
-    //Data within {% url 'check_inventory_unposted' document.id %} is partially hidden. The pr
-    const imeis = document.querySelectorAll("#imei");
     const real_qnts = document.querySelectorAll("#real_qnt");
     const reevaluation_prices = document.querySelectorAll("#reevaluation_price");
-    const real_qnty_hidden_to_post = document.querySelector("#real_qnty_hidden_to_post");
-    const check_imei_form=document.querySelector('#check_imei_form');
-    const check_imei=document.querySelector('#check_imei');
-    const check_imei_button=document.querySelector('.check_imei_button');
+    const imeis = document.querySelectorAll("#imei");
+    const imeis_hidden = document.querySelectorAll("#imei_hidden");
+    const real_qnts_hidden = document.querySelectorAll("#real_qnt_hidden");
+    const reevaluation_prices_hidden = document.querySelectorAll("#reevaluation_price_hidden");
     
+
+    //const check_button=document.querySelector('.check_button');
+    const check_imei_form=document.querySelector('#check_imei_form');
+    const check_imei_button=document.querySelector('.check_imei_button');
     //=============================================================
     const btn_modal = document.querySelector('.btn_modal');
     const button_message = document.querySelector('.button_message');
@@ -215,8 +219,7 @@
     const buttons = document.querySelectorAll('.clear_storage');
     //const submit_button = document.querySelector('.clear_storage_on_submit');
 
-    //=================================================
-    //close without save warning message window
+    //close without save warning
     button_message.addEventListener('mouseover', openMessageModal)
     button_message.addEventListener('mouseout', closeMessageModal)
     function openMessageModal() {
@@ -226,34 +229,43 @@
         enterMessageModal.classList.remove('openModal')
     }
     
-    //=============================================================
-    //enter_new_product modal
+    //enter_new_product
     btn_modal.addEventListener('click', openModal)
     btn_close.addEventListener('click', closeModal)
 
     function openModal() {
         enterDeliveryModal.classList.add('openModal')
     }
+
     function closeModal() {
         enterDeliveryModal.classList.remove('openModal')
     }
 
-    //loading changed input to session storage via changing real_qnts')
-    //session storage receives data as dictionnary with imeis[i] as a key and value may be a variable or array
+    //loading changed input to session storage via changing real_qnts')   
     for (let i = 0; i < real_qnts.length; i++) {
         real_qnts[i].addEventListener('change', e => {
-            //sub_totals[i].value = real_qnts[i].value * reevalutaion_prices[i].value;
+        // for (let j = 0; j < real_qnts_hidden.length; j++){
+        //     if(imeis[i].value==imeis_hidden[j].value)
+        //         {
+            console.log(imeis[i])
+            console.log(imeis_hidden[i])
+
+            real_qnts_hidden[i].value=real_qnts[i].value;
+            console.log(real_qnts[i])
+            console.log(real_qnts_hidden[i])
+            reevaluation_prices_hidden[i].value=reevaluation_prices[i].value;
+            console.log(reevaluation_prices[i])
+            console.log(reevaluation_prices_hidden[i])
+                // }}
             let arr = []
             arr.push(imeis[i].value)
             arr.push(real_qnts[i].value)
             arr.push(reevaluation_prices[i].value)
-            //arr.push(sub_totals[i].value)
-            
+            //local storage receives data as dictionnary with imeis[i] as a key and valume may be a variable or array
             sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
         })
     }
   //loading changed input to session storage (via changing 'reevaluation_prices')
-  //session storage receives data as dictionnary with imeis[i] as a key and valume may be a variable or array
     for (let i = 0; i < reevaluation_prices.length; i++) {
         reevaluation_prices[i].addEventListener('change', e => {
             //sub_totals[i].value = quantities[i].value * prices[i].value;
@@ -281,86 +293,22 @@
     
       
     })
+//=========================================================================
 
-
-    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //saving "Category select option" from switching to default when updating the page
     //===========================================================================
-    for (let button of buttons) {
-        button.addEventListener('click', clearStorage);
-    }
-        function clearStorage(e) {
-            sessionStorage.clear();
-        };
-
-    //============================================================================================
-    //removing item (check_imei: value) from session storage 
-    //sending this check_imei & hidden value (real_qnty_hidden_to_post)to to server
-    //sends check_imei & real_qnty_hidden_to_post to {% url 'check_inventory_unposted' document.id %} via form.submit()
-    check_imei_button.addEventListener('click', complexFunc );
-    function complexFunc () {
-        copyValueToHiddenForm();
-        removeItemFromStorage();
-        sendJSForm();
-    }
-    function copyValueToHiddenForm() {
-        for (let i = 0; i < imeis.length; i++) {
-            //if (check_imei.value === imeis[i].value)
-            //works only as written in below string. If we try to do it as written in the string above, does not work
-            if (imeis[i].value === check_imei.value)
-                { 
-                    real_qnty_hidden_to_post.value=real_qnts[i].value
-                }
-        }
-    }
-    function removeItemFromStorage(e) {
-        choice = check_imei.value;
-        sessionStorage.removeItem(choice);
-        }
-    function sendJSForm() {
-        check_imei_form.submit();
-    };
-
-    //===============================================================================
-    ///Making register_imei field red when entering the same imei in check_imei field
-    check_imei_button.addEventListener('submit', e=> {
-    imei_input=check_imei.value
-    for (i=0; i<imeis.length; i++){
-        if (imeis[i].value == imei_input) {
-            imeis[i].classList.add('imei')
-            //check_imei.value.clear()
-            //e.preventDefault()
-        }
-    } 
-   })
-
-   // check_imei_button.addEventListener('click', clearStorage);
-
-    //updating session storage on pushing 'Delete line button'
-    //===========================================================================
-    // for (let i = 0; i<delete_buttons.length; i++) {
-    //     delete_buttons[i].addEventListener('click', e=> {
-    //         sessionStorage.removeItem(imeis[i].value)
-    //     })
-    // }
-
-    /*submit_button.addEventListener('onload', e => {
-        sessionStorage.clear();
-    })*/
-
-    //=========================================================================
-    //saving "Category select option" from switching to default when updating the page 
-    //via loading it to sessionStorage (setItem)
     //category.addEventListener('change', e => {
     //    choice = category.value;
     //    sessionStorage.setItem('category', choice);
-    // })
+   // })
 
     //saving "Shop select option" from switching to default when updating the page
     //===========================================================================
-    // shop.addEventListener('change', e => {
+   // shop.addEventListener('change', e => {
     //    choice = shop.value;
     //    sessionStorage.setItem('shop', choice);
-    //})   
+    //})
+
 
     // getting data from session storage & passing it to html code on page reload
     //=================================================================================
@@ -380,7 +328,48 @@
     //        shop.value = choice
     //    }
     //})
-  
+
+    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //===========================================================================
+    for (let button of buttons) {
+        button.addEventListener('click', clearStorage);
+    }
+
+
+    
+    check_imei_button.addEventListener('click', clearStorage);
+
+    function clearStorage(e) {
+        sessionStorage.clear();
+    };
+
+    /*submit_button.addEventListener('onload', e => {
+        sessionStorage.clear();
+    })*/
+
+    ///Making register_imei field red when entering the same imei in check_imei field
+    check_imei_button.addEventListener('submit', e=> {
+    imei_input=check_imei.value
+    for (i=0; i<imeis.length; i++){
+        if (imeis[i].value == imei_input) {
+            imeis[i].classList.add('imei')
+            //check_imei.value.clear()
+            //e.preventDefault()
+        }
+    } 
+   })
+
+
+   //sending form without submit button
+    check_imei_button.addEventListener('click', sendJSForm);
+    function sendJSForm() {
+        check_imei_form.submit();
+    };
+
+   
+
+
+
 </script>
 
 {%endblock%}

@@ -7402,43 +7402,32 @@ def check_inventory_unposted (request, document_id):
     registers = Register.objects.filter(document=document)
     shop=registers.first().shop
     if request.method == "POST":
-       
         check_imei = request.POST["check_imei"]
-        imeis_hidden = request.POST.getlist("imei_hidden", None)
-        real_qnts_hidden = request.POST.getlist("real_qnt_hidden", None)
-        reevaluation_prices_hidden=request.POST.getlist("reevaluation_price_hidden", None)
-        
-        n = len(imeis_hidden)
-        for i in range(n):
-            #register=Register.objects.get(document=document, imei=imeis_hidden[i])
-            register=registers.get(imei=imeis_hidden[i])
-            register.real_quantity=real_qnts_hidden[i]
-            register.reevaluation_price=reevaluation_prices_hidden[i]
-            register.sub_total=int(real_qnts_hidden[i])*int(reevaluation_prices_hidden[i])
-            #register.new=False
-            register.save()
-        registers=Register.objects.filter(document=document)
+        real_qnty = request.POST["real_qnty_hidden_to_post"]
+        # imeis_hidden = request.POST.getlist("imei_hidden", None)
+        # real_qnts_hidden = request.POST.getlist("real_qnt_hidden", None)
+        # reevaluation_prices_hidden=request.POST.getlist("reevaluation_price_hidden", None)
         if registers.filter(imei=check_imei).exists():
-            item=Register.objects.get(document=document, imei=check_imei)
-            item.real_quantity+=1
-            item.save()
-            return redirect("change_inventory_unposted", document.id)
+            final_qnty= int(real_qnty) + 1
+            register=registers.get(imei=check_imei)
+            register.real_quantity=final_qnty
+            register.save()
+        elif Product.objects.filter(imei=check_imei).exists():
+            product=Product.objects.get(imei=check_imei)
+            register = Register.objects.create(
+                document=document,
+                shop=shop,
+                imei=product.imei, 
+                name=product.name,
+                quantity=0,
+                real_quantity=1,
+                #new=True
+            )
+                    
         else:
-            if Product.objects.filter(imei=check_imei).exists():
-                product=Product.objects.get(imei=check_imei)
-                register = Register.objects.create(
-                    document=document,
-                    shop=shop,
-                    imei=product.imei, 
-                    name=product.name,
-                    quantity=0,
-                    real_quantity=1,
-                    #new=True
-                )
-                return redirect("change_inventory_unposted", document.id)
-            else:
-                messages.error(request, "Данное наименование отсутствует в БД. Введите его, а затем повторите операцию.")
-                return redirect("change_inventory_unposted", document.id)
+            messages.error(request, "Данное наименование отсутствует в БД. Введите его, а затем повторите операцию.")
+            return redirect("change_inventory_unposted", document.id)
+        return redirect("change_inventory_unposted", document.id)
 
 def enter_new_product_inventory(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -7667,7 +7656,8 @@ def change_inventory_unposted(request, document_id):
         doc_type_1=DocumentType.objects.get(name='Списание ТМЦ')
         doc_type_2=DocumentType.objects.get(name='Оприходование ТМЦ')
         registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("name")
-        shop = registers.first().shop
+        #shop = registers.first().shop
+        shop = document.shop_receiver
         identifier=registers.first().identifier
         numbers = registers.count()
         for register, i in zip(registers, range(numbers)):
