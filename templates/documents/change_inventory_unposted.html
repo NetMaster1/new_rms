@@ -193,9 +193,30 @@
 
 
 <script>
-    //there are two forms on the page which use the same data. One sends data to {% url 'check_inventory_unposted' document.id %}.
-    //Another to {% url 'change_inventory_unposted' document.id %}. Data within {% url 'change_inventory_unposted' document.id %} is visible.
-    //Data within {% url 'check_inventory_unposted' document.id %} is partially hidden. The pr
+    //Problem:
+    //There are two forms on the page which use interdependent input data. One sends data to {% url 'change_inventory_unposted' document.id %}
+    //and has visible input (for register in registers). Another sends to {% url 'check_inventory_unposted' document.id %}. Data within 
+    //{% url 'check_inventory_unposted' document.id %} is partially hidden. The problem is that when we update input data in one form it must be
+    //updated within the other.
+    //When we enter a number into real_qnty input cell within {% url 'change_inventory_unposted' document.id %} it is saved in js session storage
+    //in order to avoid loosing this data when the page is updated.
+    //But when we send data through {% url 'check_inventory_unposted' document.id %} it goes directry to the server & updates the
+    //corresponding register.
+    //The problem is that we may enter manually some number in a cell, for example 10. This data is save in session storage but not on the server yet.
+    //And the register at the server still contains a differen quantity. And when we send data through {% url 'check_inventory_unposted' document.id %} it
+    //adds a number to the value which is currently saved in the register at the server & loses data which we have entered manually.
+    //We could update registers on change event, but it will generate more mess.
+    //Decision:
+    //When we enter data manually into an input field within {% url 'change_inventory_unposted' document.id %}, data in saved in the session
+    //storage to avoid loosing data when the page is updated.
+    //When one clicks on check_imei_button, the program uses it's imei to find a corresponding register in {% url 'change_inventory_unposted' document.id %} form
+    //Then it copies real_qnty input value to the hidden real_qnty_hidden_to_post input value of {% url 'check_inventory_unposted' document.id %}
+    //The this data together with check_imei is sent to server (vis js function form.submit())
+    //At the server the corresponding register is updated & sent back to the broweser. To avoid a mess the program also removed the imei sent from
+    //the session storage thus avoiding accidental change of the real_qnty input cell within {% url 'change_inventory_unposted' document.id %} during further updated of the page.
+    //For example the saved register may have 10 in the input cell, but the session storage for it's imei woud still have 9 and when we 
+    //enter a diffetent imei through {% url 'check_inventory_unposted' document.id %}, it will update the page & restore 9 in the cell while the register
+    //will still have 10.
     const imeis = document.querySelectorAll("#imei");
     const real_qnts = document.querySelectorAll("#real_qnt");
     const reevaluation_prices = document.querySelectorAll("#reevaluation_price");
