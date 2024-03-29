@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import Document, RemainderHistory, Register, Identifier, AvPrice 
+from . models import Document, RemainderHistory, Register, Identifier, AvPrice, InventoryList
 
 # class RevaluationAdmin(admin.ModelAdmin):
 #     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop')
@@ -49,6 +49,9 @@ class RegisterAdmin(admin.ModelAdmin):
 class IdentifierAdmin(admin.ModelAdmin):
     list_display = ('id', 'created')
 
+class InventoryListAdmin(admin.ModelAdmin):
+    list_display = ('id', 'created', 'document', 'doc_type', 'imei', 'product')
+
 #admin.site.register(Delivery, DeliveryAdmin)
 #admin.site.register(Recognition, RecognitionAdmin)
 #admin.site.register(Sale, SaleAdmin)
@@ -62,6 +65,7 @@ admin.site.register(Document, DocumentAdmin)
 admin.site.register(Register, RegisterAdmin)
 admin.site.register(Identifier, IdentifierAdmin)
 admin.site.register(AvPrice, AvPriceAdmin)
+admin.site.register(InventoryList, InventoryListAdmin)
 
 
 
