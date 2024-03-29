@@ -7655,6 +7655,7 @@ def change_inventory_unposted(request, document_id):
         document = Document.objects.get(id=document_id)
         doc_type_1=DocumentType.objects.get(name='Списание ТМЦ')
         doc_type_2=DocumentType.objects.get(name='Оприходование ТМЦ')
+        last_updated=Register.objects.latest('updated')
         registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("name")
         #shop = registers.first().shop
         shop = document.shop_receiver
@@ -7824,6 +7825,7 @@ def change_inventory_unposted(request, document_id):
                     return redirect("change_inventory_unposted", document.id)
         else:
             context = {
+                "last_updated": last_updated,
                 "registers": registers,
                 "shop": shop,
                 "document": document,

@@ -65,6 +65,7 @@ class AvPrice(models.Model):
 class Register(models.Model):
     number = models.IntegerField(null=True)
     created = models.DateTimeField(default=timezone.now, null=True)
+    updated = models.DateTimeField(default=timezone.now, null=True)
     # serves to pass the shop in sales/payment
     shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING, related_name="shop")
     # serves to pass the shop in transfer/sign_off

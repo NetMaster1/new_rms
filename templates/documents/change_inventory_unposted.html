@@ -126,6 +126,36 @@
                     <b>Переоценка</b>
                 </div>
             </div>
+<hr>
+            <!-- ========================Last updated========================================== -->
+            <div class="row m-auto mb-1">
+                <div class="col-1">
+                    <input type="text" class='form-control' id="number" name="number" value='#' readonly>
+                </div>
+                <div class="col-2">
+                    <input type="text" class='form-control' id="imei" name="imei" value='{{last_updated.imei}}' readonly>
+                </div>
+                <div class="col-2">
+                    <input type="text" class='form-control' id="name" name="name" value='{{last_updated.name}}' readonly>
+                </div>
+                <div class="col-1">
+                    <input type="number" class='form-control' id="quantity" name="quantity"
+                        value='{{last_updated.quantity}}' readonly>
+                </div>
+                <div class="col-1">
+                    <input type="number" class='form-control' id="price" name="price" value='{{last_updated.price}}'
+                        maxlength='50' readonly>
+                </div>
+                <div class="col-1">
+                    <input type="number" class='form-control' id="real_qnt" name="real_qnt" maxlength='50' value='{{last_updated.real_quantity}}'required>
+                </div>
+                <div class="col-1">
+                    <input type="number" class='form-control' id="reevaluation_price" name="reevaluation_price" value='{{last_updated.reevaluation_price}}'
+                        maxlength='50' required>
+                </div>
+            </div>
+            <!-- ===========================End of Last Updated=============================================== -->
+<hr>
 
      <form action="{% url 'change_inventory_unposted' document.id %}" method="POST">
                 {% csrf_token %}

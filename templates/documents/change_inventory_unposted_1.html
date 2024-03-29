@@ -131,6 +131,10 @@
                 </div>
             </div>
 
+            
+
+
+
      <form action="{% url 'change_inventory_unposted' document.id %}" method="POST">
                 {% csrf_token %}
                 {% for item in registers %}
