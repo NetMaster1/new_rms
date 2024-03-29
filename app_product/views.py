@@ -7478,7 +7478,11 @@ def inventory_input (request, identifier_id):
         registers=Register.objects.filter(identifier=identifier)
         shop = registers.first().shop
         #dateTime = registers.first().created
-        dateTime = datetime.datetime.now()
+        tdelta=datetime.timedelta(hours=3)
+        dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+        dateTime=dT_utcnow+tdelta
+        #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+        #==================End of time module================================
         if request.method == "POST":
             imeis = request.POST.getlist("imei", None)
             names = request.POST.getlist("name", None)
@@ -7650,7 +7654,11 @@ def inventory_input (request, identifier_id):
         
 def change_inventory_unposted(request, document_id):
     if request.user.is_authenticated:
-        dateTime = datetime.datetime.now()
+        tdelta=datetime.timedelta(hours=3)
+        dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+        dateTime=dT_utcnow+tdelta
+        #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+        #==================End of time module================================
         categories=ProductCategory.objects.all()
         document = Document.objects.get(id=document_id)
         doc_type_1=DocumentType.objects.get(name='Списание ТМЦ')
