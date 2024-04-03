@@ -7372,11 +7372,15 @@ def inventory_list (request, identifier_id):
 def check_inventory (request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
     registers = Register.objects.filter(identifier=identifier)
+    tdelta=datetime.timedelta(hours=3)
+    dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+    dateTime=dT_utcnow+tdelta
     shop=registers.first().shop
     if request.method == "POST":
         imei = request.POST["imei"]
         if registers.filter(imei=imei).exists():
             item=Register.objects.get(identifier=identifier, imei=imei)
+            item.updated=dateTime
             item.real_quantity+=1
             item.save()
             return redirect("inventory_list", identifier.id)
@@ -7386,6 +7390,7 @@ def check_inventory (request, identifier_id):
                 register = Register.objects.create(
                     identifier=identifier,
                     shop=shop,
+                    updated=dateTime,
                     imei=product.imei, 
                     name=product.name,
                     quantity=0,
@@ -7398,6 +7403,9 @@ def check_inventory (request, identifier_id):
                 return redirect ('inventory_list', identifier.id)
 
 def check_inventory_unposted (request, document_id):
+    tdelta=datetime.timedelta(hours=3)
+    dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+    dateTime=dT_utcnow+tdelta
     document=Document.objects.get(id=document_id)
     registers = Register.objects.filter(document=document)
     shop=registers.first().shop
@@ -7410,12 +7418,14 @@ def check_inventory_unposted (request, document_id):
         if registers.filter(imei=check_imei).exists():
             final_qnty= int(real_qnty) + 1
             register=registers.get(imei=check_imei)
+            register.updated=dateTime
             register.real_quantity=final_qnty
             register.save()
         elif Product.objects.filter(imei=check_imei).exists():
             product=Product.objects.get(imei=check_imei)
             register = Register.objects.create(
                 document=document,
+                updated=dateTime,
                 shop=shop,
                 imei=product.imei, 
                 name=product.name,

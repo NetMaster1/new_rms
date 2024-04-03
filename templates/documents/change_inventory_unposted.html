@@ -130,28 +130,28 @@
             <!-- ========================Last updated========================================== -->
             <div class="row m-auto mb-1">
                 <div class="col-1">
-                    <input type="text" class='form-control' id="number" name="number" value='#' readonly>
+                    <input type="text" class='form-control last_updated' id="number" name="number" value='#' readonly>
                 </div>
                 <div class="col-2">
-                    <input type="text" class='form-control' id="imei" name="imei" value='{{last_updated.imei}}' readonly>
+                    <input type="text" class='form-control last_updated' id="imei" name="imei" value='{{last_updated.imei}}' readonly>
                 </div>
                 <div class="col-2">
-                    <input type="text" class='form-control' id="name" name="name" value='{{last_updated.name}}' readonly>
+                    <input type="text" class='form-control last_updated' id="name" name="name" value='{{last_updated.name}}' readonly>
                 </div>
                 <div class="col-1">
-                    <input type="number" class='form-control' id="quantity" name="quantity"
+                    <input type="number" class='form-control last_updated' id="quantity" name="quantity"
                         value='{{last_updated.quantity}}' readonly>
                 </div>
                 <div class="col-1">
-                    <input type="number" class='form-control' id="price" name="price" value='{{last_updated.price}}'
+                    <input type="number" class='form-control last_updated' id="price" name="price" value='{{last_updated.price}}'
                         maxlength='50' readonly>
                 </div>
                 <div class="col-1">
-                    <input type="number" class='form-control' id="real_qnt" name="real_qnt" maxlength='50' value='{{last_updated.real_quantity}}'required>
+                    <input type="number" class='form-control last_updated' id="real_qnt" name="real_qnt" maxlength='50' value='{{last_updated.real_quantity}}'readonly>
                 </div>
                 <div class="col-1">
-                    <input type="number" class='form-control' id="reevaluation_price" name="reevaluation_price" value='{{last_updated.reevaluation_price}}'
-                        maxlength='50' required>
+                    <input type="number" class='form-control last_updated' id="reevaluation_price" name="reevaluation_price" value='{{last_updated.reevaluation_price}}'
+                        maxlength='50' readonly>
                 </div>
             </div>
             <!-- ===========================End of Last Updated=============================================== -->
@@ -189,6 +189,7 @@
                 {% endfor %}
 
         <div class="row m-auto pb-3 mt-3">
+          
             <div class="col-1">
                 <input type="submit" value="Сохранить"
                     class="btn btn-sm btn-block btn-outline-dark clear_storage">
@@ -200,24 +201,27 @@
     </form>
 
                 <div class="col-2">
+                 
                     <a href="{% url 'close_unposted_document' document.id %}">
                         <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage button_message">
                     </a>
-                </div>
-            
-
+                </div> 
                 <div class="col-3">
                     <a href="{% url 'delete_unposted_document' document.id %}">
                         <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
                     </a>
                 </div>
+
                 <div class="enterMessageModal">
                     При нажатии данной кнопки все несохраненные данные, внесенные вручную без использования кнопки "Внести наименование в документ", будут потеряны. Нажать кнопку?
                 </div>
-    
+           
         </div>
 
-    </div>
+             
+       
+       
+        </div> 
     </div>
 </div>
 
