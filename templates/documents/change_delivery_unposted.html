@@ -284,25 +284,24 @@
     })
 
     //saving "Shop select option" from switching to default when updating the page
-        //===========================================================================
+    //===========================================================================
     shop.addEventListener('change', e => {
         choice = shop.value;
         sessionStorage.setItem('shop', choice);
     })
 
-
-        //creating session storage inputs on clicking "Check button"
-        // =================================================================================
-        / check_button.addEventListener('submit', e => {
-            imei_input = check_imei.value
-            for (i = 0; i < imeis.length; i++) {
-                if (imeis[i].value == imei_input) {
-                    imeis[i].classList.add('imei')
-                    //check_imei.value.clear()
-                    //e.preventDefault()
-                }
+    ///Making register_imei field red when entering the same imei in check_imei field
+    //===============================================================================
+    check_button.addEventListener('submit', e => {
+        imei_input = check_imei.value
+        for (i = 0; i < imeis.length; i++) {
+            if (imeis[i].value == imei_input) {
+                imeis[i].classList.add('imei')
+                //check_imei.value.clear()
+                //e.preventDefault()
             }
-        })
+        }
+    })
     //window.location.reload()
 
 

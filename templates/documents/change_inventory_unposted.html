@@ -32,14 +32,14 @@
                     <div class="row m-1">
                         <div class="col-6">
                             <input type="text" class='form-control' id="check_imei" name="check_imei" maxlength='50' required
-                                placeholder="Введите IMEI" autofocus>
+                                placeholder="Введите IMEI">
                         </div>
 
                         <input type="number" class='form-control' id="real_qnty_hidden_to_post" name="real_qnty_hidden_to_post" maxlength='50' hidden>
                   
 
                         <div class="col-6">
-                            <input type="button" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark check_imei_button">
+                            <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark check_imei_button">
                         </div>
                     </div>    
        </form> 
@@ -236,28 +236,33 @@
     //in order to avoid loosing this data when the page is updated.
     //But when we send data through {% url 'check_inventory_unposted' document.id %} it goes directry to the server & updates the
     //corresponding register.
-    //The problem is that we may enter manually some number in a cell, for example 10. This data is save in session storage but not on the server yet.
+    //The problem is that we may enter manually some number in an input cell within {% url 'change_inventory_unposted' document.id %}, for example 10. 
+    //This data is saved in session storage but not on the server yet.
     //And the register at the server still contains a differen quantity. And when we send data through {% url 'check_inventory_unposted' document.id %} it
     //adds a number to the value which is currently saved in the register at the server & loses data which we have entered manually.
     //We could update registers on change event, but it will generate more mess.
     //Decision:
     //When we enter data manually into an input field within {% url 'change_inventory_unposted' document.id %}, data in saved in the session
     //storage to avoid loosing data when the page is updated.
-    //When one clicks on check_imei_button, the program uses it's imei to find a corresponding register in {% url 'change_inventory_unposted' document.id %} form
-    //Then it copies real_qnty input value to the hidden real_qnty_hidden_to_post input value of {% url 'check_inventory_unposted' document.id %}
-    //The this data together with check_imei is sent to server (vis js function form.submit())
-    //At the server the corresponding register is updated & sent back to the broweser. To avoid a mess the program also removed the imei sent from
-    //the session storage thus avoiding accidental change of the real_qnty input cell within {% url 'change_inventory_unposted' document.id %} during further updated of the page.
-    //For example the saved register may have 10 in the input cell, but the session storage for it's imei woud still have 9 and when we 
-    //enter a diffetent imei through {% url 'check_inventory_unposted' document.id %}, it will update the page & restore 9 in the cell while the register
-    //will still have 10.
+    //When one changes check_imei value, the program uses this imei to find a corresponding register in {% url 'change_inventory_unposted' document.id %} form
+    //Then it copies real_qnty input value to the hidden real_qnty_hidden_to_post input value of {% url 'check_inventory_unposted' document.id %}.
+    //After that is done real_qnty_hidden_to_post input value is sent to the server together with check_imei value
+    //At the server the corresponding register is updated & sent back to the browser. 
+    //On submitting the form {% url 'check_inventory_unposted' document.id %} the program also removes the imei just sent to the server from
+    //the session storage thus avoiding accidental change of the real_qnty input cell within {% url 'change_inventory_unposted' document.id %} during further updates of the page.
+    //For example the saved register might have 10 in the input cell, but the session storage for it's imei would still have 9 and when we 
+    //enter a diffetent imei through {% url 'check_inventory_unposted' document.id %}, it would update the page & restore 9 in the cell while the register
+    //would still have 10.
+    //Infitially the idea was to copy real_qnt to real_qnt_hidden_to_post, send this info to the server vis js form.submit() & remove the imei from session storage on clicking
+    //check_imei_button, but the problem is that to achieve this we had to change type 'submit' to type 'button'. And in this case the forms was not submitted automatically
+    //right after copying imei in the check_imei.value field
     const imeis = document.querySelectorAll("#imei");
     const real_qnts = document.querySelectorAll("#real_qnt");
     const reevaluation_prices = document.querySelectorAll("#reevaluation_price");
     const real_qnty_hidden_to_post = document.querySelector("#real_qnty_hidden_to_post");
     const check_imei_form=document.querySelector('#check_imei_form');
     const check_imei=document.querySelector('#check_imei');
-    const check_imei_button=document.querySelector('.check_imei_button');
+    //const check_imei_button=document.querySelector('.check_imei_button');
     
     //=============================================================
     const btn_modal = document.querySelector('.btn_modal');
@@ -269,6 +274,9 @@
     const shop = document.querySelector('#shop');
     const buttons = document.querySelectorAll('.clear_storage');
     //const submit_button = document.querySelector('.clear_storage_on_submit');
+
+    //returning cursor back to check_imei field
+    check_imei.select();
 
     //=================================================
     //close without save warning message window
@@ -307,8 +315,8 @@
             sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
         })
     }
-  //loading changed input to session storage (via changing 'reevaluation_prices')
-  //session storage receives data as dictionnary with imeis[i] as a key and valume may be a variable or array
+    //loading changed input to session storage (via changing 'reevaluation_prices')
+    //session storage receives data as dictionnary with imeis[i] as a key and valume may be a variable or array
     for (let i = 0; i < reevaluation_prices.length; i++) {
         reevaluation_prices[i].addEventListener('change', e => {
             //sub_totals[i].value = quantities[i].value * prices[i].value;
@@ -346,18 +354,10 @@
         function clearStorage(e) {
             sessionStorage.clear();
         };
-
-    //============================================================================================
-    //removing item (check_imei: value) from session storage 
-    //sending this check_imei & hidden value (real_qnty_hidden_to_post)to to server
-    //sends check_imei & real_qnty_hidden_to_post to {% url 'check_inventory_unposted' document.id %} via form.submit()
-    check_imei_button.addEventListener('click', complexFunc );
-    function complexFunc () {
-        copyValueToHiddenForm();
-        removeItemFromStorage();
-        sendJSForm();
-    }
-    function copyValueToHiddenForm() {
+    
+    //changing check_imei value causes real_qnty_hidden_to_post.value to be equal to corresponding real_qnts[i].value before the first is sent to the server
+    //=================================================================
+    check_imei.addEventListener('change', e => {
         for (let i = 0; i < imeis.length; i++) {
             //if (check_imei.value === imeis[i].value)
             //works only as written in below string. If we try to do it as written in the string above, does not work
@@ -366,27 +366,45 @@
                     real_qnty_hidden_to_post.value=real_qnts[i].value
                 }
         }
-    }
+
+    })
+
+    //============================================================================================
+    //removing item (check_imei.value and corresponding imeis[i].value) from session storage to avoid possible substitute of register reql_qnt data with a number
+    //from session storage during page updates
+    check_imei_form.addEventListener('submit', removeItemFromStorage );
     function removeItemFromStorage(e) {
-        choice = check_imei.value;
-        sessionStorage.removeItem(choice);
+            choice = check_imei.value;
+            sessionStorage.removeItem(choice);
         }
-    function sendJSForm() {
-        check_imei_form.submit();
-    };
+  
+        // function copyValueToHiddenForm() {
+        //     for (let i = 0; i < imeis.length; i++) {
+        //         //if (check_imei.value === imeis[i].value)
+        //         //works only as written in below string. If we try to do it as written in the string above, does not work
+        //         if (imeis[i].value === check_imei.value)
+        //             { 
+        //                 real_qnty_hidden_to_post.value=real_qnts[i].value
+        //             }
+        //     }
+        // }
+ 
+        // function sendJSForm() {
+        //     check_imei_form.submit();
+        // };
 
     //===============================================================================
     ///Making register_imei field red when entering the same imei in check_imei field
-    check_imei_button.addEventListener('submit', e=> {
-    imei_input=check_imei.value
-    for (i=0; i<imeis.length; i++){
-        if (imeis[i].value == imei_input) {
-            imeis[i].classList.add('imei')
-            //check_imei.value.clear()
-            //e.preventDefault()
-        }
-    } 
-   })
+    //     check_imei_button.addEventListener('submit', e=> {
+    //     imei_input=check_imei.value
+    //     for (i=0; i<imeis.length; i++){
+    //         if (imeis[i].value == imei_input) {
+    //             imeis[i].classList.add('imei')
+    //             //check_imei.value.clear()
+    //             //e.preventDefault()
+    //         }
+    //     } 
+    //    })
 
    // check_imei_button.addEventListener('click', clearStorage);
 

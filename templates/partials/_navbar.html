@@ -23,6 +23,21 @@
                         </ul>
                      </li>
 
+
+                     <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Планы на месяц
+                        </a>
+
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="{% url 'monthly_kpi' %}">Текущее выполнение плана</a></li>
+                            <li><a class="dropdown-item" href="#">Ввод текущих данных</a></li>
+                            <li><a class="dropdown-item" href="{% url 'kpi_excel_input' %}">Автоматическмй ввод KPI на месяц</a></li>
+                            <li><a class="dropdown-item" href="#"></a></li>
+                        </ul>
+                     </li>
+
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false">
@@ -53,7 +68,6 @@
                     <li><a class="dropdown-item" href="{% url 'card_report' %}">Отчет по оплате картами</a></li>
                     <li><a class="dropdown-item" href="{% url 'credit_report' %}">Отчет по продажам в кредит</a></li>
                     <hr>
-                    <li><a class="dropdown-item" href="{% url 'kpi_excel_input' %}">Автоматическмй ввод KPI на месяц</a></li>
                     <li><a class="dropdown-item" href="{% url 'cash_report' %}">Отчет по движению наличных</a></li>
                     <hr>
                     <li><a class="dropdown-item" href="{% url 'cashback_rep' %}">Новые клиенты кэшбэк</a></li>
