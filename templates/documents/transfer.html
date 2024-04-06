@@ -28,11 +28,12 @@
 
     <div class="row m-2 ">
         <div class="col-12 border rounded p-3 ">
-        <form action="{% url 'check_transfer' identifier.id %}" method='POST'>
+        <form action="{% url 'check_transfer' identifier.id %}" method='POST' id="check_imei_form">
             {% csrf_token %}
             <div class="row m-1">
                 <div class="col-3">
                     <input type="text" class='form-control' id="check_imei" name="check_imei" maxlength='50' required placeholder='Введите IMEI'>
+                    <input type="number" class='form-control' id="quantity_hidden_to_post" name="quantity_hidden_to_post" maxlength='50' hidden>
                 </div>
                 <!-- <div class="col-3">
                     <input type="number" class='form-control' id="quantity" name="quantity"  required value=1>
@@ -147,7 +148,7 @@
                 {% endfor %}
 
 
-        <div class="row m-auto mt-3">
+        <div class="row m-auto mt-3" style="position: relative;">
                     <div class="col-1">
                     <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
                 </div>
@@ -167,20 +168,23 @@
             </form>
                <div class="col-2">
                     <a href="{% url 'close_without_save' identifier.id %}">
-                        <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                        <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage button_message ">
                     </a>
                 </div>
               <div class="col-2">
                     <a href="{% url 'clear_transfer' identifier.id %}">
-                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storag ">
                     </a>
+                </div>
+                <div class="enterMessageModal">
+                    При нажатии данной кнопки все несохраненные данные, внесенные вручную без использования кнопки "Внести наименование в документ", будут потеряны. Нажать кнопку?
                 </div>
         </div>
     </div>
     </div>
 </div>
 </div>
-</div>
+
 
 
 <script>
@@ -195,12 +199,27 @@
     const buttons = document.querySelectorAll('.clear_storage');
     const save_button = document.querySelector('#save_button');
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
-    //==================== Returning cursor back to input field========================
     const check_imei = document.querySelector('#check_imei');
+    const check_imei_form = document.querySelector('#check_imei_form');
+    const quantity_hidden_to_post = document.querySelector("#quantity_hidden_to_post");
+    const enterMessageModal = document.querySelector('.enterMessageModal');
+    const button_message = document.querySelector('.button_message');
    
+     //==================== Returning cursor back to input field========================
+    check_imei.select();
 
-
-    //const val= typeof quantities
+       
+    //close without save warning message window
+    //=================================================
+    button_message.addEventListener('mouseover', openMessageModal)
+    button_message.addEventListener('mouseout', closeMessageModal)
+    function openMessageModal() {
+        enterMessageModal.classList.add('openModal')
+    }
+    function closeMessageModal() {
+        enterMessageModal.classList.remove('openModal')
+    }
+    
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')
     //================================================================================================
@@ -314,7 +333,8 @@
     //  sessionStorage.clear();
     //})
 
-    /*showing av_price popup module====================================*/
+    //showing av_price popup module
+    //========================================================================
         const item_name = document.querySelectorAll('.item_name')
         const avPrice_popup = document.querySelectorAll('.avPrice_popup')
 
@@ -344,6 +364,29 @@
             })
         }
     /*end of av_price popup module==================================*/
+
+     //changing check_imei value causes real_qnty_hidden_to_post.value to be equal to corresponding real_qnts[i].value before the first is sent to the server
+    //=================================================================
+    check_imei.addEventListener('change', e => {
+        for (let i = 0; i < imeis.length; i++) {
+            //if (check_imei.value === imeis[i].value)
+            //works only as written in below string. If we try to do it as written in the string above, does not work
+            if (imeis[i].value === check_imei.value)
+                { 
+                    quantity_hidden_to_post.value=quantities[i].value
+                }
+        }
+
+    })
+     //============================================================================================
+    //removing item (check_imei.value and corresponding imeis[i].value) from session storage to avoid possible substitute of register reql_qnt data with a number
+    //from session storage during page updates
+    check_imei_form.addEventListener('submit', removeItemFromStorage );
+    function removeItemFromStorage(e) {
+            choice = check_imei.value;
+            sessionStorage.removeItem(choice);
+        }
+  
 
 
 

@@ -3128,24 +3128,34 @@ def transfer(request, identifier_id):
         return redirect("login")
 
 def check_transfer(request, identifier_id):
-    shops = Shop.objects.all().exclude(active=False)
+    tdelta=datetime.timedelta(hours=3)
+    dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+    dateTime=dT_utcnow+tdelta
+    #shops = Shop.objects.all().exclude(active=False)
     identifier = Identifier.objects.get(id=identifier_id)
     #if "check_imei" in request.GET:
     #shop = request.GET["shop"]
     if request.method == "POST":
-        imei = request.POST["check_imei"]
-        if '/' in imei:
+        registers=Register.objects.filter(identifier=identifier)
+        check_imei = request.POST["check_imei"]
+        quantity = request.POST["quantity_hidden_to_post"]
+        if '/' in check_imei:
             imei=imei.replace('/', '_')
-        if AvPrice.objects.filter(imei=imei).exists():
-            avPrice=AvPrice.objects.get(imei=imei)
+        if AvPrice.objects.filter(imei=check_imei).exists():
+            avPrice=AvPrice.objects.get(imei=check_imei)
         else:
             messages.error(request,"AvPrice не существует для данного наименования.",)
             return redirect("transfer", identifier.id)
-        if Product.objects.filter(imei=imei).exists():
-            product = Product.objects.get(imei=imei)
-            if Register.objects.filter(identifier=identifier, product=product).exists():
-                messages.error(request,"Вы уже ввели данное наименование. Запишите нужно кол-во в списке ниже",)
-                return redirect("transfer", identifier.id)
+        if Product.objects.filter(imei=check_imei).exists():
+            product=Product.objects.get(imei=check_imei)
+            if registers.filter(imei=check_imei).exists():
+                final_qnty= int(quantity) + 1
+                register=registers.get(imei=check_imei)
+                register.updated=dateTime
+                register.quantity=final_qnty
+                register.save()
+                #messages.error(request,"Вы уже ввели данное наименование. Запишите нужно кол-во в списке ниже",)
+                #return redirect("transfer", identifier.id)
             else:
                 if product.category.name == 'Сим_карты':   
                     if AvPrice.objects.filter(imei=product.imei).exists():
@@ -3161,15 +3171,17 @@ def check_transfer(request, identifier_id):
                         messages.error(request,"Поступление для данного наименования не было создано. Соответственно av_price отсутствует",)
                         return redirect("transfer", identifier.id)
                 else:
-                    print(product.category)
+                    print('=======================')
                     register = Register.objects.create(
                         product=product,
+                        imei=check_imei,
+                        name=product.name,
                         identifier=identifier,
                         quantity=1,
                         av_price=avPrice,
                     )
 
-                return redirect ("transfer", identifier.id)
+            return redirect ("transfer", identifier.id)
         else:
             messages.error(request, "Данное наименование отсутствует в базе данных")
             return redirect("transfer", identifier.id)
@@ -7357,12 +7369,14 @@ def inventory_list (request, identifier_id):
     categories = ProductCategory.objects.all()
    
     registers=Register.objects.filter(identifier=identifier).order_by("name")
+    last_updated=registers.latest('updated')
     counter=1
     for i in registers:
         i.number=counter
         counter=counter + 1
         i.save()
     context = {
+        'last_updated': last_updated,
         'registers': registers,
         'identifier': identifier,
         'categories': categories,
@@ -7370,38 +7384,42 @@ def inventory_list (request, identifier_id):
     return render (request, 'documents/inventory_list.html', context)
 
 def check_inventory (request, identifier_id):
-    identifier=Identifier.objects.get(id=identifier_id)
-    registers = Register.objects.filter(identifier=identifier)
     tdelta=datetime.timedelta(hours=3)
     dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
     dateTime=dT_utcnow+tdelta
+    identifier=Identifier.objects.get(id=identifier_id)
+    registers = Register.objects.filter(identifier=identifier)
     shop=registers.first().shop
     if request.method == "POST":
-        imei = request.POST["imei"]
-        if registers.filter(imei=imei).exists():
-            item=Register.objects.get(identifier=identifier, imei=imei)
-            item.updated=dateTime
-            item.real_quantity+=1
-            item.save()
-            return redirect("inventory_list", identifier.id)
+        check_imei = request.POST["check_imei"]
+        real_qnty = request.POST["real_qnty_hidden_to_post"]
+        # imeis_hidden = request.POST.getlist("imei_hidden", None)
+        # real_qnts_hidden = request.POST.getlist("real_qnt_hidden", None)
+        # reevaluation_prices_hidden=request.POST.getlist("reevaluation_price_hidden", None)
+        if registers.filter(imei=check_imei).exists():
+            final_qnty= int(real_qnty) + 1
+            register=registers.get(imei=check_imei)
+            register.updated=dateTime
+            register.real_quantity=final_qnty
+            register.save()
         else:
-            if Product.objects.filter(imei=imei).exists():
-                product=Product.objects.get(imei=imei)
+            if Product.objects.filter(imei=check_imei).exists():
+                product=Product.objects.get(imei=check_imei)
                 register = Register.objects.create(
                     identifier=identifier,
-                    shop=shop,
                     updated=dateTime,
+                    shop=shop,
                     imei=product.imei, 
                     name=product.name,
                     quantity=0,
                     real_quantity=1,
-                    new=True
+                    #new=True
                 )
-                return redirect("inventory_list", identifier.id)
+              
             else:
                 messages.error(request, "Данное наименование отсутствует в БД. Введите его, а затем повторите операцию.")
-                return redirect ('inventory_list', identifier.id)
-
+        return redirect ('inventory_list', identifier.id)
+        
 def check_inventory_unposted (request, document_id):
     tdelta=datetime.timedelta(hours=3)
     dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
@@ -7485,7 +7503,7 @@ def inventory_input (request, identifier_id):
         doc_type=DocumentType.objects.get(name='Инвентаризация ТМЦ')
         doc_type_1=DocumentType.objects.get(name='Списание ТМЦ')
         doc_type_2=DocumentType.objects.get(name='Оприходование ТМЦ')
-        registers=Register.objects.filter(identifier=identifier)
+        registers=Register.objects.filter(identifier=identifier).order_by("name")
         shop = registers.first().shop
         #dateTime = registers.first().created
         tdelta=datetime.timedelta(hours=3)
@@ -7673,8 +7691,8 @@ def change_inventory_unposted(request, document_id):
         document = Document.objects.get(id=document_id)
         doc_type_1=DocumentType.objects.get(name='Списание ТМЦ')
         doc_type_2=DocumentType.objects.get(name='Оприходование ТМЦ')
-        last_updated=Register.objects.latest('updated')
         registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("name")
+        last_updated=registers.latest('updated')
         #shop = registers.first().shop
         shop = document.shop_receiver
         identifier=registers.first().identifier

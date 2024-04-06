@@ -24,35 +24,35 @@
                 </div>
             </div>
 
-        <div class="row">
+            <div class="row">
+                <div class="col-5 border rounded p-3">
+        <form action="{% url 'check_inventory_unposted' document.id %}" method="POST" id="check_imei_form">
+                        {% csrf_token %} 
+
+                        <div class="row m-1">
+                            <div class="col-6">
+                                <input type="text" class='form-control' id="check_imei" name="check_imei" maxlength='50' required
+                                    placeholder="Введите IMEI">
+                            </div>
+
+                            <input type="number" class='form-control' id="real_qnty_hidden_to_post" name="real_qnty_hidden_to_post" maxlength='50' hidden>
+                    
+
+                            <div class="col-6">
+                                <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark check_imei_button">
+                            </div>
+                        </div>    
+        </form> 
+                </div>
+        
+    <!-- ==============================Modal Trigger================================= -->
             <div class="col-5 border rounded p-3">
-    <form action="{% url 'check_inventory_unposted' document.id %}" method="POST" id="check_imei_form">
-                    {% csrf_token %} 
-
-                    <div class="row m-1">
-                        <div class="col-6">
-                            <input type="text" class='form-control' id="check_imei" name="check_imei" maxlength='50' required
-                                placeholder="Введите IMEI">
-                        </div>
-
-                        <input type="number" class='form-control' id="real_qnty_hidden_to_post" name="real_qnty_hidden_to_post" maxlength='50' hidden>
-                  
-
-                        <div class="col-6">
-                            <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark check_imei_button">
-                        </div>
-                    </div>    
-       </form> 
+                <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
+                    Внести новое наименование в базу данных
+                </button>
             </div>
-      
-<!-- ==============================Modal Trigger================================= -->
-        <div class="col-5 border rounded p-3">
-            <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
-                Внести новое наименование в базу данных
-            </button>
-        </div>
-<!-- ============================End of Modal Trigger========================= -->
-        </div>
+    <!-- ============================End of Modal Trigger========================= -->
+            </div>
 
 <!-- ===========================Modal Body================================= -->
     <div class="enterDeliveryModal">
@@ -99,9 +99,6 @@
     </div>
 </form>
 <!-- =================================End of Modal Body======================================== -->
-
-           
-     
 
             <div class="row m-auto">
                 <div class="col-1">
@@ -188,7 +185,7 @@
                 </div>
                 {% endfor %}
 
-        <div class="row m-auto pb-3 mt-3">
+        <div class="row m-auto pb-3 mt-3" style="position:relative">
           
             <div class="col-1">
                 <input type="submit" value="Сохранить"
