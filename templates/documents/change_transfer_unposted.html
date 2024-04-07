@@ -27,20 +27,21 @@
 
 
             <div class="col-12 border rounded p-3">
-                <form action="{% url 'check_transfer_unposted' document.id %}" method='POST' >
+                <form action="{% url 'check_transfer_unposted' document.id %}" method='POST' id="check_imei_form">
                     {% csrf_token %}
                     <div class="row m-1">
                         <div class="col-4">
-                            <input type="text" class='form-control' id="check_imei" name="imei_check" maxlength='50'
-                                required placeholder="Введите IMEI">
+                            <input type="text" class='form-control' id="check_imei" name="check_imei" maxlength='50'
+                                required placeholder="Введите IMEI" id="check_imei">
+                                <input type="number" class='form-control' id="quantity_hidden_to_post" name="quantity_hidden_to_post" maxlength='50' hidden>
                         </div>
-                        <div class="col-1">
+                        <!-- <div class="col-1">
                             <label for="quantity">Кол-во</label>
                         </div>
                         <div class="col-2">
                             <input type="number" class='form-control' id="quantity_input" name="quantity_input" value=1
                                 required>
-                        </div>
+                        </div> -->
 
 
                         <div class="col-2">
@@ -176,7 +177,7 @@
 
 
 
-                        <div class="row m-auto mt-3 ">
+                        <div class="row m-auto mt-3" style="position:relative">
                             <div class="col-1">
                                 <input type="submit" value="Сохранить"
                                     class="btn btn-sm btn-block btn-outline-dark clear_storage">
@@ -201,8 +202,13 @@
                     <div class="col-2">
                         <a href="{% url 'close_unposted_document' document.id %}">
                             <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage button_message">
                         </a>
+
+                        <div class="enterMessageModal">
+                            При нажатии данной кнопки все несохраненные данные, внесенные вручную без использования кнопки "Внести наименование в документ", будут потеряны. Нажать кнопку?
+                        </div>
+                   
                     </div>
 
                    
@@ -230,6 +236,21 @@
     const save_button = document.querySelector('#save_button');
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
     const check_imei = document.querySelector('#check_imei');
+    const quantity_hidden_to_post = document.querySelector("#quantity_hidden_to_post");
+    const check_imei_form=document.querySelector('#check_imei_form');
+    const button_message = document.querySelector('.button_message');
+    const enterMessageModal = document.querySelector('.enterMessageModal');
+
+    //=================================================
+    //close without save warning message window
+    button_message.addEventListener('mouseover', openMessageModal)
+    button_message.addEventListener('mouseout', closeMessageModal)
+    function openMessageModal() {
+        enterMessageModal.classList.add('openModal')
+    }
+    function closeMessageModal() {
+        enterMessageModal.classList.remove('openModal')
+    }
 
 
     /*showing av_price popup module====================================*/
@@ -372,6 +393,48 @@
     function clearStorage(e) {
         sessionStorage.clear();
     };
+
+
+    //changing check_imei value causes quantity_hidden_to_post.value to be equal to corresponding quantities[i].value before the first is sent to the server
+    //also it updates session.storage with new values (quantity, price, subtotal)
+    //=================================================================
+    check_imei.addEventListener('change', e => {
+        for (let i = 0; i < imeis.length; i++) {
+            //if (check_imei.value === imeis[i].value)
+            //works only as written in below string. If we try to do it as written in the string above, does not work
+            if (imeis[i].value === check_imei.value)
+                { 
+                    quantity_hidden_to_post.value=quantities[i].value
+
+                    let arr = []
+                    arr.push(check_imei.value)
+                    //console.log(arr[0])
+                    new_quantity=parseInt(quantities[i].value) + 1 //parse the string & returns an integer
+                    arr.push(new_quantity)
+                    //console.log(arr[1])
+                    arr.push(prices[i].value)
+                    //console.log(arr[2])
+                    new_subtotal=new_quantity*prices[i].value
+                    arr.push(new_subtotal)
+                    //console.log(arr[3])
+                    sessionStorage.setItem(check_imei.value, JSON.stringify(arr));
+                
+                }
+
+        
+        }})
+   
+    //============================================================================================
+    //removing item (check_imei.value and corresponding imeis[i].value) from session storage to avoid possible substitute of register reql_qnt data with a number
+    //from session storage during page updates
+   // check_imei_form.addEventListener('submit', removeItemFromStorage );
+
+    //function removeItemFromStorage(e) {
+        //choice = check_imei.value;
+        //sessionStorage.removeItem(choice);
+       
+      //  }
+
 
     //save_button.addEventListener('submit', e => {
     //  sessionStorage.clear();

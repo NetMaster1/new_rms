@@ -3140,7 +3140,7 @@ def check_transfer(request, identifier_id):
         check_imei = request.POST["check_imei"]
         quantity = request.POST["quantity_hidden_to_post"]
         if '/' in check_imei:
-            imei=imei.replace('/', '_')
+            check_imei=check_imei.replace('/', '_')
         if AvPrice.objects.filter(imei=check_imei).exists():
             avPrice=AvPrice.objects.get(imei=check_imei)
         else:
@@ -3171,7 +3171,6 @@ def check_transfer(request, identifier_id):
                         messages.error(request,"Поступление для данного наименования не было создано. Соответственно av_price отсутствует",)
                         return redirect("transfer", identifier.id)
                 else:
-                    print('=======================')
                     register = Register.objects.create(
                         product=product,
                         imei=check_imei,
@@ -3189,6 +3188,9 @@ def check_transfer(request, identifier_id):
         return redirect("transfer", identifier.id)
 
 def check_transfer_unposted(request, document_id):
+    tdelta=datetime.timedelta(hours=3)
+    dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+    dateTime=dT_utcnow+tdelta
     users = Group.objects.get(name='sales').user_set.all()
     group = Group.objects.get(name='admin').user_set.all()
     shops = Shop.objects.all().exclude(active=False)
@@ -3200,44 +3202,64 @@ def check_transfer_unposted(request, document_id):
     shop_sender = document.shop_sender
     # if "imei_check" in request.GET:
     if request.method=="POST":
-        imei = request.POST["imei_check"]
-        if '/' in imei:
-            imei=imei.replace('/', '_')
-        quantity = request.POST["quantity_input"]
+        check_imei = request.POST["check_imei"]
+        quantity = request.POST["quantity_hidden_to_post"]
+        if '/' in check_imei:
+            check_imei=check_imei.replace('/', '_')
         # shop = request.GET["shop"]
         # shop = Shop.objects.get(id=shop)
-        if AvPrice.objects.filter(imei=imei).exists():
-            avPrice=AvPrice.objects.get(imei=imei)
+        if AvPrice.objects.filter(imei=check_imei).exists():
+            avPrice=AvPrice.objects.get(imei=check_imei)
         else:
             messages.error(request,"AvPrice не существует для данного наименования.",)
-            return redirect("chage_transfer_unposted", document.id)
-        if Product.objects.filter(imei=imei).exists():
-            if RemainderHistory.objects.filter(imei=imei, shop=shop_sender).exists():
-                rho=RemainderHistory.objects.filter(imei=imei, shop=shop_sender).latest('created')
+            return redirect("change_transfer_unposted", document.id)
+        if Product.objects.filter(imei=check_imei).exists():
+            #product=Product.objects.get(imei=check_imei)
+            if RemainderHistory.objects.filter(imei=check_imei, shop=shop_sender).exists():
+                rho=RemainderHistory.objects.filter(imei=check_imei, shop=shop_sender).latest('created')
                 if rho.current_remainder >= int(quantity):
-                    product = Product.objects.get(imei=imei)
-                    if Register.objects.filter(document=document, product=product).exists():
-                        messages.error(request,"Вы уже ввели данное наименование. Запишите нужно кол-во в списке ниже",)
+                    product = Product.objects.get(imei=check_imei)
+                    if registers.filter(imei=check_imei).exists():
+                        final_qnty= int(quantity) + 1
+                        register=registers.get(imei=check_imei)
+                        register.updated=dateTime
+                        register.quantity=final_qnty
+                        register.save()
+                        #messages.error(request,"Вы уже ввели данное наименование. Запишите нужно кол-во в списке ниже",)
                         return redirect("change_transfer_unposted", document.id)
                     else:
-                        register = Register.objects.create(
-                            product=product,
-                            document=document,
-                            quantity=quantity,
-                            new=True,
-                            av_price=avPrice,
-                        )
-                        if rho.retail_price:
-                            register.price=rho.retail_price
+                        if product.category.name == 'Сим_карты':   
+                            if AvPrice.objects.filter(imei=product.imei).exists():
+                                av_price=AvPrice.objects.get(imei=product.imei)
+                                register = Register.objects.create(
+                                    product=product,
+                                    document=document,
+                                    quantity=1,
+                                    price=av_price.av_price,
+                                    sub_total=av_price.av_price
+                                )
+                            else:
+                                messages.error(request,"Поступление для данного наименования не было создано. Соответственно av_price отсутствует",)
+                                return redirect("change_transfer_unposted", document.id)
                         else:
-                            register.price=0
-                        register.sub_total = int(quantity) * int(register.price)
-                        register.save()
+                            register = Register.objects.create(
+                                product=product,
+                                imei=check_imei,
+                                name=product.name,
+                                document=document,
+                                quantity=1,
+                                new=True,
+                                av_price=avPrice,
+                            )
+                            if rho.retail_price:
+                                register.price=rho.retail_price
+                            else:
+                                register.price=0
+                            register.sub_total = int(quantity) * int(register.price)
+                            register.save()
                         return redirect("change_transfer_unposted", document.id)
                 else:
-                    messages.error(request,
-                        "На складе фирмы-отправителя отсутствует необходимое количество",
-                    )
+                    messages.error(request,"На складе фирмы-отправителя отсутствует необходимое количество")
                     return redirect("change_transfer_unposted", document.id)
             else:
                 messages.error(request, "Данное наименование отсутствует на данном складе")
@@ -3245,9 +3267,9 @@ def check_transfer_unposted(request, document_id):
         else:
             messages.error(request, "Данное наименование отсутствует в базе данных")
             return redirect("change_transfer_unposted", document.id)
-    else:
-        messages.error(request, "Вы не ввели IMEI")
-        return redirect("change_transfer_unposted", document.id)
+    # else:
+    #     messages.error(request, "Вы не ввели IMEI")
+    #     return redirect("change_transfer_unposted", document.id)
 
 def delete_line_transfer(request, imei, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -7393,6 +7415,8 @@ def check_inventory (request, identifier_id):
     if request.method == "POST":
         check_imei = request.POST["check_imei"]
         real_qnty = request.POST["real_qnty_hidden_to_post"]
+        if '/' in check_imei:
+            check_imei=check_imei.replace('/', '_')
         # imeis_hidden = request.POST.getlist("imei_hidden", None)
         # real_qnts_hidden = request.POST.getlist("real_qnt_hidden", None)
         # reevaluation_prices_hidden=request.POST.getlist("reevaluation_price_hidden", None)
@@ -7430,6 +7454,8 @@ def check_inventory_unposted (request, document_id):
     if request.method == "POST":
         check_imei = request.POST["check_imei"]
         real_qnty = request.POST["real_qnty_hidden_to_post"]
+        if '/' in check_imei:
+            check_imei=check_imei.replace('/', '_')
         # imeis_hidden = request.POST.getlist("imei_hidden", None)
         # real_qnts_hidden = request.POST.getlist("real_qnt_hidden", None)
         # reevaluation_prices_hidden=request.POST.getlist("reevaluation_price_hidden", None)
