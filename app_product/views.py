@@ -3204,6 +3204,7 @@ def check_transfer_unposted(request, document_id):
     if request.method=="POST":
         check_imei = request.POST["check_imei"]
         quantity = request.POST["quantity_hidden_to_post"]
+        final_qnty= int(quantity) + 1
         if '/' in check_imei:
             check_imei=check_imei.replace('/', '_')
         # shop = request.GET["shop"]
@@ -3211,16 +3212,15 @@ def check_transfer_unposted(request, document_id):
         if AvPrice.objects.filter(imei=check_imei).exists():
             avPrice=AvPrice.objects.get(imei=check_imei)
         else:
-            messages.error(request,"AvPrice не существует для данного наименования.",)
+            messages.error(request,"Ошибка. AvPrice не существует для данного наименования.",)
             return redirect("change_transfer_unposted", document.id)
         if Product.objects.filter(imei=check_imei).exists():
             #product=Product.objects.get(imei=check_imei)
             if RemainderHistory.objects.filter(imei=check_imei, shop=shop_sender).exists():
                 rho=RemainderHistory.objects.filter(imei=check_imei, shop=shop_sender).latest('created')
-                if rho.current_remainder >= int(quantity):
+                if rho.current_remainder >= final_qnty:
                     product = Product.objects.get(imei=check_imei)
                     if registers.filter(imei=check_imei).exists():
-                        final_qnty= int(quantity) + 1
                         register=registers.get(imei=check_imei)
                         register.updated=dateTime
                         register.quantity=final_qnty
@@ -3239,7 +3239,7 @@ def check_transfer_unposted(request, document_id):
                                     sub_total=av_price.av_price
                                 )
                             else:
-                                messages.error(request,"Поступление для данного наименования не было создано. Соответственно av_price отсутствует",)
+                                messages.error(request,"Ошибка. Поступление для данного наименования не было создано. Соответственно av_price отсутствует",)
                                 return redirect("change_transfer_unposted", document.id)
                         else:
                             register = Register.objects.create(
@@ -3259,13 +3259,13 @@ def check_transfer_unposted(request, document_id):
                             register.save()
                         return redirect("change_transfer_unposted", document.id)
                 else:
-                    messages.error(request,"На складе фирмы-отправителя отсутствует необходимое количество")
+                    messages.error(request,"Ошибка. На складе фирмы-отправителя отсутствует необходимое количество")
                     return redirect("change_transfer_unposted", document.id)
             else:
-                messages.error(request, "Данное наименование отсутствует на данном складе")
+                messages.error(request, "Ошибка. Данное наименование отсутствует на данном складе")
                 return redirect("change_transfer_unposted", document.id)
         else:
-            messages.error(request, "Данное наименование отсутствует в базе данных")
+            messages.error(request, "Ошибка. Данное наименование отсутствует в базе данных")
             return redirect("change_transfer_unposted", document.id)
     # else:
     #     messages.error(request, "Вы не ввели IMEI")
