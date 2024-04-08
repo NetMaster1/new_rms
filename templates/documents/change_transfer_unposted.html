@@ -14,7 +14,7 @@
     <div class="container">
         {% if messages %}
         {% for message in messages %}
-        <div class="alert alert-info" role="alert">
+        <div class="alert alert-info" role="alert" id="status_message">
             <!-- <button class="close" data-dismiss="alert">
                             <small><sup>x</sup></small>
                         </button> -->
@@ -240,6 +240,7 @@
     const check_imei_form=document.querySelector('#check_imei_form');
     const button_message = document.querySelector('.button_message');
     const enterMessageModal = document.querySelector('.enterMessageModal');
+    const status_message = document.querySelector('#status_message');
 
     //=================================================
     //close without save warning message window
@@ -406,18 +407,27 @@
                 { 
                     quantity_hidden_to_post.value=quantities[i].value
 
-                    let arr = []
-                    arr.push(check_imei.value)
-                    //console.log(arr[0])
-                    new_quantity=parseInt(quantities[i].value) + 1 //parse the string & returns an integer
-                    arr.push(new_quantity)
-                    //console.log(arr[1])
-                    arr.push(prices[i].value)
-                    //console.log(arr[2])
-                    new_subtotal=new_quantity*prices[i].value
-                    arr.push(new_subtotal)
-                    //console.log(arr[3])
-                    sessionStorage.setItem(check_imei.value, JSON.stringify(arr));
+                    let substring ='Ошибка'
+                    if (status_message.innerText.includes(substring)) {
+                        console.log('error')
+                        choice = check_imei.value;
+                        sessionStorage.removeItem(choice);
+                    }
+                    
+                    else {
+                        let arr = []
+                        arr.push(check_imei.value)
+                        //console.log(arr[0])
+                        new_quantity=parseInt(quantities[i].value) + 1 //parse the string & returns an integer
+                        arr.push(new_quantity)
+                        //console.log(arr[1])
+                        arr.push(prices[i].value)
+                        //console.log(arr[2])
+                        new_subtotal=new_quantity*prices[i].value
+                        arr.push(new_subtotal)
+                        //console.log(arr[3])
+                        sessionStorage.setItem(check_imei.value, JSON.stringify(arr));
+                    }
                 
                 }
 
