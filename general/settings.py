@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'app_tutorial',
     'app_sims',
     'app_fiscal',
-    'dbbackup' #django dbbackup
+    'dbbackup', #django dbbackup
+    'app_kpi',
   
 ]
 

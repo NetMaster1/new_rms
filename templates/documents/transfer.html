@@ -176,9 +176,9 @@
                         <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storag ">
                     </a>
                 </div>
-                <div class="enterMessageModal">
+                <!-- <div class="enterMessageModal">
                     При нажатии данной кнопки все несохраненные данные, внесенные вручную без использования кнопки "Внести наименование в документ", будут потеряны. Нажать кнопку?
-                </div>
+                </div> -->
         </div>
     </div>
     </div>
@@ -203,7 +203,7 @@
     const check_imei_form = document.querySelector('#check_imei_form');
     const quantity_hidden_to_post = document.querySelector("#quantity_hidden_to_post");
     const enterMessageModal = document.querySelector('.enterMessageModal');
-    const button_message = document.querySelector('.button_message');
+    //const button_message = document.querySelector('.button_message');
    
      //==================== Returning cursor back to input field========================
     check_imei.select();
@@ -211,14 +211,14 @@
        
     //close without save warning message window
     //=================================================
-    button_message.addEventListener('mouseover', openMessageModal)
+    /*button_message.addEventListener('mouseover', openMessageModal)
     button_message.addEventListener('mouseout', closeMessageModal)
     function openMessageModal() {
         enterMessageModal.classList.add('openModal')
     }
     function closeMessageModal() {
         enterMessageModal.classList.remove('openModal')
-    }
+    }*/
     
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')

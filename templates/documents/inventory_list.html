@@ -206,9 +206,9 @@
                             class="btn btn-sm btn-block btn-outline-dark clear_storage button_message">
                     </a>
                 </div>
-                <div class="enterMessageModal">    
+                <!-- <div class="enterMessageModal">    
                     При нажатии данной кнопки все несохраненные данные, внесенные вручную без использования кнопки "Внести наименование в документ", будут потеряны. Нажать кнопку?
-                </div>
+                </div> -->
             </div>
 
           
@@ -256,8 +256,8 @@
     
     //=============================================================
     const btn_modal = document.querySelector('.btn_modal');
-    const button_message = document.querySelector('.button_message');
-    const enterMessageModal = document.querySelector('.enterMessageModal');
+    //const button_message = document.querySelector('.button_message');
+    //const enterMessageModal = document.querySelector('.enterMessageModal');
     const enterDeliveryModal = document.querySelector('.enterDeliveryModal');
     const btn_close = document.querySelector('.btn_close');
     const category = document.querySelector('#category');
@@ -270,14 +270,14 @@
 
     //=================================================
     //close without save warning message window
-    button_message.addEventListener('mouseover', openMessageModal)
+    /*button_message.addEventListener('mouseover', openMessageModal)
     button_message.addEventListener('mouseout', closeMessageModal)
     function openMessageModal() {
         enterMessageModal.classList.add('openModal')
     }
     function closeMessageModal() {
         enterMessageModal.classList.remove('openModal')
-    }
+    }*/
     
     //=============================================================
     //enter_new_product modal

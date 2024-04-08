@@ -103,3 +103,16 @@ class Teko_pay (models.Model):
     
     def __str__(self):
         return self.name
+    
+class Month (models.Model):
+    #key = models.CharField(max_length=10)
+    number_of_days = models.IntegerField(null=True)
+    name = models.CharField(max_length=20)
+    def __str__(self):
+        return self.name
+    
+class Year (models.Model):
+    #key = models.CharField(max_length=10)
+    name = models.CharField(max_length=10)
+    def __str__(self):
+        return self.name

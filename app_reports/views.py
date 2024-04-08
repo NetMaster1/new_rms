@@ -635,7 +635,8 @@ def sale_report_analytic(request):
     products = Product.objects.all()
     shops = Shop.objects.all()
     suppliers = Supplier.objects.all()
-    users = User.objects.all()
+    group_sales=Group.objects.get(name='sales')
+    users = User.objects.filter(is_active=True, groups=group_sales ).order_by('username')
     if request.method == "POST":
         doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
         queryset = RemainderHistory.objects.filter(rho_type=doc_type)
