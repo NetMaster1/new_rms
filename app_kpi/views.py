@@ -16,25 +16,32 @@ def kpi_excel_input (request):
             file = request.FILES["file_name"]
             df1 = pandas.read_excel(file)
             cycle = len(df1)
-            for i in range(cycle):
-                row = df1.iloc[i]#reads each row of the df1 one by one
-
-                item=KPIMonthlyPlan.objects.create(
-                    shop=row.Shop,
-                    month_reported=row.Month,
-                    year_reported=row.Year,
-                    GI=row.GI,
-                    MNP=row.MNP,
-                    HighBundle=row.HighBundle,
-                    smartphones_sum=row.Smartphones,
-                    insurance_charge=row.Insurance,
-                    wink_roubles=row.Wink,
-                    HomeInternet=row.HI,
-                    RT_equip_roubles=row.RT_equip_roubles,
-                    RT_active_cam=row.RT_equip_items
-                )
-            messages.error(request,"План успешно введён.",)
-            return redirect ('log')
+            try:
+                for i in range(cycle):
+                    row = df1.iloc[i]#reads each row of the df1 one by one
+                    if KPIMonthlyPlan.objects.filter(month_reported=row.Month, year_reported=row.Year).exists():
+                        messages.error(request,"План уже введён. Удалите предыдущую версию, чтобы загрузить новый.",)
+                        return redirect ('log')
+                    else:
+                        item=KPIMonthlyPlan.objects.create(
+                            shop=row.Shop,
+                            month_reported=row.Month,
+                            year_reported=row.Year,
+                            GI=row.GI,
+                            MNP=row.MNP,
+                            HighBundle=row.HighBundle,
+                            smartphones_sum=row.Smartphones,
+                            insurance_charge=row.Insurance,
+                            wink_roubles=row.Wink,
+                            HomeInternet=row.HI,
+                            RT_equip_roubles=row.RT_equip_roubles,
+                            RT_active_cam=row.RT_equip_items
+                        )
+                    messages.error(request,"План успешно введён.",)
+                    return redirect ('kpi_excel_input')
+            except:
+                messages.error(request,"План не введён. Выберите нужный формат файла",)
+                return redirect ('kpi_excel_input')
         else:
             #return render(request, "kpi/kpi_auto_input.html")
             return render(request, "kpi/inputPage.html")
@@ -81,7 +88,7 @@ def kpi_monthly_report_per_shop (request):
                 if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
                     plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
                 else:
-                    messages.error(request,"Планов для этого периода не существует.",)
+                    messages.error(request,"Планов для этого периода не существует. Введите сначала план",)
                     return redirect('log')
             #==========================================
             query=queryset.filter(category=category_smartphones)

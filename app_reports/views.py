@@ -158,6 +158,7 @@ def save_in_excel_daily_rep(request):
                 pay_cards=shop_row[8],
                 gadgets=shop_row[9],
                 modems=shop_row[10],
+                RT_equipment=shop_row[11],
                 credit=credit_sum,
                 card=card_sum,
                 cashback=cashback,
@@ -178,6 +179,7 @@ def save_in_excel_daily_rep(request):
                 + daily_rep.pay_cards
                 + daily_rep.gadgets
                 + daily_rep.modems
+                + daily_rep.RT_equipment
             )
             daily_rep.final_balance = (
                 daily_rep.opening_balance
@@ -219,7 +221,8 @@ def save_in_excel_daily_rep(request):
         col_num = 1
         for shop in shops:
             query_list = daily_rep.get(shop=shop.name)
-            # query = query_list.values_list("opening_balance", "smartphones", "accessories", 'sim_cards', 'phones', 'iphone', 'insuranсе', 'wink', 'services', 'pay_cards', 'credit', 'card', 'salary', 'expenses', 'return_sum', 'cash_move', 'final_balance')
+            # query = query_list.values_list("opening_balance", "smartphones", "accessories", 'sim_cards', 'phones', 'iphone', 
+            #'insuranсе', 'wink', 'services', 'modems', 'RT_equipment', pay_cards', 'credit', 'card', 'salary', 'expenses', 'return_sum', 'cash_move', 'final_balance')
             row_num = 1
             ws.write(row_num, col_num, query_list.opening_balance, font_style)
             row_num += 1
@@ -245,10 +248,15 @@ def save_in_excel_daily_rep(request):
             row_num += 1
             ws.write(row_num, col_num, query_list.modems, font_style)
             row_num += 1
+            ws.write(row_num, col_num, query_list.RT_equipment, font_style)
+
+
+
+            row_num += 1
             ws.write(row_num, col_num, query_list.credit, font_style)
             row_num += 1
             ws.write(row_num, col_num, query_list.card, font_style)
-            row_num+= 1
+            row_num += 1
             ws.write(row_num, col_num, query_list.cashback, font_style)
             row_num += 1
             ws.write(row_num, col_num, query_list.salary, font_style)
@@ -275,6 +283,7 @@ def save_in_excel_daily_rep(request):
             "КЭО",
             "Гаджеты",
             "Модемы",
+            "Оборудование РТ",
             "Продажа в кредит",
             "Экваиринг",
             "Кэшбэк",
@@ -467,6 +476,7 @@ def close_remainder_report(request):
     else:
         return redirect("log")
 
+#==================================================================
 def sale_report_per_shop(request):
     shops = Shop.objects.all()
     if request.method == "POST":
@@ -806,7 +816,7 @@ def sale_report_excel (request, report_id):
         logout(request)
         return redirect('login')
 
-
+#==================================================================
 #work for smartphones with unique IMEIs
 def sale_report_per_supplier (request):
     if request.user.is_authenticated:
@@ -882,7 +892,6 @@ def sale_report_per_supplier (request):
         logout(request)
         return redirect('login')
 
-
 def delivery_report(request):
     if request.user.is_authenticated:
         suppliers = Supplier.objects.all()
@@ -921,7 +930,6 @@ def delivery_report(request):
         logout(request)
         return redirect('login')
 
-
 def delivery_report_per_supplier(request):
     categories = ProductCategory.objects.all()
     suppliers = Supplier.objects.all()
@@ -957,7 +965,7 @@ def delivery_report_per_supplier(request):
             "queryset_list": queryset_list,
         }
     return render(request, "reports/delivery_report.html", context)
-
+#==========================================================
 def expenses_report(request):
     if request.user.is_authenticated:
         #users=User.objects.all()
@@ -1329,7 +1337,6 @@ def remainder_general_report (request):
         logout(request)
         return redirect('login')
 
-# ==========================================================
 def remainder_list(request, shop_id, category_id):
     shop = Shop.objects.get(id=shop_id)
     category = ProductCategory.objects.get(id=category_id)
