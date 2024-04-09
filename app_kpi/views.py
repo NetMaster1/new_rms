@@ -8,25 +8,8 @@ import datetime
 from datetime import date, timedelta
 from django.contrib import messages, auth
 import pandas
-import humanize
-
-def monthly_kpi (request):
-    if request.user.is_authenticated:
-        date = datetime.date.today()
-        if request.method == "POST":
-            file = request.FILES["file_name"]
-      
-            return redirect("log")
-        else:
-            context = {
-                'date': date,
-            }
-            return render(request, "kpi/kpi_per_shop.html", context)
-    else:
-        auth.logout(request)
-        return redirect("login")
-    
-
+  
+#================Entering Monthly Plans=====================
 def kpi_excel_input (request):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -54,7 +37,6 @@ def kpi_excel_input (request):
             return redirect ('log')
         else:
             return render(request, "kpi/kpi_auto_input.html")
-
     else:
         auth.logout(request)
         return redirect("login")
@@ -62,6 +44,7 @@ def kpi_excel_input (request):
 def kpi_adjustment (request):
     pass
 
+#================Quering data & comparing it with plans==================
 def kpi_performance(request):
     if request.user.is_authenticated:
         shops=Shop.objects.all()
@@ -81,6 +64,12 @@ def kpi_performance(request):
 def kpi_monthly_report_per_shop (request):
     if request.user.is_authenticated:
         if request.method == "POST":
+            if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
+                plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
+            else:
+                messages.error(request,"Планов для этого периода не существует.",)
+                return redirect('log')
+
             shop = request.POST["shop"]
             month = request.POST["month"]
             month=Month.objects.get(id=month)
@@ -146,11 +135,6 @@ def kpi_monthly_report_per_shop (request):
                     RT_equip_roubles=RT_equipment_sum,
                     RT_active_cam=camera_counter,
                     )
-            if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
-                plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
-            else:
-                messages.error(request,"Планов для этого периода не существует.",)
-                return redirect('log')
 
             context = {
                 'month': month,
