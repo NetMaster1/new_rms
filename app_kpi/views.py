@@ -64,13 +64,6 @@ def kpi_performance(request):
     
 def kpi_monthly_report_per_shop (request):
     if request.user.is_authenticated:
-        if request.method == "POST":
-            if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
-                plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
-            else:
-                messages.error(request,"Планов для этого периода не существует.",)
-                return redirect('log')
-
             shop = request.POST["shop"]
             month = request.POST["month"]
             month=Month.objects.get(id=month)
@@ -84,6 +77,12 @@ def kpi_monthly_report_per_shop (request):
             category_insurance=ProductCategory.objects.get(name='Страховки')
             category_wink=ProductCategory.objects.get(name='Подписки')
             category_RT_equipment=ProductCategory.objects.get(name='Оборудование РТК')
+            if request.method == "POST":
+                if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
+                    plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
+                else:
+                    messages.error(request,"Планов для этого периода не существует.",)
+                    return redirect('log')
             #==========================================
             query=queryset.filter(category=category_smartphones)
             smartphones_sum=0
