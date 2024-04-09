@@ -36,7 +36,8 @@ def kpi_excel_input (request):
             messages.error(request,"План успешно введён.",)
             return redirect ('log')
         else:
-            return render(request, "kpi/kpi_auto_input.html")
+            #return render(request, "kpi/kpi_auto_input.html")
+            return render(request, "kpi/inputPage.html")
     else:
         auth.logout(request)
         return redirect("login")
