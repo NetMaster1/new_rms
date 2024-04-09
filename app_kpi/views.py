@@ -8,6 +8,7 @@ import datetime
 from datetime import date, timedelta
 from django.contrib import messages, auth
 import pandas
+import humanize
 
 def monthly_kpi (request):
     if request.user.is_authenticated:
@@ -49,10 +50,9 @@ def kpi_excel_input (request):
                     RT_equip_roubles=row.RT_equip_roubles,
                     RT_active_cam=row.RT_equip_items
                 )
-
+            messages.error(request,"План успешно введён.",)
             return redirect ('log')
         else:
-
             return render(request, "kpi/kpi_auto_input.html")
 
     else:
@@ -61,8 +61,6 @@ def kpi_excel_input (request):
 
 def kpi_adjustment (request):
     pass
-
-
 
 def kpi_performance(request):
     if request.user.is_authenticated:
@@ -83,15 +81,6 @@ def kpi_performance(request):
 def kpi_monthly_report_per_shop (request):
     if request.user.is_authenticated:
         if request.method == "POST":
-            # start_date = request.POST.get("start_date", False)
-            # if start_date:
-            #     start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-            # end_date = request.POST.get("end_date", False)
-            # if end_date:
-            #     end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-            #     end_date = end_date + timedelta(days=1)
-
-
             shop = request.POST["shop"]
             month = request.POST["month"]
             month=Month.objects.get(id=month)
@@ -135,6 +124,11 @@ def kpi_monthly_report_per_shop (request):
             for item in query:
                 wink_sum+=item.retail_price
                 wink_items+=1
+            #=================================================
+            camera_counter=0
+            for item in query:
+                if 'Видеокамера' in item.name:
+                    camera_couner=+1
             
             if KPI_performance.objects.filter(month_reported=month, year_reported=year).exists():
                 item=KPI_performance.objects.get(month_reported=month, year_reported=year)
@@ -150,17 +144,32 @@ def kpi_monthly_report_per_shop (request):
                     wink_roubles=wink_sum,
                     wink_item=wink_items,
                     RT_equip_roubles=RT_equipment_sum,
+                    RT_active_cam=camera_counter,
                     )
-
+            if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
+                plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
+            else:
+                messages.error(request,"Планов для этого периода не существует.",)
+                return redirect('log')
 
             context = {
                 'month': month,
                 'year': year,
                 'shop':shop,
                 'item': item,
+                'plan_item': plan_item,
 
             }
             return render(request, "kpi/kpi_per_shop.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
+    
+def close_kpi_report (request, item_id):
+    if request.user.is_authenticated:
+        item=KPI_performance.objects.get(id=item_id)
+        item.delete()
+        return redirect ('log')
     else:
         auth.logout(request)
         return redirect("login")
