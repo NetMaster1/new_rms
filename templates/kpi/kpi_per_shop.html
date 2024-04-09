@@ -45,49 +45,50 @@
 
                 <div class="row">
                     <div class="col-2">Смартфоны</div>
-                    <div class="col-2">----</div>
+                    <div class="col-2">{{plan_item.smartphones_sum}} руб.</div>
                     <div class="col-2">{{item.smartphones_sum}} руб. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">GI</div>
-                    <div class="col-2">----</div>
+                    <div class="col-2">{{plan_item.GI}} шт. </div>
                     <div class="col-2">{{item.GI}} шт. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Фокусные сим_карты</div>
-                    <div class="col-2">----</div>
+                    <div class="col-2">{{plan_item.HighBundle}} шт.</div>
                     <div class="col-2">{{item.HighBundle}} шт. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Оборудование РТ</div>
-                    <div class="col-2">----</div>
+                    <div class="col-2">{{plan_item.RT_equip_roubles}} руб.</div>
                     <div class="col-2">{{item.RT_equip_roubles}} руб. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Страховки</div>
-                    <div class="col-2">----</div>
+                    <div class="col-2">{{plan_item.insurance_charge}} руб.</div>
                     <div class="col-2">{{item.insurance_charge}} руб. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Подписки в руб.</div>
-                    <div class="col-2">----</div>
+                    <div class="col-2">{{plan_item.wink_roubles}} руб.</div>
                     <div class="col-2">{{item.wink_roubles}} руб. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Подписки в шт.</div>
-                    <div class="col-2">----</div>
+                    <div class="col-2">{{plan_item.wink_item}} шт.</div>
                     <div class="col-2">{{item.wink_item}} шт. </div>
                 </div>
+                <div class="row">
+                    <div class="col-2">Камеры</div>
+                    <div class="col-2">{{plan_item.RT_active_cam}} шт.</div>
+                    <div class="col-2">{{item.RT_active_cam}} шт. </div>
+                </div>
                 
-                   
-                  
-              
-             
-                   
-             
-                
-                   
-               
+                <div class="row mt-3">
+                    <a href="{% url 'close_kpi_report' item.id%}">
+                        <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                    </a>
+                </div>
            
             </div>
             </div>

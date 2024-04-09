@@ -3,7 +3,7 @@ from . models import KPIMonthlyPlan, KPI_performance
 
 # Register your models here.
 class KPIMonthlyPlanAdmin(admin.ModelAdmin):
-    list_display = ('id', 'month_reported', 'year_reported')
+    list_display = ('id', 'month_reported', 'year_reported', 'shop')
 
 class KPI_PerformanceAdmin(admin.ModelAdmin):
     list_display = ('id', 'month_reported', 'year_reported')
