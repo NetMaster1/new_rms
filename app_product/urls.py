@@ -110,7 +110,7 @@ urlpatterns = [
     path ('change_return_unposted/<int:document_id>/', views.change_return_unposted, name='change_return_unposted'),
     path ('change_return_posted/<int:document_id>/', views.change_return_posted, name='change_return_posted'),
 
-
+    path ('change_register/<int:document_id>', views.change_register, name='change_register'),
     # ===========================Return=========================================
     path ('identifier_transfer', views.identifier_transfer, name='identifier_transfer'),
     path ('check_transfer/<int:identifier_id>', views.check_transfer, name='check_transfer'),

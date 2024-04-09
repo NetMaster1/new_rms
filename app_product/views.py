@@ -3187,6 +3187,23 @@ def check_transfer(request, identifier_id):
     else:
         return redirect("transfer", identifier.id)
 
+def change_register(request, document_id):
+    if request.user.is_authenticated:
+        document = Document.objects.get(id=document_id)
+        if request.method == "POST":
+            imei = request.POST["imei"]
+            price = request.POST["price"]
+            quantity = request.POST["quantity"]
+            sub_total = request.POST["sub_total"]
+            register=Register.objects.get(document=document, imei=imei)
+            register.quantity=quantity
+            register.price=price
+            register.price=sub_total
+            register.save()
+            return redirect("change_transfer_unposted", document.id)
+    else:
+        return redirect ('login')
+
 def check_transfer_unposted(request, document_id):
     tdelta=datetime.timedelta(hours=3)
     dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
@@ -3204,7 +3221,6 @@ def check_transfer_unposted(request, document_id):
     if request.method=="POST":
         check_imei = request.POST["check_imei"]
         quantity = request.POST["quantity_hidden_to_post"]
-        final_qnty= int(quantity) + 1
         if '/' in check_imei:
             check_imei=check_imei.replace('/', '_')
         # shop = request.GET["shop"]
@@ -3215,19 +3231,26 @@ def check_transfer_unposted(request, document_id):
             messages.error(request,"Ошибка. AvPrice не существует для данного наименования.",)
             return redirect("change_transfer_unposted", document.id)
         if Product.objects.filter(imei=check_imei).exists():
-            #product=Product.objects.get(imei=check_imei)
-            if RemainderHistory.objects.filter(imei=check_imei, shop=shop_sender).exists():
-                rho=RemainderHistory.objects.filter(imei=check_imei, shop=shop_sender).latest('created')
-                if rho.current_remainder >= final_qnty:
-                    product = Product.objects.get(imei=check_imei)
-                    if registers.filter(imei=check_imei).exists():
+            product = Product.objects.get(imei=check_imei)
+            if registers.filter(imei=check_imei).exists():
+                final_qnty=int(quantity)+1
+                if RemainderHistory.objects.filter(imei=check_imei, shop=shop_sender).exists():
+                    rho=RemainderHistory.objects.filter(imei=check_imei, shop=shop_sender).latest('created')
+                    if rho.current_remainder >= final_qnty:
                         register=registers.get(imei=check_imei)
                         register.updated=dateTime
                         register.quantity=final_qnty
                         register.save()
                         #messages.error(request,"Вы уже ввели данное наименование. Запишите нужно кол-во в списке ниже",)
                         return redirect("change_transfer_unposted", document.id)
-                    else:
+                    messages.error(request,"Ошибка. Необходимое кол-во отсутствует на данном складе.",)
+                    return redirect("change_transfer_unposted", document.id)
+                messages.error(request,"Ошибка. Данное наименование отсутствует на данном складе",)
+                return redirect("change_transfer_unposted", document.id)
+            else:
+                if RemainderHistory.objects.filter(imei=check_imei, shop=shop_sender).exists():
+                    rho=RemainderHistory.objects.filter(imei=check_imei, shop=shop_sender).latest('created')
+                    if rho.current_remainder >0:
                         if product.category.name == 'Сим_карты':   
                             if AvPrice.objects.filter(imei=product.imei).exists():
                                 av_price=AvPrice.objects.get(imei=product.imei)
@@ -3251,18 +3274,17 @@ def check_transfer_unposted(request, document_id):
                                 new=True,
                                 av_price=avPrice,
                             )
+                            
                             if rho.retail_price:
                                 register.price=rho.retail_price
                             else:
                                 register.price=0
                             register.sub_total = int(quantity) * int(register.price)
                             register.save()
-                        return redirect("change_transfer_unposted", document.id)
-                else:
-                    messages.error(request,"Ошибка. На складе фирмы-отправителя отсутствует необходимое количество")
+                            return redirect("change_transfer_unposted", document.id)
+                    messages.error(request,"Ошибка. Необходимое кол-во отсутствует на данном складе.",)
                     return redirect("change_transfer_unposted", document.id)
-            else:
-                messages.error(request, "Ошибка. Данное наименование отсутствует на данном складе")
+                messages.error(request,"Ошибка. Данное наименование отсутствует на данном складе",)
                 return redirect("change_transfer_unposted", document.id)
         else:
             messages.error(request, "Ошибка. Данное наименование отсутствует в базе данных")

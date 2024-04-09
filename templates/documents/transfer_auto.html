@@ -49,7 +49,7 @@
                             </div>
                             <div class="col">
                                 <select name="shop_sender" id="shop_sender" class='form-control' required>
-                                    <<option value="">Выберите торговую точку</option>
+                                    <option value="">Выберите торговую точку</option>
                                         {% for shop in shops %}
                                         <option value="{{shop.id}}">{{shop.name}}</option>
                                         {% endfor %}

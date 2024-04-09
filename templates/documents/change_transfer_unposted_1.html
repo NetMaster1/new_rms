@@ -132,8 +132,11 @@
                         </div>
 
                         {% for register in registers %}
-                        <div class="row m-2" style="position: relative;">
+            <form action="{% url 'change_register' document.id %}" method="POST" id="change_register_form">
+                {% csrf_token %}
 
+                        <div class="row m-2" style="position: relative;">
+                
                             <div class="avPrice_popup">
                                 <div class="row m-1">Наименование: {{register.product.name}}</div>
                                 <div class="row m-1">Средневзвешенная стоимость: {{register.av_price.av_price}} руб.</div>
@@ -162,16 +165,17 @@
                                 <input type="number" class='form-control' id="sub_total" name="sub_total"
                                     value='{{register.sub_total}}' maxlength='50'>
                             </div>
-
+                        </form>
                             <div class="col">
                                 <a
                                     href="{% url 'delete_line_unposted_transfer' document.id register.product.imei %}">
                                     <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
                                 </a>
-
+                       
                             </div>
                             <p id="demo"></p>
                         </div>
+            
                         {% endfor %}
 
 
@@ -240,6 +244,7 @@
     const check_imei_form=document.querySelector('#check_imei_form');
     const button_message = document.querySelector('.button_message');
     const enterMessageModal = document.querySelector('.enterMessageModal');
+    const change_register_forms = document.querySelectorAll('#change_register_form');
     //const status_message = document.querySelector('#status_message');
 
     //=================================================
@@ -292,12 +297,7 @@
     for (let i = 0; i < quantities.length; i++) {
         quantities[i].addEventListener('change', e => {
             sub_totals[i].value = quantities[i].value * prices[i].value;
-            let arr = []
-            arr.push(imeis[i].value)
-            arr.push(quantities[i].value)
-            arr.push(prices[i].value)
-            arr.push(sub_totals[i].value)
-            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+            change_register_forms[i].submit()
         })
     }
 
@@ -306,12 +306,7 @@
     for (let i = 0; i < prices.length; i++) {
         prices[i].addEventListener('change', e => {
             sub_totals[i].value = quantities[i].value * prices[i].value;
-            let arr = []
-            arr.push(imeis[i].value)
-            arr.push(quantities[i].value)
-            arr.push(prices[i].value)
-            arr.push(sub_totals[i].value)
-            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+            change_register_forms[i].submit()
         })
     }
 
@@ -320,12 +315,7 @@
     for (let i = 0; i < sub_totals.length; i++) {
         sub_totals[i].addEventListener('change', e => {
             prices[i].value = sub_totals[i].value / quantities[i].value;
-            let arr = []
-            arr.push(imeis[i].value)
-            arr.push(quantities[i].value)
-            arr.push(prices[i].value)
-            arr.push(sub_totals[i].value)
-            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+            change_register_forms[i].submit()
         })
     }
     //saving "Shop_sender select option" from switching to default when updating the page
