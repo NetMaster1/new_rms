@@ -87,12 +87,13 @@ def kpi_monthly_report_per_shop (request):
                 messages.error(request,"Планов для этого периода не существует. Введите сначала план",)
                 return redirect('sale_interface')
         else:
-            shop = request.POST["shop"]
-            month = request.POST["month"]
-            month=Month.objects.get(id=month)
-            year = request.POST["year"]
-            year=Year.objects.get(id=year)
-            shop=Shop.objects.get(id=shop)
+            if request.method == "POST":
+                shop = request.POST["shop"]
+                month = request.POST["month"]
+                month=Month.objects.get(id=month)
+                year = request.POST["year"]
+                year=Year.objects.get(id=year)
+                shop=Shop.objects.get(id=shop)
 
             if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
                 plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
