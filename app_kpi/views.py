@@ -5,7 +5,7 @@ from app_reports.models import ReportTempId, Sim_report
 from .models import KPIMonthlyPlan, KPI_performance
 from django.contrib import messages, auth
 from django.contrib.auth.models import User, Group
-import datetime
+import datetime, calendar
 from datetime import date, timedelta
 import pandas
 
@@ -50,8 +50,72 @@ def kpi_excel_input (request):
         auth.logout(request)
         return redirect("login")
 
-def kpi_adjustment (request):
-    pass
+def kpi_performance_update (request):
+    if request.user.is_authenticated:
+        shops=Shop.objects.all()
+        monthes=Month.objects.all()
+        years=Year.objects.all()
+        if request.method == "POST":
+            shop = request.POST["shop"]
+            #shop=Shop.objects.get(id=shop)
+            month = request.POST["month"]
+            #month=Month.objects.get(id=month)
+            year = request.POST["year"]
+            #year=Year.objects.get(id=year)
+            upsale=request.POST.get('upsale')
+            MNP=request.POST.get('MNP')
+            VMR=request.POST.get('VMR')
+            HI_T2=request.POST.get('HI_T2')
+            HI_RT=request.POST.get('HI_RT')
+            if KPI_performance.objects.filter(shop=shop, month_reported=month, year_reported=year).exists():
+                item=KPI_performance.objects.get(shop=shop, month_reported=month, year_reported=year)
+                counter=0
+                if upsale:
+                    item.upsale=upsale
+                    counter+=1
+                if VMR:
+                    item.VMR=VMR
+                    counter+=1
+                if HI_T2:
+                    item.HomeInternet_T2=HI_T2
+                    counter+=1
+                if HI_RT:
+                    item.HomeInternet_RT=HI_RT
+                    counter+=1
+                if counter==0:
+                    context = {
+                        'shops': shops,
+                        'monthes': monthes,
+                        'years': years
+                        }
+                    messages.error(request,"Вы не ввели ни одного показателя.",)    
+                    return render (request, "kpi/kpi_performance_update.html", context)
+                else:
+                    item.save()
+                    return redirect ('kpi_performance')
+            else:
+                # context = {
+                #     'shops': shops,
+                #     'monthes': monthes,
+                #     'years': years
+                # }
+                messages.error(request,"Измения не внесены, так как планов для этого периода или точке не существует. Введите сначала план.",)
+                return redirect('kpi_excel_input')
+                #return render (request, "kpi/kpi_performance_update.html", context)
+
+        else:
+            
+            context = {
+               'shops': shops,
+               'monthes': monthes,
+               'years': years
+            }
+            return render (request, "kpi/kpi_performance_update.html", context)
+
+
+    else:
+        auth.logout(request)
+        return redirect("login")
 
 #================Quering data & comparing it with plans==================
 def kpi_performance(request):
@@ -59,7 +123,7 @@ def kpi_performance(request):
         shops=Shop.objects.all()
         monthes=Month.objects.all()
         years=Year.objects.all()
-
+      
         context = {
             'shops': shops,
             'monthes': monthes,
@@ -84,7 +148,7 @@ def kpi_monthly_report_per_shop (request):
             if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month, year_reported=year.name).exists():
                 plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month, year_reported=year.name )
             else:
-                messages.error(request,"Планов для этого периода не существует. Введите сначала план",)
+                messages.error(request,"Планов для этого периода или точки не существуе. Обратитесь к администратору.",)
                 return redirect('sale_interface')
         else:
             if request.method == "POST":
@@ -99,7 +163,7 @@ def kpi_monthly_report_per_shop (request):
                 plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
             else:
                 messages.error(request,"Планов для этого периода не существует. Введите сначала план",)
-                return redirect('log')
+                return redirect('kpi_excel_input')
         doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
         queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type)
         category_sim=ProductCategory.objects.get(name='Сим_карты')
@@ -143,34 +207,47 @@ def kpi_monthly_report_per_shop (request):
         camera_counter=0
         for item in query:
             if 'Видеокамера' in item.name:
-                camera_couner=+1
+                camera_counter=+1
 
-        
-        # if KPI_performance.objects.filter(shop=shop, month_reported=month, year_reported=year).exists():
-        #     item=KPI_performance.objects.get(shop=shop, month_reported=month, year_reported=year)
-        # else:
-        identifier = Identifier.objects.create()
-        item=KPI_performance.objects.create(
-            identifier=identifier,
-            month_reported=month,
-            year_reported=year,
-            shop=shop,
-            smartphones_sum=smartphones_sum,
-            GI=number_of_sims,
-            HighBundle=number_of_focus_sims,
-            insurance_charge=insurance_sum,
-            wink_roubles=wink_sum,
-            wink_item=wink_items,
-            RT_equip_roubles=RT_equipment_sum,
-            RT_active_cam=camera_counter,
-            )
-
+        if KPI_performance.objects.filter(shop=shop, month_reported=month, year_reported=year).exists():
+            item=KPI_performance.objects.get(shop=shop, month_reported=month, year_reported=year)
+            item.smartphones_sum=smartphones_sum
+            item.GI=number_of_sims
+            item.HighBundle=number_of_focus_sims
+            item.insurance_charge=insurance_sum
+            item.wink_roubles=wink_sum
+            item.wink_item=wink_items
+            item.RT_equip_roubles=RT_equipment_sum
+            item.RT_active_cam=camera_counter
+            item.save()
+        else:
+            #identifier = Identifier.objects.create()
+            item=KPI_performance.objects.create(
+                #identifier=identifier,
+                month_reported=month,
+                year_reported=year,
+                shop=shop,
+                smartphones_sum=smartphones_sum,
+                GI=number_of_sims,
+                HighBundle=number_of_focus_sims,
+                insurance_charge=insurance_sum,
+                wink_roubles=wink_sum,
+                wink_item=wink_items,
+                RT_equip_roubles=RT_equipment_sum,
+                RT_active_cam=camera_counter,
+                )
+        day_before=datetime.datetime.today().day -1
+        year=int(year.name)
+        month=int(month.id)
+        num_days = calendar.monthrange(year, month)[1]
         context = {
             'month': month,
             'year': year,
             'shop':shop,
             'item': item,
             'plan_item': plan_item,
+            'day_before': day_before,
+            'num_days': num_days,
 
         }
         return render(request, "kpi/kpi_per_shop.html", context)
@@ -179,12 +256,12 @@ def kpi_monthly_report_per_shop (request):
         auth.logout(request)
         return redirect("login")
     
-def close_kpi_report(request, identifier):
+def close_kpi_report(request):
     if request.user.is_authenticated:
-        identifier=Identifier.objects.get(id=identifier)
+        #identifier=Identifier.objects.get(id=identifier)
         users = Group.objects.get(name='sales').user_set.all()
-        item=KPI_performance.objects.get(identifier=identifier)
-        item.delete()
+        #item=KPI_performance.objects.get(identifier=identifier)
+        #item.delete()
         if request.user in users:
             return redirect ('sale_interface')
         else:

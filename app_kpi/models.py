@@ -30,14 +30,15 @@ class KPIMonthlyPlan(models.Model):
         return self.id
     
 class KPI_performance(models.Model):
-    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+    #identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
     month_reported = models.ForeignKey(Month, null=True, on_delete=models.DO_NOTHING)#Отчетный месяц
     year_reported = models.ForeignKey(Year, null=True, on_delete=models.DO_NOTHING)#Отчетный месяц
     shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)
     GI = models.IntegerField(default=0, null=True)
     MNP = models.IntegerField(default=0, null=True)
     HighBundle = models.IntegerField(default=0, null=True)#фокусные тарифы
-    HomeInternet = models.IntegerField(default=0, null=True)
+    HomeInternet_T2 = models.IntegerField(default=0, null=True)
+    HomeInternet_RT = models.IntegerField(default=0, null=True)
     smartphones_sum = models.IntegerField(default=0, null=True)
     RT_active_cam = models.IntegerField(default=0, null=True)#number of pieces
     RT_equip_roubles = models.IntegerField(default=0, null=True)#sum of money
@@ -50,3 +51,26 @@ class KPI_performance(models.Model):
 
     def __int__(self):
         return self.id
+    
+    class KPI_Forecast(models.Model):
+        #identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+        month_reported = models.ForeignKey(Month, null=True, on_delete=models.DO_NOTHING)#Отчетный месяц
+        year_reported = models.ForeignKey(Year, null=True, on_delete=models.DO_NOTHING)#Отчетный месяц
+        shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)
+        GI = models.IntegerField(default=0, null=True)
+        MNP = models.IntegerField(default=0, null=True)
+        HighBundle = models.IntegerField(default=0, null=True)#фокусные тарифы
+        HomeInternet_T2 = models.IntegerField(default=0, null=True)
+        HomeInternet_RT = models.IntegerField(default=0, null=True)
+        smartphones_sum = models.IntegerField(default=0, null=True)
+        RT_active_cam = models.IntegerField(default=0, null=True)#number of pieces
+        RT_equip_roubles = models.IntegerField(default=0, null=True)#sum of money
+        wink_item = models.IntegerField(default=0, null=True)#number of pieces
+        wink_roubles = models.IntegerField(default=0, null=True)#sum of money
+        upsale= models.IntegerField(default=0, null=True)
+        mixx= models.IntegerField(default=0, null=True)
+        golden_sim= models.IntegerField(default=0, null=True)
+        insurance_charge= models.IntegerField(default=0, null=True)#оплата страховки
+
+        def __int__(self):
+            return self.id

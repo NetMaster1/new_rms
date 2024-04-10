@@ -2166,13 +2166,13 @@ def check_service(request, identifier_id):
         return redirect ('login')
 
 #===============================CashBack Operations======================================================
-#При проведении докумена (продажа) кэшбэк, списанный со счета клиента сохраняется в document.cashback_off.
+#При проведении докумена с кэшбэк, списанный со счета клиента сохраняется в document.cashback_off.
 #При отмене проведения документа (продажа) начисленный кэшбэк обнуляется со счета клиента (customer.accum_cashback); списанный кэшбэк возвращается на счет клиента, но одновременно остется в непроведенном в document.cashback_off.
 #При проведении change_sale_unposted рассчитывается новый начисленный кэшбэк, который идет на счет клиенту; списываемый кэшбэк списывается со счета клиента (сумма берется из document.cashback_off). Таким образом, при редактировании документа change_sale_posted сумма кэшбэка к списанию не редактируется.
 #При удалении документа кэшбэк с покупки не начисляется; списываемый кэшбэк не списывается со счета клиент, и одновременно удаляется из document.cashback_off вместе с документом.
 #Новые клиенты кэшбэк сохраняются в таблице Cusomers. Для создания отчета по новым качественным клиентам мы берем выборку клиентов по полю cretated за данный месяц и прогоняем их по всем документам (продажа) за данный месяц. Таблица Document имеет поле client. Т.е. если мы видим, что новый клиент отметился в документе продажа за текущий месяцы, то он считается качественным.
 
-
+#продажа с начислением кэшбэк 
 def cashback(request, identifier_id):
     if request.user.is_authenticated:
         identifier = Identifier.objects.get(id=identifier_id)
@@ -2192,7 +2192,8 @@ def cashback(request, identifier_id):
     else:
         auth.logout(request)
         return redirect("login")
-
+    
+#продажа со списанием кэшбэк
 def cashback_off_choice(request, identifier_id, client_id):
     if request.user.is_authenticated:
         identifier = Identifier.objects.get(id=identifier_id)
