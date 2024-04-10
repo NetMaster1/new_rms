@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
-from app_product.models import Document
+from app_product.models import Identifier, Document
 from app_reference.models import DocumentType, Shop, Month, Year
 # Create your models here.
 
@@ -30,6 +30,7 @@ class KPIMonthlyPlan(models.Model):
         return self.id
     
 class KPI_performance(models.Model):
+    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
     month_reported = models.ForeignKey(Month, null=True, on_delete=models.DO_NOTHING)#Отчетный месяц
     year_reported = models.ForeignKey(Year, null=True, on_delete=models.DO_NOTHING)#Отчетный месяц
     shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)

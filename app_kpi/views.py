@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from app_product.models import RemainderHistory, Document
+from app_product.models import Identifier, RemainderHistory, Document
 from app_reference.models import Shop, Product, DocumentType, ProductCategory, Month, Year
 from app_reports.models import ReportTempId, Sim_report
 from .models import KPIMonthlyPlan, KPI_performance
@@ -143,11 +143,14 @@ def kpi_monthly_report_per_shop (request):
         for item in query:
             if 'Видеокамера' in item.name:
                 camera_couner=+1
+
         
-        if KPI_performance.objects.filter(month_reported=month, year_reported=year).exists():
-            item=KPI_performance.objects.get(month_reported=month, year_reported=year)
+        if KPI_performance.objects.filter(shop=shop, month_reported=month, year_reported=year).exists():
+            item=KPI_performance.objects.get(shop=shop, month_reported=month, year_reported=year)
         else:
+            identifier = Identifier.objects.create()
             item=KPI_performance.objects.create(
+                identififer=identifier,
                 month_reported=month,
                 year_reported=year,
                 shop=shop,
@@ -175,10 +178,11 @@ def kpi_monthly_report_per_shop (request):
         auth.logout(request)
         return redirect("login")
     
-def close_kpi_report (request, item_id):
+def close_kpi_report (request, identifier_id):
     if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
         users = Group.objects.get(name='sales').user_set.all()
-        item=KPI_performance.objects.get(id=item_id)
+        item=KPI_performance.objects.get(identifier=identifier)
         item.delete()
         if request.user in users:
             return redirect ('sale_interface')
