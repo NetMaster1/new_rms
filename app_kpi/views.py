@@ -145,24 +145,24 @@ def kpi_monthly_report_per_shop (request):
                 camera_couner=+1
 
         
-        if KPI_performance.objects.filter(shop=shop, month_reported=month, year_reported=year).exists():
-            item=KPI_performance.objects.get(shop=shop, month_reported=month, year_reported=year)
-        else:
-            identifier = Identifier.objects.create()
-            item=KPI_performance.objects.create(
-                identififer=identifier,
-                month_reported=month,
-                year_reported=year,
-                shop=shop,
-                smartphones_sum=smartphones_sum,
-                GI=number_of_sims,
-                HighBundle=number_of_focus_sims,
-                insurance_charge=insurance_sum,
-                wink_roubles=wink_sum,
-                wink_item=wink_items,
-                RT_equip_roubles=RT_equipment_sum,
-                RT_active_cam=camera_counter,
-                )
+        # if KPI_performance.objects.filter(shop=shop, month_reported=month, year_reported=year).exists():
+        #     item=KPI_performance.objects.get(shop=shop, month_reported=month, year_reported=year)
+        # else:
+        identifier = Identifier.objects.create()
+        item=KPI_performance.objects.create(
+            identifier=identifier,
+            month_reported=month,
+            year_reported=year,
+            shop=shop,
+            smartphones_sum=smartphones_sum,
+            GI=number_of_sims,
+            HighBundle=number_of_focus_sims,
+            insurance_charge=insurance_sum,
+            wink_roubles=wink_sum,
+            wink_item=wink_items,
+            RT_equip_roubles=RT_equipment_sum,
+            RT_active_cam=camera_counter,
+            )
 
         context = {
             'month': month,
@@ -178,9 +178,9 @@ def kpi_monthly_report_per_shop (request):
         auth.logout(request)
         return redirect("login")
     
-def close_kpi_report (request, identifier_id):
+def close_kpi_report(request, identifier):
     if request.user.is_authenticated:
-        identifier=Identifier.objects.get(id=identifier_id)
+        identifier=Identifier.objects.get(id=identifier)
         users = Group.objects.get(name='sales').user_set.all()
         item=KPI_performance.objects.get(identifier=identifier)
         item.delete()
