@@ -20,7 +20,7 @@ def kpi_excel_input (request):
             try:
                 for i in range(cycle):
                     row = df1.iloc[i]#reads each row of the df1 one by one
-                    if KPIMonthlyPlan.objects.filter(month_reported=row.Month, year_reported=row.Year).exists():
+                    if KPIMonthlyPlan.objects.filter(shop=row.Shop, month_reported=row.Month, year_reported=row.Year).exists():
                         messages.error(request,"План уже введён. Удалите предыдущую версию, чтобы загрузить новый.",)
                         return redirect ('log')
                     else:
@@ -38,8 +38,8 @@ def kpi_excel_input (request):
                             RT_equip_roubles=row.RT_equip_roubles,
                             RT_active_cam=row.RT_equip_items
                         )
-                    messages.error(request,"План успешно введён.",)
-                    return redirect ('kpi_excel_input')
+                messages.error(request,"План успешно введён.",)
+                return redirect ('kpi_excel_input')
             except:
                 messages.error(request,"План не введён. Выберите нужный формат файла",)
                 return redirect ('kpi_excel_input')
