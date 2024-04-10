@@ -82,7 +82,7 @@ def kpi_monthly_report_per_shop (request):
             year=datetime.datetime.now().year
             year=Year.objects.get(name=year)
             if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month, year_reported=year.name).exists():
-                plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
+                plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month, year_reported=year.name )
             else:
                 messages.error(request,"Планов для этого периода не существует. Введите сначала план",)
                 return redirect('sale_interface')
@@ -94,8 +94,8 @@ def kpi_monthly_report_per_shop (request):
             year=Year.objects.get(id=year)
             shop=Shop.objects.get(id=shop)
 
-            if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.id, year_reported=year.name).exists():
-                plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.id, year_reported=year.name )
+            if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
+                plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
             else:
                 messages.error(request,"Планов для этого периода не существует. Введите сначала план",)
                 return redirect('log')
