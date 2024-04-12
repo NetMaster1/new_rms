@@ -2439,17 +2439,21 @@ def delivery_auto(request):
         document_sum = 0
         for i in range(cycle):
             row = df1.iloc[i]#reads each row of the df1 one by one
-            if Product.objects.filter(imei=row.Imei).exists():
-                product=Product.objects.get(imei=row.Imei)
+            if '/' in row.Imei:
+                imei=row.Imei
+                imei=imei.replace('/', '_')
+
+            if Product.objects.filter(imei=imei).exists():
+                product=Product.objects.get(imei=imei)
             else:
                 product = Product.objects.create(
                     name=row.Title,
-                    imei=row.Imei, 
+                    imei=imei, 
                     category=category,                   
                 )
             # checking docs before remainder_history
-            if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=document.created).exists():
-                rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=document.created).latest('created')
+            if RemainderHistory.objects.filter(imei=imei, shop=shop, created__lt=document.created).exists():
+                rho_latest_before = RemainderHistory.objects.filter(imei=imei, shop=shop, created__lt=document.created).latest('created')
                 pre_remainder=rho_latest_before.current_remainder
             else:
                 pre_remainder=0
@@ -2476,7 +2480,7 @@ def delivery_auto(request):
             )
             document_sum += int(rho.sub_total)
     #============Av_price_module====================
-            if AvPrice.objects.filter(imei=row.Imei).exists():
+            if AvPrice.objects.filter(imei=imei).exists():
                 av_price_obj = AvPrice.objects.get(imei=product.imei)
                 av_price_obj.current_remainder += int(row.Quantity)
                 av_price_obj.sum += int(row.Quantity) * int(row.Price)
@@ -2496,7 +2500,7 @@ def delivery_auto(request):
             rho.av_price=av_price_obj.av_price
             rho.save()
             # checking docs after remainder_history
-            if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__gt=rho.created).exists():
+            if RemainderHistory.objects.filter(imei=imei, shop=shop, created__gt=rho.created).exists():
                 sequence_rhos_after = RemainderHistory.objects.filter(imei=product.imei, shop=shop, created__gt=rho.created).order_by('created')
                 pre_remainder=rho.current_remainder
                 for obj in sequence_rhos_after:
@@ -3808,15 +3812,18 @@ def transfer_auto (request):
             #checking availabiltiy of items to avoid saving only a portion of document
             for i in range(cycle):
                 row = df1.iloc[i]#reads rows of excel file one by one
-                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop_sender, created__lt=dateTime).exists():
-                    remainder_history= RemainderHistory.objects.filter(imei=row.Imei, shop=shop_sender, created__lt=dateTime).latest('created')
+                if '/' in row.Imei:
+                    imei=row.Imei
+                    imei=imei.replace('/', '_')
+                if RemainderHistory.objects.filter(imei=imei, shop=shop_sender, created__lt=dateTime).exists():
+                    remainder_history= RemainderHistory.objects.filter(imei=imei, shop=shop_sender, created__lt=dateTime).latest('created')
                     if remainder_history.current_remainder < int(row.Quantity):
                         #check_point.append(False)
-                        string=f'Документ не проведеден. Количество товара {row.Title} с данным IMEI {row.Imei} недостаточно для перемещения.'
+                        string=f'Документ не проведеден. Количество товара {row.Title} с данным IMEI {imei} недостаточно для перемещения.'
                         messages.error(request,  string)
                         return redirect("transfer_auto")
                 else:
-                    string=f'Документ не проведеден. Товар {row.Title} с IMEI {row.Imei} отсутствует на балансе фирмы.'
+                    string=f'Документ не проведеден. Товар {row.Title} с IMEI {imei} отсутствует на балансе фирмы.'
                     messages.error(request,  string)
                     return redirect("transfer_auto")
             document = Document.objects.create(
@@ -3830,12 +3837,12 @@ def transfer_auto (request):
             document_sum = 0
             for i in range(cycle):
                 row = df1.iloc[i]#reads rows of excel file one by one
-                product=Product.objects.get(imei=row.Imei)
-                if AvPrice.objects.filter(imei=row.Imei).exists():
-                    av_price=AvPrice.objects.get(imei=row.Imei)
+                product=Product.objects.get(imei=imei)
+                if AvPrice.objects.filter(imei=imei).exists():
+                    av_price=AvPrice.objects.get(imei=imei)
                 else:
                     av_price=AvPrice.objects.create(
-                        imei=row.Imei,
+                        imei=imei,
                         name=row.Title,
                         current_remainder=row.Quantity,
                         av_price=row.Retail_price,
@@ -3844,8 +3851,8 @@ def transfer_auto (request):
                 document_sum+=int(row.Quantity) * int(row.Retail_price)
                 # checking shop_sender
                 #additional check in case quantities in excel file are 0
-                if RemainderHistory.objects.filter(imei=row.Imei,shop=shop_sender,created__lt=document.created).exists():
-                    rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei,shop=shop_sender,created__lt=document.created).latest('created')
+                if RemainderHistory.objects.filter(imei=imei,shop=shop_sender,created__lt=document.created).exists():
+                    rho_latest_before = RemainderHistory.objects.filter(imei=imei,shop=shop_sender,created__lt=document.created).latest('created')
                     pre_remainder=rho_latest_before.current_remainder
                 else:
                     pre_remainder=0
@@ -3856,7 +3863,7 @@ def transfer_auto (request):
                     rho_type=document.title,
                     shop=shop_sender,
                     category=product.category,
-                    imei=row.Imei,
+                    imei=imei,
                     name=product.name,
                     av_price=av_price.av_price,
                     retail_price=row.Retail_price,
@@ -3868,9 +3875,9 @@ def transfer_auto (request):
                     status=False,
                     )
                 # checking docs after remainder_history for shop_sender
-                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop_sender, created__gt=rho.created).exists():
+                if RemainderHistory.objects.filter(imei=imei, shop=shop_sender, created__gt=rho.created).exists():
                     remainder=rho.current_remainder
-                    sequence_rhos_after = RemainderHistory.objects.filter(imei=row.Imei,shop=shop_sender,created__gt=rho.created).order_by('created')
+                    sequence_rhos_after = RemainderHistory.objects.filter(imei=imei,shop=shop_sender,created__gt=rho.created).order_by('created')
                     for obj in sequence_rhos_after:
                         obj.pre_remainder = remainder
                         obj.current_remainder = (
@@ -3882,8 +3889,8 @@ def transfer_auto (request):
                         remainder = obj.current_remainder
                 #checking docs before for shop_receiver
                 #additional check in case quantities in excel file are 0
-                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop_receiver, created__lt=document.created).exists():
-                    rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop_receiver, created__lt=document.created).latest('created')
+                if RemainderHistory.objects.filter(imei=imei, shop=shop_receiver, created__lt=document.created).exists():
+                    rho_latest_before = RemainderHistory.objects.filter(imei=imei, shop=shop_receiver, created__lt=document.created).latest('created')
                     pre_remainder=rho_latest_before.current_remainder
                 else:
                     pre_remainder=0
@@ -3905,9 +3912,9 @@ def transfer_auto (request):
                     sub_total=int(row.Quantity)*int(row.Retail_price)
                 )
                 # checking docs after remainder_history for shop_receiver
-                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop_receiver, created__gt=rho.created).exists():
+                if RemainderHistory.objects.filter(imei=imei, shop=shop_receiver, created__gt=rho.created).exists():
                     remainder=rho.current_remainder
-                    sequence_rhos_after = RemainderHistory.objects.filter(imei=row.Imei,shop=shop_receiver,created__gt=rho.created).order_by('created')
+                    sequence_rhos_after = RemainderHistory.objects.filter(imei=imei,shop=shop_receiver,created__gt=rho.created).order_by('created')
                     for obj in sequence_rhos_after:
                         obj.pre_remainder = remainder
                         obj.current_remainder = (
