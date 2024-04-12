@@ -1371,6 +1371,8 @@ def item_report(request):
             start_date = request.POST["start_date"]
             end_date = request.POST["end_date"]
             imei = request.POST["imei"]
+            if '/' in imei:
+                imei=imei.replace('/', '_')
             imei=imei.replace(" ","")#getting rid of spaces.
             try:
                 product=Product.objects.get(imei=imei)
