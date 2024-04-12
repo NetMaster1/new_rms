@@ -452,9 +452,9 @@ def remainder_input (request):
             document_sum = 0
             for i in range(cycle):
                 row = df1.iloc[i]#reads rows of excel file one by one
-                if '/' in row.Imei:
-                    imei=row.Imei
-                    imei=imei.replace('/', '_')
+                imei=row.Imei
+                # if '/' in imei
+                #     imei=imei.replace('/', '_')
                 try:
                     product=Product.objects.get(imei=row.Imei)
                 except Product.DoesNotExist:
@@ -2442,9 +2442,9 @@ def delivery_auto(request):
         document_sum = 0
         for i in range(cycle):
             row = df1.iloc[i]#reads each row of the df1 one by one
-            if '/' in row.Imei:
-                imei=row.Imei
-                imei=imei.replace('/', '_')
+            imei=row.Imei
+            # if '/' in imei:
+            #     imei=imei.replace('/', '_')
 
             if Product.objects.filter(imei=imei).exists():
                 product=Product.objects.get(imei=imei)
@@ -3815,9 +3815,10 @@ def transfer_auto (request):
             #checking availabiltiy of items to avoid saving only a portion of document
             for i in range(cycle):
                 row = df1.iloc[i]#reads rows of excel file one by one
-                if '/' in row.Imei:
-                    imei=row.Imei
-                    imei=imei.replace('/', '_')
+                imei=row.Imei
+                # if '/' in row.Imei:
+                #     imei=row.Imei
+                #     imei=imei.replace('/', '_')
                 if RemainderHistory.objects.filter(imei=imei, shop=shop_sender, created__lt=dateTime).exists():
                     remainder_history= RemainderHistory.objects.filter(imei=imei, shop=shop_sender, created__lt=dateTime).latest('created')
                     if remainder_history.current_remainder < int(row.Quantity):
