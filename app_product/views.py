@@ -452,25 +452,28 @@ def remainder_input (request):
             document_sum = 0
             for i in range(cycle):
                 row = df1.iloc[i]#reads rows of excel file one by one
+                if '/' in row.Imei:
+                    imei=row.Imei
+                    imei=imei.replace('/', '_')
                 try:
                     product=Product.objects.get(imei=row.Imei)
                 except Product.DoesNotExist:
                     product = Product.objects.create(
                         created=dateTime,
-                        imei=row.Imei, 
+                        imei=imei, 
                         category=category, 
                         name=row.Title
                     )
                 product = Product.objects.get(imei=row.Imei)
                 # checking docs before remainder_history
-                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).exists():
-                    rho_latest_before = RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__lt=dateTime).latest ('created')
+                if RemainderHistory.objects.filter(imei=imei, shop=shop, created__lt=dateTime).exists():
+                    rho_latest_before = RemainderHistory.objects.filter(imei=imei, shop=shop, created__lt=dateTime).latest ('created')
                     pre_remainder=rho_latest_before.current_remainder
                 else:
                     pre_remainder=0
                 #=============Calculating av_price========================
-                if AvPrice.objects.filter(imei=row.Imei).exists():
-                    av_price_obj = AvPrice.objects.get(imei=row.Imei)
+                if AvPrice.objects.filter(imei=imei).exists():
+                    av_price_obj = AvPrice.objects.get(imei=imei)
                     av_price_obj.current_remainder += int(row.Quantity)
                     av_price_obj.sum += int(row.Quantity) * int(row.Av_price)
                     av_price_obj.av_price = int(av_price_obj.sum) / int(av_price_obj.current_remainder)
@@ -478,7 +481,7 @@ def remainder_input (request):
                 else:
                     av_price_obj = AvPrice.objects.create(
                         name=row.Title,
-                        imei=row.Imei,
+                        imei=imei,
                         current_remainder=int(row.Quantity),
                         sum=int(row.Quantity) * int(row.Av_price),
                         av_price=int(row.Av_price),
@@ -506,9 +509,9 @@ def remainder_input (request):
                 document_sum += int(rho.sub_total)
 
                 # checking docs after remainder_history
-                if RemainderHistory.objects.filter(imei=row.Imei, shop=shop, created__gt=rho.created).exists():
+                if RemainderHistory.objects.filter(imei=imei, shop=shop, created__gt=rho.created).exists():
                     sequence_rhos_after = RemainderHistory.objects.filter(
-                        imei=row.Imei, shop=shop, created__gt=dateTime)
+                        imei=imei, shop=shop, created__gt=dateTime)
                     sequence_rhos_after = sequence_rhos_after.all().order_by("created")
                     pre_remainder=rho.current_remainder
                     for obj in sequence_rhos_after:
