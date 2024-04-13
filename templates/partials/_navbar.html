@@ -31,7 +31,11 @@
                         </a>
 
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="{% url 'kpi_performance' %}">Текущее выполнение плана</a></li>
+                            <li><a class="dropdown-item" href="{% url 'kpi_performance' %}">Текущее выполнение плана в разрере точки</a></li>
+                            <li><a class="dropdown-item" href="#">Текущее выполнение плана в разрезе GI</a></li>
+                            <li><a class="dropdown-item" href="#">Текущее выполнение плана в разрезе Фокусных тарифов</a></li>
+                            <li><a class="dropdown-item" href="#">Текущее выполнение плана в разрезе ДИ от Т2</a></li>
+                            <li><a class="dropdown-item" href="#">Текущее выполнение плана в разрезе продаж смартфонов</a></li>
                             <hr>
                             <li><a class="dropdown-item" href="{% url 'kpi_performance_update' %}">Ввод текущих данных</a></li>
                             <li><a class="dropdown-item" href="{% url 'kpi_excel_input' %}">Автоматическмй ввод KPI на месяц</a></li>
