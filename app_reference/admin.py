@@ -2,7 +2,7 @@ from django.contrib import admin
 from . models import Expense, Shop, Supplier, Product, ProductCategory, Services, DocumentType, Expense, Teko_pay, Voucher, Contributor, Month, Year
 
 class ShopAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'sale_k', 'TID', 'commission', 'retail', 'subdealer', 'cash_register', 'shift_status', 'active', 'shift_status_updated',)
+    list_display = ('id', 'name', 'sale_k', 'TID', 'commission', 'retail', 'subdealer', 'cash_register', 'shift_status', 'active', 'offline', 'shift_status_updated',)
 
 class SupplierAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')

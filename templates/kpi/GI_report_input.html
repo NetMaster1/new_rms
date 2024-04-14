@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<body oncontextmenu="return false">
+
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+            <div class="border rounded p-3">
+                <!-- =====================Alert Messages Module=================== -->
+                <div class="container">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-info" role="alert">
+                        <!-- <button class="close" data-dismiss="alert">
+                                        <small><sup>x</sup></small>
+                                    </button> -->
+                        {{ message }}
+                    </div>
+                    {% endfor%}
+                    {% endif%}
+                </div>
+                <!-- ===================End of Alert Messages Module================ -->
+                <h3>Создать отчет по текущему выполнению плана по GI</h3>
+            </div>
+
+            <div class="border rounded p-3">
+            <form action="{% url 'GI_report_output' identifier.id %}" method="POST">
+                {% csrf_token %}
+
+                <div class="row form-row m-auto">
+                    <div class="col-3">
+
+                
+            {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
+              
+                        <select name="month" id="month" class='form-control' required>
+                            <!-- <option selected="false" disabled="disabled">Выберите торговую  точку</option> -->
+                                <option value="">Выберите отчетный месяц</option>
+                                {% for month in monthes %}
+                                <option value="{{month.id}}">{{month.name}}</option>
+                                {% endfor %}
+                            </select>
+              
+                        <select name="year" id="year" class='form-control' required>
+                            <!-- <option selected="false" disabled="disabled">Выберите торговую  точку</option> -->
+                                <option value="">Выберите отчетный год</option>
+                                {% for year in years %}
+                                <option value="{{year.id}}">{{year.name}}</option>
+                                {% endfor %}
+                            </select>
+
+
+                {% endif %}
+            {% endfor %}
+                    </div>
+              
+                    <div class="col-2">
+                        <div class="row m-1">
+                        <input type="reset" value="Сбросить" class="btn btn-block btn-outline-dark clear_storage">
+                        </div>
+                        <div class="row m-1">
+                        <input type="submit" value="Применить" class="btn btn-block btn-outline-dark">
+                        </div>
+                        <div class="row m-1">
+                        <a href="{% url 'close_remainder_report' %}"  class="btn btn-block btn-outline-dark">
+                           Закрыть  
+                        </a>
+                        </div>
+                    
+                    </div>
+            </form>
+            </div>
+        </div>
+
+
+      
+
+</div>
+
+</div>
+
+
+{%endblock%}

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from app_product.models import Identifier, RemainderHistory, Document
 from app_reference.models import Shop, Product, DocumentType, ProductCategory, Month, Year
 from app_reports.models import ReportTempId, Sim_report
-from .models import KPIMonthlyPlan, KPI_performance
+from .models import KPIMonthlyPlan, KPI_performance, GI_report
 from django.contrib import messages, auth
 from django.contrib.auth.models import User, Group
 import datetime, calendar
@@ -52,7 +52,7 @@ def kpi_excel_input (request):
 
 def kpi_performance_update (request):
     if request.user.is_authenticated:
-        shops=Shop.objects.all()
+        shops=Shop.objects.filter(retail=True, active=True, offline=True)
         monthes=Month.objects.all()
         years=Year.objects.all()
         if request.method == "POST":
@@ -120,7 +120,7 @@ def kpi_performance_update (request):
 #================Quering data & comparing it with plans==================
 def kpi_performance(request):
     if request.user.is_authenticated:
-        shops=Shop.objects.all()
+        shops=Shop.objects.filter(retail=True, active=True, offline=True)
         monthes=Month.objects.all()
         years=Year.objects.all()
       
@@ -255,7 +255,84 @@ def kpi_monthly_report_per_shop (request):
     else:
         auth.logout(request)
         return redirect("login")
-    
+
+def GI_report_input (request):
+    if request.user.is_authenticated:
+        identifier = Identifier.objects.create()
+        monthes=Month.objects.all()
+        years=Year.objects.all()
+        context = {
+            'monthes': monthes,
+            'years': years,
+            'identifier': identifier,
+        }
+        return render(request, "kpi/GI_report_input.html", context)
+
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+def GI_report_output(request, identifier_id):
+    identifier=Identifier.objects.get(id=identifier_id)
+    if request.method == "POST":
+        GI=ProductCategory.objects.get(name='Сим_карты')
+        month= request.POST["month"]
+        month=Month.objects.get(id=month)
+        year = request.POST["year"]
+        year=Year.objects.get(id=year)
+        shops=Shop.objects.filter(retail=True, active=True, offline=True)
+        #shops=Shop.objects.all()
+        doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+        current_date=datetime.datetime.now().day
+       
+        for shop in shops:
+            queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type, category=GI).exclude(created__day=current_date)
+            if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
+                plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
+            year_edited=int(year.name)
+            month_edited=int(month.id)
+            num_days = calendar.monthrange(year_edited, month_edited)[1]
+            if datetime.datetime.now().month != month.id:
+                # print('=======================')
+                # print(datetime.datetime.now().month)
+                # print(month)
+                # print(month_edited)
+                day_before=num_days
+            else:
+                day_before=datetime.datetime.today().day -1
+            GI_counter=0
+            for item in queryset:
+                GI_counter+=1
+            item=GI_report.objects.create(
+                identifier = identifier,
+                shop=shop,
+                year_reported=year,
+                month_reported=month,
+                GI=GI_counter,
+                GI_plan=plan_item.GI,
+                date_before_current=day_before,
+                days_of_the_month=num_days
+            )
+        if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
+            plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
+        else:
+            messages.error(request,"Планов для этого периода не существует. Введите сначала план",)
+            return redirect('kpi_excel_input')
+        query=GI_report.objects.filter(identifier=identifier)
+        context = {
+            'query': query,
+        
+        }
+        return render (request, 'kpi/GI_report_output.html', context)
+
+
+
+    context = {
+        'identifier': identifier,
+        'query': query
+    }
+    return render(request, "kpi/GI_report_output.html", context)
+
 def close_kpi_report(request):
     if request.user.is_authenticated:
         #identifier=Identifier.objects.get(id=identifier)
