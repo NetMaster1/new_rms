@@ -33,11 +33,17 @@
                     <div class="col-2">
                         Плановое значение
                     </div>
-                    <div class="col-2">
+                    <div class="col-1">
                         Текущее выполнение
                     </div>
+                    <div class="col-1">
+                        Прогноз выполнения, шт.
+                    </div>
                     <div class="col-2">
-                        Прогноз выполнения %
+                        Прогноз выполнения, %
+                    </div>
+                    <div class="col-2">
+                        Среднее кол-во в день
                     </div>
                     <div class="col-2">
                         Среднее кол-во в день для выполнения плана
@@ -52,9 +58,11 @@
                 <div class="row">
                     <div class="col-2">GI</div>
                     <div class="col-2">{{plan_item.GI}} шт. </div>
-                    <div class="col-2">{{item.GI}} шт. </div>
+                    <div class="col-1">{{item.GI}} шт. </div>
+                    <div class="col-1">{{item.GI|div:day_before|mul:num_days }} шт. </div>
+                    <div class="col-2">{{item.GI|div:day_before|mul:num_days|div:plan_item.GI|mul:100}} % </div>
                     <div class="col-2">{{item.GI|div:day_before|mul:num_days }} шт. </div>
-                    <div class="col-2">{{item.GI|div:day_before|mul:num_days }} шт. </div>
+                    <div class="col-2">{{plan_item||sub:item.GI|div:num_days||sub:day_befofe }} шт. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Фокусные сим_карты</div>
@@ -91,7 +99,7 @@
                     <div class="col-2">Upsale</div>
                     <div class="col-2">{{plan_item.upsale}} шт.</div>
                     <div class="col-2">{{item.upsale}} шт. </div>
-                    <div class="col-2">{{item.upsale|div:day_before|mul:num_days }} шт. </div>
+                    <div class="col-2">{{ item.upsale|div:day_before|mul:num_days }} шт. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">MNP</div>

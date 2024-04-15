@@ -27,6 +27,7 @@ class Shop (models.Model):
     active = models.BooleanField(default=True)#mark for active shops
     offline = models.BooleanField(default=True)#mark for offline shops to cut off ozon
     subdealer = models.BooleanField(default=False)#mark for subdealer shops. False for our shops. True for subdealer shops
+    MB = models.BooleanField(default=True)#mark for monobrand shops
     cash_register = models.BooleanField(default=True)#mark for monobrand without cash register. False means the shop is equipped with e-rms cash register
     shift_status = models.BooleanField(default=False)# shows shift status. False means shift is open.
     shift_status_updated = models.DateTimeField(auto_now=True, null=True)
