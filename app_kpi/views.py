@@ -76,6 +76,9 @@ def kpi_performance_update (request):
                 if VMR:
                     item.VMR=VMR
                     counter+=1
+                if MNP:
+                    item.MNP=MNP
+                    counter+=1
                 if HI_T2:
                     item.HomeInternet_T2=HI_T2
                     counter+=1
@@ -235,6 +238,7 @@ def kpi_monthly_report_per_shop (request):
                 wink_item=wink_items,
                 RT_equip_roubles=RT_equipment_sum,
                 RT_active_cam=camera_counter,
+
                 )
         day_before=datetime.datetime.today().day -1
         year=int(year.name)
