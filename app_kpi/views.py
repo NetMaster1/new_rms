@@ -36,7 +36,8 @@ def kpi_excel_input (request):
                             wink_roubles=row.Wink,
                             HomeInternet=row.HI,
                             RT_equip_roubles=row.RT_equip_roubles,
-                            RT_active_cam=row.RT_equip_items
+                            RT_active_cam=row.RT_equip_items,
+                            upsale=row.Upsale,
                         )
                 messages.error(request,"План успешно введён.",)
                 return redirect ('kpi_excel_input')

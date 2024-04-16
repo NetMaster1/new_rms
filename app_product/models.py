@@ -203,9 +203,6 @@ class RemainderHistory(models.Model):
     def __int__(self):
         return self.id
 
-
-
-
 class RemainderCurrent(models.Model):
     updated = models.DateTimeField(auto_now=True)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
