@@ -36,7 +36,8 @@ def kpi_excel_input (request):
                             wink_roubles=row.Wink,
                             HomeInternet=row.HI,
                             RT_equip_roubles=row.RT_equip_roubles,
-                            RT_active_cam=row.RT_equip_items
+                            RT_active_cam=row.RT_equip_items,
+                            upsale=row.Upsale,
                         )
                 messages.error(request,"План успешно введён.",)
                 return redirect ('kpi_excel_input')
@@ -168,7 +169,8 @@ def kpi_monthly_report_per_shop (request):
                 messages.error(request,"Планов для этого периода не существует. Введите сначала план",)
                 return redirect('kpi_excel_input')
         doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
-        queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type)
+        current_date=datetime.datetime.now().day
+        queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type).exclude(created__day=current_date)
         category_sim=ProductCategory.objects.get(name='Сим_карты')
         category_smartphones=ProductCategory.objects.get(name='Смартфоны')
         category_insurance=ProductCategory.objects.get(name='Страховки')
@@ -288,43 +290,57 @@ def GI_report_output(request, identifier_id):
         #shops=Shop.objects.all()
         doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
         current_date=datetime.datetime.now().day
-       
+        counter=0#the counter shows if all plan_itme.GIs are equal to zero. If so it redirects to 'kpi_excel_input'
         for shop in shops:
-            queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type, category=GI).exclude(created__day=current_date)
             if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
                 plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
+                plan_GI=plan_item.GI
+                counter+=1
+            else:
+                plan_GI=0
+            queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type, category=GI).exclude(created__day=current_date)
             year_edited=int(year.name)
             month_edited=int(month.id)
             num_days = calendar.monthrange(year_edited, month_edited)[1]
             if datetime.datetime.now().month != month.id:
-                # print('=======================')
-                # print(datetime.datetime.now().month)
-                # print(month)
-                # print(month_edited)
                 day_before=num_days
             else:
                 day_before=datetime.datetime.today().day -1
             GI_counter=0
             for item in queryset:
                 GI_counter+=1
+            # if GI_report.objects.filter(identifier=identifier).exists():
+            #     query=GI_report.objects.filter(identifier=identifier)
+
+            # else:
             item=GI_report.objects.create(
                 identifier = identifier,
                 shop=shop,
                 year_reported=year,
                 month_reported=month,
                 GI=GI_counter,
-                GI_plan=plan_item.GI,
+                GI_plan=plan_GI,
                 date_before_current=day_before,
                 days_of_the_month=num_days
             )
-        if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
-            plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
-        else:
-            messages.error(request,"Планов для этого периода не существует. Введите сначала план",)
+            # if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
+        #     plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
+        # else:
+        #     messages.error(request,"Планов для этого периода не существует. Введите сначала план",)
+        #     return redirect('kpi_excel_input')
+        if counter==0:
+            items=GI_report.objects.filter(identifier=identifier)
+            for item in items:
+                item.delete()
+            messages.error(request, f'Планов для {month} {year} не существует. Введите сначала план',)
             return redirect('kpi_excel_input')
         query=GI_report.objects.filter(identifier=identifier)
+
         context = {
             'query': query,
+            'identifier': identifier,
+            'month': month,
+            'year': year,
         
         }
         return render (request, 'kpi/GI_report_output.html', context)
@@ -336,6 +352,17 @@ def GI_report_output(request, identifier_id):
         'query': query
     }
     return render(request, "kpi/GI_report_output.html", context)
+
+def close_GI_report(request, identifier_id):
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
+        items=GI_report.objects.filter(identifier=identifier)
+        for item in items:
+            item.delete()
+        return redirect ('log')
+    else:
+        auth.logout(request)
+        return redirect("login")
 
 def close_kpi_report(request):
     if request.user.is_authenticated:

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load mathfilters %}
+{% load humanize %}
 
 <body oncontextmenu="return false">
 
@@ -31,82 +32,101 @@
                         Показатель
                     </div>
                     <div class="col-2">
-                        Плановое значение
+                        Плановое значение, шт/руб
+                    </div>
+                    <div class="col-1">
+                        Текущее выполнение, шт/руб
+                    </div>
+                    <div class="col-1">
+                        Прогноз выполнения, шт/руб
+                    </div>
+                    <div class="col-1">
+                        Прогноз выполнения, %
                     </div>
                     <div class="col-2">
-                        Текущее выполнение
+                        Среднее кол-во/сумма в день (текущее)
                     </div>
                     <div class="col-2">
-                        Прогноз выполнения %
-                    </div>
-                    <div class="col-2">
-                        Среднее кол-во в день для выполнения плана
+                        Среднее кол-во/сумма в день для выполнения плана
                     </div>
                 </div>
-
+<hr>
                 <div class="row">
-                    <div class="col-2">Смартфоны</div>
-                    <div class="col-2">{{plan_item.smartphones_sum}} руб.</div>
-                    <div class="col-2">{{item.smartphones_sum}} руб. </div>
+                    <div class="col-2">Смартфоны, руб.</div>
+                    <div class="col-2">{{plan_item.smartphones_sum|intcomma}}</div>
+                    <div class="col-1">{{item.smartphones_sum|intcomma}} </div>
+                    <div class="col-1">{{item.smartphones_sum|div:day_before|mul:num_days|floatformat:2|intcomma}}</div>
+                    <div class="col-1">{{item.smartphones_sum|div:day_before|mul:num_days|div:plan_item.smartphones_sum|floatformat:2|mul:100|floatformat:2}} % </div>
+                    <div class="col-2">{{item.smartphones_sum|div:day_before|floatformat:2|intcomma}}</div>
+                    <!-- <div class="col-2">{{item.plan_smartphones_sum|sub:item.GI}} {{num_days|sub:day_before}} шт. </div> -->
+
+
                 </div>
                 <div class="row">
                     <div class="col-2">GI</div>
                     <div class="col-2">{{plan_item.GI}} шт. </div>
-                    <div class="col-2">{{item.GI}} шт. </div>
-                    <div class="col-2">{{item.GI|div:day_before|mul:num_days }} шт. </div>
-                    <div class="col-2">{{item.GI|div:day_before|mul:num_days }} шт. </div>
+                    <div class="col-1">{{item.GI}} шт. </div>
+                    <div class="col-1">{{item.GI|div:day_before|mul:num_days|floatformat:2}} шт. </div>
+                    <div class="col-1">{{item.GI|div:day_before|mul:num_days|div:plan_item.GI|floatformat:2|mul:100|floatformat:2}} % </div>
+                    <div class="col-2">{{item.GI|div:day_before|floatformat:2}} шт. </div>
+                    <!-- <div class="col-2">{{item.plan_GI|sub:item.GI}} {{num_days|sub:day_before}} шт. </div> -->
                 </div>
                 <div class="row">
                     <div class="col-2">Фокусные сим_карты</div>
                     <div class="col-2">{{plan_item.HighBundle}} шт.</div>
-                    <div class="col-2">{{item.HighBundle}} шт. </div>
-                    <div class="col-2">{{item.HighBundle|div:day_before|mul:num_days }} шт. </div>
+                    <div class="col-1">{{item.HighBundle}} шт. </div>
+                    <div class="col-1">{{item.HighBundle|div:day_before|mul:num_days|floatformat:2}} шт. </div>
+                    <div class="col-1">{{item.HighBundle|div:day_before|mul:num_days|div:plan_item.HighBundle|floatformat:3|mul:100|floatformat:2}} % </div>
+                    <div class="col-2">{{item.HighBundle|div:day_before|floatformat:2}} шт. </div>
+                    <!-- <div class="col-2">{{item.plan_HighBundle|sub:item.GI}} {{num_days|sub:day_before}} шт. </div> -->
+
+                  
                 </div>
                 <div class="row">
                     <div class="col-2">Оборудование РТ</div>
-                    <div class="col-2">{{plan_item.RT_equip_roubles}} руб.</div>
-                    <div class="col-2">{{item.RT_equip_roubles}} руб. </div>
+                    <div class="col-2">{{plan_item.RT_equip_roubles|intcomma}} руб.</div>
+                    <div class="col-1">{{item.RT_equip_roubles|intcomma}} руб. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Страховки</div>
-                    <div class="col-2">{{plan_item.insurance_charge}} руб.</div>
-                    <div class="col-2">{{item.insurance_charge}} руб. </div>
+                    <div class="col-2">{{plan_item.insurance_charge|intcomma}} руб.</div>
+                    <div class="col-1">{{item.insurance_charge|intcomma}} руб. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Подписки в руб.</div>
-                    <div class="col-2">{{plan_item.wink_roubles}} руб.</div>
-                    <div class="col-2">{{item.wink_roubles}} руб. </div>
+                    <div class="col-2">{{plan_item.wink_roubles|intcomma}} руб.</div>
+                    <div class="col-1">{{item.wink_roubles|intcomma}} руб. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Подписки в шт.</div>
                     <div class="col-2">{{plan_item.wink_item}} шт.</div>
-                    <div class="col-2">{{item.wink_item}} шт. </div>
+                    <div class="col-1">{{item.wink_item}} шт. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Камеры</div>
                     <div class="col-2">{{plan_item.RT_active_cam}} шт.</div>
-                    <div class="col-2">{{item.RT_active_cam}} шт. </div>
+                    <div class="col-1">{{item.RT_active_cam}} шт. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Upsale</div>
                     <div class="col-2">{{plan_item.upsale}} шт.</div>
-                    <div class="col-2">{{item.upsale}} шт. </div>
-                    <div class="col-2">{{item.upsale|div:day_before|mul:num_days }} шт. </div>
+                    <div class="col-1">{{item.upsale}} шт. </div>
+                   
                 </div>
                 <div class="row">
                     <div class="col-2">MNP</div>
                     <div class="col-2">{{plan_item.MNP}} шт.</div>
-                    <div class="col-2">{{item.MNP}} шт. </div>
+                    <div class="col-1">{{item.MNP}} шт. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">VMR</div>
                     <div class="col-2">{{plan_item.VMR}} %.</div>
-                    <div class="col-2">{{item.VMR}} %. </div>
+                    <div class="col-1">{{item.VMR}} %. </div>
                 </div>
                 <div class="row">
                     <div class="col-2">Дом. интернет от Т2</div>
                     <div class="col-2">{{plan_item.HomeInternet}} шт.</div>
-                    <div class="col-2">{{item.HomeInternet}} шт. </div>
+                    <div class="col-1">{{item.HomeInternet}} шт. </div>
                 </div>
                 
                 <div class="row mt-3">

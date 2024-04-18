@@ -64,7 +64,10 @@ class GI_report(models.Model):
     def __int__(self):
         return self.id
     def forecast_percent(self):
-        return int((self.GI/self.date_before_current*self.days_of_the_month)/self.GI_plan*100)
+        if self.GI_plan==0:
+            return 0
+        else:
+            return int((self.GI/self.date_before_current*self.days_of_the_month)/self.GI_plan*100)
     def forecast_items(self):
         return int(self.GI/self.date_before_current*self.days_of_the_month)
     def average_per_day(self):

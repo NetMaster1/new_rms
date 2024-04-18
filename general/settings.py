@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'e-rms.ru', 'www.e-rms.ru']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'django.contrib.humanize',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
