@@ -2027,6 +2027,7 @@ def bonus_report(request):
                 services=user_row[10],
                 gadgets=user_row[11],
                 modems=user_row[12],
+                RT_equipment=user_row[13],
                 credit=credit_sum * 0.03,
                 bulk_sims= n * bulk_sim_motivation.bonus_per_sim,
                 sub_total=0,
@@ -2087,6 +2088,8 @@ def bonus_report(request):
             ws.write(row_num, col_num, item.gadgets, font_style)
             col_num += 1
             ws.write(row_num, col_num, item.modems, font_style)
+            col_num += 1
+            ws.write(row_num, col_num, item.RT_equipment, font_style)
             col_num += 1
             ws.write(row_num, col_num, item.credit, font_style)
             col_num +=1

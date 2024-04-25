@@ -97,6 +97,7 @@ class MonthlyBonus (models.Model):
     iphones = models.IntegerField(null=True)
     modems = models.IntegerField(null=True)
     gadgets = models.IntegerField(null=True)
+    RT_equipment = models.IntegerField(null=True)
     insuranсе = models.IntegerField(null=True)
     wink = models.IntegerField(null=True)
     services = models.IntegerField(null=True)
