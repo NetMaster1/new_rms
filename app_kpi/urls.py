@@ -14,6 +14,11 @@ urlpatterns = [
     path ('GI_report_output/<identifier_id>', views.GI_report_output, name='GI_report_output'),
     path ('close_GI_report/<identifier_id>', views.close_GI_report, name='close_GI_report'),
 
+    path ('focus_report_input', views.focus_report_input, name='focus_report_input'),
+    path ('focus_report_output/<identifier_id>', views.focus_report_output, name='focus_report_output'),
+    path ('close_focus_report/<identifier_id>', views.close_focus_report, name='close_focus_report'),
+
+
     path ('close_kpi_report', views.close_kpi_report, name='close_kpi_report'),
   
 ]
