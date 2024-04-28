@@ -3,7 +3,7 @@ from app_product.models import Identifier, RemainderHistory, Document
 from app_reference.models import Shop, Product, DocumentType, ProductCategory, Month, Year
 from app_reports.models import ReportTempId, Sim_report
 from app_personnel.models import BulkSimMotivation
-from .models import KPIMonthlyPlan, KPI_performance, GI_report, Focus_report
+from .models import KPIMonthlyPlan, KPI_performance, GI_report, Focus_report, HI_report
 from django.contrib import messages, auth
 from django.contrib.auth.models import User, Group
 import datetime, calendar
@@ -35,7 +35,7 @@ def kpi_excel_input (request):
                             smartphones_sum=row.Smartphones,
                             insurance_charge=row.Insurance,
                             wink_roubles=row.Wink,
-                            HomeInternet=row.HI,
+                            HomeInternet_T2=row.HI,
                             RT_equip_roubles=row.RT_equip_roubles,
                             RT_active_cam=row.RT_equip_items,
                             upsale=row.Upsale,
@@ -59,18 +59,25 @@ def kpi_performance_update (request):
         years=Year.objects.all()
         if request.method == "POST":
             shop = request.POST["shop"]
-            #shop=Shop.objects.get(id=shop)
+            shop=Shop.objects.get(id=shop)
             month = request.POST["month"]
-            #month=Month.objects.get(id=month)
+            month=Month.objects.get(id=month)
             year = request.POST["year"]
-            #year=Year.objects.get(id=year)
+            year=Year.objects.get(id=year)
             upsale=request.POST.get('upsale')
             MNP=request.POST.get('MNP')
             VMR=request.POST.get('VMR')
             HI_T2=request.POST.get('HI_T2')
             HI_RT=request.POST.get('HI_RT')
-            if KPI_performance.objects.filter(shop=shop, month_reported=month, year_reported=year).exists():
-                item=KPI_performance.objects.get(shop=shop, month_reported=month, year_reported=year)
+            if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
+                if KPI_performance.objects.filter(shop=shop, month_reported=month, year_reported=year).exists():
+                    item=KPI_performance.objects.get(shop=shop, month_reported=month, year_reported=year)
+                else:
+                    item=KPI_performance.objects.create(
+                        shop=shop,
+                        month_reported=month,
+                        year_reported=year
+                    )
                 counter=0
                 if upsale:
                     item.upsale=upsale
@@ -99,30 +106,21 @@ def kpi_performance_update (request):
                     item.save()
                     return redirect ('kpi_performance')
             else:
-                # context = {
-                #     'shops': shops,
-                #     'monthes': monthes,
-                #     'years': years
-                # }
-                messages.error(request,"Измения не внесены, так как планов для этого периода или точке не существует. Введите сначала план.",)
-                return redirect('kpi_excel_input')
-                #return render (request, "kpi/kpi_performance_update.html", context)
-
+                messages.error(request,"Планы для данного периода не введены. Введите сначала планы.",)    
+                return redirect ('kpi_excel_input')
+         
         else:
-            
             context = {
                'shops': shops,
                'monthes': monthes,
                'years': years
             }
             return render (request, "kpi/kpi_performance_update.html", context)
-
-
     else:
         auth.logout(request)
         return redirect("login")
 
-#================Quering data & comparing it with plans==================
+#=======================KPI Report per Shop=====================================  
 def kpi_performance(request):
     if request.user.is_authenticated:
         shops=Shop.objects.filter(retail=True, active=True, offline=True)
@@ -263,7 +261,7 @@ def kpi_monthly_report_per_shop (request):
     else:
         auth.logout(request)
         return redirect("login")
-
+#===========================GI report================================
 def GI_report_input (request):
     if request.user.is_authenticated:
         identifier = Identifier.objects.create()
@@ -347,8 +345,6 @@ def GI_report_output(request, identifier_id):
         }
         return render (request, 'kpi/GI_report_output.html', context)
 
-
-
     context = {
         'identifier': identifier,
         'query': query
@@ -366,7 +362,7 @@ def close_GI_report(request, identifier_id):
         auth.logout(request)
         return redirect("login")
 
-#==================================================================
+#==================================HighBundle Report================================
 def focus_report_input(request):
     if request.user.is_authenticated:
         identifier = Identifier.objects.create()
@@ -378,7 +374,6 @@ def focus_report_input(request):
             'identifier': identifier,
         }
         return render(request, "kpi/focus_report_input.html", context)
-
     else:
         auth.logout(request)
         return redirect("login")
@@ -442,7 +437,6 @@ def focus_report_output(request, identifier_id):
         }
         return render (request, 'kpi/focus_report_output.html', context)
 
-
 def close_focus_report(request, identifier_id):
     if request.user.is_authenticated:
         identifier=Identifier.objects.get(id=identifier_id)
@@ -453,6 +447,79 @@ def close_focus_report(request, identifier_id):
     else:
         auth.logout(request)
         return redirect("login")
+
+#============================Home Internet report=======================================
+def HI_report_input(request):
+    if request.user.is_authenticated:
+        identifier = Identifier.objects.create()
+        monthes=Month.objects.all()
+        years=Year.objects.all()
+        context = {
+            'monthes': monthes,
+            'years': years,
+            'identifier': identifier,
+        }
+        return render(request, "kpi/HI_report_input.html", context)
+
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+def HI_report_output(request, identifier_id):
+    identifier=Identifier.objects.get(id=identifier_id)
+    if request.method == "POST":
+        month= request.POST["month"]
+        month=Month.objects.get(id=month)
+        year = request.POST["year"]
+        year=Year.objects.get(id=year)
+        shops=Shop.objects.filter(retail=True, active=True, offline=True)
+
+        counter=0#the counter shows if all plan_item.GIs are equal to zero. If so it redirects to 'kpi_excel_input'
+        for shop in shops:
+            if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
+                plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
+                plan_HI=plan_item.HomeInternet_T2
+                print('========================')
+                print(plan_HI)
+                # counter+=1
+            if KPI_performance.objects.filter(shop=shop, month_reported=month, year_reported=year).exists():
+                HI_item=KPI_performance.objects.get(shop=shop, month_reported=month, year_reported=year)
+                HI=HI_item.HomeInternet_T2
+            
+            year_edited=int(year.name)
+            month_edited=int(month.id)
+            num_days = calendar.monthrange(year_edited, month_edited)[1]
+            if datetime.datetime.now().month != month.id:
+                day_before=num_days
+            else:
+                day_before=datetime.datetime.today().day -1
+
+
+            item = HI_report.objects.create(
+                    identifier = identifier,
+                    shop=shop,
+                    year_reported=year,
+                    month_reported=month,
+                    HI=HI,
+                    HI_plan=plan_HI,
+                    date_before_current=day_before,
+                    days_of_the_month=num_days
+            )
+
+        query=HI_report.objects.filter(identifier=identifier)
+        context = {
+            'query': query,
+            'identifier': identifier,
+            'month': month,
+            'year': year,
+        
+        }
+        return render (request, 'kpi/HI_report_output.html', context)
+
+
+
+def close_HI_report(request, identifier_id):
+    pass
 
 
 
