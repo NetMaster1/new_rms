@@ -181,10 +181,28 @@ class ClientReport (models.Model):
     document = models.CharField(max_length=50, null=True)
     count = models.IntegerField(null=True)
     
-
     def __int__(self):
         return self.id
     
+
+class ClientHistoryReport (models.Model):
+    #report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    phone = models.CharField(max_length=50, null=True)
+    #shop = models.CharField(max_length=50, null=True)
+    #created = models.CharField(max_length=50, null=True)
+    user = models.CharField(max_length=50, null=True)
+    #user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+    document = models.CharField(max_length=50, null=True)
+    number_of_docs = models.IntegerField(null=True)
+    sum = models.IntegerField(null=True)
+    cashback_awarded = models.CharField(max_length=50, null=True)
+    cashback_off = models.CharField(max_length=50, null=True)
+    cashback_remaining = models.CharField(max_length=50, null=True)
+    
+    def __int__(self):
+        return self.id
+    
+
 class DeliveryReport (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     created = models.DateTimeField(auto_now_add=True)

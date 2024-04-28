@@ -24,6 +24,7 @@ from .models import (
     SaleReport,
     PayCardReport,
     ClientReport,
+    ClientHistoryReport,
     AcquiringReport,
     DeliveryReport,
     ExpensesReport,
@@ -319,10 +320,6 @@ def clients_per_user(request):
             else:
                 messages.error(request, "Новые клиенты отсутствуют")
                 return redirect("clients_per_user")
-            
-                
-
-
         else:
             context = {
                 'users': users
@@ -380,7 +377,8 @@ def cashback_rep (request):
         return redirect("login")
 
 def cashback_history (request):
-    users=User.objects.all().order_by('last_name')
+    group_sales=Group.objects.get(name='sales')
+    users = User.objects.filter(is_active=True, groups=group_sales ).order_by('username')
     if request.method=="POST":
         doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
         user = request.POST["user"]
@@ -448,6 +446,41 @@ def cashback_history (request):
         }
         return render (request, 'reports/cashback_history.html', context)
 
+def clients_history_report(request):
+    clients=Customer.objects.all()
+    doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+    #if request.method=="POST":
+    for item in clients:
+        counter=0
+        cashback_off=0
+        cashback_awarded=0
+        sum=0
+        docs=Document.objects.filter(client=item)     
+        for doc in docs:
+            # rhos=RemainderHistory.objects.filter(document=item)
+            # for rho in rhos:
+            #     if rho.cash_back_awarded is not None:
+            #         cashback_awarded+=rho.cash_back_awarded
+            if doc.sum is not None:
+                sum+=doc.sum
+            else:
+                sum+=0
+            cashback_off+=doc.cashback_off
+            counter+=1
+        client=ClientHistoryReport.objects.create(
+            phone=item.phone,
+            number_of_docs=counter,
+            sum=sum,
+            cashback_off=cashback_off,
+            #cashback_awarded=cashback_awarded,
+            user=item.user
+
+        )
+    query=ClientHistoryReport.objects.all()
+    context = {
+        'query': query
+    }
+    return render (request, 'reports/clients_history_report.html', context)
 # ===============================================================
 
 def close_report(request):
