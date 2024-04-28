@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from app_product.models import Identifier, RemainderHistory, Document
 from app_reference.models import Shop, Product, DocumentType, ProductCategory, Month, Year
 from app_reports.models import ReportTempId, Sim_report
+from app_personnel.models import BulkSimMotivation
 from .models import KPIMonthlyPlan, KPI_performance, GI_report, Focus_report
 from django.contrib import messages, auth
 from django.contrib.auth.models import User, Group
@@ -383,6 +384,7 @@ def focus_report_input(request):
     
 def focus_report_output(request, identifier_id):
     identifier=Identifier.objects.get(id=identifier_id)
+    sim_price=BulkSimMotivation.objects.get(id=1)
     if request.method == "POST":
         focus=ProductCategory.objects.get(name='Сим_карты')
         month= request.POST["month"]
@@ -401,7 +403,7 @@ def focus_report_output(request, identifier_id):
                 counter+=1
             else:
                 plan_focus=0
-            queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type, category=focus, retail_price__gte=650, retail_price__lt=1550).exclude(created__day=current_date)
+            queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type, category=focus, retail_price__gte=sim_price, retail_price__lt=1550).exclude(created__day=current_date)
             year_edited=int(year.name)
             month_edited=int(month.id)
             num_days = calendar.monthrange(year_edited, month_edited)[1]
