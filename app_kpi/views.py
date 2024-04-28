@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from app_product.models import Identifier, RemainderHistory, Document
 from app_reference.models import Shop, Product, DocumentType, ProductCategory, Month, Year
 from app_reports.models import ReportTempId, Sim_report
-from .models import KPIMonthlyPlan, KPI_performance, GI_report
+from app_personnel.models import BulkSimMotivation
+from .models import KPIMonthlyPlan, KPI_performance, GI_report, Focus_report
 from django.contrib import messages, auth
 from django.contrib.auth.models import User, Group
 import datetime, calendar
@@ -364,6 +365,96 @@ def close_GI_report(request, identifier_id):
         auth.logout(request)
         return redirect("login")
 
+#==================================================================
+def focus_report_input(request):
+    if request.user.is_authenticated:
+        identifier = Identifier.objects.create()
+        monthes=Month.objects.all()
+        years=Year.objects.all()
+        context = {
+            'monthes': monthes,
+            'years': years,
+            'identifier': identifier,
+        }
+        return render(request, "kpi/focus_report_input.html", context)
+
+    else:
+        auth.logout(request)
+        return redirect("login")
+    
+def focus_report_output(request, identifier_id):
+    identifier=Identifier.objects.get(id=identifier_id)
+    sim_price=BulkSimMotivation.objects.get(id=1)
+    if request.method == "POST":
+        focus=ProductCategory.objects.get(name='Сим_карты')
+        month= request.POST["month"]
+        month=Month.objects.get(id=month)
+        year = request.POST["year"]
+        year=Year.objects.get(id=year)
+        shops=Shop.objects.filter(retail=True, active=True, offline=True)
+        #shops=Shop.objects.all()
+        doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+        current_date=datetime.datetime.now().day
+        counter=0#the counter shows if all plan_item.HighBundles are equal to zero. If so it redirects to 'kpi_excel_input'
+        for shop in shops:
+            if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
+                plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
+                plan_focus=plan_item.HighBundle
+                counter+=1
+            else:
+                plan_focus=0
+            queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type, category=focus, retail_price__gte=sim_price, retail_price__lt=1550).exclude(created__day=current_date)
+            year_edited=int(year.name)
+            month_edited=int(month.id)
+            num_days = calendar.monthrange(year_edited, month_edited)[1]
+            if datetime.datetime.now().month != month.id:
+                day_before=num_days
+            else:
+                day_before=datetime.datetime.today().day -1
+            focus_counter=0
+            for item in queryset:
+                focus_counter+=1
+            item=Focus_report.objects.create(
+                identifier = identifier,
+                shop=shop,
+                year_reported=year,
+                month_reported=month,
+                focus=focus_counter,
+                focus_plan=plan_focus,
+                date_before_current=day_before,
+                days_of_the_month=num_days
+            )
+        if counter==0:
+            items=Focus_report.objects.filter(identifier=identifier)
+            for item in items:
+                item.delete()
+            messages.error(request, f'Планов для {month} {year} не существует. Введите сначала план',)
+            return redirect('kpi_excel_input')
+        query=Focus_report.objects.filter(identifier=identifier)
+
+        context = {
+            'query': query,
+            'identifier': identifier,
+            'month': month,
+            'year': year,
+        
+        }
+        return render (request, 'kpi/focus_report_output.html', context)
+
+
+def close_focus_report(request, identifier_id):
+    if request.user.is_authenticated:
+        identifier=Identifier.objects.get(id=identifier_id)
+        items=Focus_report.objects.filter(identifier=identifier)
+        for item in items:
+            item.delete()
+        return redirect ('log')
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+
+
 def close_kpi_report(request):
     if request.user.is_authenticated:
         #identifier=Identifier.objects.get(id=identifier)
@@ -377,3 +468,5 @@ def close_kpi_report(request):
     else:
         auth.logout(request)
         return redirect("login")
+    
+

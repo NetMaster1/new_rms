@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load mathfilters %}
+
+<body oncontextmenu="return false">
+
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+            <div class="border rounded p-3">
+                <!-- =====================Alert Messages Module=================== -->
+                <div class="container">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-info" role="alert">
+                        <!-- <button class="close" data-dismiss="alert">
+                                        <small><sup>x</sup></small>
+                                    </button> -->
+                        {{ message }}
+                    </div>
+                    {% endfor%}
+                    {% endif%}
+                </div>
+                <!-- ===================End of Alert Messages Module================ -->
+                <h3>Текущее выполнение плана по GI за {{month.name}} {{year.name}} </h3>
+            </div>
+
+            <div class="border rounded p-3">
+                <div class="row m-auto">
+                    <div class="col-2">
+                        Торговая точка
+                    </div>
+                    <div class="col-2">
+                        Плановое значение, шт.
+                    </div>
+                    <div class="col-2">
+                        Текущее выполнение, шт.
+                    </div>
+                    <div class="col-2">
+                        Прогноз выполнения в шт.
+                    </div>
+                    <div class="col-2">
+                        Прогноз выполнения %
+                    </div>
+                    <div class="col-2">
+                        Среднее кол-во в день для выполнения плана
+                    </div>
+                </div>
+            {% for item in query %}
+                <div class="row">
+            
+                    <div class="col-2">{{item.shop.name}}</div>
+                    <div class="col-2">{{item.focus_plan}}</div>
+                    <div class="col-2">{{item.focus}} </div>
+                    <div class="col-2">{{item.forecast_items}} </div>
+                    <div class="col-2">{{item.forecast_percent}} </div>
+                    <div class="col-2">{{item.average_per_day}} </div>
+                </div>
+            {% endfor %}
+              
+                <div class="row mt-3">
+                    <a href="{% url 'close_focus_report' identifier.id %}">
+                        <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                    </a>
+                </div>
+           
+            </div>
+            </div>
+        </div>
+</div>
+
+
+
+{%endblock%}
