@@ -141,6 +141,7 @@ def kpi_performance(request):
     
 def kpi_monthly_report_per_shop (request):
     if request.user.is_authenticated:
+        sim_price=BulkSimMotivation.objects.get(id=1)
         users = Group.objects.get(name='sales').user_set.all()
         #group = Group.objects.get(name='admin').user_set.all()
         if request.user in users:
@@ -190,7 +191,7 @@ def kpi_monthly_report_per_shop (request):
         number_of_focus_sims=0
         for item in query:
             number_of_sims+=1
-            if item.retail_price>=650:
+            if item.retail_price>=sim_price.sim_price and item.retail_price<=1550:
                 number_of_focus_sims+=1
         #==========================================
         query=queryset.filter(category=category_RT_equipment)
@@ -403,7 +404,7 @@ def focus_report_output(request, identifier_id):
                 counter+=1
             else:
                 plan_focus=0
-            queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type, category=focus, retail_price__gte=sim_price, retail_price__lt=1550).exclude(created__day=current_date)
+            queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type, category=focus, retail_price__gte=sim_price.sim_price, retail_price__lt=1550).exclude(created__day=current_date)
             year_edited=int(year.name)
             month_edited=int(month.id)
             num_days = calendar.monthrange(year_edited, month_edited)[1]
