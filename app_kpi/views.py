@@ -261,6 +261,21 @@ def kpi_monthly_report_per_shop (request):
     else:
         auth.logout(request)
         return redirect("login")
+
+def close_kpi_report(request):
+    if request.user.is_authenticated:
+        #identifier=Identifier.objects.get(id=identifier)
+        users = Group.objects.get(name='sales').user_set.all()
+        #item=KPI_performance.objects.get(identifier=identifier)
+        #item.delete()
+        if request.user in users:
+            return redirect ('sale_interface')
+        else:
+            return redirect ('log')
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 #===========================GI report================================
 def GI_report_input (request):
     if request.user.is_authenticated:
@@ -479,8 +494,9 @@ def HI_report_output(request, identifier_id):
             if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month.name, year_reported=year.name).exists():
                 plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month.name, year_reported=year.name )
                 plan_HI=plan_item.HomeInternet_T2
-                print('========================')
-                print(plan_HI)
+            else:
+                messages.error(request, f'Планов для {month} {year} не существует. Введите сначала план',)
+                return redirect('kpi_excel_input')
                 # counter+=1
             if KPI_performance.objects.filter(shop=shop, month_reported=month, year_reported=year).exists():
                 HI_item=KPI_performance.objects.get(shop=shop, month_reported=month, year_reported=year)
@@ -516,25 +532,11 @@ def HI_report_output(request, identifier_id):
         }
         return render (request, 'kpi/HI_report_output.html', context)
 
-
-
 def close_HI_report(request, identifier_id):
     pass
 
 
 
-def close_kpi_report(request):
-    if request.user.is_authenticated:
-        #identifier=Identifier.objects.get(id=identifier)
-        users = Group.objects.get(name='sales').user_set.all()
-        #item=KPI_performance.objects.get(identifier=identifier)
-        #item.delete()
-        if request.user in users:
-            return redirect ('sale_interface')
-        else:
-            return redirect ('log')
-    else:
-        auth.logout(request)
-        return redirect("login")
+
     
 
