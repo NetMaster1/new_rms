@@ -186,13 +186,13 @@ class ClientReport (models.Model):
     
 
 class ClientHistoryReport (models.Model):
-    #report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     phone = models.CharField(max_length=50, null=True)
     #shop = models.CharField(max_length=50, null=True)
     #created = models.CharField(max_length=50, null=True)
     user = models.CharField(max_length=50, null=True)
     #user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-    document = models.CharField(max_length=50, null=True)
+    #document = models.CharField(max_length=50, null=True)
     number_of_docs = models.IntegerField(null=True)
     sum = models.IntegerField(null=True)
     cashback_awarded = models.CharField(max_length=50, null=True)

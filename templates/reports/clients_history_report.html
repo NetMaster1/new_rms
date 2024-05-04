@@ -78,7 +78,7 @@
                 <div class="col-2">Кем создан</div>
                 <div class="col-2">Сумма покупок</div>
                 <div class="col-2">Кол-во документов</div>
-                <div class="col-2">Начислено кэшбэка</div>
+                <!-- <div class="col-2">Начислено кэшбэка</div> -->
                 <div class="col-1">Списано кэшбэка</div>
             
             </div>
@@ -86,7 +86,7 @@
 
     <div class="log">
     <div class="border rounded p-3 overflow-scroll">
-    {% for item in query %}
+    {% for item in queryset_list %}
             <div class="row">
                 <div class="col-2">
                     <a href="#" data-bs-toggle="modal" data-bs-target="#modal_{{client.phone}}">
@@ -144,12 +144,15 @@
                     {{client.created}}
                 </div> -->
                 <div class="col-2">
-                    {{item.user.last_name}} {{item.user.first_name}}
+                    {{item.user}}
                 </div>
 
                 <div class="col-2">
-                    {{client.cashback_awarded}}
+                    {{item.sum}}
                 </div>
+                <!-- <div class="col-2">
+                    {{client.cashback_awarded}}
+                </div> -->
                 <div class="col-2">
                     {{item.number_of_docs}}
                 </div>
@@ -168,44 +171,45 @@
     <!-- </div> -->
 
 
-        <!-- ========================Pagination  module=============================== -->
-        <div class="row mt-1">
-            <div class="col-5 m-auto">
-                {% if queryset_list.has_other_pages %}
-                <ul class="pagination">
-                    {% if queryset_list.has_previous %}
-                    <li class="page-item">
-                        <a href="?page={{1}}" class="page-link">В начало</a>
-                    </li>
-                    <li class="page-item">
-                        <a href="?page={{queryset_list.previous_page_number}}" class="page-link">&laquo;</a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled">
-                        <a class="page-link">&laquo;</a>
+    <!-- ========================Pagination  module=============================== -->
+    <div class="row mt-1">
+        <div class="col-5 m-auto">
+            {% if queryset_list.has_other_pages %}
+            <ul class="pagination">
+                {% if queryset_list.has_previous %}
+                <li class="page-item">
+                    <a href="?page={{1}}" class="page-link">В начало</a>
+                </li>
+                <li class="page-item">
+                    <a href="?page={{queryset_list.previous_page_number}}" class="page-link">&laquo;</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link">&laquo;</a>
+                </li>
+                {% endif %}
+                
+                {% for i in queryset_list.paginator.page_range%}
+                {% if queryset_list.number == i %}
+                <li class="page-item active">
+                    <a class="page-link">{{i}}</a>
+                </li>
+                {% elif i > queryset_list.number|add:'-3' and i < queryset_list.number|add:'3' %} <li class="page-item">
+                    <a class='page-link' href="?page={{i}}" class="page-link">{{i}}</a>
                     </li>
                     {% endif %}
-                    {% for i in query.paginator.page_range%}
-                    {% if query.number == i %}
-                    <li class="page-item active">
-                        <a class="page-link">{{i}}</a>
+                    {% endfor %}
+                    {% if queryset_list.has_next %}
+                    <li class="page-item">
+                        <a href="?page={{queryset_list.next_page_number}}" class="page-link">&raquo;</a>
                     </li>
-                    {% elif i > query.number|add:'-3' and i < query.number|add:'3' %} <li class="page-item">
-                        <a class='page-link' href="?page={{i}}" class="page-link">{{i}}</a>
-                        </li>
-                        {% endif %}
-                        {% endfor %}
-                        {% if query.has_next %}
-                        <li class="page-item">
-                            <a href="?page={{query.next_page_number}}" class="page-link">&raquo;</a>
-                        </li>
-                        <li class="page-item">
-                            <a href="?page={{query.paginator.num_pages}}" class="page-link">В конец</a>
-                        </li>
-                        {% endif %}
-                </ul>
-                {% endif %}
-            </div>
+                    <li class="page-item">
+                        <a href="?page={{queryset_list.paginator.num_pages}}" class="page-link">В конец</a>
+                    </li>
+                    {% endif %}
+            </ul>
+            {% endif %}
         </div>
-        <!-- ==============================End of pagination module============================ -->
+    </div>
+    <!-- ==============================End of pagination module============================ -->
 {% endblock %}
