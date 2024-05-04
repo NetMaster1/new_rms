@@ -152,7 +152,7 @@ def kpi_monthly_report_per_shop (request):
             if KPIMonthlyPlan.objects.filter(shop=shop, month_reported=month, year_reported=year.name).exists():
                 plan_item=KPIMonthlyPlan.objects.get(shop=shop, month_reported=month, year_reported=year.name )
             else:
-                messages.error(request,"Планов для этого периода или точки не существуе. Обратитесь к администратору.",)
+                messages.error(request,"Планов для этого периода или точки не существует. Обратитесь к администратору.",)
                 return redirect('sale_interface')
         else:
             if request.method == "POST":
@@ -314,6 +314,7 @@ def GI_report_output(request, identifier_id):
             else:
                 plan_GI=0
             queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type, category=GI).exclude(created__day=current_date)
+            #queryset = RemainderHistory.objects.filter(shop=shop, created__year=year.name, created__month=month.id, rho_type=doc_type, category=GI).exclude(created__day=current_date)
             year_edited=int(year.name)
             month_edited=int(month.id)
             num_days = calendar.monthrange(year_edited, month_edited)[1]

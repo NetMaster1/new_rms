@@ -449,6 +449,7 @@ def cashback_history (request):
 def clients_history_report(request):
     clients=Customer.objects.all()
     doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+    report_id=ReportTempId.objects.create()
     #if request.method=="POST":
     for item in clients:
         counter=0
@@ -457,10 +458,10 @@ def clients_history_report(request):
         sum=0
         docs=Document.objects.filter(client=item)     
         for doc in docs:
-            # rhos=RemainderHistory.objects.filter(document=item)
-            # for rho in rhos:
-            #     if rho.cash_back_awarded is not None:
-            #         cashback_awarded+=rho.cash_back_awarded
+            rhos=RemainderHistory.objects.filter(document=doc)
+            for rho in rhos:
+                if rho.cash_back_awarded is not None:
+                    cashback_awarded+=rho.cash_back_awarded
             if doc.sum is not None:
                 sum+=doc.sum
             else:
@@ -468,20 +469,37 @@ def clients_history_report(request):
             cashback_off+=doc.cashback_off
             counter+=1
         client=ClientHistoryReport.objects.create(
+            report_id=report_id,
             phone=item.phone,
             number_of_docs=counter,
             sum=sum,
             cashback_off=cashback_off,
-            #cashback_awarded=cashback_awarded,
+            cashback_awarded=cashback_awarded,
             user=item.user
-
         )
-    query=ClientHistoryReport.objects.all()
-    context = {
-        'query': query
-    }
-    return render (request, 'reports/clients_history_report.html', context)
+    queryset_list=ClientHistoryReport.objects.filter(report_id=report_id).order_by('-number_of_docs')
+    qs=queryset_list.values('phone', 'user', 'number_of_docs', 'sum', 'cashback_awarded', 'cashback_off')
+    data=pd.DataFrame.from_records(qs)
+    data.to_excel('clientsHistory.xlsx')
+    os.system('start excel.exe clientsHistory.xlsx')
+    return render(request, "reports/clients_history_report.html")
+
+    #============paginator module=================
+    # paginator = Paginator(queryset_list, 200)
+    # page = request.GET.get('page')
+    # paged_queryset_list = paginator.get_page(page)
+    # #=============end of paginator module===============
+    # context = {
+    #     'queryset_list': paged_queryset_list
+    # }
+    # return render (request, 'reports/clients_history_report.html', context)
 # ===============================================================
+
+def delete_clients_history_report (request):
+    items=ClientHistoryReport.objects.all()
+    for item in items:
+        item.delete()
+    return redirect ('log')
 
 def close_report(request):
     if request.user.is_authenticated:

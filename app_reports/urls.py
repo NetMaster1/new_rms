@@ -20,6 +20,8 @@ urlpatterns = [
     path ('cashback_history', views.cashback_history, name='cashback_history'),
     path ('clients_per_user', views.clients_per_user, name='clients_per_user'),
     path ('clients_history_report', views.clients_history_report, name='clients_history_report'),
+    path ('delete_clients_history_report', views.delete_clients_history_report, name='delete_clients_history_report'),
+
 
     path ('daily_pay_card_rep_general', views.daily_pay_card_rep_general, name='daily_pay_card_rep_general'),
     path ('daily_pay_card_rep_per_shop', views.daily_pay_card_rep_per_shop, name='daily_pay_card_rep_per_shop'),
