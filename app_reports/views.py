@@ -4,7 +4,7 @@ from ssl import create_default_context
 from app_personnel.models import BonusAccount, Salary
 from django.db.models import query
 from app_product.views import change_cash_receipt_unposted
-from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product, Expense
+from app_reference.models import DocumentType, ProductCategory, Shop, Supplier, Product, Expense, Month, Year
 from app_cash.models import Cash, Credit, Card
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages, auth
@@ -16,6 +16,9 @@ from app_product.models import (
     RemainderCurrent,
     Document,
 )
+from app_kpi.models import KPIMonthlyPlan
+
+
 from .models import (
     ReportTemp,
     ReportTempId,
@@ -1987,7 +1990,7 @@ def bonus_report(request):
     users = User.objects.filter(is_active=True, groups=group_sales ).order_by('username')
     categories = ProductCategory.objects.all().exclude(name='КЭО').order_by('id')
     sims=ProductCategory.objects.get(name="Сим_карты")
-    shops = Shop.objects.all().exclude(name='ООС')
+    shops = Shop.objects.filter(retail=True, active=True, subdealer=False)
     doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
     if request.method == "POST":
         report_id = ReportTempId.objects.create()
@@ -1999,13 +2002,21 @@ def bonus_report(request):
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
         end_date = end_date + timedelta(days=1)
 
+        current_month=start_date.month
+        month=Month.objects.get(id=current_month)
+        current_year=start_date.year
+        year=Year.objects.get(name=current_year)
+     
+    
+
         rhos = RemainderHistory.objects.filter(rho_type=doc_type, created__gt=start_date, created__lt=end_date)
 
         if Customer.objects.filter(created__gt=start_date, created__lt=end_date).exists():#look for new clients who were created in this time period
             customers=Customer.objects.filter (created__gt=start_date, created__lt=end_date)
-        else:
-            messages.error(request, "Новые клиенты отсутствуют")
-            return redirect("cashback_rep")
+        
+        # else:
+        #     messages.error(request, "Новые клиенты отсутствуют")
+        #     return redirect("cashback_rep")
         if Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type).exists():
             documents=Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type)
 
@@ -2028,23 +2039,42 @@ def bonus_report(request):
 
             #cashback column
             counter=0
-            for customer in customers:
-                if Document.objects.filter(client=customer).exists():#search all documents within the time period fo new customer. 
-                    if customer.user == user: #we add 1 to the counter even if the customer exists in more than one document
-                        counter +=1
-            cash_back_bonus = counter * 15
-            user_row.append(cash_back_bonus)
+            if Customer.objects.filter(created__gt=start_date, created__lt=end_date, user=user).exists():
+                for customer in customers:
+                    if Document.objects.filter(client=customer).exists():#search all documents within the time period fo new customer. 
+                        if customer.user == user: #we add 1 to the counter even if the customer exists in more than one document
+                            counter +=1
+                cash_back_bonus = counter * 15
+                user_row.append(cash_back_bonus)
+            else:
+                user_row.append(0)
 
             for category in categories:
                 sum = 0
                 for shop in shops:
                     rhos_new = rhos.filter(category=category, user=user, shop=shop)
                     if category.name == "Сим_карты": #отсекаем из выручки интернет номера стоимостью > 1550 (Тариф премимум) руб
-                        for rho in rhos_new:
-                            if rho.sub_total <= 1550:
-                                sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
+                        
+                        #checking if GI plan has been completed by the shop. We need this to chnage bonus percent
+                        if KPIMonthlyPlan.objects.filter(month_reported=month, year_reported=year.name, shop=shop).exists():
+                            monthly_plan=KPIMonthlyPlan.objects.get(month_reported=month, year_reported=year.name, shop=shop)
+                            monthly_plan_GI=monthly_plan.GI
+
+                            actual_GI_per_shop=rhos.filter(category=category, shop=shop)
+                            number_of_rhos=actual_GI_per_shop.count()
+                            if monthly_plan_GI>number_of_rhos:
+                                for rho in rhos_new:
+                                    if rho.sub_total <= 1550:
+                                        sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
+                                    else:
+                                        sum += int(1550 * category.bonus_percent * shop.sale_k)
                             else:
-                                sum += int(1550 * category.bonus_percent * shop.sale_k)
+                                for rho in rhos_new:
+                                    if rho.sub_total <= 1550:
+                                        sum += int(rho.sub_total * category.bonus_percent_1 * shop.sale_k)
+                                    else:
+                                        sum += int(1550 * category.bonus_percent * shop.sale_k)
+
                     else:
                         for rho in rhos_new:
                             sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
@@ -2088,7 +2118,7 @@ def bonus_report(request):
         #==========================Convert to Excel module=========================================
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (
-            "attachment; filename=BonusRep_" + str(date) + ".xls"
+            "attachment; filename=BonusRep_" + str(month) + str(year) + ".xls"
         )
         # str(datetime.date.today())+'.xls'
 
