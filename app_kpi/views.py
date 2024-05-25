@@ -243,9 +243,9 @@ def kpi_monthly_report_per_shop (request):
 
                 )
         day_before=datetime.datetime.today().day -1
-        year=int(year.name)
-        month=int(month.id)
-        num_days = calendar.monthrange(year, month)[1]
+        year_int=int(year.name)
+        month_int=int(month.id)
+        num_days = calendar.monthrange(year_int, month_int)[1]#calculates number of days of the month
         context = {
             'month': month,
             'year': year,
