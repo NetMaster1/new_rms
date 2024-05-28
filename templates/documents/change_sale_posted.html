@@ -189,25 +189,25 @@
                                         {% csrf_token %}
                                                 
                                     <div class="form-group">
-                                        <label for="name">Наличные:</label>
+                                        <label for="cash">Наличные:</label>
                                         <input class='form-control' type="number" id="cash" name="cash" maxlength='100' required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="name">Карта:</label>
+                                        <label for="card">Карта:</label>
                                         <input class='form-control' type="number" id="card" name="card" maxlength='100' required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="name">Кредит:</label>
+                                        <label for="credit">Кредит:</label>
                                         <input class='form-control' type="number" id="credit" name="credit" maxlength='100' required>
                                     </div>
 
                                 </div>
                                 
                                 <div class="row m-auto mt-2">
-                                    <div class="col-6">
+                                    <div class="col-4">
                                         <button type="submit" class="btn btn-sm btn-block btn-outline-dark">Сохранить изменения</button>
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-4">
                                         <button type="button" class="btn btn-sm btn-block btn-outline-dark btn_close" data-bs-dismiss="modal">Закрыть без сохранения</button>
                                     </div>
                                 </div>

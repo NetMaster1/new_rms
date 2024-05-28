@@ -1958,18 +1958,65 @@ def change_sale_unposted (request, document_id):
 
 def change_payment_type(request, document_id):
     document=Document.objects.get(id=document_id)
-    if Cash.objects.filter(document=document).exists():
-            cash = Cash.objects.get(document=document)
-    else:
-        cash=None
-    if Credit.objects.filter(document=document).exists():
-        credit=Credit.objects.get(document=document)
-    else:
-        credit=None
-    if Card.objects.filter(document=document).exists():
-        card=Card.objects.get(document=document)
-    else:
-        card=None
+    doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
+    if request.method == "POST":
+        cash=request.POST.get('cash', False)
+        card=request.POST.get('card', False)
+        credit=request.POST.get('credit', False)
+    if cash:
+        if Cash.objects.filter(document=document).exists():
+            cho = Cash.objects.get(document=document)
+            cho.cash_in=cash
+            cho.save()
+        else:
+            cho=Cash.objects.created (
+                document=document,
+                user=document.user,
+                created=document.created,
+                shop=document.shop_sender,
+                cash_in=cash,
+                pre_remainder=cash_pre_remainder,
+                
+                current_remainder=cash_pre_remainder + cash,
+            )
+
+        if Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).exists():
+            cho_before_latest = Cash.objects.filter(shop=document.shop_sender created__lt=document.created).latest('created')
+            cash_pre_remainder = cho_before_latest.current_remainder
+        else:
+            cash_pre_remainder = 0
+        cho.pre_remainder=cash_pre_remainder
+        cho.current_remainder=cash_pre_remainder + cash
+        cho.save()
+
+        if Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).exists():
+            sequence_chos_after = Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).order_by('created')
+            cash_remainder=cho.current_remainder
+            for obj in sequence_chos_after:
+                obj.pre_remainder = cash_remainder
+                obj.current_remainder = (
+                    cash_remainder + obj.cash_in - obj.cash_out
+                )
+                obj.save()
+                cash_remainder = obj.current_remainder
+
+
+    if credit:
+        if Credit.objects.filter(document=document).exists():
+            credit=Credit.objects.get(document=document)
+        else:
+            credit=Credit.objects.create(
+                sum=credit,
+            )
+    if card:
+        if Card.objects.filter(document=document).exists():
+            card=Card.objects.get(document=document)
+        else:
+            card=Card.objects.create(
+                sum=card
+            )
+
+    
     pass
 
 
