@@ -83,6 +83,8 @@ urlpatterns = [
     path ('change_sale_unposted/<int:document_id>/', views.change_sale_unposted, name='change_sale_unposted'),
     path ('unpost_sale/<int:document_id>/', views.unpost_sale, name='unpost_sale'),
 
+    path ('change_payment_type/<int:document_id>/', views.change_payment_type, name='change_payment_type'),
+
     path ('check_sale_unposted/<int:document_id>/', views.check_sale_unposted, name='check_sale_unposted'),
     path ('delete_line_change_sale_unposted/<int:document_id>/<str:imei>', views.delete_line_change_sale_unposted, name='delete_line_change_sale_unposted'),
     path ('sale_interface', views.sale_interface, name='sale_interface'),

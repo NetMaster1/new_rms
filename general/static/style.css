@@ -161,6 +161,7 @@ footer {
     text-align: center;
 }
 
+
 .page_location_posted {
     /* display: block; */
     margin-top: 3rem;
@@ -279,6 +280,31 @@ footer {
 
 /* ====================End of Delivery Page Modal for Entering New Product ======================= */
 
+/* ===================== Change Payment Type Modal========================= */
+.enterChangePaymentTypeModal {
+    display: none;
+}
+
+.enterChangePaymentTypeModal.openModal {
+    display: block;
+    position: absolute;
+    top: 15rem;
+    left: 50rem;
+    background-color: rgb(238, 240, 238);
+    height: 25rem;
+    width: 25rem;
+}
+
+.modal-content-narrow {
+    display: block;
+    position: absolute;
+    /* width: 90%;
+    min-height: 280px; */
+    margin: auto;
+    /* margin-top: 2rem; */
+}
+/* ===================== End of Change Payment Type Modal========================= */
+
 /* ===================== Daily Sales Modal========================= */
 .enterSalesModal {
     display: none;
@@ -374,6 +400,8 @@ footer {
     margin: auto;
     margin-top: 2rem;
 }
+
+
 
 /* ==================== End of Payment Page Modal for Paying in cash ==================================== */
 

@@ -152,8 +152,8 @@
                                 <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
                             </a>
                         </div>
-                        {% endif%}
-                        {% endfor%}
+                    {% endif%}
+                    {% endfor%}
 
 
 
@@ -164,13 +164,94 @@
                         </a>
                         </div>
                     </div>
+
+                
+
+                <!-- ==============================Modal Trigger================== -->
+                <div class="col-2">
+                <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
+                    Изменить тип оплаты
+                </button>
                 </div>
+            <!-- ============================End of Modal Trigger========================= -->
+    
+            <!-- ===========================Modal Body================================= -->
+                    <div class="enterChangePaymentTypeModal">
+                      
+                            <div class="modal-content-narrow">
+
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Введите суммы</h5>
+                                </div>
+
+                                <div class="modal-body">
+                                    <!-- <form action="{% url 'change_payment_type' document.id %}"> method="POST"> -->
+                                        {% csrf_token %}
+                                                
+                                    <div class="form-group">
+                                        <label for="name">Наличные:</label>
+                                        <input class='form-control' type="number" id="cash" name="cash" maxlength='100' required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="name">Карта:</label>
+                                        <input class='form-control' type="number" id="card" name="card" maxlength='100' required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="name">Кредит:</label>
+                                        <input class='form-control' type="number" id="credit" name="credit" maxlength='100' required>
+                                    </div>
+
+                                </div>
+                                
+                                <div class="row m-auto mt-2">
+                                    <div class="col-6">
+                                        <button type="submit" class="btn btn-sm btn-block btn-outline-dark">Сохранить изменения</button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="button" class="btn btn-sm btn-block btn-outline-dark btn_close" data-bs-dismiss="modal">Закрыть без сохранения</button>
+                                    </div>
+                                </div>
+                             
+                                    
+                              
+
+                            </div>
+                            </form>
+                      
+                    </div>
+                    <!-- =================================End of Modal Body======================================== -->
+            </div>
+        
 
 
             </div>
+
         </div>
     </div>
 </div>
-</div>
-</div>
+
+
+<script>
+    console.log('Script starts...')
+
+    const btn_modal =document.querySelector('.btn_modal');
+    const enterChangePaymentTypeModal =document.querySelector('.enterChangePaymentTypeModal');
+    const btn_close =document.querySelector('.btn_close');
+
+    btn_modal.addEventListener('click', openModal)
+    btn_close.addEventListener('click', closeModal)
+
+    function openModal (){
+        enterChangePaymentTypeModal.classList.add('openModal')
+    }
+
+    function closeModal() {
+        enterChangePaymentTypeModal.classList.remove('openModal')
+    }
+
+
+
+    console.log('Script ends...')
+</script>
+
 {% endblock %}

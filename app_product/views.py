@@ -1686,6 +1686,7 @@ def change_sale_posted(request, document_id):
         }
         return render(request, "documents/change_sale_posted.html", context)
 
+
 def change_sale_unposted (request, document_id):
     if request.user.is_authenticated:
         users=Group.objects.get(name="sales").user_set.all()
@@ -1954,6 +1955,23 @@ def change_sale_unposted (request, document_id):
     else:
         auth.logout(request)
         return redirect("login")
+
+def change_payment_type(request, document_id):
+    document=Document.objects.get(id=document_id)
+    if Cash.objects.filter(document=document).exists():
+            cash = Cash.objects.get(document=document)
+    else:
+        cash=None
+    if Credit.objects.filter(document=document).exists():
+        credit=Credit.objects.get(document=document)
+    else:
+        credit=None
+    if Card.objects.filter(document=document).exists():
+        card=Card.objects.get(document=document)
+    else:
+        card=None
+    pass
+
 
 def unpost_sale (request, document_id):
     group=Group.objects.get(name='admin').user_set.all()
