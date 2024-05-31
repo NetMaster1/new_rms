@@ -1981,7 +1981,7 @@ def change_payment_type(request, document_id):
             )
 
         if Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).exists():
-            cho_before_latest = Cash.objects.filter(shop=document.shop_sender created__lt=document.created).latest('created')
+            cho_before_latest = Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).latest('created')
             cash_pre_remainder = cho_before_latest.current_remainder
         else:
             cash_pre_remainder = 0
