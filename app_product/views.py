@@ -2000,6 +2000,7 @@ def change_payment_type(request, document_id):
 
         if Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).exists():
             cho_before_latest = Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).latest('created')
+            print(cho_before_latest.document)
             cash_pre_remainder = cho_before_latest.current_remainder
         else:
             cash_pre_remainder = 0
@@ -2008,7 +2009,7 @@ def change_payment_type(request, document_id):
         cho.save()
 
         if Cash.objects.filter(shop=document.shop_sender, created__gt=document.created).exists():
-            sequence_chos_after = Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).order_by('created')
+            sequence_chos_after = Cash.objects.filter(shop=document.shop_sender, created__gt=document.created).order_by('created')
             cash_remainder=cho.current_remainder
             for obj in sequence_chos_after:
                 obj.pre_remainder = cash_remainder
@@ -2026,7 +2027,7 @@ def change_payment_type(request, document_id):
                 cash_pre_remainder = cho_before_latest.current_remainder
             else:
                 cash_pre_remainder = 0
-            if Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).exists():
+            if Cash.objects.filter(shop=document.shop_sender, created__gt=document.created).exists():
                 sequence_chos_after = Cash.objects.filter(shop=document.shop_sender, created__gt=document.created).order_by('created')
                 cash_remainder=cash_pre_remainder
                 for obj in sequence_chos_after:
@@ -2070,7 +2071,7 @@ def change_payment_type(request, document_id):
             )
     else:
         if Card.objects.filter(document=document).exists():
-            card_doc=Credit.objects.get(document=document)
+            card_doc=Card.objects.get(document=document)
             card_doc.delete()
 
     return redirect ('change_sale_posted', document.id)
