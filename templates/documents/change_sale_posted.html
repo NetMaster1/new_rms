@@ -155,25 +155,23 @@
                         {% endfor %}
 
                         <div class="row m-auto mt-3 ">
+
                     {%for group in request.user.groups.all %}
                     {%if group.name == 'admin'%}
-                    
                         <!-- <div class="col-2">
                             <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
                         </div> -->
-                    </form>
-                    
-
                         <div class="col-3">
                             <a href="{% url 'unpost_sale' document.id %}">
                                 <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
                             </a>
-                        </div>
-                    {% endif%}
+                        </div>  
+                    {% endif %}
                     {% endfor%}
-
-
-
+                
+                    
+                    </form>
+                        
                     <div class="col-2">
                         <div class="row">
                         <a href="{% url 'close_edited_document' document.id %}" class="btn btn-sm btn-block btn-outline-dark">
@@ -228,13 +226,8 @@
                                         <button type="button" class="btn btn-sm btn-block btn-outline-dark btn_close" data-bs-dismiss="modal">Закрыть без сохранения</button>
                                     </div>
                                 </div>
-                             
-                                    
-                              
-
                             </div>
                             </form>
-                      
                     </div>
                     <!-- =================================End of Modal Body======================================== -->
             </div>

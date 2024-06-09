@@ -1648,44 +1648,6 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
         auth.logout(request)
         return redirect("login")
 
-def change_sale_posted(request, document_id):
-    if request.user.is_authenticated:
-        document = Document.objects.get(id=document_id)
-        if Cash.objects.filter(document=document).exists():
-            cash=Cash.objects.get(document=document)
-        else:
-            cash=None
-        if Card.objects.filter(document=document).exists():
-            card=Card.objects.get(document=document)
-        else:
-            card=None
-        if Credit.objects.filter(document=document).exists():
-            credit=Credit.objects.get(document=document)
-        else:
-            credit=None
-        creator = document.user
-        rhos = RemainderHistory.objects.filter(document=document)
-        shops = Shop.objects.all()
-        shop = document.shop_sender
-    
-        numbers = rhos.count()
-        for rho, i in zip(rhos, range(numbers)):
-            rho.number = i + 1
-            rho.save()
-        document_datetime=document.created
-        document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
-        context = {
-            "rhos": rhos,
-            "document": document,
-            "shops": shops,
-            "shop_current": shop,
-            "cash": cash,
-            "card": card,
-            "credit": credit,
-            "document_datetime": document_datetime,
-        }
-        return render(request, "documents/change_sale_posted.html", context)
-
 def change_sale_unposted (request, document_id):
     if request.user.is_authenticated:
         users=Group.objects.get(name="sales").user_set.all()
@@ -1954,6 +1916,46 @@ def change_sale_unposted (request, document_id):
     else:
         auth.logout(request)
         return redirect("login")
+
+def change_sale_posted(request, document_id):
+    if request.user.is_authenticated:
+        document = Document.objects.get(id=document_id)
+        if Cash.objects.filter(document=document).exists():
+            cash=Cash.objects.get(document=document)
+        else:
+            cash=None
+        if Card.objects.filter(document=document).exists():
+            card=Card.objects.get(document=document)
+        else:
+            card=None
+        if Credit.objects.filter(document=document).exists():
+            credit=Credit.objects.get(document=document)
+        else:
+            credit=None
+        creator = document.user
+        rhos = RemainderHistory.objects.filter(document=document)
+        shops = Shop.objects.all()
+        shop = document.shop_sender
+    
+        numbers = rhos.count()
+        for rho, i in zip(rhos, range(numbers)):
+            rho.number = i + 1
+            rho.save()
+        document_datetime=document.created
+        document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
+        context = {
+            "rhos": rhos,
+            "document": document,
+            "shops": shops,
+            "shop_current": shop,
+            "cash": cash,
+            "card": card,
+            "credit": credit,
+            "document_datetime": document_datetime,
+        }
+        return render(request, "documents/change_sale_posted.html", context)
+
+
 
 def change_payment_type(request, document_id):
     if request.user.is_authenticated:
