@@ -1956,80 +1956,62 @@ def change_sale_unposted (request, document_id):
         return redirect("login")
 
 def change_payment_type(request, document_id):
-    document=Document.objects.get(id=document_id)
-    doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
-    if document.cashback_off:
-        cashback=document.cashback_off
-    else:
-        cashback=0
-    if request.method == "POST":
-        # cash = request.POST["cash"]
-        # credit = request.POST["credit"]
-        # card = request.POST["card"]
-        cash=request.POST.get('cash', False)
-        card=request.POST.get('card', False)
-        credit=request.POST.get('credit', False)
+    if request.user.is_authenticated:
+        document=Document.objects.get(id=document_id)
+        doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
+        if document.cashback_off:
+            cashback=document.cashback_off
+        else:
+            cashback=0
+        if request.method == "POST":
+            # cash = request.POST["cash"]
+            # credit = request.POST["credit"]
+            # card = request.POST["card"]
+            cash=request.POST.get('cash', False)
+            card=request.POST.get('card', False)
+            credit=request.POST.get('credit', False)
 
-        new_sum=cashback
+            new_sum=cashback
+            if cash:
+                new_sum = new_sum+int(cash)
+            if card:
+                new_sum= new_sum+int(card)
+            if credit:
+                new_sum=new_sum+int(credit)
+            if new_sum != document.sum:
+                messages.error(request, "Введённая сумма не соответствуей изначальной. Документ не был изменён.")
+                return redirect("change_sale_posted", document.id)
+            
         if cash:
-            new_sum = new_sum+int(cash)
-        if card:
-            new_sum= new_sum+int(card)
-        if credit:
-            new_sum=new_sum+int(credit)
-        if new_sum != document.sum:
-            messages.error(request, "Введённая сумма не соответствуей изначальной. Документ не был изменён.")
-            return redirect("change_sale_posted", document.id)
-        
-    if cash:
-        if Cash.objects.filter(document=document).exists():
-            cho = Cash.objects.get(document=document)
-            cho.cash_in=cash
-            cho.save()
-        else:
-            cho=Cash.objects.create (
-                document=document,
-                user=document.user,
-                created=document.created,
-                cho_type=doc_type,
-                shop=document.shop_sender,
-                cash_in=cash,
-                # pre_remainder=cash_pre_remainder,
-                # current_remainder=cash_pre_remainder + cash,
-            )
-
-        if Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).exists():
-            cho_before_latest = Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).latest('created')
-            print(cho_before_latest.document)
-            cash_pre_remainder = cho_before_latest.current_remainder
-        else:
-            cash_pre_remainder = 0
-        cho.pre_remainder=cash_pre_remainder
-        cho.current_remainder=cash_pre_remainder + int(cash)
-        cho.save()
-
-        if Cash.objects.filter(shop=document.shop_sender, created__gt=document.created).exists():
-            sequence_chos_after = Cash.objects.filter(shop=document.shop_sender, created__gt=document.created).order_by('created')
-            cash_remainder=cho.current_remainder
-            for obj in sequence_chos_after:
-                obj.pre_remainder = cash_remainder
-                obj.current_remainder = (
-                    cash_remainder + obj.cash_in - obj.cash_out
+            if Cash.objects.filter(document=document).exists():
+                cho = Cash.objects.get(document=document)
+                cho.cash_in=cash
+                cho.save()
+            else:
+                cho=Cash.objects.create (
+                    document=document,
+                    user=document.user,
+                    created=document.created,
+                    cho_type=doc_type,
+                    shop=document.shop_sender,
+                    cash_in=cash,
+                    # pre_remainder=cash_pre_remainder,
+                    # current_remainder=cash_pre_remainder + cash,
                 )
-                obj.save()
-                cash_remainder = obj.current_remainder
-    else:
-        if Cash.objects.filter(document=document).exists():
-            cho = Cash.objects.get(document=document)
-            cho.delete()
+
             if Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).exists():
                 cho_before_latest = Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).latest('created')
+                print(cho_before_latest.document)
                 cash_pre_remainder = cho_before_latest.current_remainder
             else:
                 cash_pre_remainder = 0
+            cho.pre_remainder=cash_pre_remainder
+            cho.current_remainder=cash_pre_remainder + int(cash)
+            cho.save()
+
             if Cash.objects.filter(shop=document.shop_sender, created__gt=document.created).exists():
                 sequence_chos_after = Cash.objects.filter(shop=document.shop_sender, created__gt=document.created).order_by('created')
-                cash_remainder=cash_pre_remainder
+                cash_remainder=cho.current_remainder
                 for obj in sequence_chos_after:
                     obj.pre_remainder = cash_remainder
                     obj.current_remainder = (
@@ -2037,44 +2019,66 @@ def change_payment_type(request, document_id):
                     )
                     obj.save()
                     cash_remainder = obj.current_remainder
-
-    if credit:
-        if Credit.objects.filter(document=document).exists():
-            credit_doc=Credit.objects.get(document=document)
-            credit_doc.sum=credit
-            credit_doc.save()
         else:
-            credit=Credit.objects.create(
-                document=document,
-                user=document.user,
-                created=document.created,
-                shop=document.shop_sender,
-                sum=credit
-            )
-    else:
-        if Credit.objects.filter(document=document).exists():
-            credit_doc=Credit.objects.get(document=document)
-            credit_doc.delete()
+            if Cash.objects.filter(document=document).exists():
+                cho = Cash.objects.get(document=document)
+                cho.delete()
+                if Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).exists():
+                    cho_before_latest = Cash.objects.filter(shop=document.shop_sender, created__lt=document.created).latest('created')
+                    cash_pre_remainder = cho_before_latest.current_remainder
+                else:
+                    cash_pre_remainder = 0
+                if Cash.objects.filter(shop=document.shop_sender, created__gt=document.created).exists():
+                    sequence_chos_after = Cash.objects.filter(shop=document.shop_sender, created__gt=document.created).order_by('created')
+                    cash_remainder=cash_pre_remainder
+                    for obj in sequence_chos_after:
+                        obj.pre_remainder = cash_remainder
+                        obj.current_remainder = (
+                            cash_remainder + obj.cash_in - obj.cash_out
+                        )
+                        obj.save()
+                        cash_remainder = obj.current_remainder
 
-    if card:
-        if Card.objects.filter(document=document).exists():
-            card_doc=Card.objects.get(document=document)
-            card_doc.sum=card
-            card_doc.save()
+        if credit:
+            if Credit.objects.filter(document=document).exists():
+                credit_doc=Credit.objects.get(document=document)
+                credit_doc.sum=credit
+                credit_doc.save()
+            else:
+                credit=Credit.objects.create(
+                    document=document,
+                    user=document.user,
+                    created=document.created,
+                    shop=document.shop_sender,
+                    sum=credit
+                )
         else:
-            card_doc=Card.objects.create (
-                document=document,
-                user=document.user,
-                created=document.created,
-                shop=document.shop_sender,
-                sum=card
-            )
-    else:
-        if Card.objects.filter(document=document).exists():
-            card_doc=Card.objects.get(document=document)
-            card_doc.delete()
+            if Credit.objects.filter(document=document).exists():
+                credit_doc=Credit.objects.get(document=document)
+                credit_doc.delete()
 
-    return redirect ('change_sale_posted', document.id)
+        if card:
+            if Card.objects.filter(document=document).exists():
+                card_doc=Card.objects.get(document=document)
+                card_doc.sum=card
+                card_doc.save()
+            else:
+                card_doc=Card.objects.create (
+                    document=document,
+                    user=document.user,
+                    created=document.created,
+                    shop=document.shop_sender,
+                    sum=card
+                )
+        else:
+            if Card.objects.filter(document=document).exists():
+                card_doc=Card.objects.get(document=document)
+                card_doc.delete()
+
+        return redirect ('change_sale_posted', document.id)
+    else:
+        auth.logout(request)
+        return redirect("login")
 
 
 
