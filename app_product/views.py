@@ -1857,13 +1857,15 @@ def change_sale_unposted (request, document_id):
                         shop=shop,
                         sum=card
                     )
-                #deleting reg where cash/credit/card values have been stored in order do display the in html template
+                #deleting reg where cash/credit/card values have been stored in order do display them in html template
                 if PaymentRegister.objects.filter(document=document).exists():
                     temp_cash_reg=PaymentRegister.objects.get(document=document)
                     temp_cash_reg.delete()
+
+                registers=Register.objects.filter(document=document)
                 for register in registers:
                     register.delete()
-                    return redirect("log")
+                return redirect("log")
 
             #saving unposted document
             else:
@@ -1954,8 +1956,6 @@ def change_sale_posted(request, document_id):
             "document_datetime": document_datetime,
         }
         return render(request, "documents/change_sale_posted.html", context)
-
-
 
 def change_payment_type(request, document_id):
     if request.user.is_authenticated:
@@ -2081,8 +2081,6 @@ def change_payment_type(request, document_id):
     else:
         auth.logout(request)
         return redirect("login")
-
-
 
 def unpost_sale (request, document_id):
     group=Group.objects.get(name='admin').user_set.all()

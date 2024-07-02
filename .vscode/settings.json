@@ -5,11 +5,13 @@
     "terminal.integrated.defaultProfile.linux": "",
     "terminal.integrated.env.linux": {
 
+
     },
     "terminal.integrated.env.windows": {
 
     },
     "terminal.integrated.profiles.linux": {
+        
 
         "bash": {
             "path": "bash",
