@@ -1,0 +1,456 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="page_location_unposted">
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Инвентаризационная ведомость #{{document.id}} от {{document.created}} по ТТ {{shop}}</h3>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-5 border rounded p-3">
+        <form action="{% url 'check_inventory_unposted' document.id %}" method="POST" id="check_imei_form">
+                        {% csrf_token %} 
+
+                        <div class="row m-1">
+                            <div class="col-6">
+                                <input type="text" class='form-control' id="check_imei" name="check_imei" maxlength='50' required
+                                    placeholder="Введите IMEI">
+                            </div>
+
+                            <input type="number" class='form-control' id="real_qnty_hidden_to_post" name="real_qnty_hidden_to_post" maxlength='50' hidden>
+                    
+
+                            <div class="col-6">
+                                <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark check_imei_button">
+                            </div>
+                        </div>    
+        </form> 
+                </div>
+        
+    <!-- ==============================Modal Trigger================================= -->
+            <div class="col-5 border rounded p-3">
+                <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
+                    Внести новое наименование в базу данных
+                </button>
+            </div>
+    <!-- ============================End of Modal Trigger========================= -->
+            </div>
+
+<!-- ===========================Modal Body================================= -->
+    <div class="enterDeliveryModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Введите новое наименование</h5>
+                    <!-- <button type="button" class="btn_close"></button> -->
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'enter_new_product_inventory_unposted' document.id %}" method="POST">
+                        {% csrf_token %}
+    
+                        <div class="form-row">
+                            <div class="col-3">
+                                <label for="category">Вид ТМЦ</label>
+                            </div>
+                            <div class="col">
+                                <select name="category" id="category" class='form-control' required>
+                                    {% for category in categories %}
+                                    <option value="{{category.id}}">{{category.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Наименование:</label>
+                            <input class='form-control' type="text" id="name_product" name="name" maxlength='100' required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">IMEI:</label>
+                            <input class='form-control' type="text" id="input_imei" name="imei" maxlength='100' required>
+                        </div>
+                </div>
+    
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn_close" data-bs-dismiss="modal">Закрыть без
+                        сохранения</button>
+                    <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</form>
+<!-- =================================End of Modal Body======================================== -->
+
+            <div class="row m-auto">
+                <div class="col-1">
+                    <b>#</b>
+                    </div>
+                <div class="col-2">
+                    <b>IMEI</b>
+                </div>
+                <div class="col-2">
+                    <b>Наименование</b>
+                </div>
+                <div class="col-1">
+                    <b>Количество</b>
+                </div>
+                <div class="col-1">
+                    <b>Цена розничная</b>
+                </div>
+                <div class="col-1">
+                    <b>Реальное количество</b>
+                </div>
+                <div class="col-1">
+                    <b>Переоценка</b>
+                </div>
+            </div>
+<hr>
+            <!-- ========================Last updated========================================== -->
+            <div class="row m-auto mb-1">
+                <div class="col-1">
+                    <input type="text" class='form-control last_updated' id="number" name="number" value='#' readonly>
+                </div>
+                <div class="col-2">
+                    <input type="text" class='form-control last_updated' id="imei" name="imei" value='{{last_updated.imei}}' readonly>
+                </div>
+                <div class="col-2">
+                    <input type="text" class='form-control last_updated' id="name" name="name" value='{{last_updated.name}}' readonly>
+                </div>
+                <div class="col-1">
+                    <input type="number" class='form-control last_updated' id="quantity" name="quantity"
+                        value='{{last_updated.quantity}}' readonly>
+                </div>
+                <div class="col-1">
+                    <input type="number" class='form-control last_updated' id="price" name="price" value='{{last_updated.price}}'
+                        maxlength='50' readonly>
+                </div>
+                <div class="col-1">
+                    <input type="number" class='form-control last_updated' id="real_qnt" name="real_qnt" maxlength='50' value='{{last_updated.real_quantity}}'readonly>
+                </div>
+                <div class="col-1">
+                    <input type="number" class='form-control last_updated' id="reevaluation_price" name="reevaluation_price" value='{{last_updated.reevaluation_price}}'
+                        maxlength='50' readonly>
+                </div>
+            </div>
+            <!-- ===========================End of Last Updated=============================================== -->
+<hr>
+
+     <form action="{% url 'change_inventory_unposted' document.id %}" method="POST">
+                {% csrf_token %}
+                {% for item in registers %}
+                <div class="row m-auto mb-1">
+                    <div class="col-1">
+                        <input type="text" class='form-control' id="number" name="number" value='{{item.number}}' readonly>
+                    </div>
+                    <div class="col-2">
+                        <input type="text" class='form-control' id="imei" name="imei" value='{{item.imei}}' readonly>
+                    </div>
+                    <div class="col-2">
+                        <input type="text" class='form-control' id="name" name="name" value='{{item.name}}' readonly>
+                    </div>
+                    <div class="col-1">
+                        <input type="number" class='form-control' id="quantity" name="quantity"
+                            value='{{item.quantity}}' readonly>
+                    </div>
+                    <div class="col-1">
+                        <input type="number" class='form-control' id="price" name="price" value='{{item.price}}'
+                            maxlength='50' readonly>
+                    </div>
+                    <div class="col-1">
+                        <input type="number" class='form-control' id="real_qnt" name="real_qnt" maxlength='50' value='{{item.real_quantity}}'>
+                    </div>
+                    <div class="col-1">
+                        <input type="number" class='form-control' id="reevaluation_price" name="reevaluation_price" value='{{item.reevaluation_price}}'
+                            maxlength='50' required>
+                    </div>
+                </div>
+                {% endfor %}
+
+        <div class="row m-auto pb-3 mt-3" style="position:relative">
+          
+            <div class="col-1">
+                <input type="submit" value="Сохранить"
+                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
+            </div>
+            <div class="col-2">
+                <label for="post_check"> С проведением </label>
+                <input type="checkbox" id="post_check" name="post_check" value='checked'>
+            </div>
+    </form>
+
+                <div class="col-2">
+                 
+                    <a href="{% url 'close_unposted_document' document.id %}">
+                        <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage button_message">
+                    </a>
+                </div> 
+                <div class="col-3">
+                    <a href="{% url 'delete_unposted_document' document.id %}">
+                        <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                    </a>
+                </div>
+
+                <div class="enterMessageModal">
+                    При нажатии данной кнопки все несохраненные данные, внесенные вручную без использования кнопки "Внести наименование в документ", будут потеряны. Нажать кнопку?
+                </div>
+           
+        </div>
+
+             
+       
+       
+        </div> 
+    </div>
+</div>
+
+
+<script>
+    //Problem:
+    //There are two forms on the page which use interdependent input data. One sends data to {% url 'change_inventory_unposted' document.id %}
+    //and has visible input (for register in registers). Another sends to {% url 'check_inventory_unposted' document.id %}. Data within 
+    //{% url 'check_inventory_unposted' document.id %} is partially hidden. The problem is that when we update input data in one form it must be
+    //updated within the other.
+    //When we enter a number into real_qnty input cell within {% url 'change_inventory_unposted' document.id %} it is saved in js session storage
+    //in order to avoid loosing this data when the page is updated.
+    //But when we send data through {% url 'check_inventory_unposted' document.id %} it goes directry to the server & updates the
+    //corresponding register.
+    //The problem is that we may enter manually some number in an input cell within {% url 'change_inventory_unposted' document.id %}, for example 10. 
+    //This data is saved in session storage but not on the server yet.
+    //And the register at the server still contains a differen quantity. And when we send data through {% url 'check_inventory_unposted' document.id %} it
+    //adds a number to the value which is currently saved in the register at the server & loses data which we have entered manually.
+    //We could update registers on change event, but it will generate more mess.
+    //Decision:
+    //When we enter data manually into an input field within {% url 'change_inventory_unposted' document.id %}, data in saved in the session
+    //storage to avoid loosing data when the page is updated.
+    //When one changes check_imei value, the program uses this imei to find a corresponding register in {% url 'change_inventory_unposted' document.id %} form
+    //Then it copies real_qnty input value to the hidden real_qnty_hidden_to_post input value of {% url 'check_inventory_unposted' document.id %}.
+    //After that is done real_qnty_hidden_to_post input value is sent to the server together with check_imei value
+    //At the server the corresponding register is updated & sent back to the browser. 
+    //On submitting the form {% url 'check_inventory_unposted' document.id %} the program also removes the imei just sent to the server from
+    //the session storage thus avoiding accidental change of the real_qnty input cell within {% url 'change_inventory_unposted' document.id %} during further updates of the page.
+    //For example the saved register might have 10 in the input cell, but the session storage for it's imei would still have 9 and when we 
+    //enter a diffetent imei through {% url 'check_inventory_unposted' document.id %}, it would update the page & restore 9 in the cell while the register
+    //would still have 10.
+    //Infitially the idea was to copy real_qnt to real_qnt_hidden_to_post, send this info to the server vis js form.submit() & remove the imei from session storage on clicking
+    //check_imei_button, but the problem is that to achieve this we had to change type 'submit' to type 'button'. And in this case the forms was not submitted automatically
+    //right after copying imei in the check_imei.value field
+    const imeis = document.querySelectorAll("#imei");
+    const real_qnts = document.querySelectorAll("#real_qnt");
+    const reevaluation_prices = document.querySelectorAll("#reevaluation_price");
+    const real_qnty_hidden_to_post = document.querySelector("#real_qnty_hidden_to_post");
+    const check_imei_form=document.querySelector('#check_imei_form');
+    const check_imei=document.querySelector('#check_imei');
+    //const check_imei_button=document.querySelector('.check_imei_button');
+    
+    //=============================================================
+    const btn_modal = document.querySelector('.btn_modal');
+    const button_message = document.querySelector('.button_message');
+    const enterMessageModal = document.querySelector('.enterMessageModal');
+    const enterDeliveryModal = document.querySelector('.enterDeliveryModal');
+    const btn_close = document.querySelector('.btn_close');
+    const category = document.querySelector('#category');
+    const shop = document.querySelector('#shop');
+    const buttons = document.querySelectorAll('.clear_storage');
+    //const submit_button = document.querySelector('.clear_storage_on_submit');
+
+    //returning cursor back to check_imei field
+    check_imei.select();
+
+    //=================================================
+    //close without save warning message window
+    button_message.addEventListener('mouseover', openMessageModal)
+    button_message.addEventListener('mouseout', closeMessageModal)
+    function openMessageModal() {
+        enterMessageModal.classList.add('openModal')
+    }
+    function closeMessageModal() {
+        enterMessageModal.classList.remove('openModal')
+    }
+    
+    //=============================================================
+    //enter_new_product modal
+    btn_modal.addEventListener('click', openModal)
+    btn_close.addEventListener('click', closeModal)
+
+    function openModal() {
+        enterDeliveryModal.classList.add('openModal')
+    }
+    function closeModal() {
+        enterDeliveryModal.classList.remove('openModal')
+    }
+
+    //loading changed input to session storage via changing real_qnts')
+    //session storage receives data as dictionnary with imeis[i] as a key and value may be a variable or array
+    for (let i = 0; i < real_qnts.length; i++) {
+        real_qnts[i].addEventListener('change', e => {
+            //sub_totals[i].value = real_qnts[i].value * reevalutaion_prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(real_qnts[i].value)
+            arr.push(reevaluation_prices[i].value)
+            //arr.push(sub_totals[i].value)
+            
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+    //loading changed input to session storage (via changing 'reevaluation_prices')
+    //session storage receives data as dictionnary with imeis[i] as a key and valume may be a variable or array
+    for (let i = 0; i < reevaluation_prices.length; i++) {
+        reevaluation_prices[i].addEventListener('change', e => {
+            //sub_totals[i].value = quantities[i].value * prices[i].value;
+            let arr = []
+            arr.push(imeis[i].value)
+            arr.push(real_qnts[i].value)
+            arr.push(reevaluation_prices[i].value)
+            //local storage receives data as dictionnary with imeis[i] as a key and valume may be a variable or array
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+        })
+    }
+    //getting data from session storage & passing it to html code on page reload
+    document.addEventListener('DOMContentLoaded', e => {
+        for (j=0; j<imeis.length; j++){
+            for (i = 0; i < sessionStorage.length; i++) {
+                if (JSON.parse(sessionStorage.getItem(imeis[j].value))){
+                    a = JSON.parse(sessionStorage.getItem(imeis[j].value));
+                    if (imeis[j].value == a[0]) {
+                        real_qnts[j].value=a[1]
+                        reevaluation_prices[j].value=a[2]
+                    }
+                }
+            }
+        }
+    
+      
+    })
+
+
+    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //===========================================================================
+    for (let button of buttons) {
+        button.addEventListener('click', clearStorage);
+    }
+        function clearStorage(e) {
+            sessionStorage.clear();
+        };
+    
+    //changing check_imei value causes real_qnty_hidden_to_post.value to be equal to corresponding real_qnts[i].value before the first is sent to the server
+    //=================================================================
+    check_imei.addEventListener('change', e => {
+        for (let i = 0; i < imeis.length; i++) {
+            //if (check_imei.value === imeis[i].value)
+            //works only as written in below string. If we try to do it as written in the string above, does not work
+            if (imeis[i].value === check_imei.value)
+                { 
+                    real_qnty_hidden_to_post.value=real_qnts[i].value
+                }
+        }
+
+    })
+
+    //============================================================================================
+    //removing item (check_imei.value and corresponding imeis[i].value) from session storage to avoid possible substitute of register reql_qnt data with a number
+    //from session storage during page updates
+    check_imei_form.addEventListener('submit', removeItemFromStorage );
+    function removeItemFromStorage(e) {
+            choice = check_imei.value;
+            sessionStorage.removeItem(choice);
+        }
+  
+        // function copyValueToHiddenForm() {
+        //     for (let i = 0; i < imeis.length; i++) {
+        //         //if (check_imei.value === imeis[i].value)
+        //         //works only as written in below string. If we try to do it as written in the string above, does not work
+        //         if (imeis[i].value === check_imei.value)
+        //             { 
+        //                 real_qnty_hidden_to_post.value=real_qnts[i].value
+        //             }
+        //     }
+        // }
+ 
+        // function sendJSForm() {
+        //     check_imei_form.submit();
+        // };
+
+    //===============================================================================
+    ///Making register_imei field red when entering the same imei in check_imei field
+    //     check_imei_button.addEventListener('submit', e=> {
+    //     imei_input=check_imei.value
+    //     for (i=0; i<imeis.length; i++){
+    //         if (imeis[i].value == imei_input) {
+    //             imeis[i].classList.add('imei')
+    //             //check_imei.value.clear()
+    //             //e.preventDefault()
+    //         }
+    //     } 
+    //    })
+
+   // check_imei_button.addEventListener('click', clearStorage);
+
+    //updating session storage on pushing 'Delete line button'
+    //===========================================================================
+    // for (let i = 0; i<delete_buttons.length; i++) {
+    //     delete_buttons[i].addEventListener('click', e=> {
+    //         sessionStorage.removeItem(imeis[i].value)
+    //     })
+    // }
+
+    /*submit_button.addEventListener('onload', e => {
+        sessionStorage.clear();
+    })*/
+
+    //=========================================================================
+    //saving "Category select option" from switching to default when updating the page 
+    //via loading it to sessionStorage (setItem)
+    //category.addEventListener('change', e => {
+    //    choice = category.value;
+    //    sessionStorage.setItem('category', choice);
+    // })
+
+    //saving "Shop select option" from switching to default when updating the page
+    //===========================================================================
+    // shop.addEventListener('change', e => {
+    //    choice = shop.value;
+    //    sessionStorage.setItem('shop', choice);
+    //})   
+
+    // getting data from session storage & passing it to html code on page reload
+    //=================================================================================
+    //document.addEventListener('DOMContentLoaded', e => {
+    //    if (sessionStorage.getItem('category') === null) {
+    //        console.log('No category choice')
+    //    }
+    //    else {
+    //        choice = sessionStorage.getItem('category');
+    //        category.value = choice
+    //    }
+    //    if (sessionStorage.getItem('shop') === null) {
+    //        console.log('No shop choice')
+    //    }
+    //    else {
+    //        choice = sessionStorage.getItem('shop');
+    //        shop.value = choice
+    //    }
+    //})
+  
+</script>
+
+{%endblock%}

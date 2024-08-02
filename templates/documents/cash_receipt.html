@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<body oncontextmenu="return false">
+
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>ПКО (приходный кассовый ордер)</h3>
+                </div>
+            </div>
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
+
+            <div class="row m-2 pb-2">
+                <div class="col-12 border rounded ">
+
+
+                    <form action="{% url 'cash_receipt'  %}" method="POST">
+                        {% csrf_token %}
+
+                        {% for group in request.user.groups.all %}
+                        {% if group.name == 'admin' %}
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="date">
+                                    <h5>Дата</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
+                                    value='today'>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="shop">
+                                    <h5>Торговая точка</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <select name="shop" id="shop" class='form-control' required>
+                                    <!-- <option selected="true" disabled="disabled">Выберите торговую точку</option> -->
+                                    <option value="">Выберите торговую точку</option>
+                                    {% for shop in shops %}
+                                    <option value="{{shop.id}}">{{shop.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="shop">
+                                    <h5>Операция-основание</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <select name="voucher" id="voucher" class='form-control' required>
+                                    <!-- <option selected="true" disabled="disabled">Выберите получателя</option> -->
+                                    <option value="">Выберите операцию-основание</option>
+                                    {% for voucher in vouchers %}
+                                    <option value="{{voucher.id}}">{{voucher.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="shop">
+                                    <h5>От кого</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <select name="contributor" id="contributor" class='form-control' required>
+                                    <!-- <option selected="true" disabled="disabled">Выберите получателя</option> -->
+                                    <option value="">Выберите вносителя</option>
+                                    {% for contributor in contributors %}
+                                    <option value="{{contributor.id}}">{{contributor.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="sum">
+                                    <h5>Сумма к принятию</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="number" class='form-control' id="sum" name="sum" required>
+                            </div>
+                        </div>
+
+                        <div class="row m-2 p-2">
+                            <div class="col-1">
+                                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
+                            </div>
+                            {% for group in request.user.groups.all %}
+                            {% if group.name == 'admin' %}
+                            <div class="col-2">
+                                <label for="post_check"> С проведением </label>
+                                <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                    </form>
+
+            {% for group in request.user.groups.all %}
+            {% if group == 'admin' %}
+                    <div class="col-2">
+                        <a href="{% url 'log' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+            {% else %}
+                    <div class="col-2">
+                        <a href="{% url 'sale_interface' %}">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+            {% endif %}
+            {% endfor %}
+          
+          
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+
+{% endblock %}

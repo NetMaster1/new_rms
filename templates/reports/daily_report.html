@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- <div class="hide"> -->
+<div class="container">
+    <div class="page_location">
+        <div class="log">
+            <div class="row">
+                <h3>Введите дату и сформируйте отчет за день.</h3>
+            </div>
+        </div>
+
+        <div class="log mt-2">
+            <form action="{% url 'save_in_excel_daily_rep' %}" method="POST">
+                {% csrf_token %}
+
+                <div class="row m-auto">
+
+                    <div class="col-2">
+                        <input type="date" id='date' class='form-control' name="date">
+                    </div>
+                    <!-- <div class="col-2">
+                        <input type="date" id='end_date' name="end_date">
+                    </div> -->
+                </div>
+                <div class="row form-row mt-3">
+                    <div class="col-2">
+                        <input type="submit" value="Сохранить в Excel" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'close_report' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                 
+            </form>
+        </div>
+    </div>
+    </div>    
+    </div>
+</div>
+</div>
+<!-- </div> -->
+
+{%endblock%}

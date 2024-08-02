@@ -1,0 +1,36 @@
+{
+    "terminal.integrated.automationProfile.linux": {
+        
+    },
+    "terminal.integrated.defaultProfile.linux": "",
+    "terminal.integrated.env.linux": {
+
+
+    },
+    "terminal.integrated.env.windows": {
+
+    },
+    "terminal.integrated.profiles.linux": {
+        
+
+        "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+        },
+        "zsh": {
+            "path": "zsh"
+        },
+        "fish": {
+            "path": "fish"
+        },
+        "tmux": {
+            "path": "tmux",
+            "icon": "terminal-tmux"
+        },
+        "pwsh": {
+            "path": "pwsh",
+            "icon": "terminal-powershell"
+        }
+    },
+    "terminal.integrated.shellIntegration.enabled": true
+}

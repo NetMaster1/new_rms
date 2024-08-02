@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<body oncontextmenu="return false">
+
+
+<!-- <div class="hide"> -->
+<div class="container">
+    <div class="page_location">
+        <div class="log">
+            <div class="row mt-1">
+                <h3>Остатки КЭО по всем точкам </h3>
+            </div>
+        </div>
+
+        <div class="log">
+            <form action="#" method="POST">
+                {% csrf_token %}
+
+                <div class="row mt-2">
+
+                    <div class="col-2">
+                        <input type="date" id='start_date' name="start_date" class='form-control' required>
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='end_date' name="end_date" class='form-control' required>
+                    </div>
+
+                 
+                </div>
+                <div class="row form-row mt-3">
+                    <div class="col-2">
+                        <input type="submit" value="Сохранить в Excel" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'close_report' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+
+            </form>
+        </div>
+    </div>
+
+    {{data | safe}}
+
+</div>
+
+
+</div>
+</div>
+</div>
+<!-- </div> -->
+
+{%endblock%}

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<body oncontextmenu="return false">
+<div class="hide">
+<div class="container">
+    <!-- <div class="page_location"> -->
+        <!-- Alerts ========================== -->
+        {% include 'partials/_alerts.html' %}
+        <!-- ========================================== -->
+        <div class="menu border rounded">
+            <div class="row m-auto ">
+            <div class="col-3 m-auto ">
+           <h5>Общая выручка/бонус за текущий месяц</h5>
+            </div>
+            <div class="col-3 m-auto">
+                <h5>{{total_sales}} руб.</h5>
+            </div>
+            <div class="col-3 m-auto">
+                <h5>{{total_bonus}} руб.</h5>
+            </div>   
+            </div>
+        </div>
+
+    <div class="menu border rounded">
+            <div class="row">
+                <div class="col-3 m-auto"><h5>Товарная группа</h5></div>
+                <div class="col-3 m-auto"><h5>Выручка, руб.</h5></div>
+                <div class="col-3 m-auto"><h5>Мой бонус, руб.</h5></div>
+            </div>
+        <div class="row">
+            <div class="col-3 m-auto">
+                {% for category in categories %}
+                <div class="row m-auto">{{category}}</div>
+                {% endfor %}
+            </div>
+        <div class="col-3 m-auto">
+                {% for item in sales_array %}
+                <div class="row m-auto">{{item}}</div>
+                {% endfor %}
+            </div>
+            <div class="col-3 m-auto">
+                {% for item in bonus_array %}
+                <div class="row m-auto">{{item}}</div>
+                {% endfor %}
+            </div>
+        </div>
+ 
+    </div>
+
+    <div class="menu border rounded">
+        <div class="row m-auto p-3">
+        
+                <a href="{% url 'sale_interface' %}"class="btn btn-block btn-outline-dark" >
+                   Закрыть
+                </a>
+           
+        </div>
+    </div>
+</div>
+<!-- </div> -->
+
+</div>
+
+{% endblock %}

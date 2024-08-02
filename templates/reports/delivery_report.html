@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- <div class="hide"> -->
+<div class="container">
+<div class="page_location">
+
+    <div class="menu">
+            <div class="row">
+                <h3>Отчет по закупкам</h3>
+            </div>
+    </div>
+    <div class="menu">
+            <form action="{% url 'delivery_report' %}" method="POST">
+                {% csrf_token %}
+
+                <div class="row form-row">
+                    <!-- <div class="col">
+                        <input type="text" name="imei" placeholder="IMEI">
+                    </div> -->
+
+                    <!-- <div class="col-2">
+                        <select name="user" id="user" class='form-inline'>
+                            <option value="">Выберите автора документа</option>
+                            {% for user in users %}
+                            <option value="{{user.id}}">{{user.first_name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div> -->
+
+                </div>
+
+                <div class="row form-row mt-3">
+                    <div class="col-2">
+                        <input type="date" id='start_date' name="start_date">
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='end_date' name="end_date">
+                    </div>
+
+
+                    <div class="col-2">
+                        <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'close_report' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                  
+            </form>
+        </div>
+        </div>
+
+    <div class="log">
+     
+
+
+        <!-- <div class="row">
+            <div class="col-2"><h5>Дата</h5></div>
+            <div class="col-1"><h5>Документ</h5></div>
+            <div class="col-2"><h5>IMEI</h5></div>
+            <div class="col-2"><h5>Наименование</h5></div>
+            <div class="col-1"><h5>Кол-во</h5></div>
+            <div class="col-2"><h5>Оптовая цена</h5></div>
+            <div class="col-2"><h5>Поставщик</h5></div>
+          
+        </div> -->
+        <!-- {% for item in queryset_list %}
+    <div class="row mt-1">
+            <div class="col-2">{{item.created}}</div>
+            <div class="col-1">{{item.document}}</div>
+            <div class="col-2">{{item.imei}}</div>
+            <div class="col-2">{{item.name}}</div>
+            <div class="col-1">{{item.incoming_quantity}} шт. </div>
+            <div class="col-2">{{item.wholesale_price}} руб.</div>
+            <div class="col-2">{{item.supplier}} руб.</div>
+    </div>
+        {% endfor %} -->
+    </div>
+
+    </div>
+
+
+
+
+{% endblock %}

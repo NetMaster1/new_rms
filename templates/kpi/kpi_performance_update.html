@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<body oncontextmenu="return false">
+
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+            <div class="border rounded p-3">
+                <!-- =====================Alert Messages Module=================== -->
+                <div class="container">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-info" role="alert">
+                        <!-- <button class="close" data-dismiss="alert">
+                                        <small><sup>x</sup></small>
+                                    </button> -->
+                        {{ message }}
+                    </div>
+                    {% endfor%}
+                    {% endif%}
+                </div>
+                <!-- ===================End of Alert Messages Module================ -->
+                <h3>Ввод текущих данных</h3>
+            </div>
+
+            <div class="border rounded p-3">
+            <form action="{% url 'kpi_performance_update' %}" method="POST">
+                {% csrf_token %}
+
+                <div class="row form-row m-auto">
+                    <div class="col-3">
+            {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
+                <div class="row m-auto pt-1">
+                        <select name="shop" id="shop" class='form-control' required>
+                        <!-- <option selected="false" disabled="disabled">Выберите торговую  точку</option> -->
+                            <option value="">Выберите торговую точку</option>
+                            {% for shop in shops %}
+                            <option value="{{shop.id}}">{{shop.name}}</option>
+                            {% endfor %}
+                        </select>
+                </div>
+                <div class="row m-auto pt-1">
+                        <select name="month" id="month" class='form-control' required>
+                            <!-- <option selected="false" disabled="disabled">Выберите торговую  точку</option> -->
+                                <option value="">Выберите отчетный месяц</option>
+                                {% for month in monthes %}
+                                <option value="{{month.id}}">{{month.name}}</option>
+                                {% endfor %}
+                            </select>
+                </div>
+                <div class="row m-auto pt-1">
+                        <select name="year" id="year" class='form-control' required>
+                            <!-- <option selected="false" disabled="disabled">Выберите торговую  точку</option> -->
+                                <option value="">Выберите отчетный год</option>
+                                {% for year in years %}
+                                <option value="{{year.id}}">{{year.name}}</option>
+                                {% endfor %}
+                            </select>
+                </div>
+
+                    </div>
+                </div>
+
+                        <div class="row m-auto pt-2">
+                            <div class="col-2"><label for="upsale"> Upsale </label></div>
+                            <div class="col-2">
+                                <input type="number" class='form-control' id="upsale" name="upsale">
+                            </div>
+                        </div>
+                        <div class="row m-auto pt-2">
+                            <div class="col-2"><label for="NMP"> MNP </label></div>
+                            <div class="col-2">
+                                <input type="number" class='form-control' id="MNP" name="MNP">
+                            </div>
+                        </div>
+                        <div class="row m-auto pt-2">
+                            <div class="col-2"><label for="NMP"> VMR </label></div>
+                            <div class="col-2">
+                                <input type="number" class='form-control' id="VMR" name="VMR">
+                            </div>
+                        </div>
+                        <div class="row m-auto pt-2">
+                            <div class="col-2"><label for="HI_T2"> Домашний итернет от Т2</label></div>
+                            <div class="col-2">
+                                <input type="number" class='form-control' id="HI_T2" name="HI_T2">
+                            </div>
+                        </div>
+                        <div class="row m-auto pt-2">
+                            <div class="col-2"><label for="HI_RT"> Домашний итернет от РТ</label></div>
+                            <div class="col-2">
+                                <input type="number" class='form-control' id="VMPP" name="HI_RT">
+                            </div>
+                        </div>
+
+
+                    <div class="row m-auto pt-5">
+                        
+                        <div class="col-2">
+                            <div class="row m-auto">
+                            <input type="reset" value="Сбросить" class="btn btn-block btn-outline-dark clear_storage">
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="row m-auto">
+                            <input type="submit" value="Применить" class="btn btn-block btn-outline-dark">
+                        </div>
+                        </div>   
+                        <div class="col-2">
+                            <div class="row m-auto">
+                            <a href="{% url 'close_remainder_report' %}"  class="btn btn-block btn-outline-dark">
+                               Закрыть  
+                            </a>
+                        </div>
+                        </div>    
+                    </div>
+            </div>
+
+                {% endif %}
+            {% endfor %}
+                 
+              
+                   
+            </form>
+            </div>
+        </div>
+
+
+      
+
+</div>
+
+</div>
+
+
+{%endblock%}

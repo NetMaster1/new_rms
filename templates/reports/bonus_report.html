@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- <div class="hide"> -->
+<div class="container">
+<div class="page_location">
+
+        <div class="menu">
+            <div class="row">
+                <h3>Бонус за месяц</h3>
+            </div>
+        </div>
+
+    <div class="menu">
+            <form action="{% url 'bonus_report' %}" method="POST">
+                {% csrf_token %}
+
+                    <div class="row form-row mt-3">
+                        <div class="col-2">
+                            <input type="date" class='form-control' id='start_date' name="start_date" required>
+                        </div>
+                        <div class="col-2">
+                            <input type="date" class='form-control' id='end_date' name="end_date" required>
+                        </div>
+                        <div class="col-2" required>
+                            <select name="user" id="user" class='form-inline'>
+                                <option value="">Выберите продавца</option>
+                                {% for user in users %}
+                                <option value="{{user.id}}">{{user.first_name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+
+                        <div class="col-2">
+                            <input type="submit" value="Сохранить в Excel" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                        <div class="col-1">
+                            <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                        <div class="col-1">
+                            <a href="{% url 'close_report' %}">
+                                <input type="button" value="Закрыть"
+                                    class="btn btn-sm btn-block btn-outline-dark">
+                            </a>
+                        </div>
+                        <div class="col-2">
+                            <a href="{% url 'bonus_report_excel' %}">
+                                <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                                    ?????
+                                </button>
+                            </a>
+                        </div>
+            </form>
+    </div>
+    </div>
+        
+
+
+    <div class="log">
+    {{data | safe}}
+    {{df | safe}}
+    
+        <div class="row mt-3">
+            <div class="col-1">Категория/Ф.И.О.</div>
+            {% for category in categories %}
+            <div class="col-1">{{category}}</div>
+            {% endfor %}
+            <div class="col-1">Всего</div>
+        </div>
+       
+        <div class="row mt-3">
+            <div class="col-1">
+                <div class="row">
+                    {% for user in users%}
+                    <div class="row">{{user}}</div>
+                    {% endfor %}
+                </div>
+            </div>
+          
+            
+        </div>
+        <!-- {% for item in gen_arr %} -->
+        <!-- dictonnary has 'items' property which one can loop easily
+        in the view we create a complex structure: 
+        [{user_1:[{category_1: 0 }, {category_2: 0}]}, {user_2:[{category_1:0}, {category_2:0}]}]
+        below I am transferring it to html -->
+        <!-- iterating through a dictionnary -->
+            <!-- {% for key, value in item.items %}
+        <div class="row mt-1">
+            <div class="col-1">{{key}}</div> -->
+        <!-- iterating through a list which is a dictionnary value -->
+            <!-- {% for item in value %} -->
+        <!-- iterating through a dictionnary which is a member of the list above -->
+                <!-- {% for key, value in item.items%}
+                <div class="col-1">{{value}}</div>
+                {% endfor %}
+            {% endfor %} 
+        </div>
+            {% endfor %}
+        {% endfor %} -->
+            
+      
+        
+    </div>
+      
+    </div>
+
+</div>
+</div>
+<!-- </div> -->
+
+{%endblock%}

@@ -1,0 +1,656 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+<div class="container">
+    <div class="row mt-5">
+    <div class="col-6 border rounded m-auto payment_choice">
+        
+        <!-- =====================Alert Messages Module=================== -->
+        <div class="container mt-2">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">
+                <!-- <button class="close" data-dismiss="alert">
+                                                <small><sup>x</sup></small>
+                                            </button> -->
+                {{ message }}
+            </div>
+            {% endfor%}
+            {% endif%}
+        </div>
+        <!-- ===================End of Alert Messages Module================ -->
+
+
+        <div class="row mt-3">
+            <h3 class='text-center'>Выберите тип оплаты</h3>
+        </div>
+
+        
+<!--==============================Modal Trigger for Paying Cash================== -->
+<div class="row m-auto mt-2">
+    <input type="submit" value="Оплата наличными" class="btn btn-sm btn-outline-dark btn_modal_cash">
+</div>
+
+<!-- ===========================Modal Body For Paying Cash================================= -->
+<div class="enterModalCash">
+        <div class="modal-content">
+                    <div class="row m-auto mt-1">
+                        <h5>Оплата наличными</h5>
+                    </div>
+                    
+                    <div class="row m-auto">
+                        <div class="col-2">
+                            <strong>Торговая точка:</strong>
+                        </div>
+                        <div class="col-1">
+                            <strong>{{shop}}</strong>
+                        </div>
+                        <div class="col-1">
+                            <strong>Кассир:</strong>
+                        </div>
+                        <div class="col-1 text-left">
+                            <strong class="text-left">{{request.user}}</strong>
+                        </div>
+                        <div class="col-1">
+                            <strong>Кэшбэк:</strong>
+                        </div>
+                        <div class="col-1">
+                            <strong>{{cashback_off}} руб.</strong>
+                        </div>
+                        <div class="col-2">
+                            <strong>Остаток лс клиента:</strong>
+                        </div>
+                        <div class="col-1">
+                            <strong>{{client.accum_cashback}} руб.</strong>
+                        </div>
+                    </div>
+                    <hr>
+            <div class="modal-body">
+
+                <form action="{% url 'sale_input_cash' identifier.id client.id cashback_off %}" method="POST" class="sale_form">
+                    {% csrf_token %}
+
+                    {% for group in request.user.groups.all %}
+                    {% if group.name == 'admin' %}
+                  
+                    <div class="row"><h5>Не вносите дату и время, если хотите провести продажу текущим временем</h5></div>
+                    <div class="form-row">
+                        <div class="col">
+                            <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"><br>
+                        </div>
+                    </div>
+
+                    {% endif %}
+                    {% endfor %}
+
+
+                    <div class='form-inline'>
+                        <div class="row m-2">
+                            <div class="col-1"><label for="number"><h5>#</h5></label></div>
+                            <div class="col-2"><label for="imei"><h5>IMEI</h5></label></div>
+                            <div class="col-3"><label for="name"><h5>Наименование</h5></label></div>
+                            <div class="col-2"><label for="quantity"><h5>Кол-во, шт.</h5></label></div>
+                            <div class="col-2"><label for="price"><h5>Цена, руб.</h5></label></div>
+                            <div class="col-2"><label for="sum"><h5>Сумма, руб.</h5></label></div>
+                        </div>
+                    </div>
+                    {% for register in registers %}
+
+                    <div class="row m-auto mb-4">
+                        <div class="col-1">
+                            <input type="text" class='form-control' id="number" name="number" value='{{register.number}}' readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class='form-control' id="imei" name="imei"
+                                value='{{register.product.imei}}' readonly>
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class='form-control' id="name" name="name"
+                                value='{{register.product.name}}' readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="quantity" name="quantity"
+                                value='{{register.quantity}}' readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="price" name="price" value='{{register.price}}'
+                                readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="sub_total" name="sub_total"
+                                value="{{register.sub_total}}" readonly>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="modal-footer">
+                        {% if cashback_off > 0 %}
+                        <h5>Сумма к уплате за вычетом кэшбэка:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3>
+                        <h5>руб.</h5>
+                        <!-- </div> -->
+                        {% else %}
+                        <h5>Сумма к оплате:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3>
+                        <h5>руб.</h5>
+                        {% endif %}
+                    
+                        <div class="col-3" style="text-align:right">
+                        <button type="button" class="btn btn-secondary btn_close_cash"
+                            data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-secondary pay_button">Оплатить</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+   
+</div>
+<!-- ==========================End of Modal Body For Paying Cash====================================== -->
+
+<!-- =====================Trigger of paying Credit Modal======================= -->
+<div class="row m-auto mt-2">
+    <input type="button" value="Оплата в кредит" class="btn btn-sm btn-outline-dark btn_modal_credit">
+</div>
+<!-- ==============================Modal Body For Paying Credit====================================== -->
+<div class="enterModalCredit">
+    <div class="modal-content">
+                <div class="row m-auto mt-1">
+                    <h5>Оплата в кредит</h5>
+                </div>
+                
+                <div class="row m-auto">
+                    <div class="col-2">
+                        <strong>Торговая точка:</strong>
+                    </div>
+                    <div class="col-1">
+                        <strong>{{shop}}</strong>
+                    </div>
+                    <div class="col-1">
+                        <strong>Кассир:</strong>
+                    </div>
+                    <div class="col-1 text-left">
+                        <strong class="text-left">{{request.user}}</strong>
+                    </div>
+                    <div class="col-1">
+                        <strong>Кэшбэк:</strong>
+                    </div>
+                    <div class="col-1">
+                        <strong>{{cashback_off}} руб.</strong>
+                    </div>
+                    <div class="col-2">
+                        <strong>Остаток лс клиента:</strong>
+                    </div>
+                    <div class="col-1">
+                        <strong>{{client.accum_cashback}} руб.</strong>
+                    </div>
+                </div>
+                <hr>
+        <div class="modal-body">
+
+            <form action="{% url 'sale_input_credit' identifier.id client.id cashback_off %}" method="POST">
+                {% csrf_token %}
+
+                {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
+
+                <div class="row">
+                    <h5>Не вносите дату и время, если хотите провести продажу текущим временем</h5>
+                </div>
+                <div class="form-row">
+                    <div class="col">
+                        <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"><br>
+                    </div>
+                </div>
+
+                {% endif %}
+                {% endfor %}
+
+
+                <div class='form-inline'>
+                    <div class="row m-2">
+                        <div class="col-1"><label for="number">
+                                <h5>#</h5>
+                            </label></div>
+                        <div class="col-2"><label for="imei">
+                                <h5>IMEI</h5>
+                            </label></div>
+                        <div class="col-3"><label for="name">
+                                <h5>Наименование</h5>
+                            </label></div>
+                        <div class="col-2"><label for="quantity">
+                                <h5>Кол-во, шт.</h5>
+                            </label></div>
+                        <div class="col-2"><label for="price">
+                                <h5>Цена, руб.</h5>
+                            </label></div>
+                        <div class="col-2"><label for="sum">
+                                <h5>Сумма, руб.</h5>
+                            </label></div>
+                    </div>
+                </div>
+                {% for register in registers %}
+
+                <div class="row m-auto mb-4">
+                    <div class="col-1">
+                        <input type="text" class='form-control' id="number" name="number" value='{{register.number}}'
+                            readonly>
+                    </div>
+                    <div class="col-2">
+                        <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}'
+                            readonly>
+                    </div>
+                    <div class="col-3">
+                        <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'
+                            readonly>
+                    </div>
+                    <div class="col-2">
+                        <input type="number" class='form-control' id="quantity" name="quantity"
+                            value='{{register.quantity}}' readonly>
+                    </div>
+                    <div class="col-2">
+                        <input type="number" class='form-control' id="price" name="price" value='{{register.price}}'
+                            readonly>
+                    </div>
+                    <div class="col-2">
+                        <input type="number" class='form-control' id="sub_total" name="sub_total"
+                            value="{{register.sub_total}}" readonly>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="modal-footer">
+                    {% if cashback_off > 0 %}
+                    <h5>Сумма к уплате за вычетом кэшбэка:</h5>
+                    <h3 style="color: red">{{sum_to_pay}}</h3>
+                    <h5>руб.</h5>
+                    <!-- </div> -->
+                    {% else %}
+                    <h5>Сумма к оплате:</h5>
+                    <h3 style="color: red">{{sum_to_pay}}</h3>
+                    <h5>руб.</h5>
+                    {% endif %}
+
+                    <div class="col-3" style="text-align:right">
+                        <button type="button" class="btn btn-secondary btn_close_credit"
+                            data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-secondary">Оплатить</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<!-- ========================End of Modal Body For Paying Credit====================================== -->
+
+<!-- =====================Trigger of paying Card Modal======================= -->
+<div class="row m-auto mt-2">
+    <input type="button" value="Оплата картой" class="btn btn-sm  btn-outline-dark btn_modal_card ">
+</div>
+
+<!-- ==============================Modal Body For Paying Card====================================== -->
+<div class="enterModalCard">
+        <div class="modal-content">
+
+            <div class="row m-auto mt-1"><h5>Оплата картой (экваиринг)</h5></div>
+
+            <div class="row m-auto">
+                <div class="col-2">
+                    <strong>Торговая точка:</strong>
+                </div>
+                <div class="col-1">
+                    <strong>{{shop}}</strong>
+                </div>
+                <div class="col-1">
+                    <strong>Кассир:</strong>
+                </div>
+                <div class="col-1 text-left">
+                    <strong class="text-left">{{request.user}}</strong>
+                </div>
+                <div class="col-1">
+                    <strong>Кэшбэк:</strong>
+                </div>
+                <div class="col-1">
+                    <strong>{{cashback_off}} руб.</strong>
+                </div>
+                <div class="col-2">
+                    <strong>Остаток лс клиента:</strong>
+                </div>
+                <div class="col-1">
+                    <strong>{{client.accum_cashback}} руб.</strong>
+                </div>
+            </div>
+       <hr>
+            <div class="modal-body">
+                <form action="{% url 'sale_input_card' identifier.id client.id cashback_off %}" method="POST">
+                    {% csrf_token %}
+                    {% for group in request.user.groups.all %}
+                    {% if group.name == 'admin' %}
+                    
+                    <div class="row">
+                        <h5>Не вносите дату и время, если хотите провести продажу текущим временем</h5>
+                    </div>
+                    <div class="form-row">
+                        <div class="col">
+                            <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"><br>
+                        </div>
+                    </div>
+                    
+                    {% endif %}
+                    {% endfor %}
+
+                    <div class='form-inline'>
+                        <div class="row m-2">
+                            <div class="col-1"><label for="number">
+                                    <h5>#</h5>
+                                </label></div>
+                            <div class="col-2"><label for="imei">
+                                    <h5>IMEI</h5>
+                                </label></div>
+                            <div class="col-3"><label for="name">
+                                    <h5>Наименование</h5>
+                                </label></div>
+                            <div class="col-2"><label for="quantity">
+                                    <h5>Кол-во, шт.</h5>
+                                </label></div>
+                            <div class="col-2"><label for="price">
+                                    <h5>Цена, руб.</h5>
+                                </label></div>
+                            <div class="col-2"><label for="sum">
+                                    <h5>Сумма, руб.</h5>
+                                </label></div>
+                        </div>
+                    </div>
+                    {% for register in registers %}
+
+                    <div class="row m-auto mb-4">
+                        <div class="col-1">
+                            <input type="text" class='form-control' id="number" name="number" value='{{register.number}}' readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class='form-control' id="imei" name="imei"
+                                value='{{register.product.imei}}' readonly>
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class='form-control' id="name" name="name"
+                                value='{{register.product.name}}' readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="quantity" name="quantity"
+                                value='{{register.quantity}}' readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="price" name="price" value='{{register.price}}'
+                                readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="sub_total" name="sub_total"
+                                value="{{register.sub_total}}" readonly>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="modal-footer">
+                        {% if cashback_off > 0 %}
+                        <h5>Сумма к уплате за вычетом кэшбэка:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3><h5>руб.</h5>
+                        <!-- </div> -->
+                        {% else %}
+                        <h5>Сумма к оплате:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3><h5>руб.</h5>
+                        {% endif %}
+
+                        <div class="col-3" style="text-align:right">
+                        <button type="button" class="btn btn-secondary btn_close_card"
+                            data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-secondary">Оплатить</button>
+                    </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+</div>
+<!-- ==========================End of Modal Body For Paying Card====================================== -->
+
+<!-- =====================Trigger of paying Complex Modal======================= -->
+<div class="row m-auto mt-2">
+    <input type="button" value="Сложная оплата" class="btn btn-sm btn-outline-dark btn_modal_complex ">
+</div>
+
+<!-- ============================Modal Body For Paying Complex====================================== -->
+<div class="enterModalComplex">
+        <div class="modal-content">
+            <div class="row m-auto mt-1">
+                <h5>Сложная оплата</h5>
+            </div>
+            
+            <div class="row m-auto">
+                <div class="col-2">
+                    <strong>Торговая точка:</strong>
+                </div>
+                <div class="col-1">
+                    <strong>{{shop}}</strong>
+                </div>
+                <div class="col-1">
+                    <strong>Кассир:</strong>
+                </div>
+                <div class="col-1 text-left">
+                    <strong class="text-left">{{request.user}}</strong>
+                </div>
+                <div class="col-1">
+                    <strong>Кэшбэк:</strong>
+                </div>
+                <div class="col-1">
+                    <strong>{{cashback_off}} руб.</strong>
+                </div>
+                <div class="col-2">
+                    <strong>Остаток лс клиента:</strong>
+                </div>
+                <div class="col-1">
+                    <strong>{{client.accum_cashback}} руб.</strong>
+                </div>
+            </div>
+            <hr>
+            <div class="modal-body">
+                <form action="{% url 'sale_input_complex' identifier.id client.id cashback_off %}" method="POST">
+                    {% csrf_token %}
+                {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
+                
+                <div class="row">
+                    <h5>Не вносите дату и время, если хотите провести продажу текущим временем</h5>
+                </div>
+                <div class="form-row">
+                    <div class="col">
+                        <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"><br>
+                    </div>
+                </div>
+                
+                {% endif %}
+                {% endfor %}
+
+                    <div class='form-inline'>
+                        <div class="row m-2">
+                            <div class="col-1"><label for="imei"><h5>#</h5></label></div>
+                            <div class="col-2"><label for="imei"><h5>IMEI</h5></label></div>
+                            <div class="col-3"><label for="name"><h5>Наименование</h5></label></div>
+                            <div class="col-1"><label for="quantity"><h5>Кол-во</h5></label></div>
+                            <div class="col-2"><label for="price"><h5>Цена</h5></label></div>
+                            <div class="col-2"><label for="sum"><h5>Сумма</h5></label></div>
+                        </div>
+                    </div>
+                    {% for register in registers %}
+
+                    <div class="row m-2">
+                        <div class="col-1">
+                            <input type="text" class='form-control' id="number" name="numbrt" value='{{register.number}}' readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class='form-control' id="imei" name="imei"
+                                value='{{register.product.imei}}' readonly>
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class='form-control' id="name" name="name"
+                                value='{{register.product.name}}' readonly>
+                        </div>
+                        <div class="col-1">
+                            <input type="number" class='form-control' id="quantity" name="quantity"
+                                value='{{register.quantity}}' readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="price" name="price" value='{{register.price}}'
+                                readonly>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class='form-control' id="sub_total" name="sub_total"
+                                value="{{register.sub_total}}" readonly>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="row m-auto mt-5">
+                        <div class="col-4">
+                            <label for="cash"><h5>Введите сумму для оплаты наличными:</h5></label>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" id="cash" name="cash" value=0  class='form-control' >
+                        </div>
+                    </div>
+
+                    <div class="row m-auto">
+                        <div class="col-4">
+                            <label for="card"><h5>Введите сумму для оплаты картой:</h5></label>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" id="card" name="card" value=0  class='form-control'>
+                        </div>
+                    </div>
+
+                    <div class="row m-auto mb-3">
+                        <div class="col-4 ">
+                            <label for="credit"><h5>Введите сумму для оплаты в кредит:</h5></label>
+                        </div>
+                        <div class="col-2">
+                            <input type="number" id="credit" name="credit" value=0  class='form-control'>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        {% if cashback_off > 0 %}
+                        <h5>Сумма к уплате за вычетом кэшбэка:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3>
+                        <h5>руб.</h5>
+                        <!-- </div> -->
+                        {% else %}
+                        <h5>Сумма к оплате:</h5>
+                        <h3 style="color: red">{{sum_to_pay}}</h3>
+                        <h5>руб.</h5>
+                        {% endif %}
+
+                        <div class="col-3" style="text-align:right">
+                        <button type="button" class="btn btn-secondary btn_close_complex"
+                            data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-secondary">Оплатить</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+</div>
+<!-- ==========================End of Modal Body For Paying Complex====================================== -->
+
+<div class="row m-auto mt-2 mb-2">
+    <a href="{% url 'close_without_save' identifier.id %}" class="btn btn-sm btn-outline-dark">
+        Закрыть без сохранения
+    </a>
+</div>
+
+
+    </div>
+    </div>
+</div>
+</div>
+
+
+
+<script>
+    console.log("JS starting")
+
+    const btn_modal_cash = document.querySelector('.btn_modal_cash')
+    const enterModalCash = document.querySelector('.enterModalCash')
+    const btn_close_cash = document.querySelector('.btn_close_cash')
+
+    btn_modal_cash.addEventListener('click', openModalCash)
+    btn_close_cash.addEventListener('click', closeModalCash)
+    function openModalCash() {enterModalCash.classList.add('openModal')}
+    function closeModalCash() {enterModalCash.classList.remove('openModal')}
+
+    const btn_modal_credit = document.querySelector('.btn_modal_credit')
+    const enterModalCredit = document.querySelector('.enterModalCredit')
+    const btn_close_credit = document.querySelector('.btn_close_credit')
+
+
+    btn_modal_credit.addEventListener('click', openModalCredit)
+    btn_close_credit.addEventListener('click', closeModalCredit)
+
+    function openModalCredit() {
+        enterModalCredit.classList.add('openModal')
+    }
+    function closeModalCredit() {
+        enterModalCredit.classList.remove('openModal')
+    }
+
+
+    const btn_modal_card = document.querySelector('.btn_modal_card')
+    const enterModalCard = document.querySelector('.enterModalCard')
+    const btn_close_card = document.querySelector('.btn_close_card')
+    btn_modal_card.addEventListener('click', openModalCard)
+    btn_close_card.addEventListener('click', closeModalCard)
+
+    function openModalCard() {
+        enterModalCard.classList.add('openModal')
+    }
+    function closeModalCard() {
+        enterModalCard.classList.remove('openModal')
+    }
+
+    const btn_modal_complex = document.querySelector('.btn_modal_complex')
+    const enterModalComplex = document.querySelector('.enterModalComplex')
+    const btn_close_complex = document.querySelector('.btn_close_complex')
+    btn_modal_complex.addEventListener('click', openModalComplex)
+    btn_close_complex.addEventListener('click', closeModalComplex)
+
+    function openModalComplex() {
+        enterModalComplex.classList.add('openModal')
+    }
+    function closeModalComplex() {
+        enterModalComplex.classList.remove('openModal')
+    }
+
+    const btn_cashback_off = document.querySelector('.btn_cashback_off')
+    const cashback_off_modal = document.querySelector('.cashback_off_modal')
+    const btn_close_cashback_off = document.querySelector('.btn_close_cashback_off')
+    //btn_cashback_off.addEventListener('click', openModalCashbackOff)
+    //btn_close_cashback_off.addEventListener('click', closeModalCashbackOff)
+
+    function openModalCashbackOff() {
+        cashback_off_modal.classList.add('openModal')
+    }
+    function closeModalCashbackOff() {
+        cashback_off_modal.classList.remove('openModal')
+    }
+//======================Disabling a Button after sending a form============================
+    const sale_form = document.querySelector('.sale_form')
+    const pay_button = document.querySelector('.pay_button')
+
+    sale_form.addEventListener('submit', blockButton)
+    function blockButton() {
+        console.log('clicked');
+        pay_button.disabled = true;
+    }
+//===================================================================
+console.log("Js finishing")
+</script>
+{% endblock %}

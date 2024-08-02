@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+           
+            <div class="row pt-2 m-auto">
+                <h3>Инвентаризационная ведомость</h3>
+            </div>
+
+           
+                <form action="{% url 'inventory' identifier.id %}" method="POST" class='clear_storage_on_submit'>
+                    {% csrf_token %}
+
+                    <div class="row form-row m-auto pt-2">
+                        <div class="col-3">
+                            <select name="category" class='form-inline' id='category' required>
+                                <option value="#">Выберите категорию</option>
+                                {% for category in categories %}
+                                <option value="{{category.id}}">{{category.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-3">
+                            <select name="shop" id="shop" class='form-inline' required>
+                                <option selected="false" disabled="disabled">Выберите торговую точку</option>
+                                <!-- <option value="#">Выберите ТТ</option> -->
+                                {% for shop in shops %}
+                                <option value="{{shop.id}}">{{shop.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- <div class="col-3">
+                            <input type="datetime-local" id='dateTime' name="dateTime">
+                        </div> -->
+                    </div>
+
+                    <div class="row form-row m-auto pt-3 pb-3">
+                      
+                        <div class="col-2">
+                            <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div>
+                        <div class="col-2">
+                            <input type="reset" value="Сбросить"
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        </div>
+                        <div class="col-2">
+                            <a href="{% url 'close_report' %}">
+                                <input type="button" value="Закрыть без сохранения"
+                                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                            </a>
+                        </div>
+                    </div>
+                     
+                </form>
+            
+        </div>
+
+      
+    </div> 
+</div>
+
+
+
+<script>
+
+    const category = document.querySelector('#category');
+    const shop = document.querySelector('#shop');
+    const buttons = document.querySelectorAll('.clear_storage');
+    //const submit_button = document.querySelector('.clear_storage_on_submit');
+
+    //saving "Category select option" from switching to default when updating the page
+    //===========================================================================
+    category.addEventListener('change', e => {
+        choice = category.value;
+        sessionStorage.setItem('category', choice);
+    })
+
+    //saving "Category select option" from switching to default when updating the page
+    //===========================================================================
+    shop.addEventListener('change', e => {
+        choice = shop.value;
+        sessionStorage.setItem('shop', choice);
+    })
+
+
+    // getting data from session storage & passing it to html code on page reload
+    //=================================================================================
+    document.addEventListener('DOMContentLoaded', e => {
+        if (sessionStorage.getItem('category') === null) {
+            console.log('No category choice')
+        }
+        else {
+            choice = sessionStorage.getItem('category');
+            category.value = choice
+        }
+        if (sessionStorage.getItem('shop') === null) {
+            console.log('No shop choice')
+        }
+        else {
+            choice = sessionStorage.getItem('shop');
+            shop.value = choice
+        }
+    })
+
+    //clearing session storage on pushing 'Submit' & 'Close without save' buttons
+    //===========================================================================
+    for (let button of buttons) {
+        button.addEventListener('click', clearStorage);
+    }
+    function clearStorage(e) {
+        sessionStorage.clear();
+    };
+
+    /*submit_button.addEventListener('onload', e => {
+        sessionStorage.clear();
+    })*/
+
+
+</script>
+
+{%endblock%}

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+{% for group in request.user.groups.all %}
+{% if group.name == 'sales' %}
+<body oncontextmenu="return false">
+{% endif%}
+{% endfor%}
+
+<!-- <div class="hide"> -->
+<div class="container">
+    <div class="page_location">
+        {% for group in request.user.groups.all %}
+        {% if group.name == 'admin' %}
+        <!-- =====================Alert Messages Module=================== -->
+        <div class="container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">
+                <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+                {{ message }}
+            </div>
+            {% endfor%}
+            {% endif%}
+        </div>
+        <!-- ===================End of Alert Messages Module================ -->
+        {% endif %}
+        {% endfor %}
+        <div class="row">
+            <h3>Отчет по остаткам на дату</h3>
+        </div>
+ <!-- {{df | safe}} -->
+        <div class="row">
+           
+                    <div class="col-2">
+                        <a href="{% url 'close_remainder_report' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        </a>
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'remainder_report_excel' shop.id category.id date %}">
+                            <button type="button" name="button"
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                                Сохранить в Excel
+                            </button>
+                        </a>
+                    </div>
+            
+        </div>
+    </div>
+
+    <div class="log">
+        <div class="row m-auto">
+            <div class="col">
+                <h5>Остатки по торговой точке {{shop}} на дату: {{date}} по категории {{category}}</h5>
+            </div>
+        </div>
+
+
+    <div class="border rounded p-3 overflow-scroll" style="height:40rem" >
+            <div class="row">
+                <div class="col-1">
+                    <h5></h5>
+                </div>
+                <div class="col-1">
+                    <h5>П/П</h5>
+                </div>
+                <div class="col-2">
+                    <h5>IMEI</h5>
+                </div>
+                <div class="col-4">
+                    <h5>Наименование</h5>
+                </div>
+                <div class="col-2">
+                    <h5>Кол-во, шт.</h5>
+                </div>
+                <div class="col-2">
+                    <h5>Розничная цена, руб.</h5>
+                </div>
+            </div>
+
+    <form action="{% url 'revaluation_document' %}" method="POST">
+        {% csrf_token %}
+
+  
+    {% for arr in array %}
+        <div class="row m-auto" id="row_highlight">
+                {% for group in request.user.groups.all %}
+                {% if group.name == 'admin' %}
+                <div class="col-1">
+                    <input type="checkbox" id="check_box" name="checked" value='{{arr.imei}}'>
+                </div>
+                <input type="shop" id="shop" name="shop" value='{{shop.id}}' hidden>
+                {% endif %}
+                {% endfor %}
+            <div class="col-1">{{arr.number}}</div>
+            <div class="col-2">{{arr.imei}}</div>
+            <div class="col-4">{{arr.name}}</div>
+            <div class="col-2">{{arr.current_remainder}}</div>
+            <div class="col-2">{{arr.retail_price}}</div>
+        </div>
+    {% endfor %}
+
+        {% for group in request.user.groups.all %}
+        {% if group.name == 'admin' %}
+        <div class="row m-1">
+            <input type="submit" value="Создать документ Переоценка" class="btn btn-block btn-outline-dark">
+        </div>
+        {% endif %}
+        {% endfor %}
+    </form>
+  
+    </div>
+
+</div>
+</div>
+
+<script>
+      console.log('Script works');
+
+        
+        const row_highlights =document.querySelectorAll('#row_highlight');
+        //const rows = document.querySelector('.row');
+        const check_boxes = document.querySelectorAll('#check_box');
+        
+        for (let i = 0; i < check_boxes.length; i++) {
+            check_boxes[i].addEventListener('change', e => {
+                //row_highlights[i].className='highlight';
+                if(check_boxes[i].checked==true){
+                    row_highlights[i].style.backgroundColor='aquamarine';
+                }
+                else {
+                    row_highlights[i].style.backgroundColor = null;
+                }
+            })
+            }
+
+     
+console.log('Script ends')
+</script>
+
+{%endblock%}

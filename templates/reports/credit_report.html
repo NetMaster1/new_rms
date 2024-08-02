@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- <div class="hide"> -->
+<div class="container">
+    <div class="page_location">
+
+        <div class="menu">
+            <div class="row">
+                <h3>Отчет по кредитам выданным</h3>
+            </div>
+        </div>
+
+        <div class="menu">
+            <form action="{% url 'credit_report' %}" method="POST">
+                {% csrf_token %}
+
+                <div class="row form-row m-auto">
+                    <!-- <div class="-2">
+                <input type="text" name="imei" placeholder="IMEI">
+            </div> -->
+                    <div class="col-2">
+                        <input type="date" id='start_date' name="start_date" required>
+                    </div>
+                    <div class="col-2">
+                        <input type="date" id='end_date' name="end_date" required>
+                    </div>
+               
+                    <div class="col-2">
+                        <select name="shop" id="shop" class='form-inline'>
+                            <option value="">Выберите магазин</option>
+                            {% for shop in shops %}
+                            <option value="{{shop.id}}">{{shop.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <div class="col-2">
+                        <select name="user" id="user" class='form-inline'>
+                            <option value="">Выберите продавца</option>
+                            {% for user in users %}
+                            <option value="{{user.id}}">{{user.first_name}} {{user.last_name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="row form-row mt-3">
+                    <div class="col-2">
+                        <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'close_report' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+             
+            </form>
+        </div>
+    </div>
+
+    <div class="log">
+        <div class="row m-auto">
+            <div class="col">Всего продано на сумму:</div>
+            <div class="col">{{sum}}</div>
+        </div>
+
+
+        <div class="row">
+
+            <div class="col-2">
+                <h5>Дата</h5>
+            </div>
+            <div class="col-2">
+                <h5>Документ</h5>
+            </div>
+            <div class="col-2">
+                <h5>Продавец</h5>
+            </div>
+            <div class="col-2">
+                <h5>Торговая точка</h5>
+            </div>
+            <div class="col-2">
+                <h5>Сумма</h5>
+            </div>
+
+        </div>
+        {% for item in credit_report %}
+        <div class="row m-auto">
+            <div class="col-2">{{item.created}}</div>
+            <div class="col-2">{{item.document}}</div>
+            <div class="col-2">{{item.user}}</div>
+            <div class="col-2">{{item.shop}}</div>
+            <div class="col-2">{{item.sum}}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</div>
+<!-- </div> -->
+
+{%endblock%}

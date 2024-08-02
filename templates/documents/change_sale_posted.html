@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+
+    <div class="container">
+        <div class="page_location_posted">
+            <div class="row m-2 pt-2">
+                 <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                                <small><sup>x</sup></small>
+                            </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
+
+                <div class="col">
+                    {%for group in request.user.groups.all %}
+                    {%if group.name == 'admin'%}
+                    <h3>Изменить документ {{document.title}} # {{document.id}}</h3> 
+                    Клиент: {{document.client.phone}}
+                    {%else%}
+                    <h3>{{document.title}} # {{document.id}}</h3>
+                    {%endif%}
+                    {%endfor%}
+                </div>
+            </div>
+
+            <div class="row m-2 pb-2">
+                <div class="col-12 border rounded p-3">
+
+                    <form action="{% url 'change_sale_posted' document.id %}" method="POST">
+                        {% csrf_token %}
+
+                        <div class="form-row">
+                            <div class="col-6">
+                                <label for="date">
+                                    <h5>Текущая дата документа: {{document.created}}</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"
+                                    value="{{document_datetime}}" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="col-3">
+                                <label for="shop">
+                                    <h5>Фирма-продавец</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                          
+                                <select name="shop" id="shop" class='form-control' readonly>
+                                    <option selected="true" value="{{shop_current.id}}" >{{shop_current.name}}</option>
+                                    <!-- {% for shop in shops %}
+                                    <option value="{{shop.id}}">{{shop.name}}</option>
+                                    {% endfor %} -->
+                                </select>
+
+
+
+
+                            </div>
+                        </div>
+                        <div class='form-inline'>
+                            <div class="row m-2">
+                            <div class="col-2"><label for="cash">
+                                    <h5>Наличные, руб.</h5>
+                                </label></div>
+                            <div class="col-1">
+                                <input type="number" class='form-control' id="cash" name="cash" value='{{cash.cash_in}}' maxlength='50' readonly>
+                            </div>
+                            <div class="col-2"><label for="card">
+                                    <h5>Карта, руб.</h5>
+                                </label></div>
+                            <div class="col-1">
+                                <input type="number" class='form-control' id="card" name="card" value='{{card.sum}}' maxlength='50' readonly>
+                            </div>
+                          
+                            <div class="col-2"><label for="credit">
+                                    <h5>Кредит, руб.</h5>
+                                </label></div>
+                            <div class="col-1">
+                            <input type="number" class='form-control' id="credit" name="credit" value='{{credit.sum}}' maxlength='50' readonly>
+                            </div>
+                            <div class="col-2"><label for="credit">
+                                    <h5>Кэшбэк, руб.</h5>
+                                </label></div>
+                            <div class="col-1">
+                                <input type="number" class='form-control' id="credit" name="credit" value='{{document.cashback_off}}' maxlength='50' readonly>
+                            </div>
+                        </div>
+                        </div>
+
+                        <div class='form-inline'>
+                            <div class="row m-1">
+                                <div class="col-1"><label for="number">
+                                        <h5>#</h5>
+                                    </label></div>
+                                <div class="col-2"><label for="title">
+                                        <h5>IMEI</h5>
+                                    </label></div>
+                                <div class="col-2"><label for="title">
+                                        <h5>Наименование</h5>
+                                    </label></div>
+                                <div class="col-2"><label for="quantity">
+                                        <h5>Кол-во</h5>
+                                    </label></div>
+                                <div class="col-2"><label for="price">
+                                        <h5>Цена</h5>
+                                    </label>
+                                </div>
+                                <div class="col-2"><label for="sub_total">
+                                        <h5>Сумма</h5>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% for rho in rhos %}
+                        <div class="row m-auto mb-1">
+                            <div class="col-1">
+                                <input type="text" class='form-control' id="imei" name="number" value='{{rho.number}}' readonly>
+                            </div>
+                            <div class="col-2">
+                                <input type="text" class='form-control' id="imei" name="imei"
+                                    value='{{rho.imei}}' readonly>
+                            </div>
+                            <div class="col-2">
+                                <input type="text" class='form-control' id="name" name="name"
+                                    value='{{rho.name}}' readonly>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" class='form-control' id="quantity" name="quantity"
+                                    value='{{rho.outgoing_quantity}}' readonly>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" class='form-control' id="price" name="price"
+                                    value='{{rho.retail_price}}' maxlength='50' readonly>
+                            </div>
+                            <div class="col-2">
+                                <input type="number" class='form-control' id="sub_total" name="sub_total"
+                                    value='{{rho.sub_total}}' maxlength='50' readonly>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="row m-auto mt-3 ">
+
+                    {%for group in request.user.groups.all %}
+                    {%if group.name == 'admin'%}
+                        <!-- <div class="col-2">
+                            <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
+                        </div> -->
+                        <div class="col-3">
+                            <a href="{% url 'unpost_sale' document.id %}">
+                                <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
+                            </a>
+                        </div>  
+                    {% endif %}
+                    {% endfor%}
+                
+                    
+                    </form>
+                        
+                    <div class="col-2">
+                        <div class="row">
+                        <a href="{% url 'close_edited_document' document.id %}" class="btn btn-sm btn-block btn-outline-dark">
+                            Закрыть
+                        </a>
+                        </div>
+                    </div>
+
+                
+
+                <!-- ==============================Modal Trigger================== -->
+                <div class="col-2">
+                <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
+                    Изменить тип оплаты
+                </button>
+                </div>
+            <!-- ============================End of Modal Trigger========================= -->
+    
+            <!-- ===========================Modal Body================================= -->
+                    <div class="enterChangePaymentTypeModal">
+                      
+                            <div class="modal-content-narrow">
+
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Введите суммы</h5>
+                                </div>
+
+                                <div class="modal-body">
+                                    <form action="{% url 'change_payment_type' document.id %}" method="POST">
+                                        {% csrf_token %}
+                                                
+                                    <div class="form-group">
+                                        <label for="cash">Наличные:</label>
+                                        <input class='form-control' type="number" id="cash" name="cash" maxlength='100'>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="card">Карта:</label>
+                                        <input class='form-control' type="number" id="card" name="card" maxlength='100'>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="credit">Кредит:</label>
+                                        <input class='form-control' type="number" id="credit" name="credit" maxlength='100'>
+                                    </div>
+
+                                </div>
+                                
+                                <div class="row m-auto mt-2">
+                                    <div class="col-4">
+                                        <button type="submit" class="btn btn-sm btn-block btn-outline-dark">Сохранить изменения</button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button type="button" class="btn btn-sm btn-block btn-outline-dark btn_close" data-bs-dismiss="modal">Закрыть без сохранения</button>
+                                    </div>
+                                </div>
+                            </div>
+                            </form>
+                    </div>
+                    <!-- =================================End of Modal Body======================================== -->
+            </div>
+        
+
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    console.log('Script starts...')
+
+    const btn_modal =document.querySelector('.btn_modal');
+    const enterChangePaymentTypeModal =document.querySelector('.enterChangePaymentTypeModal');
+    const btn_close =document.querySelector('.btn_close');
+
+    btn_modal.addEventListener('click', openModal)
+    btn_close.addEventListener('click', closeModal)
+
+    function openModal (){
+        enterChangePaymentTypeModal.classList.add('openModal')
+    }
+
+    function closeModal() {
+        enterChangePaymentTypeModal.classList.remove('openModal')
+    }
+
+
+
+    console.log('Script ends...')
+</script>
+
+{% endblock %}
