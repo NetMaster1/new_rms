@@ -881,8 +881,18 @@ def effectiveness_report(request):
                 sum=i[2]
             )
                 
-        #calculating total sales sum
         effectiveness_report=EffectivenessReport.objects.filter(report_id=report_id.id).order_by('date')
+        total_sum = []
+        for user in users: 
+            if effectiveness_report.filter(user=user).exists():
+                query=effectiveness_report.filter(user=user)
+                user_sum=0
+                counter_of_work_days = 0
+                for i in query:
+                    user_sum+=i.sum
+                    counter_of_work_days+=1
+                user_array=[user, user_sum, counter_of_work_days]
+                total_sum.append(user_array)
 
         context = {
             "effectiveness_report": effectiveness_report,
@@ -890,6 +900,7 @@ def effectiveness_report(request):
             #"users": users,
             "shop": shop,
             #"report_id": report_id,
+            'total_sum': total_sum,
             
         }
         return render(request, "reports/effectiveness_report.html", context)
