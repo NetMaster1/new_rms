@@ -1862,8 +1862,6 @@ def change_sale_unposted (request, document_id):
                     temp_cash_reg=PaymentRegister.objects.get(document=document)
                     temp_cash_reg.delete()
             
-
-         
                 registers=Register.objects.filter(document=document)
                 for register in registers:
                     register.delete()

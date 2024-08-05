@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load mathfilters %}
+{% load humanize %}
+<!-- <div class="hide"> -->
+<div class="container">
+<div class="page_location">
+
+    <div class="log border rounded">
+        <div class="row">
+                <h3>Отчет по эффективности работы продавца-консультана</h3>
+        </div>
+    </div>
+
+    <div class="log border rounded"> 
+    <form action="{% url 'effectiveness_report' %}" method="POST">
+                    {% csrf_token %}
+        
+        <div class="row m-auto mt-2 mb-1">
+            <!-- <div class="-2">
+                <input type="text" name="imei" placeholder="IMEI">
+            </div> -->
+                <div class="col-2">
+                    <input type="date" id='start_date' name="start_date" class='form-control' required>
+                </div>
+                <div class="col-2">
+                    <input type="date" id='end_date' name="end_date" class="form-control" required>
+                </div>
+         
+                <div class="col-2">
+                    <select name="shop" id="shop" class='form-control' required>
+                        <option value="">Выберите магазин</option>
+                        {% for shop in shops %}
+                        <option value="{{shop.id}}">{{shop.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+               
+
+                <!-- <div class="col-2">
+                    <select name="user" id="user" class='form-control'>
+                        <option value="">Выберите продавца</option>
+                        {% for user in users %}
+                        <option value="{{user.id}}">{{user.last_name}} {{user.first_name}}</option>
+                        {% endfor %}
+                    </select>
+                </div> -->
+        </div>
+
+        <div class="row m-auto mt-1 mb-2">
+                <div class="col-2">
+                    <div class="row m-auto">
+                    <input type="submit" value="Применить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="row m-auto">
+                    <input type="reset" value="Сбросить" class="btn btn-sm btn-block btn-outline-dark">
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="row m-auto">
+                    <a href="{% url 'close_report' %}" class="btn btn-sm btn-block btn-outline-dark">
+                    Закрыть без сохранения
+                </a>
+                </div>
+                </div>
+                <div class="col-2">
+                    {% if sale_report %}
+                        <a href="{% url 'effectiveness_report' report_id.id %}">
+                            <button type="button" name="button" class="btn btn-sm btn-block btn-outline-dark">
+                            Сохранить в Excel 
+                            </button>
+                        </a>
+                        {{sale_report.id}}
+                    {% endif %}
+                </div>
+                </form>
+        </div>
+    </div>
+ 
+
+<div class="log border rounded">
+    <div class="row">
+        <div class="col">Остаток кэо на утро</div>
+    </div>
+
+        <div class="row m-auto">
+        <div class="col-1">Точка:</div> 
+        <div class="col-2"><h5 style="color: red">{{shop}}</h5></div>
+        </div>
+
+        {% for arr in total_sum %}
+        <div class="row m-auto">
+        <div class="col-1">Продавец:</div> 
+        <div class="col-1"><h5 style="color: red">{{arr.0}}</h5></div>
+        <div class="col-1">Выручка:</div> 
+        <div class="col-2"><h5 style="color: red">{{arr.1|intcomma}} руб.</h5></div>
+        <div class="col-1">Смены:</div> 
+        <div class="col-1"><h5 style="color: red">{{arr.2}}</h5></div>
+        <div class="col-2">За смену в среднем:</div> 
+        <div class="col-2"><h5 style="color: red">{{arr.1|div:arr.2|floatformat:2|intcomma}}</h5></div>
+        </div>
+        {% endfor %}
+        
+        
+    <div class="row m-auto">
+        <div class="col-3"><h5>Дата</h5></div>
+        <div class="col-2"><h5>Выручка, руб.</h5></div>
+        <div class="col-3"><h5>Продавец</h5></div>
+    </div>
+
+{% for item in effectiveness_report %}
+<div class="row m-auto">
+<div class="col-3">{{item.date}}</div>
+<div class="col-2">{{item.sum}}</div>
+<div class="col-3">{{item.user}}</div>
+</div>
+{%endfor%}
+
+
+</div>
+</div>
+</div>
+
+    {%endblock%}

@@ -9,6 +9,7 @@ urlpatterns = [
 
     path ('sale_report_per_shop', views.sale_report_per_shop, name='sale_report_per_shop'),
     path ('sale_report_analytic', views.sale_report_analytic, name='sale_report_analytic'),
+    path ('effectiveness_report', views.effectiveness_report, name='effectiveness_report'),
     path ('sale_report_excel/<int:report_id>/', views.sale_report_excel, name='sale_report_excel'),
     path ('sale_report_per_supplier', views.sale_report_per_supplier, name='sale_report_per_supplier'),
     #path ('supplier_report_excel', views.supplier_report_excel, name='supplier_report_excel'),
