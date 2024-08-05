@@ -126,6 +126,18 @@ class SaleReport (models.Model):
     def __int__(self):
         return self.id
 
+class EffectivenessReport (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    sum = models.IntegerField(null=True)
+    date = models.CharField(max_length=50)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
+    
+
+    def __int__(self):
+        return self.id
+
+
 class PayCardReport (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     shop = models.CharField(max_length=50, null=True)

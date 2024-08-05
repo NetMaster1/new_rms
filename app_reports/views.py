@@ -32,6 +32,7 @@ from .models import (
     DeliveryReport,
     ExpensesReport,
     SalaryReport,
+    EffectivenessReport,
 )
 from app_clients.models import Customer
 from app_personnel.models import BulkSimMotivation
@@ -821,6 +822,83 @@ def sale_report_analytic(request):
             "users": users,
         }
         return render(request, "reports/sale_report_analytic.html", context)
+
+def effectiveness_report(request):
+    products = Product.objects.all()
+    shops = Shop.objects.all()
+    group_sales=Group.objects.get(name='sales')
+    users = User.objects.filter(is_active=True, groups=group_sales ).order_by('-username')
+    if request.method == "POST":
+        doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+        shop = request.POST["shop"]
+        shop=Shop.objects.get(id=shop)
+        start_date = request.POST.get("start_date", False)
+        start_date = request.POST["start_date"]
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = request.POST["end_date"]
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = end_date + timedelta(days=1)
+        queryset = RemainderHistory.objects.filter(rho_type=doc_type, shop=shop, created__gt=start_date, created__lt=end_date)
+        #creating a list of dates
+        period= []
+        while start_date <= end_date:
+            period.append(start_date)
+            start_date += timedelta(days=1)
+        
+        #print('======================')
+        array=[]
+        for date in period:
+            for user in users:
+                if queryset.filter(created__date=date, user=user).exists():
+                    queryset_list=queryset.filter(created__date=date, user=user)
+                    sum=0
+                    for rho in queryset_list:
+                        sum+=rho.retail_price
+                    entry = [date, user, sum]
+                    array.append(entry)
+                
+
+        # if Q(start_date) | Q(end_date):
+        #     queryset_list = queryset_list.filter(created__range=[start_date, end_date])
+        #user = request.POST.get("user", False)
+        #if user:
+        #   user = User.objects.get(id=user)
+        #f user:
+            #queryset = queryset.filter(user=user)
+            #user = user
+        
+        
+        #array = set(array)#eliminating not unique imeis
+        
+        report_id = ReportTempId.objects.create()
+        #calculating total quantity & sub_total per imei per day
+        for i in array:
+            effectiveness_report = EffectivenessReport.objects.create(
+                report_id=report_id,
+                shop=shop,
+                date=i[0],
+                user=i[1],
+                sum=i[2]
+            )
+                
+        #calculating total sales sum
+        effectiveness_report=EffectivenessReport.objects.filter(report_id=report_id.id).order_by('date')
+
+        context = {
+            "effectiveness_report": effectiveness_report,
+            "shops": shops,
+            #"users": users,
+            "shop": shop,
+            #"report_id": report_id,
+            
+        }
+        return render(request, "reports/effectiveness_report.html", context)
+    else:
+        context = {
+            "shops": shops,
+            "users": users,
+        }
+        return render(request, "reports/effectiveness_report.html", context)
 
 def sale_report_excel (request, report_id):
     if request.user.is_authenticated:
