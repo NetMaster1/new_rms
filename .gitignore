@@ -1,17 +1,11 @@
 # created by virtualenv automatically
-
 /Scripts
-
 /Lib
-
 /media
-
 /backup
-
 /general/local_settings.py
-
 expenses.xlsx
-
 salary.xlsx
-
 clientsHistory.xlsx
+names.xlsx
+
