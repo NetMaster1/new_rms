@@ -93,12 +93,12 @@
         {% for arr in total_sum %}
         <div class="row m-auto">
         <div class="col-1">Продавец:</div> 
-        <div class="col-2"><h5 style="color: red">{{arr.0}}</h5></div>
+        <div class="col-1"><h5 style="color: red">{{arr.0}}</h5></div>
         <div class="col-1">Выручка:</div> 
         <div class="col-2"><h5 style="color: red">{{arr.1|intcomma}} руб.</h5></div>
         <div class="col-1">Смены:</div> 
-        <div class="col-2"><h5 style="color: red">{{arr.2}}</h5></div>
-        <div class="col-1">За смену в среднем:</div> 
+        <div class="col-1"><h5 style="color: red">{{arr.2}}</h5></div>
+        <div class="col-2">За смену в среднем:</div> 
         <div class="col-2"><h5 style="color: red">{{arr.1|div:arr.2|floatformat:2|intcomma}}</h5></div>
         </div>
         {% endfor %}
