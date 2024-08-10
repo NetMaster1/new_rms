@@ -78,6 +78,7 @@ class Product (models.Model):
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=80)
     imei = models.CharField(max_length=50, unique=True)
+    for_mp_sale = models.BooleanField(default=False) #items for marketplaces
     ozon_id = models.CharField(max_length=50, unique=True, null=True)
     #status = models.BooleanField(default=False)  # "True" for sent to T2 (for sim_cards)
     
