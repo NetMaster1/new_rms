@@ -2656,17 +2656,17 @@ def delivery_auto(request):
                     obj.save()
                     pre_remainder = obj.current_remainder
             #==========Ozon import module==========================
-            #чтоб Озон воспринимает товар как уже существующий, если у него совпадают обязательные аттрибуты.
+            #Озон воспринимает товар как уже существующий, если у него совпадают обязательные аттрибуты.
             #Достаточно изменить один их них, чтобы Озон создал новый товар
             if row.MP_Sale == True:
                 headers = {
                     "Client-Id": "867100",
                     "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
                 }
-                Title=str(row.Title)
-                MP_RRP=str(row.MP_RRP)
-                product_id=str(product.id)
-                imei=str(row.Imei)
+                #Title=str(row.Title)
+                #MP_RRP=str(row.MP_RRP)
+                erms_product_id=str(product.id)
+                #imei=str(row.Imei)
                 colour='blue'
                 #если значение aттрибута 'dictionary_value_id' больше нуля, нужно открывать данный аттрибут через
                 #https://api-seller.ozon.ru/v1/description-category/attribute/values и смотреть идентификационный номер
@@ -2753,7 +2753,7 @@ def delivery_auto(request):
                                     "values": [
                                         {
                                             "dictionary_value_id": 0,
-                                            "value": Title
+                                            "value": str(row.Title)
                                         }
                                     ]
                                 },
@@ -2876,7 +2876,7 @@ def delivery_auto(request):
                                 }  
                             ],
                             
-                            "barcode": imei,
+                            "barcode": str(row.Imei),
                             "description_category_id": 17028650,
                             "color_image": "",
                             "complex_attributes": [],
@@ -2886,11 +2886,11 @@ def delivery_auto(request):
                             "height": 20,
                             "images": [],
                             "images360": [],
-                            "name": Title,
-                            "offer_id": product_id,
-                            "old_price": MP_RRP,
+                            "name": str(row.Title),
+                            "offer_id": erms_product_id,
+                            "old_price": str(row.MP_RRP),
                             "pdf_list": [],
-                            "price": MP_RRP,
+                            "price": str(row.MP_RRP),
                             "primary_image": "https://disk.yandex.ru/i/RJjwHpNbdle_vQ",
                             "vat": "0",
                             "weight": 100,
@@ -2916,34 +2916,56 @@ def delivery_auto(request):
                 task_id=a['task_id']
                 print(task_id)
         
+                #checking status of the upload
+                task_1  = {
+                    "task_id": task_id
+                }
+                response=requests.post('https://api-seller.ozon.ru/v1/product/import/info', json=task_1, headers=headers)
+                json=response.json()
+                print(json)
+
+                #getting product_id assigned by Ozon for further saving it in erms product model
+                task_2 = {
+                    "filter": {
+                        "offer_id": [ erms_product_id ],
+                    "visibility": "ALL"
+                },
+                    "last_id": "",
+                    "limit": 100
+                }
+                response=requests.post('https://api-seller.ozon.ru/v2/product/list', json=task_2, headers=headers)
+                json=response.json()
+                print('======================================')
+                print(json)
+                ozon_product_id=json['result']['items'][0]['product_id']
+                #a=json['result']
+                #b=a['items']
+                #c=b[0]
+                #d=c['product_id']
+                print('ozon product_id is ' +  str(ozon_product_id))
+
+                #update quantity of products at ozon warehouse making it equal to OOC warehouse
+                quantity=rho.current_remainder
+                task_3 = {
+                    "stocks": [
+                        {
+                            "offer_id": erms_product_id,
+                            "product_id": ozon_product_id,
+                            "stock": quantity,
+                            "warehouse_id": 1020001938106000
+                        }
+                    ]
+                }
+                response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task_3, headers=headers)
+                json=response.json()
+                status_code=response.status_code
+                print('+++++++++++++++++++++++++++++++++++')
+                print(status_code)
+                print(json)
 
 
         document.sum = document_sum
         document.save()
-        task_1  = {
-            "task_id": task_id
-        }
-        #checking status of the upload
-        response=requests.post('https://api-seller.ozon.ru/v1/product/import/info', json=task_1, headers=headers)
-        json=response.json()
-        print(json)
-
-        task_2 = {
-            "filter": {
-                "offer_id": [
-                    product_id
-                ],
-       
-            "visibility": "ALL"
-        },
-            "last_id": "",
-            "limit": 100
-        }
-        #getting ozon product_id for further saving it in erms product model
-        response=requests.post('https://api-seller.ozon.ru/v2/product/list', json=task_2, headers=headers)
-        json=response.json()
-        print(json)
-
         return redirect("log")
     else:
         context = {
