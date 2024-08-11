@@ -2582,12 +2582,13 @@ def delivery_auto(request):
                     imei=imei, 
                     category=category,                   
                 )
-            #checking if product is available for marketplace sales
+                #checking if product is available for marketplace sales
             if row.MP_Sale == True:
-                product.for_mp_sale = True
-                product.save()
-                print('======================')
-                print('sucsess')
+                if product.for_mp_sale == False:
+                    product.for_mp_sale = True
+                    product.save()
+                    print('======================')
+                    print('sucsess')
          
             # checking docs before remainder_history
             if RemainderHistory.objects.filter(imei=imei, shop=shop, created__lt=document.created).exists():
@@ -2671,234 +2672,235 @@ def delivery_auto(request):
                 #если значение aттрибута 'dictionary_value_id' больше нуля, нужно открывать данный аттрибут через
                 #https://api-seller.ozon.ru/v1/description-category/attribute/values и смотреть идентификационный номер
                 #и текстовое значение нужные нам. И их указыать в соответствующем аттрибуте
-                task = {
-                    "items": [
-                        {
-                            "attributes": [
-                                #is required: true
-                                #Brand
-                                {
-                                    "complex_id": 0,
-                                    "id": 85,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 0,
-                                            "value": "Нет бренда"
-                                        }
-                                    ]
-                                },
-                                #is required: true
-                                #Тип
-                                #Выберите наиболее подходящий тип товара. По типам товары распределяются по категориям на сайте Ozon. 
-                                #Если тип указан неправильно, товар попадет в неверную категорию. Чтобы правильно указать тип, 
-                                #найдите на сайте Ozon товары, похожие на ваш, и посмотрите, какой тип у них указан.",
+                if 'Чехол' in row.Title:
+                    task = {
+                        "items": [
+                            {
+                                "attributes": [
+                                    #is required: true
+                                    #Brand
+                                    {
+                                        "complex_id": 0,
+                                        "id": 85,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 0,
+                                                "value": "Нет бренда"
+                                            }
+                                        ]
+                                    },
+                                    #is required: true
+                                    #Тип
+                                    #Выберите наиболее подходящий тип товара. По типам товары распределяются по категориям на сайте Ozon. 
+                                    #Если тип указан неправильно, товар попадет в неверную категорию. Чтобы правильно указать тип, 
+                                    #найдите на сайте Ozon товары, похожие на ваш, и посмотрите, какой тип у них указан.",
 
-                                {
-                                    "complex_id": 0,
-                                    "id": 8229,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 97011,
-                                            "value": "Чехол для смартфона"
-                                        }
-                                    ]
-                                },
-                                #is required: True
-                                #"Название модели (для объединения в одну карточку)",
-                                #"Укажите название модели товара. Не указывайте в этом поле тип и бренд."
-                                #Чтобы объединить две карточки, для каждой передайте 9048 в массиве attributes. 
-                                #Все атрибуты в этих карточках, кроме размера или цвета, должны совпадать.
-                                {
-                                    "complex_id": 0,
-                                    "id": 9048,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 0,
-                                            "value": "X8b"
-                                        }
-                                    ]
-                                },
-                                #is required: True
-                                #Product colour
-                                {
-                                    "complex_id": 0,
-                                    "id": 10096,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 61610,
-                                            "value": "серебристый"
-                                        }
-                                    ]
-                                },
-                                #is required: false
-                                #Название
-                                #Название пишется по принципу:\nТип + Бренд + Модель (серия + пояснение) + Артикул производителя + , (запятая) + Атрибут\n
-                                # Название не пишется большими буквами (не используем caps lock).\n
-                                # Перед атрибутом ставится запятая. Если атрибутов несколько, они так же разделяются запятыми.\n
-                                # Если какой-то составной части названия нет - пропускаем её.\n
-                                # Атрибутом может быть: цвет, вес, объём, количество штук в упаковке и т.д.\n
-                                # Цвет пишется с маленькой буквы, в мужском роде, единственном числе.\n
-                                # Слово цвет в названии не пишем.\nТочка в конце не ставится.\n
-                                # Никаких знаков препинания, кроме запятой, не используем.\n
-                                # Кавычки используем только для названий на русском языке.\n
-                                # Примеры корректных названий:\n
-                                # Смартфон Apple iPhone XS MT572RU/A, space black \n
-                                # Кеды Dr. Martens Киноклассика, бело-черные, размер 43\n
-                                # Стиральный порошок Ariel Магия белого с мерной ложкой, 15 кг\n
-                                # Соус Heinz Xtreme Tabasco суперострый, 10 мл\n
-                                # Игрушка для животных Четыре лапы \"Бегающая мышка\" БММ, белый",
-                                {
-                                    "complex_id": 0,
-                                    "id": 4180,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 0,
-                                            "value": str(row.Title)
-                                        }
-                                    ]
-                                },
-                                #is required: False
-                                #Маркетинговый текст
-                                {
-                                    "complex_id": 0,
-                                    "id": 4191,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 0,
-                                            "value": "Стильный чехол защитит ваш телефон от сколов и царапин."
-                                        }
-                                    ]
-                                },
-                                #is required: False
-                                #Партномер. Каталожный номер изделия или детали. Получаем этот номер от поставщика
-                                {
-                                    "complex_id": 0,
-                                    "id": 4381,
-                                    "values": [
-                                        {
-                                            "value": "ААА_ВВВ"
-                                        }
-                                    ]
-                                },
-                                #is required: False
-                                #product weight in g
-                                {
-                                    "complex_id": 0,
-                                    "id": 4383,
-                                    "values": [
-                                        {
-                                            "value": "100"
-                                        }
-                                    ]
-                                },
-                                #is requried: False
-                                #guarantee period
-                                {
-                                    "complex_id": 0,
-                                    "id": 4385,
-                                    "values": [
-                                        {
-                                            "value": "12"
-                                        }
-                                    ]
-                                },
-                                #is requred: False
-                                #Country of manufacture
-                                {
-                                    "complex_id": 0,
-                                    "id": 4389,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 0,
-                                            "value": "Китай"
-                                        }
-                                    ]
-                                },
-                                #is required: False
-                                #Вид чехла
-                                {
-                                    "complex_id": 0,
-                                    "id": 5938,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 22053,
-                                            "value": "Книжка"
-                                        }
-                                    ]
-                                },
-                                #is required: False
-                                #Технические особенности
-                                {
-                                    "complex_id": 0,
-                                    "id": 5941,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 26235,
-                                            "value": "Трансформация в подставку"
-                                        }
-                                    ]
-                                },
-                                #is required: False
-                                #Внешние размеры, мм. Записывается только число.
-                                {
-                                    "complex_id": 0,
-                                    "id": 5942,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 0,
-                                            "value": "200"
-                                        }
-                                    ]
-                                },
-                                #is required: False
-                                #Material
-                                {
-                                    "complex_id": 0,
-                                    "id": 21615,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 971206481,
-                                            "value": "Искусственная кожа"
-                                        }
-                                    ]
-                                },
-                                #is required : false
-                                #key words
-                                {
-                                    "complex_id": 0,
-                                    "id": 22336,
-                                    "values": [
-                                        {
-                                            "dictionary_value_id": 0,
-                                            "value": "чехол, чехол-книжка"
-                                        }
-                                    ]
-                                }  
-                            ],
-                            
-                            "barcode": str(row.Imei),
-                            "description_category_id": 17028650,
-                            "color_image": "",
-                            "complex_attributes": [],
-                            "currency_code": "RUB",
-                            "depth":200,
-                            "dimension_unit": "mm",
-                            "height": 20,
-                            "images": [],
-                            "images360": [],
-                            "name": str(row.Title),
-                            "offer_id": erms_product_id,
-                            "old_price": str(row.MP_RRP),
-                            "pdf_list": [],
-                            "price": str(row.MP_RRP),
-                            "primary_image": "https://disk.yandex.ru/i/RJjwHpNbdle_vQ",
-                            "vat": "0",
-                            "weight": 100,
-                            "weight_unit": "g",
-                            "width": 100
-                        }
-                    ]
-                }
+                                    {
+                                        "complex_id": 0,
+                                        "id": 8229,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 97011,
+                                                "value": "Чехол для смартфона"
+                                            }
+                                        ]
+                                    },
+                                    #is required: True
+                                    #"Название модели (для объединения в одну карточку)",
+                                    #"Укажите название модели товара. Не указывайте в этом поле тип и бренд."
+                                    #Чтобы объединить две карточки, для каждой передайте 9048 в массиве attributes. 
+                                    #Все атрибуты в этих карточках, кроме размера или цвета, должны совпадать.
+                                    {
+                                        "complex_id": 0,
+                                        "id": 9048,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 0,
+                                                "value": "X8b"
+                                            }
+                                        ]
+                                    },
+                                    #is required: True
+                                    #Product colour
+                                    {
+                                        "complex_id": 0,
+                                        "id": 10096,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 61610,
+                                                "value": "серебристый"
+                                            }
+                                        ]
+                                    },
+                                    #is required: false
+                                    #Название
+                                    #Название пишется по принципу:\nТип + Бренд + Модель (серия + пояснение) + Артикул производителя + , (запятая) + Атрибут\n
+                                    # Название не пишется большими буквами (не используем caps lock).\n
+                                    # Перед атрибутом ставится запятая. Если атрибутов несколько, они так же разделяются запятыми.\n
+                                    # Если какой-то составной части названия нет - пропускаем её.\n
+                                    # Атрибутом может быть: цвет, вес, объём, количество штук в упаковке и т.д.\n
+                                    # Цвет пишется с маленькой буквы, в мужском роде, единственном числе.\n
+                                    # Слово цвет в названии не пишем.\nТочка в конце не ставится.\n
+                                    # Никаких знаков препинания, кроме запятой, не используем.\n
+                                    # Кавычки используем только для названий на русском языке.\n
+                                    # Примеры корректных названий:\n
+                                    # Смартфон Apple iPhone XS MT572RU/A, space black \n
+                                    # Кеды Dr. Martens Киноклассика, бело-черные, размер 43\n
+                                    # Стиральный порошок Ariel Магия белого с мерной ложкой, 15 кг\n
+                                    # Соус Heinz Xtreme Tabasco суперострый, 10 мл\n
+                                    # Игрушка для животных Четыре лапы \"Бегающая мышка\" БММ, белый",
+                                    {
+                                        "complex_id": 0,
+                                        "id": 4180,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 0,
+                                                "value": str(row.Title)
+                                            }
+                                        ]
+                                    },
+                                    #is required: False
+                                    #Маркетинговый текст
+                                    {
+                                        "complex_id": 0,
+                                        "id": 4191,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 0,
+                                                "value": "Стильный чехол защитит ваш телефон от сколов и царапин."
+                                            }
+                                        ]
+                                    },
+                                    #is required: False
+                                    #Партномер. Каталожный номер изделия или детали. Получаем этот номер от поставщика
+                                    {
+                                        "complex_id": 0,
+                                        "id": 4381,
+                                        "values": [
+                                            {
+                                                "value": "ААА_ВВВ"
+                                            }
+                                        ]
+                                    },
+                                    #is required: False
+                                    #product weight in g
+                                    {
+                                        "complex_id": 0,
+                                        "id": 4383,
+                                        "values": [
+                                            {
+                                                "value": "100"
+                                            }
+                                        ]
+                                    },
+                                    #is requried: False
+                                    #guarantee period
+                                    {
+                                        "complex_id": 0,
+                                        "id": 4385,
+                                        "values": [
+                                            {
+                                                "value": "12"
+                                            }
+                                        ]
+                                    },
+                                    #is requred: False
+                                    #Country of manufacture
+                                    {
+                                        "complex_id": 0,
+                                        "id": 4389,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 0,
+                                                "value": "Китай"
+                                            }
+                                        ]
+                                    },
+                                    #is required: False
+                                    #Вид чехла
+                                    {
+                                        "complex_id": 0,
+                                        "id": 5938,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 22053,
+                                                "value": "Книжка"
+                                            }
+                                        ]
+                                    },
+                                    #is required: False
+                                    #Технические особенности
+                                    {
+                                        "complex_id": 0,
+                                        "id": 5941,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 26235,
+                                                "value": "Трансформация в подставку"
+                                            }
+                                        ]
+                                    },
+                                    #is required: False
+                                    #Внешние размеры, мм. Записывается только число.
+                                    {
+                                        "complex_id": 0,
+                                        "id": 5942,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 0,
+                                                "value": "200"
+                                            }
+                                        ]
+                                    },
+                                    #is required: False
+                                    #Material
+                                    {
+                                        "complex_id": 0,
+                                        "id": 21615,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 971206481,
+                                                "value": "Искусственная кожа"
+                                            }
+                                        ]
+                                    },
+                                    #is required : false
+                                    #key words
+                                    {
+                                        "complex_id": 0,
+                                        "id": 22336,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 0,
+                                                "value": "чехол, чехол-книжка"
+                                            }
+                                        ]
+                                    }  
+                                ],
+                                
+                                "barcode": str(row.Imei),
+                                "description_category_id": 17028650,
+                                "color_image": "",
+                                "complex_attributes": [],
+                                "currency_code": "RUB",
+                                "depth":200,
+                                "dimension_unit": "mm",
+                                "height": 20,
+                                "images": [],
+                                "images360": [],
+                                "name": str(row.Title),
+                                "offer_id": erms_product_id,
+                                "old_price": str(row.MP_RRP),
+                                "pdf_list": [],
+                                "price": str(row.MP_RRP),
+                                "primary_image": "https://disk.yandex.ru/i/RJjwHpNbdle_vQ",
+                                "vat": "0",
+                                "weight": 100,
+                                "weight_unit": "g",
+                                "width": 100
+                            }
+                        ]
+                    }
                 #uploading new or updating existing product
                 response=requests.post('https://api-seller.ozon.ru/v3/product/import', json=task, headers=headers)  
                 status_code=response.status_code
@@ -2943,7 +2945,8 @@ def delivery_auto(request):
                 #c=b[0]
                 #d=c['product_id']
                 print('ozon product_id is ' +  str(ozon_product_id))
-
+                product.ozon_id=ozon_product_id
+                product.save()
                 #update quantity of products at ozon warehouse making it equal to OOC warehouse
                 quantity=rho.current_remainder
                 task_3 = {
@@ -3771,6 +3774,7 @@ def transfer_input(request, identifier_id):
         identifier = Identifier.objects.get(id=identifier_id)
         registers = Register.objects.filter(identifier=identifier)
         doc_type = DocumentType.objects.get(name="Перемещение ТМЦ")
+        shop_sender_to_ozon = Shop.objects.get(name='ООС')
         numbers = registers.count()
         if request.method == "POST":
             imeis = request.POST.getlist("imei", None)
@@ -3868,6 +3872,28 @@ def transfer_input(request, identifier_id):
                             sub_total=int(prices[i]) * int(quantities[i]),
                             status=False
                         )
+                        if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon:
+                            headers = {
+                                "Client-Id": "867100",
+                                "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
+                            }
+                            quantity=rho.current_remainder
+                            task = {
+                                "stocks": [
+                                    {
+                                        "offer_id": str(product.id),
+                                        "product_id": product.ozon_id,
+                                        "stock": quantity,
+                                        "warehouse_id": 1020001938106000
+                                    }
+                                ]
+                            }
+                            response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task, headers=headers)
+                            json=response.json()
+                            status_code=response.status_code
+                            #print(status_code)
+                            #print(json)
+
                         # checking docs after remainder_history for shop_sender
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender,created__gt=rho.created).exists():
                             remainder=rho.current_remainder
