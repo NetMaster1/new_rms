@@ -3775,6 +3775,7 @@ def transfer_input(request, identifier_id):
         registers = Register.objects.filter(identifier=identifier)
         doc_type = DocumentType.objects.get(name="Перемещение ТМЦ")
         shop_sender_to_ozon = Shop.objects.get(name='ООС')
+        ozon_shop = Shop.objects.get(name='Озон')
         numbers = registers.count()
         if request.method == "POST":
             imeis = request.POST.getlist("imei", None)
@@ -3872,7 +3873,7 @@ def transfer_input(request, identifier_id):
                             sub_total=int(prices[i]) * int(quantities[i]),
                             status=False
                         )
-                        if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon:
+                        if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon and shop_receiver != ozon_shop:
                             headers = {
                                 "Client-Id": "867100",
                                 "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
