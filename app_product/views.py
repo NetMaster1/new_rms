@@ -3873,6 +3873,7 @@ def transfer_input(request, identifier_id):
                             sub_total=int(prices[i]) * int(quantities[i]),
                             status=False
                         )
+                        #updating quantity at ozon marketplace
                         if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon and shop_receiver != ozon_shop:
                             headers = {
                                 "Client-Id": "867100",

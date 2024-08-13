@@ -1424,7 +1424,12 @@ def remainder_general_report (request):
                         if rho.rho_type == transfer: #перемещение создает два rho с одинаковым временем и нам нужно их разделить.
                             document=rho.document
                             shop_receiver=document.shop_receiver
-                            rho=RemainderHistory.objects.get(document=document, imei = imei, shop=shop_receiver)
+                            try:
+                                rho=RemainderHistory.objects.get(document=document, imei = imei, shop=shop_receiver)
+                            except:
+                                string=f'{imei} не уникален в документе #{document}.'
+                                messages.error(request,  string)
+                                return redirect("reminder_general_report")
                            
                         if rho.current_remainder > 0:
                             arr.append(rho)
