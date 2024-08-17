@@ -1429,7 +1429,7 @@ def remainder_general_report (request):
                             except:
                                 string=f'{imei} не уникален в документе #{document} от {document.created}.'
                                 messages.error(request,  string)
-                                return redirect("reminder_general_report")
+                                return redirect("remainder_general_report")
                            
                         if rho.current_remainder > 0:
                             arr.append(rho)
