@@ -1427,7 +1427,7 @@ def remainder_general_report (request):
                             try:
                                 rho=RemainderHistory.objects.get(document=document, imei = imei, shop=shop_receiver)
                             except:
-                                string=f'{imei} не уникален в документе #{document}.'
+                                string=f'{imei} не уникален в документе #{document} от {document.created}.'
                                 messages.error(request,  string)
                                 return redirect("reminder_general_report")
                            
