@@ -211,4 +211,8 @@ urlpatterns = [
     path ('teko_pay', views.teko_pay, name='teko_pay'),
     path ('change_teko_pay_posted/<document_id>', views.change_teko_pay_posted, name='change_teko_pay_posted'),
 
+
+    #========================================================================
+    path ('ozon_stock_update', views.ozon_stock_update, name='ozon_stock_update'),
+
 ]
