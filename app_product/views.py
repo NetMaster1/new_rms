@@ -2681,11 +2681,39 @@ def delivery_auto(request):
                     #MP_RRP=str(row.MP_RRP)
                     erms_product_id=str(product.id)
                     #imei=str(row.Imei)
-                    colour='blue'
                     #если значение aттрибута 'dictionary_value_id' больше нуля, нужно открывать данный аттрибут через
                     #https://api-seller.ozon.ru/v1/description-category/attribute/values и смотреть идентификационный номер
                     #и текстовое значение нужные нам. И их указыать в соответствующем аттрибуте
                     if 'Чехол' in row.Title:
+                        key_word_var =str(row.Model)
+                        key_word=  f'чехол, чехол-книжка, чехол книжка, {key_word_var}.'
+                        if 'белый' in row.Title:
+                            colour='белый'
+                            colour_id = '51571'
+                        elif 'черный' in row.Title:
+                            colour='черный'
+                            colour_id = '61574'
+                        elif 'коричневый' in row.Title:
+                            colour='коричневый'
+                            colour_id = '61575'
+                        elif 'розовый' in row.Title:
+                            colour='розовый'
+                            colour_id = '61580'
+                        elif 'светло-фиолетовый' in row.Title:
+                            colour='фиолетовый'
+                            colour_id = '61586'
+                        elif 'темно-синий' in row.Title:
+                            colour='темно-синий'
+                            colour_id = '61592'
+                        elif 'темно-зеленый' in row.Title:
+                            colour='темно-зеленый'
+                            colour_id = '61602'
+                        elif 'серебряный' in row.Title:
+                            colour='серебристый'
+                            colour_id = '61610'
+                        elif 'золотой' in row.Title:
+                            colour='золотой'
+                            colour_id = '61582'
                         task = {
                             "items": [
                                 {
@@ -2729,7 +2757,7 @@ def delivery_auto(request):
                                             "values": [
                                                 {
                                                     "dictionary_value_id": 0,
-                                                    "value": "X8b"
+                                                    "value": str(row.Model)
                                                 }
                                             ]
                                         },
@@ -2740,8 +2768,8 @@ def delivery_auto(request):
                                             "id": 10096,
                                             "values": [
                                                 {
-                                                    "dictionary_value_id": 61610,
-                                                    "value": "серебристый"
+                                                    "dictionary_value_id": colour_id,
+                                                    "value": colour
                                                 }
                                             ]
                                         },
@@ -2791,7 +2819,7 @@ def delivery_auto(request):
                                             "id": 4381,
                                             "values": [
                                                 {
-                                                    "value": "ААА_ВВВ"
+                                                    "value": str(row.Part_Number)
                                                 }
                                             ]
                                         },
@@ -2855,16 +2883,16 @@ def delivery_auto(request):
                                         },
                                         #is required: False
                                         #Внешние размеры, мм. Записывается только число.
-                                        {
-                                            "complex_id": 0,
-                                            "id": 5942,
-                                            "values": [
-                                                {
-                                                    "dictionary_value_id": 0,
-                                                    "value": "200"
-                                                }
-                                            ]
-                                        },
+                                        # {
+                                        #     "complex_id": 0,
+                                        #     "id": 5942,
+                                        #     "values": [
+                                        #         {
+                                        #             "dictionary_value_id": 0,
+                                        #             "value": "200"
+                                        #         }
+                                        #     ]
+                                        # },
                                         #is required: False
                                         #Material
                                         {
@@ -2873,7 +2901,7 @@ def delivery_auto(request):
                                             "values": [
                                                 {
                                                     "dictionary_value_id": 971206481,
-                                                    "value": "Искусственная кожа"
+                                                    "value": "Искусственная кожа, силикон, текстиль"
                                                 }
                                             ]
                                         },
@@ -2885,7 +2913,7 @@ def delivery_auto(request):
                                             "values": [
                                                 {
                                                     "dictionary_value_id": 0,
-                                                    "value": "чехол, чехол-книжка"
+                                                    "value": key_word
                                                 }
                                             ]
                                         }  
@@ -2906,7 +2934,7 @@ def delivery_auto(request):
                                     "old_price": str(row.MP_RRP),
                                     "pdf_list": [],
                                     "price": str(row.MP_RRP),
-                                    "primary_image": "https://disk.yandex.ru/i/RJjwHpNbdle_vQ",
+                                    "primary_image": str(row.Primary_Image),
                                     "vat": "0",
                                     "weight": 100,
                                     "weight_unit": "g",
@@ -2915,6 +2943,8 @@ def delivery_auto(request):
                             ]
                         }
                     elif 'Стекло' in row.Title:
+                        key_word_var =str(row.Model)
+                        key_word=  f'Стекло, защитное стекло, {key_word_var}.'
                         task = {
                         "items": [
                             {
@@ -2958,7 +2988,7 @@ def delivery_auto(request):
                                         "values": [
                                             {
                                                 "dictionary_value_id": 0,
-                                                "value": "X8b"
+                                                "value": str(row.Model)
                                             }
                                         ]
                                     },
@@ -3009,7 +3039,7 @@ def delivery_auto(request):
                                         "id": 4381,
                                         "values": [
                                             {
-                                                "value": "XXX_ВВВ"
+                                                "value": str(row.Part_Number)
                                             }
                                         ]
                                     },
@@ -3020,7 +3050,7 @@ def delivery_auto(request):
                                         "id": 4383,
                                         "values": [
                                             {
-                                                "value": "100"
+                                                "value": "18"
                                             }
                                         ]
                                     },
@@ -3078,7 +3108,7 @@ def delivery_auto(request):
                                         "values": [
                                             {
                                                 "dictionary_value_id": 0,
-                                                "value": "1"
+                                                "value": "0.3"
                                             }
                                         ]
                                     },
@@ -3102,20 +3132,81 @@ def delivery_auto(request):
                                         "values": [
                                             {
                                                 "dictionary_value_id": 0,
-                                                "value": "Стекло, защитное стекло"
+                                                "value": key_word
                                             }
                                         ]
-                                    }  
+                                    },
+                                    #is requied: false
+                                    #Покрытие
+                                    {
+                                        "complex_id": 0,
+                                        "id": 11046,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 970788906,
+                                                "value": "Глянцевое"
+                                            }
+                                        ]
+                                    },
+                                    #is requied: false
+                                    #Прозрачность покрытия
+                                    {
+                                        "complex_id": 0,
+                                        "id": 11047,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 970788960,
+                                                "value": "Суперпрозрачное"
+                                            }
+                                        ]
+                                    },
+                                    #is requied: false
+                                    #вид стекла
+                                    {
+                                        "complex_id": 0,
+                                        "id": 11048,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 970788953,
+                                                "value": "3D"
+                                            }
+                                        ]
+                                    },
+                                    #is requied: false
+                                    #Дополнительные свойства покрытия
+                                    {
+                                        "complex_id": 0,
+                                        "id": 11048,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 970788950,
+                                                "value": "Олеофобное покрытие"
+                                            }
+                                        ]
+                                    },
+
+                                    #is requied: false
+                                    #Твердость стекла
+                                    {
+                                        "complex_id": 0,
+                                        "id": 11050,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": 970788957,
+                                                "value": "9H"
+                                            }
+                                        ]
+                                    }
                                 ],
                                 
                                 "barcode": str(row.Imei),
-                                "description_category_id": 17028650,
+                                "description_category_id": 17028628,
                                 "color_image": "",
                                 "complex_attributes": [],
                                 "currency_code": "RUB",
                                 "depth":200,
                                 "dimension_unit": "mm",
-                                "height": 20,
+                                "height": 5,
                                 "images": [],
                                 "images360": [],
                                 "name": str(row.Title),
@@ -3123,9 +3214,9 @@ def delivery_auto(request):
                                 "old_price": str(row.MP_RRP),
                                 "pdf_list": [],
                                 "price": str(row.MP_RRP),
-                                "primary_image": "https://disk.yandex.ru/i/RJjwHpNbdle_vQ",
+                                "primary_image": str(row.Primary_Image),
                                 "vat": "0",
-                                "weight": 100,
+                                "weight": 18,
                                 "weight_unit": "g",
                                 "width": 100
                             }
@@ -3149,6 +3240,7 @@ def delivery_auto(request):
                     print(task_id)
             
                     #checking status of the upload
+                    #it returns product_id which we need to update quantity
                     task_1  = {
                         "task_id": task_id
                     }
@@ -3157,23 +3249,23 @@ def delivery_auto(request):
                     print(json)
 
                     #getting product_id assigned by Ozon for further saving it in erms product model
-                    task_2 = {
-                        "filter": {
-                            "offer_id": [ erms_product_id ],
-                        "visibility": "ALL"
-                    },
-                        "last_id": "",
-                        "limit": 100
-                    }
-                    response=requests.post('https://api-seller.ozon.ru/v2/product/list', json=task_2, headers=headers)
-                    json=response.json()
-                    print('======================================')
-                    print(json)
+                    # task_2 = {
+                    #     "filter": {
+                    #         "offer_id": [ erms_product_id ],
+                    #     "visibility": "ALL"
+                    # },
+                    #     "last_id": "",
+                    #     "limit": 100
+                    # }
+                    # response=requests.post('https://api-seller.ozon.ru/v2/product/list', json=task_2, headers=headers)
+                    # json=response.json()
+                    # print('======================================')
+                    # print(json)
                     ozon_product_id=json['result']['items'][0]['product_id']
-                    #a=json['result']
-                    #b=a['items']
-                    #c=b[0]
-                    #d=c['product_id']
+                    # a=json['result']
+                    # b=a['items']
+                    # c=b[0]
+                    # d=c['product_id']
                     print('ozon product_id is ' +  str(ozon_product_id))
                     product.ozon_id=ozon_product_id
                     product.save()
