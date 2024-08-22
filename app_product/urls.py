@@ -214,5 +214,6 @@ urlpatterns = [
 
     #========================================================================
     path ('ozon_stock_update', views.ozon_stock_update, name='ozon_stock_update'),
+    path ('delete_product_at_ozon', views.delete_product_at_ozon, name='delete_product_at_ozon'),
 
 ]
