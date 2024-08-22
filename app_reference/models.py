@@ -76,10 +76,11 @@ class Product (models.Model):
     created = models.DateTimeField(auto_now=True)
     emumerator = models.IntegerField(null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
-    name = models.CharField(max_length=80)
+    name = models.CharField(max_length=160)
     imei = models.CharField(max_length=50, unique=True)
     for_mp_sale = models.BooleanField(default=False) #items for marketplaces
     ozon_id = models.CharField(max_length=50, unique=True, null=True)
+    #ozon_id = models.CharField(max_length=50, null=True)
     #status = models.BooleanField(default=False)  # "True" for sent to T2 (for sim_cards)
     
 
