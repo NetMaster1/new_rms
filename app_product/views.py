@@ -3257,12 +3257,13 @@ def delivery_auto(request):
                 print('')
                 #checking status of the upload
                 #it returns product_id which we need to update quantity
+                print('===================Status of Task Id=========================')
                 task_1  = {
                     "task_id": task_id
                 }
                 response=requests.post('https://api-seller.ozon.ru/v1/product/import/info', json=task_1, headers=headers)
                 json=response.json()
-                print('===================Status of Task Id=========================')
+                
                 print(json)
                 print('=============================================================')
                 print('')
