@@ -3770,7 +3770,7 @@ def change_delivery_unposted(request, document_id):
                                 document.save()
                                 # av_price_obj.save()
                                 messages.error(request, "Отрицательный остаток в таблице Av_price. Документ не проведен.")
-                                return redirect("change_delivery_uposted", document.id)
+                                return redirect("change_delivery_unposted", document.id)
                             av_price_obj.save()
                         else:
                             av_price_obj = AvPrice.objects.create(
