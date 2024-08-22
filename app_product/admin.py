@@ -33,8 +33,9 @@ class AvPriceAdmin(admin.ModelAdmin):
     search_fields = ('imei', )
 
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'time_seconds', 'title' , 'user', 'sum', 'client', 'base_doc')
+    list_display = ('id', 'time_seconds', 'title' , 'user', 'sum', 'client', 'base_doc', 'posted')
     ordering = ('-created',)
+    list_editable= ('posted', )
     #I don't know how it works, but this functions created a separate columng based on column 'created', but with more precise time '19 Feb 2022 15:54:00' instead of  'Feb. 21, 2022, 3:11 p.m.' I deleted 'created' from display_list. Somehow it may influence to filtering, but so far I have not noticed anything.
     def time_seconds(self, obj):
         return obj.created.strftime("%d %b %Y %H:%M:%S.%f")#displays microsecs
