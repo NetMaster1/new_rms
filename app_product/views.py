@@ -2718,6 +2718,9 @@ def delivery_auto(request):
                     elif 'золотой' in row.Title:
                         colour='золотой'
                         colour_id = '61582'
+                    elif 'темно-синий' in row.Title:
+                        colour='темно-синий'
+                        colour_id = '61592'
                     task = {
                         "items": [
                             {
