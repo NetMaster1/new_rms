@@ -8805,8 +8805,7 @@ def ozon_product_create(request):
                                     }  
                                 ],
                                 
-                                #"barcode": str(row.Imei),
-                                "barcode": '',
+                                "barcode": str(row.Imei),
                                 "description_category_id": 17028650,
                                 "color_image": "",
                                 "complex_attributes": [],
@@ -9097,8 +9096,7 @@ def ozon_product_create(request):
                                 # }
                             ],
                             
-                            #"barcode": str(row.Imei),
-                            "barcode": '',
+                            "barcode": str(row.Imei),
                             "description_category_id": 17028628,
                             "color_image": "",
                             "complex_attributes": [],
