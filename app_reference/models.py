@@ -80,7 +80,7 @@ class Product (models.Model):
     imei = models.CharField(max_length=50, unique=True)
     for_mp_sale = models.BooleanField(default=False) #items for marketplaces
     ozon_id = models.CharField(max_length=50, unique=True, null=True)
-    #ozon_id = models.CharField(max_length=50, null=True)
+    offer_id = models.CharField(max_length=50, null=True)
     #status = models.BooleanField(default=False)  # "True" for sent to T2 (for sim_cards)
     
 
