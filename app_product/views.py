@@ -2718,9 +2718,6 @@ def delivery_auto(request):
                     elif 'золотой' in row.Title:
                         colour='золотой'
                         colour_id = '61582'
-                    elif 'темно-синий' in row.Title:
-                        colour='темно-синий'
-                        colour_id = '61592'
                     task = {
                         "items": [
                             {
@@ -3237,6 +3234,45 @@ def delivery_auto(request):
                             "weight": 18,
                             "weight_unit": "g",
                             "width": 100
+                        }
+                    ]
+                }
+                elif 'Стекло' in row.Title:
+                    key_word_var =str(row.Model)
+                    key_word=  f'Стекло, защитное стекло, {key_word_var}.'
+                    task = {  
+                        "items": [
+                        {
+                            "attributes": [
+                                #is required: true
+                                #Brand
+                                {
+                                    "complex_id": 0,
+                                    "id": 85,
+                                    "values": [
+                                        {
+                                            "dictionary_value_id": 0,
+                                            "value": "Нет бренда"
+                                        }
+                                    ]
+                                },
+                                #is required: true
+                                #Тип
+                                #Выберите наиболее подходящий тип товара. По типам товары распределяются по категориям на сайте Ozon. 
+                                #Если тип указан неправильно, товар попадет в неверную категорию. Чтобы правильно указать тип, 
+                                #найдите на сайте Ozon товары, похожие на ваш, и посмотрите, какой тип у них указан.",
+
+                                {
+                                    "complex_id": 0,
+                                    "id": 8229,
+                                    "values": [
+                                        {
+                                            "dictionary_value_id": 95139,
+                                            "value": "Смартфон"
+                                        }
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 }
