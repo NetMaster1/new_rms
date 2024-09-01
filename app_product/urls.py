@@ -213,7 +213,8 @@ urlpatterns = [
 
 
     #========================================================================
-    path ('ozon_stock_update', views.ozon_stock_update, name='ozon_stock_update'),
-    path ('delete_product_at_ozon', views.delete_product_at_ozon, name='delete_product_at_ozon'),
+    path ('ozon_product_create', views.ozon_product_create, name='ozon_product_create'),
+    #path ('ozon_product_update', views.ozon_product_update, name='ozon_product_update'),
+    path ('ozon_product_archive', views.ozon_product_archive, name='ozon_product_archive'),
 
 ]
