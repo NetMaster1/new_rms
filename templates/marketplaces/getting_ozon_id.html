@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Получение Ozon_id и сохранение его в таблице Product</h3>
+                </div>
+            </div>
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                    <small><sup>x</sup></small>
+                </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
+            <div class="row m-2 pb-2">
+                <div class="col-12 border rounded p-3">
+
+                    <form action="{% url 'getting_ozon_id' %}" method="POST" enctype="multipart/form-data" >
+                        {% csrf_token %}
+
+<!--                      
+                        <div class="form-row">
+                            <div class="col-2">
+                                <label for="date">Дата</label>
+                            </div>
+                            <div class="col">
+                                <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"><br>
+                            </div>
+                        </div> -->
+                   
+                <!-- <div class="form-row mt-2">
+                    <div class="form-row">
+                        <div class="col-3">
+                            <label for="shop"><h5>Категория</h5></label>
+                        </div>
+                        <div class="col">
+                            <select name="category" id="category" class='form-control' required>
+                                <option value="#">Выберите категорию</option>
+                                {% for category in categories %}
+                                <option value="{{category.id}}" required>{{category.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div> -->
+
+                <div class="form-row mt-2">
+                    <div class="col-3">
+                        <label for="file_name">
+                            <h5>Введите файл в формате Excel</h5>
+                        </label>
+                    </div>
+                    <div class="col">
+                        <input type="file" class='form-control' id="file_name" name="file_name" required>
+                    </div>
+                </div>
+
+
+                        <div class="row m-auto mt-3 ">
+                            <div class="col-2">
+                                <input type="submit" value="Провести"
+                                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                            </div>
+                    </form>
+
+                    <div class="col-2">
+                        <a href="#">
+                            <input type="button" value="Очистить форму"
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        </a>
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'log' %}">
+                            <input type="button" value="Закрыть без сохранения"
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock %}

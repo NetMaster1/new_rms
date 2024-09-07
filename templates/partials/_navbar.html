@@ -129,12 +129,12 @@
                     <li><a class="dropdown-item" href="{% url 'delivery_auto' %}" >Автоматический ввод поступления ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'transfer_auto' %}" >Автоматический ввод перемещения ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'revaluation_auto' %}" >Автоматический ввод переоценки ТМЦ</a></li>
-                    <li><a class="dropdown-item" href="{% url 'ozon_product_create' %}" >Ввод нового/редактирование продукта на Озон</a></li>
-                    <li><a class="dropdown-item" href="{% url 'identifier_delivery' %}" >Поступление ТМЦ</a></li>
+                    <li><a class="dropdown-item" href="{% url 'identifier_delivery' %}" >Поступление ТМЦ (кроме смартфонров, телефонов)</a></li>
+                    <li><a class="dropdown-item" href="{% url 'identifier_delivery_smartphones' %}" >Поступление смартфонов, телефонов</a></li>
                     <li><a class="dropdown-item" href="{% url 'identifier_recognition' %}">Оприходование ТМЦ</a></li>
-                        
                     <li><a class="dropdown-item" href="{% url 'identifier_transfer' %}">Перемещение ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'shop_choice_signing_off' %}">Списание ТМЦ</a></li>
+                    
                   
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}
@@ -153,7 +153,9 @@
                     <li><a class="dropdown-item" href="{% url 'cash_receipt' %}">Приходный кассовый ордер</a></li>
                     <li><a class="dropdown-item" href="{% url 'cash_movement' %}">Перемещение ден.средств</a></li>
                     <li><a class="dropdown-item" href="{% url 'identifier_inventory' %}">Инвентаризация</a></li>
-                   
+                    <hr>
+                    <li><a class="dropdown-item" href="{% url 'ozon_product_create' %}" >Ввод нового/редактирование продукта на Озон (чехлы/стекла)</a></li>
+                    <li><a class="dropdown-item" href="{% url 'getting_ozon_id' %}" >Получение Ozon_id</a></li>
                     </ul>
                 </li>
                 <a class="nav-link text-light" href="{% url 'tutorials' %}">Обучающие ролики</a>

@@ -2741,6 +2741,10 @@ def identifier_delivery(request):
     identifier = Identifier.objects.create()
     return redirect("delivery", identifier.id)
 
+def identifier_delivery_smartphones(request):
+    identifier = Identifier.objects.create()
+    return redirect("delivery_smartphones", identifier.id)
+
 def check_delivery(request, identifier_id):
     suppliers = Supplier.objects.all()
     # shops = Shop.objects.all()
@@ -2768,6 +2772,37 @@ def check_delivery(request, identifier_id):
                 request, "Данное наименование отсутствует в БД. Введите его."
             )
             return redirect("delivery", identifier.id)
+
+def check_delivery_ean(request, identifier_id):
+    suppliers = Supplier.objects.all()
+    # shops = Shop.objects.all()
+    categories = ProductCategory.objects.all()
+    identifier = Identifier.objects.get(id=identifier_id)
+    registers = Register.objects.filter(identifier=identifier)
+    # if 'imei' in request.GET:
+    if request.method == "POST":
+        ean = request.POST["ean"]
+        # if '/' in imei:
+        #     imei=imei.replace('/', '_')
+        if Product.objects.filter(ean=ean).exists():
+            product=Product.objects.filter(ean=ean)
+
+            if Register.objects.filter(identifier=identifier, product=product).exists():
+                messages.error(request, "Вы уже ввели данное наименование.")
+                return redirect("delivery_smartphones", identifier.id)
+            else:
+                register = Register.objects.create(
+                    identifier=identifier, 
+                    product=product
+                )
+                return redirect("delivery_smartphones", identifier.id)
+            
+
+            #return redirect("ean_list", identifier.id)
+        else:
+            messages.error(request, "Такого EAN не существует. Сначала введите его.")
+            return redirect("delivery_smartphones", identifier.id)
+
 
 def check_delivery_unposted(request, document_id):
     document = Document.objects.get(id=document_id)
@@ -2813,6 +2848,27 @@ def delivery(request, identifier_id):
         "registers": registers,
     }
     return render(request, "documents/delivery.html", context)
+
+def delivery_smartphones(request, identifier_id):
+    identifier = Identifier.objects.get(id=identifier_id)
+    categories = ProductCategory.objects.all()
+    suppliers = Supplier.objects.all()
+    shop=Shop.objects.get(name='ООС')
+    #shops = Shop.objects.all()
+    registers = Register.objects.filter(identifier=identifier).order_by("-created")
+    numbers = registers.count()
+    for register, i in zip(registers, range(numbers)):
+        register.number = i + 1
+        register.save()
+    context = {
+        "identifier": identifier,
+        "categories": categories,
+        "suppliers": suppliers,
+        "shop": shop,
+        "registers": registers,
+    }
+    return render(request, "documents/delivery.html", context)
+
 
 def delete_line_delivery(request, imei, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -8537,8 +8593,12 @@ def ozon_product_create(request):
                     product = Product.objects.create(
                         name=row.Title,
                         imei=imei, 
-                        category=category,                   
+                        category=category,
+                        for_mp_sale=True,              
                     )
+                    if category=='Аксы':
+                        product.EAN=imei
+                        product.save()
                 #==========Ozon import module==========================
                 #Озон воспринимает товар как уже существующий, если у него совпадают обязательные аттрибуты.
                 #Достаточно изменить один их них, чтобы Озон создал новый товар
@@ -8700,6 +8760,7 @@ def ozon_product_create(request):
                                     },
                                     #is required: False
                                     #Партномер. Каталожный номер изделия или детали. Получаем этот номер от поставщика
+                                    
                                     {
                                         "complex_id": 0,
                                         "id": 4381,
@@ -8709,6 +8770,7 @@ def ozon_product_create(request):
                                             }
                                         ]
                                     },
+
                                     #is required: False
                                     #product weight in g
                                     {
@@ -8813,14 +8875,14 @@ def ozon_product_create(request):
                                 "depth":200,
                                 "dimension_unit": "mm",
                                 "height": 20,
-                                "images": [],
+                                "images": [str(row.Primary_Image), str(row.Image_1)],
                                 "images360": [],
                                 "name": str(row.Title),
-                                "offer_id": str(product.id),
+                                "offer_id": str(row.Imei),
                                 "old_price": str(row.MP_RRP),
                                 "pdf_list": [],
                                 "price": str(row.MP_RRP),
-                                "primary_image": str(row.Primary_Image),
+                                "primary_image":"" ,
                                 "vat": "0",
                                 "weight": 100,
                                 "weight_unit": "g",
@@ -9107,7 +9169,7 @@ def ozon_product_create(request):
                             "images": [],
                             "images360": [],
                             "name": str(row.Title),
-                            "offer_id": str(product.id),
+                            "offer_id": str(row.Imei),
                             "old_price": str(row.MP_RRP),
                             "pdf_list": [],
                             "price": str(row.MP_RRP),
@@ -9132,10 +9194,10 @@ def ozon_product_create(request):
                 #     string=f'. Товар {product.id} в БД Озон не создан.'
                 #     print(string)
                 #messages.error(request,  string)
-                print(json)
+                #print(json)
                 #a=json['result']
                 task_id=json['result']['task_id']
-                print(task_id)
+                print('Task_id: ' + task_id)
                 # в качестве ответ данный метод возвращает task_id. Мы можем использовать task id 
                 #в методе response=requests.post('https://api-seller.ozon.ru/v1/product/import/info', json=task_1, headers=headers)
                 #для того, чтобы узнать статус загрузки наименования. Если всё ок, то данный метод должен возвратить ozon_id,
@@ -9164,6 +9226,57 @@ def ozon_product_create(request):
 
     else:
         return redirect ('login')
+
+
+def getting_ozon_id (request):
+    if request.user.is_authenticated:
+        #categories = ProductCategory.objects.all()
+        #category = ProductCategory.objects.get(name='Аксы')
+        headers = {
+                    "Client-Id": "867100",
+                    "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
+                }
+        if request.method == "POST":
+            file = request.FILES["file_name"]
+            df1 = pandas.read_excel(file)
+            n=0
+            cycle = len(df1)
+            for i in range(cycle):
+                time.sleep(0.5)
+                n += 1
+                row = df1.iloc[i]#reads each row of the df1 one by one
+                imei=row.Imei
+                if '/' in str(imei):
+                    imei=imei.replace('/', '_')
+                if Product.objects.filter(imei=imei).exists():
+                    product=Product.objects.get(imei=imei)
+
+                task=    {
+                        "filter": {
+                            "offer_id": [
+                                str(product.imei),
+                            ],
+                           
+                            "visibility": "ALL"
+                        },
+                        "last_id": "",
+                        "limit": 100
+                    }
+
+                response=requests.post('https://api-seller.ozon.ru/v2/product/list', json=task, headers=headers)  
+                json=response.json()
+                print(json)
+                ozon_id=json['result']['items'][0]['product_id']
+                # a=json['result']
+                # b=a['items']
+                # c=b[0]
+                # d=c['product_id']
+                print(ozon_id)
+                product.ozon_id=ozon_id
+                product.save()
+            return redirect("log")
+        else:
+            return render(request, "marketplaces/getting_ozon_id.html") 
 
 def ozon_product_archive(request):
     if request.user.is_authenticated:

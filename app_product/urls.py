@@ -22,9 +22,16 @@ urlpatterns = [
     # ==================Delivery========================
     path ('delivery_auto', views.delivery_auto, name='delivery_auto'),
     path ('identifier_delivery', views.identifier_delivery, name='identifier_delivery'),
+    path ('identifier_delivery_smartphones', views.identifier_delivery_smartphones, name='identifier_delivery_smartphones'),
+
+
+
     path ('check_delivery/<int:identifier_id>', views.check_delivery, name='check_delivery'),
+    path ('check_delivery_ean/<int:identifier_id>', views.check_delivery_ean, name='check_delivery_ean'),
+
     path ('check_delivery_unposted/<int:document_id>', views.check_delivery_unposted, name='check_delivery_unposted'),
     path ('delivery/<int:identifier_id>', views.delivery, name='delivery'),
+    path ('delivery_smartphones/<int:identifier_id>', views.delivery_smartphones, name='delivery_smartphones'),
     path ('delivery_input/<int:identifier_id>', views.delivery_input, name='delivery_input'),
     path ('delete_line_delivery/<str:imei>/<int:identifier_id>', views.delete_line_delivery, name='delete_line_delivery'),
     path ('delete_line_unposted_delivery/<int:document_id>/<str:imei>', views.delete_line_unposted_delivery, name='delete_line_unposted_delivery'),
@@ -216,5 +223,6 @@ urlpatterns = [
     path ('ozon_product_create', views.ozon_product_create, name='ozon_product_create'),
     #path ('ozon_product_update', views.ozon_product_update, name='ozon_product_update'),
     path ('ozon_product_archive', views.ozon_product_archive, name='ozon_product_archive'),
+    path ('getting_ozon_id', views.getting_ozon_id, name='getting_ozon_id'),
 
 ]
