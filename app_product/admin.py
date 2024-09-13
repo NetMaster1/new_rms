@@ -6,7 +6,7 @@ from . models import Document, RemainderHistory, Register, Identifier, AvPrice, 
 
 class RemainderHistoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'time_seconds', 'document', 'rho_type', 'status', 'shop', 'category', 'name', 'imei', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'supplier', 'av_price', 'retail_price', 'user', 'inventory_doc', 'for_mp_sale', 'mp_RRP', ) 
-    list_filter = ('shop', 'rho_type', 'category', 'supplier')
+    list_filter = ('shop', 'rho_type', 'category', 'supplier',)
     ordering = ('-created',)
     list_per_page=50
     list_select_related = True

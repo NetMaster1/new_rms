@@ -17,7 +17,17 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib import messages, auth
 
 
+#Работа с субдилером
+#Перемещаем сим карты на склад субдилера (Перемещение ТМЦ). Склад создан в программе.
+#После активации, продажи получаем реестр от субдилера или с нашей точки.
+#Вводим данный реестр в e-rms. "Ввод реестра на сдачу РФА". Формируется SimReturnRecord
+#Затем снимаем отчет из WD и вводим его в erms "Ввод реестра номеров, зарегистрированных в WD". Формируется SimRegisterRecord
+#Затем жмем Ввод реестра долгов по РФА. Вводим файл реестра, полученного от субдилера и формируем отчет по не сданным
+
 #creates a register of sim forms which has been returned to operator
+#Ввод реестра РФА на сдачу
+#данная функция создаёт RHO 'Сдача РФА' и затрагивает только субдилерские склады
+#и формирует таблицу SimReturnRecord
 def sim_return_list (request):
     if request.user.is_authenticated:
         category=ProductCategory.objects.get(name='Сим_карты')
@@ -93,6 +103,9 @@ def sim_return_list (request):
         return redirect("login")
 
 #creates a register of sim forms which has been registered in WebDealer
+#Ввод реестра номеров, зарегистрированнх в WD
+#реестр выгружается из WD
+#функция формирует таблицу SimRegisterRecord
 def sim_register_list(request):
     if request.user.is_authenticated:
         category=ProductCategory.objects.get(name='Сим_карты')
@@ -131,8 +144,9 @@ def sim_register_list(request):
         auth.logout(request)
         return redirect("login")
 
-#takes a list of forms to be returned to operator & checks them against sim_return_record, sim_register_record & rhos
+#takes SimReturnRecord и сверяет его с SimRegisterRecord. Выявляет РФА, которые были зарегистрированы, но не былил сданы.
 #returns an excel file with statuses of forms to be found & returned to operator 
+#Ввод реестра долгов по РФА
 def activation_list (request):
     report_id=ReportTempId.objects.create()
     category=ProductCategory.objects.get(name='Сим_карты')
@@ -147,6 +161,7 @@ def activation_list (request):
         reports=Sim_report.objects.all()
         for i in reports:
             i.delete()
+        #соответсвующий SimReturnReсord
         file = request.FILES["file_name"]
         df1 = pandas.read_excel(file)
         cycle = len(df1)#number of rows
@@ -224,6 +239,8 @@ def activation_list (request):
     else:
         return render(request, 'sims/activation_list.html')
 
+
+
 def change_sim_return_posted(request, document_id):
     if request.user.is_authenticated:
         document=Document.objects.get(id=document_id)
@@ -261,10 +278,6 @@ def delete_sim_register_posted (request, document_id):
     else:
         auth.logout(request)
         return redirect("login")
-
-
-
-
 
 def sim_delivery_MB(request):
     if request.user.is_authenticated:
@@ -312,9 +325,7 @@ def sim_sales_MB(request):
 def sim_sign_off_MB(request):
     pass
 
-
-
-
+#Отчет по сдаче РФА по субдилерам
 def sim_return_report (request):
     category=ProductCategory.objects.get(name='Сим_карты')
     if request.method == "POST":

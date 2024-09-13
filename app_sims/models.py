@@ -17,7 +17,6 @@ class SimReturnRecord(models.Model):
     def __int__(self):
         return self.id
 
-
 class SimRegisterRecord(models.Model):
     enumerator = models.IntegerField(default=0, null=True)
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
