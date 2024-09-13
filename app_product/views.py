@@ -2360,6 +2360,7 @@ def security_code(request, identifier_id, client_id):
         #api_request=requests.get("https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={}&mes=code&call=1&fmt=3")
         #url=f"https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={phone}&mes=code&call=1&fmt=3"
         #variable can't be placed directly in url string. That's why I use .format() or f'
+        #base_url=f"https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={phone}&mes=code&call=1&fmt=3"
         base_url="https://smsc.ru/sys/send.php?login=NetMaster&psw=ylhio65v&phones={}&mes=code&call=1&fmt=3"
         url=base_url.format(phone)
         api_request=requests.get(url)
@@ -8631,8 +8632,25 @@ def ozon_product_create(request):
                     "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
                 }
                 if 'Чехол' in row.Title:
-                    key_word_var =str(row.Model)
-                    key_word=  f'чехол, чехол-книжка, чехол книжка, {key_word_var}.'
+                    key_word_var_1 =str(row.Model)
+                    key_word_var_2 =str(row.Model_short)
+                    key_word_var_3 =str(row.Brand)
+                    key_word=  f"""чехол на; чехол с экраном; чехол на {key_word_var_3}; чехол для {key_word_var_3}; чехол; чехол-книжка; 
+чехол книжка; чехол для смартфона; {key_word_var_1}; {key_word_var_2}; чехол с магнитом; чехол с картой; 
+чехол на смартфон; чехол на телефон {key_word_var_3}; чехол для телефона {key_word_var_3}; чехол телефон {key_word_var_3}; магнитный чехол; чехол {key_word_var_3}; 
+противоударный чехол; кармашек для карт на чехол; чехол с отделением для карты; для телефона чехол; чехол защитный; 
+книжка чехол для телефона; чехол на телефона; чехол с магнитом на телефон"""
+                    description_string = f"""Ищете идеальный аксессуар для вашего смартфона? Защитный чехол для {key_word_var_1} – это именно то, что вам нужно! Этот противоударный чехол обеспечивает надежную защиту от падений и ударов, сохраняя ваш телефон в идеальном состоянии. Изготовленный из качественных материалов, он гарантирует долговечность и стильный внешний вид.
+
+Чехол идеально подходит для активных пользователей, которые ценят безопасность своих устройств. Благодаря продуманному дизайну, он обеспечивает полный доступ ко всем портам и кнопкам, позволяя легко подключать зарядные устройства, наушники и другие аксессуары. Внутренний слой имеет специальное покрытие, которое защищает ваш смартфон от царапин и загрязнений.
+
+Этот аксессуар не только защитит ваш телефон, но и добавит ему стильный акцент. Чехол доступен в нескольких цветах, что позволяет выбрать вариант, который лучше всего подходит вашему стилю. Он идеально сочетается с другими гаджетами, такими как планшеты, ноутбуки и даже автомобильные устройства.
+
+Не забывайте, что правильная защита вашего устройства – это не только вопрос стиля, но и функциональности. Чехол для Samsung Galaxy A15 поддерживает работу с беспроводными зарядными устройствами, что делает его еще более удобным в использовании. Вы можете спокойно заряжать свой смартфон, не снимая защиту.
+
+Если вы ищете универсальный чехол, который подойдет не только для Samsung, но и для других брендов, таких как Xiaomi, Realme и Huawei, этот продукт станет отличным выбором. Он совместим с различными устройствами, включая игровые консоли и аксессуары для видеонаблюдения.
+
+Не упустите возможность защитить ваш смартфон с помощью качественного чехла. Заказывайте сейчас и наслаждайтесь безопасностью и стилем в одном флаконе! Этот защитный аксессуар станет вашим надежным спутником в повседневной жизни, будь то на работе, дома или в поездках. Убедитесь, что ваш телефон всегда под надежной защитой, выбирая только лучшее!"""
                     if 'белый' in row.Title:
                         colour='белый'
                         colour_id = '51571'
@@ -8651,6 +8669,9 @@ def ozon_product_create(request):
                     elif 'темно-синий' in row.Title:
                         colour='темно-синий'
                         colour_id = '61592'
+                    elif 'синий' in row.Title:
+                        colour='синий'
+                        colour_id = '61581'
                     elif 'темно-зеленый' in row.Title:
                         colour='темно-зеленый'
                         colour_id = '61602'
@@ -8660,6 +8681,34 @@ def ozon_product_create(request):
                     elif 'золотой' in row.Title:
                         colour='золотой'
                         colour_id = '61582'
+                    elif 'бордовый' in row.Title:
+                        colour='бордовый'
+                        colour_id = '61590'
+                    if 'Honor' in row.Title:
+                        brand_name='Honor'
+                        brand_id='39679'
+                    elif 'Tecno' in row.Title:
+                        brand_name='Tecno'
+                        brand_id='928650554'
+                    elif 'Realme' in row.Title:
+                        brand_name='realme'
+                        brand_id='970588994'
+                    elif 'Samsung' in row.Title:
+                        brand_name='Samsung'
+                        brand_id='39605'
+                    # elif 'Redmi' in row.Title:
+                    #     brand_name='Redmi'
+                    #     brand_id='39605'
+                    elif 'Xiaomi' in row.Title:
+                        brand_name='Xiaomi'
+                        brand_id='39638'
+                    elif 'Poco' in row.Title:
+                        brand_name='Poco'
+                        brand_id='971006054'
+                    elif 'iPhone' in row.Title:
+                        brand_name='Apple'
+                        brand_id='39477'
+
                     task = {
                         "items": [
                             {
@@ -8754,7 +8803,8 @@ def ozon_product_create(request):
                                         "values": [
                                             {
                                                 "dictionary_value_id": 0,
-                                                "value": "Стильный чехол защитит ваш телефон от сколов и царапин."
+                                                #"value": "Стильный чехол защитит ваш телефон от сколов и царапин."
+                                                "value": description_string
                                             }
                                         ]
                                     },
@@ -8864,7 +8914,20 @@ def ozon_product_create(request):
                                                 "value": key_word
                                             }
                                         ]
-                                    }  
+                                    },
+                                    #is required : false
+                                    #подходит для
+                                    #для поисковых запросов
+                                    {
+                                        "complex_id": 0,
+                                        "id": 22898,
+                                        "values": [
+                                            {
+                                                "dictionary_value_id": brand_id,
+                                                "value": brand_name
+                                            }
+                                        ]
+                                    },
                                 ],
                                 
                                 "barcode": str(row.Imei),
@@ -8875,7 +8938,7 @@ def ozon_product_create(request):
                                 "depth":200,
                                 "dimension_unit": "mm",
                                 "height": 20,
-                                "images": [str(row.Primary_Image), str(row.Image_1)],
+                                "images": [str(row.Primary_Image), str(row.Image_1), str(row.Image_2), str(row.Image_3), str(row.Image_4), str(row.Image_5), str(row.Image_6), str(row.Image_7)],
                                 "images360": [],
                                 "name": str(row.Title),
                                 "offer_id": str(row.Imei),
@@ -9197,7 +9260,7 @@ def ozon_product_create(request):
                 #print(json)
                 #a=json['result']
                 task_id=json['result']['task_id']
-                print('Task_id: ' + task_id)
+                print('Task_id: ' + str(task_id))
                 # в качестве ответ данный метод возвращает task_id. Мы можем использовать task id 
                 #в методе response=requests.post('https://api-seller.ozon.ru/v1/product/import/info', json=task_1, headers=headers)
                 #для того, чтобы узнать статус загрузки наименования. Если всё ок, то данный метод должен возвратить ozon_id,
