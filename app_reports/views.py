@@ -1233,15 +1233,13 @@ def remainder_report_excel(request, shop_id, category_id, date):
         report_id = ReportTempId.objects.create()
         for product in products:
             imei = product.imei
-            if RemainderHistory.objects.filter(
-                shop=shop, imei=imei, created__lte=date
-            ).exists():
-                rho = RemainderHistory.objects.filter(
-                    shop=shop, imei=imei, created__lte=date
-                ).latest("created")
+            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+                rho = RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest("created")
                 if rho.current_remainder > 0:
                     if shop.retail == True:
                         price = rho.retail_price
+                    elif shop.subdealer == True:
+                        price=rho.retail_price
                     else:
                         price = rho.wholesale_price
                     report = ReportTemp.objects.create(
