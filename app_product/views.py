@@ -9290,7 +9290,6 @@ def ozon_product_create(request):
     else:
         return redirect ('login')
 
-
 def getting_ozon_id (request):
     if request.user.is_authenticated:
         #categories = ProductCategory.objects.all()
