@@ -221,6 +221,7 @@ urlpatterns = [
 
     #========================================================================
     path ('ozon_product_create', views.ozon_product_create, name='ozon_product_create'),
+    path ('ozon_create_test', views.ozon_create_test, name='ozon_create_test'),
     #path ('ozon_product_update', views.ozon_product_update, name='ozon_product_update'),
     path ('ozon_product_archive', views.ozon_product_archive, name='ozon_product_archive'),
     path ('getting_ozon_id', views.getting_ozon_id, name='getting_ozon_id'),

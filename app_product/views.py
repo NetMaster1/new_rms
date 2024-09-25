@@ -2582,7 +2582,8 @@ def delivery_auto(request):
                 product = Product.objects.create(
                     name=row.Title,
                     imei=imei, 
-                    category=category,                   
+                    category=category,
+                    EAN=imei      
                 )
             # checking docs before remainder_history
             if RemainderHistory.objects.filter(imei=imei, shop=shop, created__lt=document.created).exists():
@@ -2804,7 +2805,6 @@ def check_delivery_ean(request, identifier_id):
             messages.error(request, "Такого EAN не существует. Сначала введите его.")
             return redirect("delivery_smartphones", identifier.id)
 
-
 def check_delivery_unposted(request, document_id):
     document = Document.objects.get(id=document_id)
     registers = Register.objects.filter(document=document)
@@ -2869,7 +2869,6 @@ def delivery_smartphones(request, identifier_id):
         "registers": registers,
     }
     return render(request, "documents/delivery.html", context)
-
 
 def delete_line_delivery(request, imei, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -8617,7 +8616,9 @@ def ozon_product_create(request):
                 #и сохраняем в модели Product
                 #Ozon_id и offer_id нужны для дальнейшего редактирования количества товара на стоке озон посредством метода:
                 #response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task_3, headers=headers)
-                #offer_id это номер товара уникальный в erms. В качестве offer_id для аксов мы используем id товара
+                #offer_id это номер товара уникальный в erms. 
+                #В качестве offer_id для аксов мы используем id товара. Можно использовать EAN товара. Это удобно в случае с аксами,
+                #но при работе со смартфонами EAN не всегда известен. IMEI использовать не получится, так как один SKU может иметь разные IMEI.
 
                 #я пытался создать товар и задать ему количество в одной функции, но Озону нужно время для того, чтобы проверить,
                 #что я создал у него на площадке, и он возвращает нужныйм нам ozon_id только через какое-то время, а не сразу
@@ -9390,5 +9391,114 @@ def ozon_product_archive(request):
         else:
             return render(request, "documents/delete_product_at_ozon.html")
 
+    else:
+        return redirect ('login')
+    
+def ozon_create_test(request):
+    if request.user.is_authenticated:
+        headers = {
+            "Client-Id": "867100",
+            "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
+        }
+           
+        task = {
+            "items": [
+                {
+                    "attributes":[
+                        {
+                            "complex_id": 0,
+                            "id": 85,
+                            "values": [
+                                {
+                                    "dictionary_value_id": 0,
+                                    "value": "Нет бренда"
+                                }
+                            ]
+                        },
+        
+                        {
+                            "complex_id": 0,
+                            "id": 6134,
+                            "values": [
+                                {
+                                    "dictionary_value_id": 0,
+                                    "value": "0.3"
+                                }
+                            ]
+                        },
+                        {
+                            "complex_id": 0,
+                            "id": 4383,
+                            "values": [
+                                {
+                                    "value": "18"
+                                }
+                            ]
+                        },
+                        {
+                            "complex_id": 0,
+                            "id": 11049,
+                            "values": [
+                                {
+                                    "dictionary_value_id": 970788953,
+                                    "value": "3D"
+                                }
+                            ]
+                        },
+                    ],
+
+                                
+                    "barcode":"",
+                    "description_category_id": 15621050,
+                    "color_image": "",
+                    "complex_attributes": [],
+                    "currency_code": "RUB",
+                    "depth":200,
+                    "dimension_unit": "mm",
+                    "height": 20,
+                    "images": "",
+                    "images360": [],
+                    "name":"",
+                    "offer_id": "",
+                    "old_price": 14900,
+                    "pdf_list": [],
+                    "price": 14900,
+                    "primary_image":"" ,
+                    "vat": "0",
+                    "weight": 100,
+                    "weight_unit": "g",
+                    "width": 100
+                }
+                ]
+        }
+               
+        #uploading new or updating existing product
+        response=requests.post('https://api-seller.ozon.ru/v3/product/import', json=task, headers=headers)  
+        status_code=response.status_code
+        json=response.json()
+        print('=========Request Status & Task ID==========================')
+        print(status_code)
+        print(json)
+        #a=json['result']
+        # task_id=json['result']['task_id']
+        # print('Task_id: ' + str(task_id))
+        # в качестве ответ данный метод возвращает task_id. Мы можем использовать task id 
+        #в методе response=requests.post('https://api-seller.ozon.ru/v1/product/import/info', json=task_1, headers=headers)
+        #для того, чтобы узнать статус загрузки наименования. Если всё ок, то данный метод должен возвратить ozon_id,
+        #но обычто озону нужно время, чтобы отмодерировать новое наименование, поэтому, если сделать запрос сразу,
+        # ответ приходёт без ozon_id, который нам нужен для загрузки кол-ва.
+
+        # print('===================Status of Task Id=========================')
+        # task_1  = {
+        #     "task_id": task_id
+        # }
+        # response=requests.post('https://api-seller.ozon.ru/v1/product/import/info', json=task_1, headers=headers)
+        # json=response.json() 
+        # print(json)
+        # a=json['result']
+        # task_id=a['task_id']
+        # print('============================================================')
+        # print('')
+        return redirect("log")
     else:
         return redirect ('login')
