@@ -4132,6 +4132,7 @@ def transfer_auto (request):
             document_sum = 0
             for i in range(cycle):
                 row = df1.iloc[i]#reads rows of excel file one by one
+                imei=row.Imei
                 product=Product.objects.get(imei=imei)
                 if AvPrice.objects.filter(imei=imei).exists():
                     av_price=AvPrice.objects.get(imei=imei)
