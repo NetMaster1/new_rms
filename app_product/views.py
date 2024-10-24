@@ -5741,13 +5741,16 @@ def return_input(request, identifier_id):
                     document_sum+=rho.sub_total
                     #calculating av_price for the remainder
                     if AvPrice.objects.filter(imei=imeis[i]).exists():
+                        sale_rho_latest = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, rho_type=base_doc_type).latest('created')
                         av_price_obj=AvPrice.objects.get(imei=imeis[i])
                         av_price_obj.current_remainder += int(quantities[i])
-                        av_price_obj.sum += int(quantities[i]) * int(prices[i])
+                        #av_price_obj.av_price = int(sale_rho_latest.av_price)
+                        av_price_obj.sum += int(quantities[i]) * int(sale_rho_latest.av_price)
+                        av_price_obj.save()
                         if av_price_obj.current_remainder > 0:
                             av_price_obj.av_price=av_price_obj.sum / av_price_obj.current_remainder
                         else:
-                            av_price_obj.av_price = int(prices[i])
+                            av_price_obj.av_price = int(sale_rho_latest.ave_price)
                         av_price_obj.save()
                     else:
                         av_price_obj=AvPrice.objects.create (
