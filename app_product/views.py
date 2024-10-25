@@ -9531,7 +9531,10 @@ def ozon_change_qnty(request):
                             {
                                 "offer_id": str(product.imei),
                                 "product_id": str(product.ozon_id),
-                                "stock": str(row.Quantity)
+                                "stock": str(row.Quantity),
+                                #warehouse Гордеевская
+                                "warehouse_id": 1020001938106000
+                                
                             }
                         ]
                     }
