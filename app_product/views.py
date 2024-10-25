@@ -9506,3 +9506,4 @@ def ozon_create_test(request):
         return redirect("log")
     else:
         return redirect ('login')
+
