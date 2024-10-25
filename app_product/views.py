@@ -8615,13 +8615,14 @@ def ozon_product_create(request):
                 #response=requests.post('https://api-seller.ozon.ru/v3/product/import', json=task, headers=headers)
                 #В процессе содания нового товара Ozon присваивает ему уникальный Ozon_id, но не изменяет кол-во товара на стоке Ozon
                 #Изменение в кол-во товара на стоке Оzon вносятся позднее при проведении Автоматического поступления
+
                 #Далее получаем ozon_id посредством метода:
                 #response=requests.post('https://api-seller.ozon.ru/v2/product/list', json=task_2, headers=headers)
                 #и сохраняем в модели Product
                 #Ozon_id и offer_id нужны для дальнейшего редактирования количества товара на стоке озон посредством метода:
                 #response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task_3, headers=headers)
                 #offer_id это номер товара уникальный в erms. 
-                #В качестве offer_id для аксов мы используем id товара. Можно использовать EAN товара. Это удобно в случае с аксами,
+                #В качестве offer_id для аксов мы используем imei. Можно использовать EAN товара. Это удобно в случае с аксами,
                 #но при работе со смартфонами EAN не всегда известен. IMEI использовать не получится, так как один SKU может иметь разные IMEI.
 
                 #я пытался создать товар и задать ему количество в одной функции, но Озону нужно время для того, чтобы проверить,
@@ -9506,3 +9507,36 @@ def ozon_create_test(request):
         return redirect("log")
     else:
         return redirect ('login')
+
+def ozon_change_qnty(request):
+    if request.user.is_authenticated:
+        headers = {
+                    "Client-Id": "867100",
+                    "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
+                }
+        if request.method == "POST":
+            file = request.FILES["file_name"]
+            
+            df1 = pandas.read_excel(file)
+            cycle = len(df1)
+            for i in range(cycle):
+                time.sleep(0.5)
+                n += 1
+                row = df1.iloc[i]#reads each row of the df1 one by one
+                imei=row.Imei
+                if Product.objects.filter(imei=imei).exists():
+                    product=Product.objects.get(imei=imei)
+                    task =   {
+                        "stocks": [
+                            {
+                                "offer_id": str(product.imei),
+                                "product_id": str(product.ozon_id),
+                                "stock": str(row.Quantity)
+                            }
+                        ]
+                    }
+
+                response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task, headers=headers)
+
+    else:
+        return redirect("log")
