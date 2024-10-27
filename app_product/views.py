@@ -9522,7 +9522,7 @@ def change_ozon_qnty(request):
                 cycle = len(df1)
                 for i in range(cycle):
                     time.sleep(0.5)
-                    n += 1
+                    #n += 1
                     row = df1.iloc[i]#reads each row of the df1 one by one
                     imei=row.Imei
                     if Product.objects.filter(imei=imei).exists():
