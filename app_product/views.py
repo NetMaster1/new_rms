@@ -9542,7 +9542,7 @@ def change_ozon_qnty(request):
                     
                 return redirect("log")
         else:
-            return render(request, "marketplaces/ozon_change_qnty.html") 
+            return render(request, "marketplaces/change_ozon_qnty.html") 
 
     else:
         return redirect("log")
