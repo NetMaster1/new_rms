@@ -66,6 +66,7 @@ class DailySaleRep (models.Model):
     gadgets = models.IntegerField(null=True)
     modems = models.IntegerField(null=True)
     RT_equipment = models.IntegerField(null=True)
+    teko_payments=models.IntegerField(null=True)
     net_sales = models.IntegerField(null=True)
     #sub_total = models.IntegerField(null=True)
     credit = models.IntegerField(null=True)

@@ -8495,8 +8495,6 @@ def teko_pay (request):
                 current_remainder=cash_remainder + sum,
             )
 
-            
-
             if Cash.objects.filter(shop=shop, created__gt=document.created).exists():
                 sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=document.created).order_by('created')
                 cash_remainder=cho.current_remainder

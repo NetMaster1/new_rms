@@ -65,6 +65,7 @@ def save_in_excel_daily_rep(request):
     shops = Shop.objects.filter(active=True, retail=True).order_by("name")
     # length=shops.count()
     doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+    pay_type = DocumentType.objects.get(name="Платежи Теко")
     if request.method == "POST":
         date = request.POST.get("date", False)
         if date:
@@ -83,6 +84,11 @@ def save_in_excel_daily_rep(request):
                     rhos = RemainderHistory.objects.filter(shop=shop, category=category, created__date=date, rho_type=doc_type)
                     for rho in rhos:
                         sum += rho.sub_total
+                shop_row.append(sum)
+            if Cash.objects.filter(shop=shop, cho_type=pay_type, created__date=date).exists():
+                chos=Cash.objects.filter(shop=shop, cho_type=pay_type, created__date=date)
+                for cho in chos:
+                    sum+=cho.cash_in
                 shop_row.append(sum)
             # ===================================================================================
             expenses_type = DocumentType.objects.get(name="РКО (хоз.расходы)")
@@ -164,6 +170,7 @@ def save_in_excel_daily_rep(request):
                 gadgets=shop_row[9],
                 modems=shop_row[10],
                 RT_equipment=shop_row[11],
+                teko_payments=shop_row[12],
                 credit=credit_sum,
                 card=card_sum,
                 cashback=cashback,
@@ -185,6 +192,8 @@ def save_in_excel_daily_rep(request):
                 + daily_rep.gadgets
                 + daily_rep.modems
                 + daily_rep.RT_equipment
+                + daily_rep.teko_payments
+                
             )
             daily_rep.final_balance = (
                 daily_rep.opening_balance
@@ -2075,218 +2084,224 @@ def bonus_report_excel(request):
     return redirect("log")
 
 def bonus_report(request):
-    # users = User.objects.all().exclude(is_active=False)
-    #users = User.objects.all()
-    #users = User.objects.all().exclude(active=False)
-    group_sales=Group.objects.get(name='sales')
-    users = User.objects.filter(is_active=True, groups=group_sales ).order_by('username')
-    categories = ProductCategory.objects.all().exclude(name='КЭО').order_by('id')
-    sims=ProductCategory.objects.get(name="Сим_карты")
-    shops = Shop.objects.filter(retail=True, active=True, subdealer=False)
-    doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
-    if request.method == "POST":
-        report_id = ReportTempId.objects.create()
-        bulk_sim_motivation=BulkSimMotivation.objects.get(id=1)
-        start_date = request.POST["start_date"]
-        # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-        end_date = request.POST["end_date"]
-        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-        end_date = end_date + timedelta(days=1)
+    if request.user.is_authenticated:
+        # users = User.objects.all().exclude(is_active=False)
+        #users = User.objects.all()
+        #users = User.objects.all().exclude(active=False)
+        group_sales=Group.objects.get(name='sales')
+        users = User.objects.filter(is_active=True, groups=group_sales ).order_by('username')
+        categories = ProductCategory.objects.all().exclude(name='КЭО').order_by('id')
+        sims=ProductCategory.objects.get(name="Сим_карты")
+        shops = Shop.objects.filter(retail=True, active=True, subdealer=False)
+        doc_type = DocumentType.objects.get(name="Продажа ТМЦ")
+        if request.method == "POST":
+            report_id = ReportTempId.objects.create()
+            bulk_sim_motivation=BulkSimMotivation.objects.get(id=1)
+            start_date = request.POST["start_date"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = request.POST["end_date"]
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
 
-        current_month=start_date.month
-        month=Month.objects.get(id=current_month)
-        current_year=start_date.year
-        year=Year.objects.get(name=current_year)
-     
-    
-
-        rhos = RemainderHistory.objects.filter(rho_type=doc_type, created__gt=start_date, created__lt=end_date)
-
-        if Customer.objects.filter(created__gt=start_date, created__lt=end_date).exists():#look for new clients who were created in this time period
-            customers=Customer.objects.filter (created__gt=start_date, created__lt=end_date)
+            current_month=start_date.month
+            month=Month.objects.get(id=current_month)
+            current_year=start_date.year
+            year=Year.objects.get(name=current_year)
         
-        # else:
-        #     messages.error(request, "Новые клиенты отсутствуют")
-        #     return redirect("cashback_rep")
-        if Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type).exists():
-            documents=Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type)
+        
 
-        for user in users:
-            #first column "username"
-            user_row = [user.username]
+            rhos = RemainderHistory.objects.filter(rho_type=doc_type, created__gt=start_date, created__lt=end_date)
 
-            #"number of work days" column
-            dates=[]
-            list=[]
-            user_rows=rhos.filter(user=user)
-            for row in user_rows:
-                #we format 'row.created' field from <class 'datetime.datetime'> to '<str>' & cut off time values in order to receive date in <str> format for further comparaison. Then we save the date in 'dates' array
-                date=row.created.strftime('%Y-%m-%d')
-                dates.append(date)
-                #we use 'numpy.unique' function to count unique values
-                list=np.unique(dates)
-            number_of_wd=len(list)
-            user_row.append(number_of_wd)
+            if Customer.objects.filter(created__gt=start_date, created__lt=end_date).exists():#look for new clients who were created in this time period
+                customers=Customer.objects.filter (created__gt=start_date, created__lt=end_date)
+            
+            # else:
+            #     messages.error(request, "Новые клиенты отсутствуют")
+            #     return redirect("cashback_rep")
+            if Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type).exists():
+                documents=Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type)
 
-            #cashback column
-            counter=0
-            if Customer.objects.filter(created__gt=start_date, created__lt=end_date, user=user).exists():
-                for customer in customers:
-                    if Document.objects.filter(client=customer).exists():#search all documents within the time period fo new customer. 
-                        if customer.user == user: #we add 1 to the counter even if the customer exists in more than one document
-                            counter +=1
-                cash_back_bonus = counter * 15
-                user_row.append(cash_back_bonus)
-            else:
-                user_row.append(0)
+            for user in users:
+                #we create a list for each user and add "username" as the first enrty. 
+                user_row = [user.username]
 
-            for category in categories:
-                sum = 0
-                for shop in shops:
-                    rhos_new = rhos.filter(category=category, user=user, shop=shop)
-                    if category.name == "Сим_карты": #отсекаем из выручки интернет номера стоимостью > 1550 (Тариф премимум) руб
-                        
-                        #checking if GI plan has been completed by the shop. We need this to chnage bonus percent
-                        if KPIMonthlyPlan.objects.filter(month_reported=month, year_reported=year.name, shop=shop).exists():
-                            monthly_plan=KPIMonthlyPlan.objects.get(month_reported=month, year_reported=year.name, shop=shop)
-                            monthly_plan_GI=monthly_plan.GI
+                #"number of work days" column
+                dates=[]
+                list=[]
+                user_rows=rhos.filter(user=user)
+                for row in user_rows:
+                    #we format 'row.created' field from <class 'datetime.datetime'> to '<str>' & cut off time values in order to receive date in <str> format for further comparaison. Then we save the date in 'dates' array
+                    date=row.created.strftime('%Y-%m-%d')
+                    dates.append(date)
+                    #we use 'numpy.unique' function to count unique values
+                    list=np.unique(dates)
+                number_of_wd=len(list)
+                #we add number of work days as the second enty in user_row list
+                user_row.append(number_of_wd)
 
-                            actual_GI_per_shop=rhos.filter(category=category, shop=shop)
-                            number_of_rhos=actual_GI_per_shop.count()
-                            if monthly_plan_GI>number_of_rhos:
-                                for rho in rhos_new:
-                                    if rho.sub_total <= 1550:
-                                        sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
-                                    else:
-                                        sum += int(1550 * category.bonus_percent * shop.sale_k)
-                            else:
-                                for rho in rhos_new:
-                                    if rho.sub_total <= 1550:
-                                        sum += int(rho.sub_total * category.bonus_percent_1 * shop.sale_k)
-                                    else:
-                                        sum += int(1550 * category.bonus_percent * shop.sale_k)
+                #cashback column
+                counter=0
+                if Customer.objects.filter(created__gt=start_date, created__lt=end_date, user=user).exists():
+                    for customer in customers:
+                        if Document.objects.filter(client=customer).exists():#search all documents within the time period fo new customer. 
+                            if customer.user == user: #we add 1 to the counter even if the customer exists in more than one document
+                                counter +=1
+                    cash_back_bonus = counter * 15
+                    user_row.append(cash_back_bonus)
+                else:
+                    user_row.append(0)
 
-                    else:
-                        for rho in rhos_new:
-                            sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
-                user_row.append(sum)
+                #calculate bonus sum for each category for the user
+                for category in categories:
+                    sum = 0
+                    for shop in shops:
+                        rhos_new = rhos.filter(category=category, user=user, shop=shop)
+                        if category.name == "Сим_карты": 
+                            #checking if GI plan has been completed by the shop. We need this to chnage bonus percent
+                            if KPIMonthlyPlan.objects.filter(month_reported=month, year_reported=year.name, shop=shop).exists():
+                                monthly_plan=KPIMonthlyPlan.objects.get(month_reported=month, year_reported=year.name, shop=shop)
+                                monthly_plan_GI=monthly_plan.GI
+                                actual_GI_per_shop=rhos.filter(category=category, shop=shop)
+                                number_of_rhos=actual_GI_per_shop.count()
+                                if monthly_plan_GI>number_of_rhos:
+                                    for rho in rhos_new:
+                                        #отсекаем из выручки интернет номера стоимостью > 1550 (Тариф премимум) руб
+                                        if rho.sub_total <= 1550:
+                                            sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
+                                        else:
+                                            sum += int(1550 * category.bonus_percent * shop.sale_k)
+                                else:
+                                    for rho in rhos_new:
+                                        #отсекаем из выручки интернет номера стоимостью > 1550 (Тариф премимум) руб
+                                        if rho.sub_total <= 1550:
+                                            sum += int(rho.sub_total * category.bonus_percent_1 * shop.sale_k)
+                                        else:
+                                            sum += int(1550 * category.bonus_percent * shop.sale_k)
+                        else:
+                            for rho in rhos_new:
+                                sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
+                    #add bonus sum for each category as an entry in user_row list
+                    user_row.append(sum)
 
-            if Credit.objects.filter(created__gt=start_date, created__lt=end_date, user=user).exists():
-                credits = Credit.objects.filter(created__gt=start_date, created__lt=end_date, user=user)
-                credit_sum = 0
-                for credit in credits:
-                    credit_sum+=credit.sum
-            else:
-                credit_sum = 0
-            n=0
-            if rhos.filter(category=sims, user=user).exists():
-                sim_rhos=rhos.filter(category=sims, user=user)
-                for rho in sim_rhos:
-                    if rho.retail_price >= bulk_sim_motivation.sim_price and rho.retail_price <= 1550:
-                        n+=1
-            monthly_bonus = MonthlyBonus.objects.create(
-                report_id=report_id,
-                user_name=user_row[0],
-                number_of_work_days=user_row[1],
-                cashback=user_row[2],
-                smartphones=user_row[3],
-                accessories=user_row[4],
-                sim_cards=user_row[5],
-                phones=user_row[6],
-                iphones=user_row[7],
-                insuranсе=user_row[8],
-                wink=user_row[9],
-                services=user_row[10],
-                gadgets=user_row[11],
-                modems=user_row[12],
-                RT_equipment=user_row[13],
-                credit=credit_sum * 0.03,
-                bulk_sims= n * bulk_sim_motivation.bonus_per_sim,
-                sub_total=0,
+                #credit column
+                if Credit.objects.filter(created__gt=start_date, created__lt=end_date, user=user).exists():
+                    credits = Credit.objects.filter(created__gt=start_date, created__lt=end_date, user=user)
+                    credit_sum = 0
+                    for credit in credits:
+                        credit_sum+=credit.sum
+                else:
+                    credit_sum = 0
+
+                n=0
+                if rhos.filter(category=sims, user=user).exists():
+                    sim_rhos=rhos.filter(category=sims, user=user)
+                    for rho in sim_rhos:
+                        if rho.retail_price >= bulk_sim_motivation.sim_price and rho.retail_price <= 1550:
+                            n+=1
+                monthly_bonus = MonthlyBonus.objects.create(
+                    report_id=report_id,
+                    user_name=user_row[0],
+                    number_of_work_days=user_row[1],
+                    cashback=user_row[2],
+                    smartphones=user_row[3],
+                    accessories=user_row[4],
+                    sim_cards=user_row[5],
+                    phones=user_row[6],
+                    iphones=user_row[7],
+                    insuranсе=user_row[8],
+                    wink=user_row[9],
+                    services=user_row[10],
+                    gadgets=user_row[11],
+                    modems=user_row[12],
+                    RT_equipment=user_row[13],
+                    credit=credit_sum * 0.03,
+                    bulk_sims= n * bulk_sim_motivation.bonus_per_sim,
+                    sub_total=0,
+                )
+
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=BonusRep_" + str(month) + str(year) + ".xls"
             )
+            # str(datetime.date.today())+'.xls'
 
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('Report')
 
-        #==========================Convert to Excel module=========================================
-        response = HttpResponse(content_type="application/ms-excel")
-        response["Content-Disposition"] = (
-            "attachment; filename=BonusRep_" + str(month) + str(year) + ".xls"
-        )
-        # str(datetime.date.today())+'.xls'
+            # sheet header in the first row
+            row_num = 0
+            col_num = 1
+            font_style = xlwt.XFStyle()
+            columns = ['Кол-во смен','Кэшбэк']
+            for category in categories:
+                columns.append(category.name)
+            columns.append('Кредиты %')
+            columns.append('Тяжелые тарифы (100)')
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num + 1, columns[col_num], font_style)
 
-        wb = xlwt.Workbook(encoding="utf-8")
-        ws = wb.add_sheet('Report')
+            # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+            monthly_report = MonthlyBonus.objects.filter(report_id=report_id)
 
-        # sheet header in the first row
-        row_num = 0
-        col_num = 1
-        font_style = xlwt.XFStyle()
-        columns = ['Кол-во смен','Кэшбэк']
-        for category in categories:
-            columns.append(category.name)
-        columns.append('Кредиты %')
-        columns.append('Тяжелые тарифы (100)')
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num + 1, columns[col_num], font_style)
+            row_num = 1
+            for item in monthly_report:
+                col_num=0
+                ws.write(row_num, col_num, item.user_name, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.number_of_work_days, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.cashback, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.smartphones, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.accessories, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.sim_cards, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.phones, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.iphones, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.insuranсе, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.wink, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.services, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.gadgets, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.modems, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.RT_equipment, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.credit, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.bulk_sims, font_style)
+                row_num += 1
+            
+            # query_set = MonthlyBonus.objects.filter().values()
+            # data = pd.DataFrame(query_set)
+            # data = data.drop("id", 1)
+            # data = data.set_index("user_name")
+            # data.to_excel("D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx")
 
-        # sheet body, remaining rows
-        font_style = xlwt.XFStyle()
-        monthly_report = MonthlyBonus.objects.filter(report_id=report_id)
+            monthly_bonus_reports = MonthlyBonus.objects.all()
+            for i in monthly_bonus_reports:
+                i.delete()
 
-        row_num = 1
-        for item in monthly_report:
-            col_num=0
-            ws.write(row_num, col_num, item.user_name, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.number_of_work_days, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.cashback, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.smartphones, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.accessories, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.sim_cards, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.phones, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.iphones, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.insuranсе, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.wink, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.services, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.gadgets, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.modems, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.RT_equipment, font_style)
-            col_num += 1
-            ws.write(row_num, col_num, item.credit, font_style)
-            col_num +=1
-            ws.write(row_num, col_num, item.bulk_sims, font_style)
-            row_num += 1
-         
-        # query_set = MonthlyBonus.objects.filter().values()
-        # data = pd.DataFrame(query_set)
-        # data = data.drop("id", 1)
-        # data = data.set_index("user_name")
-        # data.to_excel("D:/Аналитика/Фин_отчет/Текущие/2021/data.xlsx")
+            wb.save(response)
+            return response
 
-        monthly_bonus_reports = MonthlyBonus.objects.all()
-        for i in monthly_bonus_reports:
-            i.delete()
-
-        wb.save(response)
-        return response
-
-    context = {
-        "categories": categories,
-        #'users': users
-    }
-    return render(request, "reports/bonus_report.html", context)
+        context = {
+            "categories": categories,
+            #'users': users
+        }
+        return render(request, "reports/bonus_report.html", context)
+    else:
+        return redirect("login")
 #======================================================================
 def account_report_60_excel(request):
     if request.user.is_authenticated:
