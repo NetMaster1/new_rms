@@ -9510,36 +9510,39 @@ def ozon_create_test(request):
 
 def ozon_change_qnty(request):
     if request.user.is_authenticated:
-        headers = {
-                    "Client-Id": "867100",
-                    "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
-                }
         if request.method == "POST":
-            file = request.FILES["file_name"]
-            
-            df1 = pandas.read_excel(file)
-            cycle = len(df1)
-            for i in range(cycle):
-                time.sleep(0.5)
-                n += 1
-                row = df1.iloc[i]#reads each row of the df1 one by one
-                imei=row.Imei
-                if Product.objects.filter(imei=imei).exists():
-                    product=Product.objects.get(imei=imei)
-                    task =   {
-                        "stocks": [
-                            {
-                                "offer_id": str(product.imei),
-                                "product_id": str(product.ozon_id),
-                                "stock": str(row.Quantity),
-                                #warehouse Гордеевская
-                                "warehouse_id": 1020001938106000
-                                
-                            }
-                        ]
+            headers = {
+                        "Client-Id": "867100",
+                        "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
                     }
-
-                response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task, headers=headers)
+            if request.method == "POST":
+                file = request.FILES["file_name"]
+                
+                df1 = pandas.read_excel(file)
+                cycle = len(df1)
+                for i in range(cycle):
+                    time.sleep(0.5)
+                    n += 1
+                    row = df1.iloc[i]#reads each row of the df1 one by one
+                    imei=row.Imei
+                    if Product.objects.filter(imei=imei).exists():
+                        product=Product.objects.get(imei=imei)
+                        task =   {
+                            "stocks": [
+                                {
+                                    "offer_id": str(product.imei),
+                                    "product_id": str(product.ozon_id),
+                                    "stock": str(row.Quantity),
+                                    #warehouse Гордеевская
+                                    "warehouse_id": 1020001938106000 
+                                }
+                            ]
+                        }
+                    response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task, headers=headers)
+                    
+                return redirect("log")
+        else:
+            return render(request, "marketplaces/ozon_change_qnty.html") 
 
     else:
         return redirect("log")
