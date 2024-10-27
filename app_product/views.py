@@ -9508,7 +9508,7 @@ def ozon_create_test(request):
     else:
         return redirect ('login')
 
-def ozon_change_qnty(request):
+def change_ozon_qnty(request):
     if request.user.is_authenticated:
         if request.method == "POST":
             headers = {
