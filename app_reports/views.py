@@ -84,6 +84,8 @@ def save_in_excel_daily_rep(request):
                     rhos = RemainderHistory.objects.filter(shop=shop, category=category, created__date=date, rho_type=doc_type)
                     for rho in rhos:
                         sum += rho.sub_total
+                else:
+                    sum=0
                 shop_row.append(sum)
             if Cash.objects.filter(shop=shop, cho_type=pay_type, created__date=date).exists():
                 chos=Cash.objects.filter(shop=shop, cho_type=pay_type, created__date=date)
