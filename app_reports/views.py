@@ -1190,12 +1190,46 @@ def salary_report(request):
                 )
             
             query=SalaryReport.objects.filter(report_id=report_id)
-            qs=query.values('user', 'sum',)
-            data=pd.DataFrame.from_records(qs)
+
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=SalaryRep_"+ str(end_date) + ".xls"
+            )
+
+            # str(datetime.date.today())+'.xls'
+
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('Salary')
+
+            # sheet header in the first row
+            row_num = 0
+            font_style = xlwt.XFStyle()
+            columns = ["ФИО", "Сумма"]
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num + 1, columns[col_num], font_style)
             
-            data.to_excel('app_reports/salary.xlsx')
-            os.system('start excel.exe salary.xlsx')
-            return render(request, "reports/salary_report.html")
+            # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+
+            row_num = 1
+            for item in query:
+                col_num = 1
+                ws.write(row_num, col_num, item.user, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.sum, font_style)
+                row_num +=1
+
+            wb.save(response)
+            return response
+        #================================End of Excel Module========================================
+
+            # qs=query.values('user', 'sum',)
+            # data=pd.DataFrame.from_records(qs)
+            
+            # data.to_excel('app_reports/salary.xlsx')
+            # os.system('start excel.exe salary.xlsx')
+            # return render(request, "reports/salary_report.html")
         else:
             # context = {
             #     'users': users
