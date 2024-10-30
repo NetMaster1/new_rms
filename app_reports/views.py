@@ -267,8 +267,8 @@ def save_in_excel_daily_rep(request):
             ws.write(row_num, col_num, query_list.modems, font_style)
             row_num += 1
             ws.write(row_num, col_num, query_list.RT_equipment, font_style)
-
-
+            row_num += 1
+            ws.write(row_num, col_num, query_list.teko_payments, font_style)
 
             row_num += 1
             ws.write(row_num, col_num, query_list.credit, font_style)
