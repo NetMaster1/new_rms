@@ -1193,7 +1193,7 @@ def salary_report(request):
             qs=query.values('user', 'sum',)
             data=pd.DataFrame.from_records(qs)
             
-            data.to_excel('salary.xlsx')
+            data.to_excel('app_reports/salary.xlsx')
             os.system('start excel.exe salary.xlsx')
             return render(request, "reports/salary_report.html")
         else:
