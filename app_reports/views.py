@@ -1163,7 +1163,8 @@ def expenses_report(request):
 def salary_report(request):
     if request.user.is_authenticated:
         group_sales=Group.objects.get(name='sales')
-        users = User.objects.filter(is_active=True, groups=group_sales ).order_by('last_name')
+        #users = User.objects.filter(is_active=True, groups=group_sales ).order_by('last_name')
+        users = User.objects.filter(groups=group_sales ).order_by('last_name')
         doc_type = DocumentType.objects.get(name="РКО (зарплата)")
         # shops = Shop.objects.filter(active=True, retail=True).order_by("name")
         queryset_list = Cash.objects.filter(cho_type=doc_type.id)
@@ -1183,11 +1184,12 @@ def salary_report(request):
                     if item.cash_receiver == user:
                         counter+=item.cash_out
 
-                report_item=SalaryReport.objects.create(
-                    report_id=report_id,
-                    user=user.last_name,
-                    sum=counter,
-                )
+                if counter>0:
+                    report_item=SalaryReport.objects.create(
+                        report_id=report_id,
+                        user=user.last_name,
+                        sum=counter,
+                    )
             
             query=SalaryReport.objects.filter(report_id=report_id)
 
