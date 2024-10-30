@@ -1131,6 +1131,7 @@ def expenses_report(request):
         queryset_list = Cash.objects.filter(cho_type=doc_type.id)
         if request.method == "POST":
             start_date = request.POST["start_date"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
             start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
             end_date = request.POST["end_date"]
             end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
@@ -1149,10 +1150,45 @@ def expenses_report(request):
                 )
             
             query=ExpensesReport.objects.filter(report_id=report_id)
-            qs=query.values('shop', 'sum',)
-            data=pd.DataFrame.from_records(qs)
-            data.to_excel('expenses.xlsx')
-            return render(request, "reports/expenses_report.html")
+
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=ExpenseRep_"+ str(end_date) + ".xls"
+            )
+
+            # str(datetime.date.today())+'.xls'
+
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('Salary')
+
+            # sheet header in the first row
+            row_num = 0
+            font_style = xlwt.XFStyle()
+            columns = ["Точка", "Сумма"]
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num + 1, columns[col_num], font_style)
+            
+            # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+
+            row_num = 1
+            for item in query:
+                col_num = 1
+                ws.write(row_num, col_num, item.shop, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.sum, font_style)
+                row_num +=1
+
+            wb.save(response)
+            return response
+        #================================End of Excel Module========================================
+
+            # qs=query.values('shop', 'sum',)
+            # data=pd.DataFrame.from_records(qs)
+            # data.to_excel('expenses.xlsx')
+            # os.system('start excel.exe expenses.xlsx')
+            # return render(request, "reports/expenses_report.html")
         
         else:
             return render(request, "reports/expenses_report.html")
