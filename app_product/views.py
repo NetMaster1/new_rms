@@ -6578,12 +6578,13 @@ def delete_line_revaluation_unposted (request, imei, document_id):
 def cash_off_salary(request):
     if request.user.is_authenticated:
         users_sales=Group.objects.get(name='sales').user_set.all()
-        users=User.objects.all()
+        users = User.objects.filter(is_active=True).order_by('last_name')
         expense = Expense.objects.get(name="Зарплата")
         doc_type = DocumentType.objects.get(name="РКО (зарплата)")
         shops = Shop.objects.all()
         expenses = Expense.objects.all().exclude(name="Зарплата")
         if request.method == "POST":
+            # identifier = Identifier.objects.create()
             if request.user in users_sales:
                 session_shop=request.session['session_shop']
                 shop=Shop.objects.get(id=session_shop)
@@ -6625,10 +6626,10 @@ def cash_off_salary(request):
                     cash_remainder = cho_latest_before.current_remainder
                     if cash_remainder < sum:
                         messages.error(request,"В кассе недостаточно денежных средств")
-                        return redirect("change_cash_off_salary_unpostedd")
+                        return redirect("cash_off_salary" )
                 else:
-                    messages.error(request,"В кассе недостаточно денежных средств",)
-                    return redirect("change_cash_off_salary_unposted")
+                    messages.error(request,"В кассе недостаточно денежных средств")
+                    return redirect("cash_off_salary")
               
                 document = Document.objects.create(
                     shop_sender=shop,
@@ -6663,6 +6664,7 @@ def cash_off_salary(request):
                 # end of operations with cash
                 document.sum = sum
                 document.save()
+                # identifier.delete()
                 if request.user in users_sales:
                     return redirect ('sale_interface')
                 else:
@@ -6677,6 +6679,7 @@ def cash_off_salary(request):
                 )
                 register = Register.objects.create(
                     document=document,
+                    shop=shop,
                     sub_total=sum,
                     expense=expense,
                     cash_receiver=cash_receiver
@@ -6710,98 +6713,104 @@ def change_cash_off_salary_posted(request, document_id):
     return render(request, "documents/change_cash_off_salary_posted.html", context)
 
 def change_cash_off_salary_unposted (request, document_id):
-    document = Document.objects.get(id=document_id)
-    dateTime=document.created 
-    dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
-    system_users=Group.objects.get(name='sales').user_set.all()
-    shops = Shop.objects.all()
-    expense = Expense.objects.get(name="Зарплата")
-    register = Register.objects.get(document=document)
-    users=User.objects.all()
-    if request.method == "POST":
-        doc_type = DocumentType.objects.get(name="РКО (зарплата)")
-        shop = request.POST["shop"]
-        cash_receiver = request.POST["cash_receiver"]
-        cash_receiver=User.objects.get(id=cash_receiver)
-        shop = Shop.objects.get(id=shop)
-        sum = request.POST["sum"]
-        sum = int(sum)
-        #=============DateTime change unposted module=====================
-        dateTime = request.POST["dateTime"]
-        # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00) 
-        dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
-        #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
-        current_dt=datetime.datetime.now()
-        mics=current_dt.microsecond
-        tdelta_1=datetime.timedelta(microseconds=mics)
-        secs=current_dt.second
-        tdelta_2=datetime.timedelta(seconds=secs)
-        tdelta_3=tdelta_1+tdelta_2
-        dateTime=dateTime+tdelta_3
-        #===========End of DateTime change unposted module
-        try:
-            if request.POST["post_check"]:
-                post_check = True
-        except KeyError:
-            post_check = False
-            # posting transfer document
-        if post_check == True:
-            if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
-                cho_latest_before = Cash.objects.filter(shop=shop, created__lt=dateTime).latest('created')
-                cash_remainder = cho_latest_before.current_remainder
-                if cash_remainder < sum:
-                    messages.error(request,"В кассе недостаточно денежных средств")
-                    return redirect("change_cash_off_salary_unposted")
+    if request.user.is_authenticated:
+        document = Document.objects.get(id=document_id)
+        dateTime=document.created 
+        dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
+        system_users=Group.objects.get(name='sales').user_set.all()
+        shops = Shop.objects.all()
+        shop=document.shop_sender
+        expense = Expense.objects.get(name="Зарплата")
+        register = Register.objects.get(document=document)
+        users = User.objects.filter(is_active=True).order_by('last_name')
+        if request.method == "POST":
+            doc_type = DocumentType.objects.get(name="РКО (зарплата)")
+            shop = request.POST["shop"]
+            cash_receiver = request.POST["cash_receiver"]
+            cash_receiver=User.objects.get(id=cash_receiver)
+            shop = Shop.objects.get(id=shop)
+            sum = request.POST["sum"]
+            sum = int(sum)
+            #=============DateTime change unposted module=====================
+            dateTime = request.POST["dateTime"]
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00) 
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+            #===========End of DateTime change unposted module
+            try:
+                if request.POST["post_check"]:
+                    post_check = True
+            except KeyError:
+                post_check = False
+                # posting transfer document
+            if post_check == True:
+                if Cash.objects.filter(shop=shop, created__lt=dateTime).exists():
+                    cho_latest_before = Cash.objects.filter(shop=shop, created__lt=dateTime).latest('created')
+                    cash_remainder = cho_latest_before.current_remainder
+                    if cash_remainder < sum:
+                        messages.error(request,"В кассе недостаточно денежных средств")
+                        return redirect("change_cash_off_salary_unposted", document.id)
+                else:
+                    messages.error(request,"В кассе недостаточно денежных средств",)
+                    return redirect("change_cash_off_salary_unposted", document.id)
+                    
+                cho = Cash.objects.create(
+                    shop=shop,
+                    created=dateTime,
+                    document=document,
+                    cho_type=doc_type,
+                    user=request.user,
+                    cash_receiver=cash_receiver,
+                    cash_off_reason=expense,
+                    pre_remainder=cash_remainder,
+                    cash_out=sum,
+                    current_remainder=cash_remainder - sum,
+                )
+                if Cash.objects.filter(shop=shop, created__gt=cho.created).exists():
+                    cash_remainder=cho.current_remainder
+                    sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=cho.created).order_by('created')
+                    for obj in sequence_chos_after:
+                        obj.pre_remainder = cash_remainder
+                        obj.current_remainder = cash_remainder + obj.cash_in - obj.cash_out
+                        obj.save()
+                        cash_remainder = obj.current_remainder
+                # end of operations with cash
+                document.sum = sum
+                document.shop_sender=shop
+                document.created=dateTime
+                document.posted=True
+                document.save()
+                register.delete()
+                return redirect("log")
             else:
-                messages.error(request,"В кассе недостаточно денежных средств",)
-                return redirect("change_cash_off_salary_unposted")
-                
-            cho = Cash.objects.create(
-                shop=shop,
-                created=dateTime,
-                document=document,
-                cho_type=doc_type,
-                user=request.user,
-                cash_receiver=cash_receiver,
-                cash_off_reason=expense,
-                pre_remainder=cash_remainder,
-                cash_out=sum,
-                current_remainder=cash_remainder - sum,
-            )
-            if Cash.objects.filter(shop=shop, created__gt=cho.created).exists():
-                cash_remainder=cho.current_remainder
-                sequence_chos_after = Cash.objects.filter(shop=shop, created__gt=cho.created).order_by('created')
-                for obj in sequence_chos_after:
-                    obj.pre_remainder = cash_remainder
-                    obj.current_remainder = cash_remainder + obj.cash_in - obj.cash_out
-                    obj.save()
-                    cash_remainder = obj.current_remainder
-            # end of operations with cash
-            document.sum = sum
-            document.shop_sender=shop
-            document.created=dateTime
-            document.posted=True
-            document.save()
-            register.delete()
-            return redirect("log")
+                register.sub_total=sum
+                register.shop=shop
+                register.cash_receiver=cash_receiver
+                register.save()
+                document.sum=sum
+                document.shop_sender=shop
+                document.created=dateTime
+                document.save()
+                return redirect("log")
         else:
-            register.sub_total=sum
-            register.cash_receiver=cash_receiver
-            register.save()
-            document.sum=sum
-            document.shop_sender=shop
-            document.created=dateTime
-            document.save()
-            return redirect("log")
+            context = {
+                "document": document,
+                'dateTime': dateTime,
+                "register": register,
+                "shops": shops,
+                'users': users,
+            }
+            return render(request, "documents/change_cash_off_salary_unposted.html", context)
     else:
-        context = {
-            "document": document,
-            'dateTime': dateTime,
-            "register": register,
-            "shops": shops,
-            'users': users
-        }
-        return render(request, "documents/change_cash_off_salary_unposted.html", context)
+        auth.logout(request)
+        return redirect ('login')
 
 def unpost_cash_off_salary (request, document_id):
     group=Group.objects.get(name="admin").user_set.all()
