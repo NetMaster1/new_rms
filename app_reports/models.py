@@ -138,7 +138,6 @@ class EffectivenessReport (models.Model):
     def __int__(self):
         return self.id
 
-
 class PayCardReport (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     shop = models.CharField(max_length=50, null=True)
@@ -197,7 +196,6 @@ class ClientReport (models.Model):
     def __int__(self):
         return self.id
     
-
 class ClientHistoryReport (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     phone = models.CharField(max_length=50, null=True)
@@ -215,7 +213,6 @@ class ClientHistoryReport (models.Model):
     def __int__(self):
         return self.id
     
-
 class DeliveryReport (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     created = models.DateTimeField(auto_now_add=True)

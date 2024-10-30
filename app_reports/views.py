@@ -1067,17 +1067,55 @@ def delivery_report(request):
                 counter=0
                 for item in queryset_list:
                     if item.supplier == supplier:
-                        counter+=item.sub_total                
-                report_item=DeliveryReport.objects.create(
-                    report_id=report_id,
-                    supplier=supplier.name,
-                    sum=counter
-                )
+                        counter+=item.sub_total
+                if counter > 0:              
+                    report_item=DeliveryReport.objects.create(
+                        report_id=report_id,
+                        supplier=supplier.name,
+                        sum=counter
+                    )
             
             query=DeliveryReport.objects.filter(report_id=report_id)
-            qs=query.values('supplier', 'sum',)
-            data=pd.DataFrame.from_records(qs)
-            data.to_excel('delivery.xlsx')
+
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=DeliveryRep_"+ str(end_date) + ".xls"
+            )
+
+            # str(datetime.date.today())+'.xls'
+
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet('Delivery')
+
+            # sheet header in the first row
+            row_num = 0
+            font_style = xlwt.XFStyle()
+            columns = ["Поставщик", "Сумма"]
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num + 1, columns[col_num], font_style)
+            
+            # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+
+            row_num = 1
+            for item in query:
+                col_num = 1
+                ws.write(row_num, col_num, item.supplier, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.sum, font_style)
+                row_num +=1
+
+            wb.save(response)
+            return response
+        #================================End of Excel Module========================================
+
+
+
+
+            # qs=query.values('supplier', 'sum',)
+            # data=pd.DataFrame.from_records(qs)
+            # data.to_excel('delivery.xlsx')
            
             return render(request, "reports/delivery_report.html")
         
