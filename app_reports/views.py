@@ -1181,7 +1181,8 @@ def salary_report(request):
                 counter=0
                 for item in queryset_list:
                     if item.cash_receiver == user:
-                        counter+=item.cash_out               
+                        counter+=item.cash_out
+
                 report_item=SalaryReport.objects.create(
                     report_id=report_id,
                     user=user.last_name,
@@ -1191,6 +1192,7 @@ def salary_report(request):
             query=SalaryReport.objects.filter(report_id=report_id)
             qs=query.values('user', 'sum',)
             data=pd.DataFrame.from_records(qs)
+            
             data.to_excel('salary.xlsx')
             os.system('start excel.exe salary.xlsx')
             return render(request, "reports/salary_report.html")
