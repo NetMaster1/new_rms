@@ -3657,7 +3657,6 @@ def transfer_input(request, identifier_id):
                             sub_total=int(prices[i]) * int(quantities[i]),
                             status=False
                         )
-
                         # checking docs after remainder_history for shop_sender
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender,created__gt=rho.created).exists():
                             remainder=rho.current_remainder
@@ -3672,24 +3671,23 @@ def transfer_input(request, identifier_id):
                                 obj.save()
                                 remainder = obj.current_remainder
 
-                        #remainder for updating ozon marketplace quantity
-                            quantity=remainder
+                            #remainder for updating ozon marketplace quantity    
+                            mp_quantity=remainder
                         else:
-                            quantity=rho.current_remainder
+                            mp_quantity=rho.current_remainder
                         #updating quantity at ozon marketplace
                         if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon and shop_receiver != ozon_shop:
                             headers = {
                                 "Client-Id": "867100",
                                 "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
                             }
-                            quantity=rho.current_remainder
                             task = {
                                 "stocks": [
                                     {
                                         #"offer_id": str(product.id),
                                         "offer_id": str(product.EAN),
-                                        "product_id": product.ozon_id,
-                                        "stock": quantity,
+                                        "product_id": str(product.ozon_id),
+                                        "stock": str(mp_quantity),
                                         "warehouse_id": 1020001938106000
                                     }
                                 ]
@@ -3697,6 +3695,7 @@ def transfer_input(request, identifier_id):
                             response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task, headers=headers)
                             json=response.json()
                             status_code=response.status_code
+                            time.sleep(0.5)
                             #print(status_code)
                             #print(json)
 
@@ -3816,6 +3815,8 @@ def change_transfer_unposted(request, document_id):
         shop_receiver=document.shop_receiver
         shop_sender=document.shop_sender
         shops = Shop.objects.all().exclude(active=False)
+        shop_sender_to_ozon = Shop.objects.get(name='ООС')
+        ozon_shop = Shop.objects.get(name='Озон')
         doc_type = DocumentType.objects.get(name="Перемещение ТМЦ")
         numbers = registers.count()
         for register, i in zip(registers, range(numbers)):
@@ -3926,6 +3927,34 @@ def change_transfer_unposted(request, document_id):
                                 )
                                 obj.save()
                                 remainder =obj.current_remainder
+                        #remainder for updating ozon marketplace quantity    
+                            mp_quantity=remainder
+                        else:
+                            mp_quantity=rho.current_remainder
+                        #updating quantity at ozon marketplace
+                        if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon and shop_receiver != ozon_shop:
+                            headers = {
+                                "Client-Id": "867100",
+                                "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
+                            }
+                            task = {
+                                "stocks": [
+                                    {
+                                        #"offer_id": str(product.id),
+                                        "offer_id": str(product.EAN),
+                                        "product_id": str(product.ozon_id),
+                                        "stock": str(mp_quantity),
+                                        "warehouse_id": 1020001938106000
+                                    }
+                                ]
+                            }
+                            response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task, headers=headers)
+                            time.sleep(0.5)
+                            json=response.json()
+                            status_code=response.status_code
+                            #print(status_code)
+                            #print(json)
+
                         # creating rho for shop_receiver
                         rho = RemainderHistory.objects.create(
                             created=dateTime,
@@ -8580,7 +8609,7 @@ def ozon_product_create(request):
                     product=Product.objects.get(imei=imei)
                     if product.for_mp_sale is False:
                         product.for_mp_sale = True
-                    if product.EAN is None and category == 'Аксы':
+                    if product.EAN is None and product.category == category:
                         product.EAN = product.imei
                     product.save() 
                 else:
@@ -8590,7 +8619,7 @@ def ozon_product_create(request):
                         category=category,
                         for_mp_sale=True,              
                     )
-                    if category=='Аксы':
+                    if product.category == category:
                         product.EAN=imei
                         product.save()
                 #==========Ozon import module==========================
@@ -9321,7 +9350,8 @@ def getting_ozon_id (request):
                         "last_id": "",
                         "limit": 100
                     }
-                response=requests.post('https://api-seller.ozon.ru/v2/product/list', json=task, headers=headers)  
+                response=requests.post('https://api-seller.ozon.ru/v2/product/list', json=task, headers=headers) 
+                time.sleep(0.5)
                 json=response.json()
                 print(json)
                 ozon_id=json['result']['items'][0]['product_id']
@@ -9332,6 +9362,7 @@ def getting_ozon_id (request):
                 print(ozon_id)
                 product.ozon_id=ozon_id
                 product.save()
+
 
                 
                 #print('===========Второй метод получения ozon product_id=============')
