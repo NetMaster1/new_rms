@@ -8680,7 +8680,8 @@ def ozon_product_create(request):
                         elif 'бордовый' in row.Title:
                             colour='бордовый'
                             colour_id = '61590'
-                        elif 'Honor' in row.Title:
+                        
+                        if 'Honor' in row.Title:
                             brand_name='Honor'
                             brand_id='39679'
                         elif 'Tecno' in row.Title:
