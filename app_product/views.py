@@ -2612,6 +2612,7 @@ def delivery_auto(request):
                 wholesale_price=int(row.Price),
                 sub_total=int(row.Price) * int(row.Quantity),
             )
+            document_sum += int(rho.sub_total)
           
     #============Av_price_module====================
             if AvPrice.objects.filter(imei=imei).exists():
@@ -2677,13 +2678,12 @@ def delivery_auto(request):
                     "Client-Id": "867100",
                     "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
                 }
-                erms_product_id=str(product.EAN)
         
                 #update quantity of products at ozon warehouse making it equal to OOC warehouse
                 task_3 = {
                     "stocks": [
                         {
-                            "offer_id": erms_product_id,
+                            "offer_id": str(product.EAN),
                             "product_id": str(product.ozon_id),
                             "stock": str(mp_quantity),
                             #warehouse (Гордеевская)
@@ -2697,7 +2697,6 @@ def delivery_auto(request):
                 #print(status_code)
                 #print(json)
              
-
         document.sum = document_sum
         document.save()
         return redirect("log")
@@ -8807,7 +8806,6 @@ def ozon_product_create(request):
                                         },
                                         #is required: False
                                         #Партномер. Каталожный номер изделия или детали. Получаем этот номер от поставщика
-                                        
                                         {
                                             "complex_id": 0,
                                             "id": 4381,
@@ -8817,7 +8815,6 @@ def ozon_product_create(request):
                                                 }
                                             ]
                                         },
-
                                         #is required: False
                                         #product weight in g
                                         {
@@ -8926,7 +8923,6 @@ def ozon_product_create(request):
                                             ]
                                         },
                                     ],
-                                    
                                     "barcode": str(row.Imei),
                                     "description_category_id": 17028650,
                                     "color_image": "",
@@ -8938,7 +8934,7 @@ def ozon_product_create(request):
                                     "images": [str(row.Primary_Image), str(row.Image_1), str(row.Image_2), str(row.Image_3), str(row.Image_4), str(row.Image_5), str(row.Image_6), str(row.Image_7)],
                                     "images360": [],
                                     "name": str(row.Title),
-                                    "offer_id": str(row.imei),
+                                    "offer_id": str(product.EAN),
                                     "old_price": str(row.MP_RRP),
                                     "pdf_list": [],
                                     "price": str(row.MP_RRP),
@@ -9229,7 +9225,7 @@ def ozon_product_create(request):
                                 "images": [],
                                 "images360": [],
                                 "name": str(row.Title),
-                                "offer_id": str(row.Imei),
+                                "offer_id": str(product.EAN),
                                 "old_price": str(row.MP_RRP),
                                 "pdf_list": [],
                                 "price": str(row.MP_RRP),
