@@ -2678,13 +2678,12 @@ def delivery_auto(request):
                     "Client-Id": "867100",
                     "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
                 }
-                erms_product_id=str(product.EAN)
         
                 #update quantity of products at ozon warehouse making it equal to OOC warehouse
                 task_3 = {
                     "stocks": [
                         {
-                            "offer_id": erms_product_id,
+                            "offer_id": str(product.EAN),
                             "product_id": str(product.ozon_id),
                             "stock": str(mp_quantity),
                             #warehouse (Гордеевская)
