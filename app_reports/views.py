@@ -121,7 +121,7 @@ def save_in_excel_daily_rep(request):
                 cash_move_sum = 0
             return_type = DocumentType.objects.get(name="Возврат ТМЦ")
             if Cash.objects.filter(cho_type=return_type, shop=shop, created__date=date).exists():
-                chos = Cash.objects.filter(cho_type=return_type, created__date=date)
+                chos = Cash.objects.filter(cho_type=return_type, shop=shop, created__date=date)
                 return_sum = 0
                 for cho in chos:
                     return_sum += cho.cash_out
