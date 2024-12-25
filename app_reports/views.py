@@ -2296,10 +2296,10 @@ def bonus_report(request):
                             else:
                                 actual_GI_per_shop=rhos.filter(category=category, shop=shop)
                                 number_of_rhos=actual_GI_per_shop.count()
-                                sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
+                                sum += int(rho.sub_total * category.bonus_percent_1 * shop.sale_k)
                         else:
                             for rho in rhos_new:
-                                sum += int(rho.sub_total * category.bonus_percent_1 * shop.sale_k)
+                                sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
                     #add bonus sum for each category as an entry in user_row list
                     user_row.append(sum)
 
