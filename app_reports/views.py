@@ -2277,7 +2277,7 @@ def bonus_report(request):
                             if KPIMonthlyPlan.objects.filter(month_reported=month, year_reported=year.name, shop=shop).exists():
                                 monthly_plan=KPIMonthlyPlan.objects.get(month_reported=month, year_reported=year.name, shop=shop)
                                 monthly_plan_GI=monthly_plan.GI
-                                actual_GI_per_shop=rhos.filter(category=category, shop=shop)
+                                actual_GI_per_shop=rhos.filter(category=category, shop=shop, sub_total__gt=0)#исключаем нулевые сим карты
                                 number_of_rhos=actual_GI_per_shop.count()
                                 if monthly_plan_GI>number_of_rhos:
                                     for rho in rhos_new:
