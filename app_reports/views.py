@@ -2226,8 +2226,6 @@ def bonus_report(request):
             current_year=start_date.year
             year=Year.objects.get(name=current_year)
         
-        
-
             rhos = RemainderHistory.objects.filter(rho_type=doc_type, created__gt=start_date, created__lt=end_date)
 
             if Customer.objects.filter(created__gt=start_date, created__lt=end_date).exists():#look for new clients who were created in this time period
@@ -2295,9 +2293,13 @@ def bonus_report(request):
                                             sum += int(rho.sub_total * category.bonus_percent_1 * shop.sale_k)
                                         else:
                                             sum += int(1550 * category.bonus_percent * shop.sale_k)
+                            else:
+                                actual_GI_per_shop=rhos.filter(category=category, shop=shop)
+                                number_of_rhos=actual_GI_per_shop.count()
+                                sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
                         else:
                             for rho in rhos_new:
-                                sum += int(rho.sub_total * category.bonus_percent * shop.sale_k)
+                                sum += int(rho.sub_total * category.bonus_percent_1 * shop.sale_k)
                     #add bonus sum for each category as an entry in user_row list
                     user_row.append(sum)
 
