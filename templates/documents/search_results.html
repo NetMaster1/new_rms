@@ -31,11 +31,15 @@
                 <div class="col-2"><h5>Цена</h5></div>
             </div>
 
-       
-                
-            {% for item in remainders_array_final %}
-                <div class="row mt-1 mb-1 ">
-                    <div class="col-3">
+          
+        {% for item in remainders_array_final %}
+          <div class="row mt-1 mb-1 ">
+            {%for group in request.user.groups.all%}
+            {%if group.name == 'sales' %}
+                    <div class="col-1">
+                        <input type="checkbox" id="check_box" name="checked" value='{{arr.imei}}'>
+                    </div>
+                    <div class="col-2">
                         {{item.shop}}
                     </div>
                     <div class="col-3">
@@ -55,21 +59,19 @@
         
             
         {%for group in request.user.groups.all%}
-        {%if group.name == 'sales' %}
-    <div class="row m-auto mt-4 mb-3" style="width: 80%">
-            <a href="{% url 'sale_interface' %}" class="btn btn-block btn-outline-dark">
-                Закрыть
-            </a>
-        </div>
-        
-        {% else %}
+            {%if group.name == 'sales' %}
         <div class="row m-auto mt-4 mb-3" style="width: 80%">
-           
-            <a href="{% url 'log' %}" class="btn btn-block btn-outline-dark">
-              Закрыть
-            </a>
-        </div>
-        {%endif%}
+                <a href="{% url 'sale_interface' %}" class="btn btn-block btn-outline-dark">
+                    Закрыть
+                </a>
+            </div>       
+            {% else %}
+            <div class="row m-auto mt-4 mb-3" style="width: 80%">           
+                <a href="{% url 'log' %}" class="btn btn-block btn-outline-dark">
+                Закрыть
+                </a>
+            </div>
+            {%endif%}
         {% endfor %}
       
   

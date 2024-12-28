@@ -237,6 +237,7 @@ def sale_interface (request):
 
 def search(request):
     users=Group.objects.get(name="sales").user_set.all()
+    admins=Group.objects.get(name="admin").user_set.all()
     if request.method == "POST":
         remainders_array = []
         remainders_array_final = []
