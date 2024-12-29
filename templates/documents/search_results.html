@@ -22,7 +22,6 @@
             </div>
             <!-- ===================End of Alert Messages Module================ -->
 
-
             <div class="modal-header">
                 <div class="col-3"><h5>Торговая точка</h5></div>
                 <div class="col-3"><h5>Наименование</h5></div>
@@ -31,14 +30,23 @@
                 <div class="col-2"><h5>Цена</h5></div>
             </div>
 
-          
+        <form action="{% url 'revaluation_document_multi_shop' %}" method="POST">
+            {% csrf_token %}
+
         {% for item in remainders_array_final %}
-          <div class="row mt-1 mb-1 ">
+          <div class="row m-1" id="row_highlight">
             {%for group in request.user.groups.all%}
-            {%if group.name == 'sales' %}
+            {%if group.name == 'admin' %}
+                <!-- <div class="col-1">
+                <input type="checkbox" id="post_check" name="post_check" value='checked'>
+                </div> -->
                     <div class="col-1">
-                        <input type="checkbox" id="check_box" name="checked" value='{{arr.imei}}'>
+                        <input type="checkbox" id="check_box" name="check_box" value='{{item.imei}}_{{item.shop}}'>
                     </div>
+                    <!-- <input type="shop" id="shop" name="shop" value='{{item.shop}}' hidden> -->
+            {% endif %}
+            {% endfor %}
+
                     <div class="col-2">
                         {{item.shop}}
                     </div>
@@ -55,24 +63,30 @@
                     {{item.retail_price}}
                     </div>
                 </div>
-            {% endfor %}
+        {% endfor %}
         
             
-        {%for group in request.user.groups.all%}
-            {%if group.name == 'sales' %}
-        <div class="row m-auto mt-4 mb-3" style="width: 80%">
-                <a href="{% url 'sale_interface' %}" class="btn btn-block btn-outline-dark">
-                    Закрыть
-                </a>
-            </div>       
-            {% else %}
+            {%for group in request.user.groups.all%}
+            {%if group.name == 'admin' %}
             <div class="row m-auto mt-4 mb-3" style="width: 80%">           
                 <a href="{% url 'log' %}" class="btn btn-block btn-outline-dark">
                 Закрыть
                 </a>
             </div>
+            
+            <div class="row m-auto mt-4 mb-3" style="width: 80%">
+                <input type="submit" value="Создать документ Переоценка" class="btn btn-block btn-outline-dark">
+            </div>
+
+            {% else %}
+            <div class="row m-auto mt-4 mb-3" style="width: 80%">
+                <a href="{% url 'sale_interface' %}" class="btn btn-block btn-outline-dark">
+                    Закрыть
+                </a>
+            </div>  
             {%endif%}
-        {% endfor %}
+            {% endfor %}
+        </form>
       
   
           
@@ -80,6 +94,28 @@
 </div>
 </div>
         
+<script>
+    console.log('Script works');
 
+      
+      const row_highlights =document.querySelectorAll('#row_highlight');
+      //const rows = document.querySelector('.row');
+      const check_boxes = document.querySelectorAll('#check_box');
+      
+      for (let i = 0; i < check_boxes.length; i++) {
+          check_boxes[i].addEventListener('change', e => {
+              //row_highlights[i].className='highlight';
+              if(check_boxes[i].checked==true){
+                  row_highlights[i].style.backgroundColor='aquamarine';
+              }
+              else {
+                  row_highlights[i].style.backgroundColor = null;
+              }
+          })
+          }
 
-{% endblock %}
+   
+console.log('Script ends')
+</script>
+
+{%endblock%}

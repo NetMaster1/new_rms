@@ -137,6 +137,9 @@ urlpatterns = [
     path ('transfer_auto', views.transfer_auto, name='transfer_auto'),
 
     # ===============================Revaluation==================================
+    #path ('identifier_revaluation_multi_shop', views.identifier_revaluation_multi_shop, name='identifier_revaluation_multi_shop'),
+    path ('revaluation_document_multi_shop', views.revaluation_document_multi_shop, name='revaluation_document_multi_shop'),
+    path ('revaluation_input_multi_shop/<int:identifier_id>', views.revaluation_input_multi_shop, name='revaluation_input_multi_shop'),
     path ('revaluation_document', views.revaluation_document, name='revaluation_document'),
     path ('revaluation_auto', views.revaluation_auto, name='revaluation_auto'),
     path ('revaluation_input/<int:identifier_id>', views.revaluation_input, name='revaluation_input'),
