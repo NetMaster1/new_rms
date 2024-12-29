@@ -237,6 +237,7 @@ def sale_interface (request):
 
 def search(request):
     users=Group.objects.get(name="sales").user_set.all()
+    #admins=Group.objects.get(name="admin").user_set.all()
     if request.method == "POST":
         remainders_array = []
         remainders_array_final = []
@@ -249,7 +250,6 @@ def search(request):
                 remainders=RemainderHistory.objects.filter(name__icontains=keyword, shop=shop)
                 for remainder in remainders:
                     remainders_array.append(remainder.imei)
-
                 remainders_array = set(remainders_array)
                 for i in remainders_array:
                     remainder=RemainderHistory.objects.filter(shop=shop, imei=i).latest('created')
@@ -6287,6 +6287,147 @@ def supplier_return(request):
 # документ ПРОДАЖА берет эту нестандратную цену. Нужно сделать так, чтобы цена в документ ПРОДАЖА
 # (check_sale) проставлялась только из документов Оприходование, Перемещение, Переоценка, Ввод остатков
 
+# def identifier_revaluation_multi_shop(request):
+#     if request.user.is_authenticated:
+#         identifier = Identifier.objects.create()
+#         return redirect("revaluation_document_multi_shop", identifier.id)
+#     else:
+#         return redirect("login")
+
+
+def revaluation_document_multi_shop (request):
+    identifier = Identifier.objects.create()
+    if request.method == "POST":
+        #post_checks = request.POST.getlist("checked", None)
+        items = request.POST.getlist("check_box", None)
+        #shops = request.POST.getlist("shop", None)
+        for item in items:
+            item=item.split('_')
+            imei=str(item[0])
+            shop=str(item[1])
+            product=Product.objects.get(imei=imei)
+            shop=Shop.objects.get(name=shop)
+            register = Register.objects.create(
+                identifier=identifier,
+                name=product.name,
+                imei=product.imei,
+                shop=shop,
+            )
+        registers=Register.objects.filter(identifier=identifier)
+        numbers = registers.count()
+        for register, i in zip(registers, range(numbers)):
+            register.number = i + 1
+            register.save()
+        context = {
+            'registers': registers,
+            'identifier': identifier,
+        }
+        return render (request, 'documents/revaluation_multi_shop.html', context)
+    # else:
+    #     registers=Register.objects.filter(identifier=identifier)
+    #     context = {
+    #         'registers': registers,
+    #         'identifier': identifier,
+    #     }
+    #     return render (request, 'documents/revaluation_multi_shop.html', context)
+
+def revaluation_input_multi_shop(request, identifier_id):
+    identifier = Identifier.objects.get(id=identifier_id)
+    doc_type = DocumentType.objects.get(name="Переоценка ТМЦ")
+    registers=Register.objects.filter(identifier=identifier)
+    if request.method == "POST":
+        imeis = request.POST.getlist("imei", None)
+        names = request.POST.getlist("name", None)
+        shops = request.POST.getlist("shop", None)
+        prices_new = request.POST.getlist("price_new", None)
+        #==============Time Module=========================================
+        dateTime=request.POST.get('dateTime', False)
+        if dateTime:
+            # converting dateTime in str format (2021-07-08T01:05) to django format ()
+            dateTime = datetime.datetime.strptime(dateTime, "%Y-%m-%dT%H:%M")
+            #adding seconds & microseconds to 'dateTime' since it comes as '2021-07-10 01:05:03:00' and we need it real value of seconds & microseconds
+            current_dt=datetime.datetime.now()
+            mics=current_dt.microsecond
+            tdelta_1=datetime.timedelta(microseconds=mics)
+            secs=current_dt.second
+            tdelta_2=datetime.timedelta(seconds=secs)
+            tdelta_3=tdelta_1+tdelta_2
+            dateTime=dateTime+tdelta_3
+        else:
+            tdelta=datetime.timedelta(hours=3)
+            dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+            dateTime=dT_utcnow+tdelta
+            #dateTime=dT_utcnow.astimezone(pytz.timezone('Europe/Moscow'))#Mocow time
+            #==================End of time module================================
+        if not imeis:
+            messages.error(request, "Вы не ввели ни одного наименования.")
+            return redirect("log")
+        n = len(names)
+        for i in range(n):
+            shop=Shop.objects.get(name=shops[i])
+            document = Document.objects.create(
+                shop_receiver=shop, 
+                title=doc_type, 
+                user=request.user, 
+                created=dateTime,
+                posted=True,
+            )
+            product=Product.objects.get(imei=imeis[i])
+            if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
+                rho_latest = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
+                if rho_latest.current_remainder > 0:
+                    pre_remainder=rho_latest.current_remainder
+                else:
+                    if RemainderHistory.objects.filter(document=document).exists():
+                        rhos=RemainderHistory.objects.filter(document=document)
+                        for rho in rhos:
+                            rho.delete()
+                    document.delete()
+                    string=f'Документ не проведен. Кол-во товара с {imeis[i]} на складе равно 0'
+                    messages.error(request, string)
+                    return redirect("log")
+            else:
+                if RemainderHistory.objects.filter(document=document).exists():
+                    rhos=RemainderHistory.objects.filter(document=document)
+                    for rho in rhos:
+                        rho.delete()
+                document.delete()
+                string=f'Документ не проведен. Товар с {imeis[i]} отсутствует наданном складе'
+                messages.error(request, string)
+                return redirect("log")
+            # creating remainder_history
+            rho = RemainderHistory.objects.create(
+                document=document,
+                rho_type=document.title,
+                created=dateTime,
+                shop=shop,
+                category=product.category,
+                imei=imeis[i],
+                name=names[i],
+                pre_remainder=pre_remainder,
+                incoming_quantity=0,
+                outgoing_quantity=0,
+                retail_price=prices_new[i],
+                current_remainder=pre_remainder,
+                sub_total= int(pre_remainder)*int(prices_new[i]),
+            )
+            #sum+=rho.sub_total
+            #document.sum=sum
+            document.sum=rho.sub_total
+            document.save()
+        for register in registers:
+            register.delete()
+        identifier.delete()
+        return redirect("log")
+
+
+# def identifier_revaluation_multi_shop(request):
+#     if request.user.is_authenticated:
+#         identifier = Identifier.objects.create()
+#         return redirect("revaluation", identifier.id)
+#     else:
+#         return redirect("login")
+
 def revaluation_document (request):
     identifier = Identifier.objects.create()
     if request.method == "POST":
@@ -6508,12 +6649,6 @@ def change_revaluation_unposted (request, document_id):
 def delete_line_revaluation_unposted (request, imei, document_id):
     pass
 
-# def identifier_revaluation(request):
-#     if request.user.is_authenticated:
-#         identifier = Identifier.objects.create()
-#         return redirect("revaluation", identifier.id)
-#     else:
-#         return redirect("login")
 
 
 # def check_revaluation(request, identifier_id):
