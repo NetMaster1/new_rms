@@ -117,7 +117,7 @@ class SaleReport (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     index = models.IntegerField(default=0)
     category = models.CharField(max_length=50, null=True)#this field is needed to place SaleReports ordered by Category
-    product = models.CharField(max_length=80, null=True)
+    product = models.CharField(max_length=150, null=True)
     imei = models.CharField(max_length=50, null=True)
     av_sum = models.IntegerField(default=0)
     quantity = models.IntegerField(default=0)
