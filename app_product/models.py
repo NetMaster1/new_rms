@@ -2,7 +2,7 @@ from pyexpat import model
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import manager
-from app_reference.models import Shop, Supplier, Product, ProductCategory, DocumentType, Contributor, Voucher, Expense
+from app_reference.models import Shop, Supplier, Product, SKU, ProductCategory, DocumentType, Contributor, Voucher, Expense
 from app_clients.models import Customer
 
 # import datetime
@@ -96,6 +96,7 @@ class Register(models.Model):
     # client_phone = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, null=True)
     new = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
+    ean = models.ForeignKey(SKU, null=True, blank=True, on_delete=models.DO_NOTHING)
 
     def __int__(self):
         return self.id
