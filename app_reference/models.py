@@ -78,7 +78,7 @@ class SKU (models.Model):#Stock Keeping Unit
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True, blank=True)
     name = models.CharField(max_length=160)
     ozon_id = models.CharField(max_length=50, unique=True, null=True)
-    ean = models.CharField(max_length=50, null=True)
+    ean = models.CharField(max_length=30, null=True)
     image_file_1 = models.FileField(upload_to='uploads', null=True)
     image_file_2 = models.FileField(upload_to='uploads', null=True)
     image_file_3 = models.FileField(upload_to='uploads', null=True)

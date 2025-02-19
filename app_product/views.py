@@ -2859,7 +2859,7 @@ def delete_line_unposted_delivery(request, document_id, imei):
 def enter_new_product(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     if request.method == "POST":
-        ean = request.POST["ean"]
+        ean = request.POST["EAN"]
         imei = request.POST["imei"]
         if '/' in imei:
             imei=imei.replace('/', '_')
@@ -3346,13 +3346,20 @@ def unpost_delivery(request, document_id):
 
 def enter_new_sku (request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
+    categories=ProductCategory.objects.all()
     if request.method == "POST":
         name = request.POST["name"]
-        ean = request.POST["ean"]
+        ean = request.POST["EAN"]
         if '/' in ean:
             imei=imei.replace('/', '_')
         category = request.POST["category"]
         category = ProductCategory.objects.get(id=category)
+        ean_length=len(ean)
+        if ean_length>13:
+            messages.error(
+                request,
+                "EAN не может содержать больше 13 цифр",
+            )
         if SKU.objects.filter(ean=ean).exists():
             messages.error(
                 request,
@@ -3363,12 +3370,61 @@ def enter_new_sku (request, identifier_id):
             sku = SKU.objects.create(name=name, ean=ean, category=category)
             return redirect("delivery", identifier.id)
     else:
+
         return redirect("delivery", identifier.id)
+#=======================================================================
+def sku_new(request):
+    if request.user.is_authenticated:
+        categories=ProductCategory.objects.all()
+        context = {
+            "categories": categories,
+        }
+        return render(request, "documents/sku_new.html", context)
+    else:
+        return redirect("login")
+    
+def sku_new_create(request):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            name = request.POST["name"]
+            ean = request.POST["EAN"]
+            if '/' in ean:
+                ean=ean.replace('/', '_')
+            category = request.POST["category"]
+            category = ProductCategory.objects.get(id=category)
+            ean_length=len(ean)
+            if ean_length>13:
+                messages.error(request,
+                    "EAN не может содержать больше 13 цифр"
+                )
+            if SKU.objects.filter(ean=ean).exists():
+                messages.error(request,
+                    "SKU с данным EAN уже есть в БД."
+                )
+                return redirect("sku_new")
+            else:
+                sku = SKU.objects.create(name=name, ean=ean, category=category)
+                # context = {
+                #     "sku": sku,
+                # }
+                #return render(request, "documents/sku_imei_link.html", context)
+                return redirect('sku_imei_link', sku.id)
+        else:
+            return redirect("log")
+    return redirect("login")
 
-
-
-
-
+def sku_imei_link(request, sku):
+    if request.user.is_authenticated:
+        sku=SKU.objects.get(id=sku)
+        if request.method == "POST":
+            pass
+        else:
+            context = {
+                        "sku": sku,
+                    }
+            return render(request, "documents/sku_imei_link.html", context)
+    else:
+        return redirect("login")
 # =====================================================================================
 def identifier_transfer(request):
     identifier = Identifier.objects.create()

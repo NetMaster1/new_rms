@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block content %}
+<body oncontextmenu="return false">
+
+
+<div class="hide">
+    <div class="container">
+        <div class="page_location">
+
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Введите EAN </h3>
+                </div>
+            </div>
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
+
+            <div class="row m-2 pb-2">
+                <div class="col-12 border rounded ">
+
+                    <form action="{% url 'sku_new_create'  %}" method="POST" class="teko_form">
+                        {% csrf_token %}
+                        
+                        
+                        <div class="form-row">
+                            <div class="col-3">
+                                <label for="category">Вид ТМЦ</label>
+                            </div>
+                            <div class="col">
+                                <select name="category" id="category" class='form-control' required>
+                                    {% for category in categories %}
+                                    <option value="{{category.id}}">{{category.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="sum">
+                                    <h5>Название</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="text" class='form-control' id="name" name="name" required>
+                            </div>
+                        </div>
+                   
+                       
+                        <div class="form-row m-2">
+                            <div class="col-3">
+                                <label for="sum">
+                                    <h5>EAN</h5>
+                                </label>
+                            </div>
+                            <div class="col">
+                                <input type="text" class='form-control' id="EAN" name="EAN" required>
+                            </div>
+                        </div>
+
+                <div class="row m-2 p-2">
+                            <div class="col-1">
+                                <input type="submit" value="Создать" class="btn btn-sm btn-block btn-outline-dark pay_button">
+                            </div>
+                    </form>
+
+                    
+
+                    {%for group in request.user.groups.all %}
+                    {% if group.name == 'admin'%}
+                    <div class="col-2">
+                        <a href="{% url 'log' %}">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="col-2">
+                        <a href="{% url 'sale_interface' %}">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+<script>
+    const teko_form = document.querySelector('.teko_form')
+    const pay_button = document.querySelector('.pay_button')
+
+    teko_form.addEventListener('submit', blockButton)
+    function blockButton() {
+        console.log('clicked');
+        pay_button.disabled = true;
+    }
+
+</script>
+   
+
+{% endblock %}
