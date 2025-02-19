@@ -277,8 +277,24 @@ footer {
     /* top: 70mm;
     right: 0mm; */
 }
-
 /* ====================End of Delivery Page Modal for Entering New Product ======================= */
+
+
+/* ===================== Delivery Page Modal for Entering New SKU========================= */
+.enterSKUModal {
+    display: none;
+}
+
+.enterSKUModal.openModal {
+    display: block;
+    position: fixed;
+    /* top: 70mm;
+    right: 0mm; */
+}
+/* ====================End of Delivery Page Modal for Entering New Product ======================= */
+
+
+
 
 /* ===================== Change Payment Type Modal========================= */
 .enterChangePaymentTypeModal {

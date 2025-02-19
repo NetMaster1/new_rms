@@ -41,6 +41,7 @@ urlpatterns = [
     path ('change_delivery_posted/<int:document_id>', views.change_delivery_posted, name='change_delivery_posted'),
     path ('enter_new_product_from_unposted/<int:document_id>', views.enter_new_product_from_unposted, name='enter_new_product_from_unposted'),
     path ('unpost_delivery/<int:document_id>', views.unpost_delivery, name='unpost_delivery'),
+    path ('enter_new_sku/<int:document_id>', views.enter_new_sku, name='enter_new_sku'),
    
     # ======================Recognition=========================
     path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),

@@ -109,4 +109,3 @@ def clients (request):
         'clients': clients
     }
     return render (request, 'reference/clients.html', context)
-

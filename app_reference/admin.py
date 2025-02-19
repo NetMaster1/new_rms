@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import Expense, Shop, Supplier, Product, ProductCategory, Services, DocumentType, Expense, Teko_pay, Voucher, Contributor, Month, Year
+from . models import Expense, Shop, Supplier, Product, ProductCategory, Services, DocumentType, Expense, Teko_pay, Voucher, Contributor, Month, Year, SKU
 
 class ShopAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'sale_k', 'TID', 'commission', 'retail', 'subdealer', 'cash_register', 'shift_status', 'active', 'offline', 'shift_status_updated',)
@@ -41,6 +41,11 @@ class MonthAdmin(admin.ModelAdmin):
 class YearAdmin(admin.ModelAdmin):
     list_display = ('id', 'name',)
 
+class SKUAdmin(admin.ModelAdmin):
+    list_display = ('id','name', 'ean', 'ozon_id', 'image_file_1', 'image_file_2', 'image_file_3', 'video_file',)
+    search_fields = ('imei', 'name',)
+    list_editable = ('image_file_1', 'image_file_2', 'image_file_3', 'video_file',)
+
 admin.site.register(Shop, ShopAdmin)
 admin.site.register(Supplier, SupplierAdmin)
 admin.site.register(Product, ProductAdmin)
@@ -53,5 +58,6 @@ admin.site.register(Contributor, ContributorAdmin)
 admin.site.register(Teko_pay, Teko_payAdmin)
 admin.site.register(Month, MonthAdmin)
 admin.site.register(Year, YearAdmin)
+admin.site.register(SKU, SKUAdmin)
 
 

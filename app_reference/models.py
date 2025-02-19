@@ -72,10 +72,23 @@ class DocumentType (models.Model):
     def __str__(self):
         return self.name
 
+class SKU (models.Model):#Stock Keeping Unit 
+    created = models.DateTimeField(auto_now=True)
+    emumerator = models.IntegerField(null=True)
+    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True, blank=True)
+    name = models.CharField(max_length=160)
+    ozon_id = models.CharField(max_length=50, unique=True, null=True)
+    ean = models.CharField(max_length=50, null=True)
+    image_file_1 = models.FileField(upload_to='uploads', null=True)
+    image_file_2 = models.FileField(upload_to='uploads', null=True)
+    image_file_3 = models.FileField(upload_to='uploads', null=True)
+    video_file = models.FileField(upload_to='uploads', null=True)
+
 class Product (models.Model):
     created = models.DateTimeField(auto_now=True)
     emumerator = models.IntegerField(null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
+    EAN = models.ForeignKey(SKU, on_delete=models.DO_NOTHING, null=True, blank=True)
     name = models.CharField(max_length=160)
     imei = models.CharField(max_length=50, unique=True)
     for_mp_sale = models.BooleanField(default=False) #items for marketplaces
@@ -83,7 +96,6 @@ class Product (models.Model):
     EAN = models.CharField(max_length=50, null=True)
     image_file = models.FileField(upload_to='uploads', null=True)
     #status = models.BooleanField(default=False)  # "True" for sent to T2 (for sim_cards)
-    
 
     class Meta:
         # ordering = ('created',)  # sorting by date

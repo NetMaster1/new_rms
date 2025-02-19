@@ -31,6 +31,7 @@ from app_reference.models import (
     Teko_pay,
     Voucher,
     Contributor,
+    SKU,
 )
 from app_cash.models import Cash, Credit, Card #CashRemainder
 from app_cashback.models import Cashback
@@ -2858,12 +2859,12 @@ def delete_line_unposted_delivery(request, document_id, imei):
 def enter_new_product(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     if request.method == "POST":
-        name = request.POST["name"]
+        ean = request.POST["ean"]
         imei = request.POST["imei"]
         if '/' in imei:
             imei=imei.replace('/', '_')
-        category = request.POST["category"]
-        category = ProductCategory.objects.get(id=category)
+        #category = request.POST["category"]
+        #category = ProductCategory.objects.get(id=category)
         if Product.objects.filter(imei=imei).exists():
             messages.error(
                 request,
@@ -2871,7 +2872,12 @@ def enter_new_product(request, identifier_id):
             )
             return redirect("delivery", identifier.id)
         else:
-            product = Product.objects.create(name=name, imei=imei, category=category)
+            sku=SKU.objects.get(ean=ean)
+            category=sku.category
+            category=ProductCategory.objects.get(id=category)
+            name=str(sku.name)
+
+            product = Product.objects.create(name=name, ean=ean, imei=imei, category=category)
             return redirect("delivery", identifier.id)
     else:
         return redirect("delivery", identifier.id)
@@ -3337,6 +3343,31 @@ def unpost_delivery(request, document_id):
     else:
         auth.logout(request)
         return redirect("login")
+
+def enter_new_sku (request, identifier_id):
+    identifier = Identifier.objects.get(id=identifier_id)
+    if request.method == "POST":
+        name = request.POST["name"]
+        ean = request.POST["ean"]
+        if '/' in ean:
+            imei=imei.replace('/', '_')
+        category = request.POST["category"]
+        category = ProductCategory.objects.get(id=category)
+        if SKU.objects.filter(ean=ean).exists():
+            messages.error(
+                request,
+                "SKU с данным EAN уже есть в БД.",
+            )
+            return redirect("delivery", identifier.id)
+        else:
+            sku = SKU.objects.create(name=name, ean=ean, category=category)
+            return redirect("delivery", identifier.id)
+    else:
+        return redirect("delivery", identifier.id)
+
+
+
+
 
 # =====================================================================================
 def identifier_transfer(request):

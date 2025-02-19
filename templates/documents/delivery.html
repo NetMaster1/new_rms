@@ -43,62 +43,105 @@
     </form>
     </div>
  
-    <!-- ==============================Modal Trigger================== -->
-<div class="col-6 border rounded p-3">
-<button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
-    Внести новое наименование в базу данных
-</button>
-</div>
-    <!-- ============================End of Modal Trigger========================= -->
-
-        <!-- ===========================Modal Body================================= -->
-<div class="enterDeliveryModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Введите новое наименование</h5>
-                <!-- <button type="button" class="btn_close"></button> -->
-            </div>
-            <div class="modal-body">
-                <form action="{% url 'enter_new_product' identifier.id %}" method="POST">
-                    {% csrf_token %}
-
-                        <div class="form-row">
-                            <div class="col-3">
-                                <label for="category">Вид ТМЦ</label>
-                            </div>
-                            <div class="col">
-                                <select name="category" id="category" class='form-control' required>
-                                    {% for category in categories %}
-                                    <option value="{{category.id}}">{{category.name}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    <div class="form-group">
-                        <label for="name">Наименование:</label>
-                        <input class='form-control' type="text" id="name" name="name" maxlength='100' required>
-                    </div>
-                    <div class="form-group">
-                        <label for="name">EAN:</label>
-                        <input class='form-control' type="text" id="input_imei" name="EAN" maxlength='100' required>
-                    </div>
-                    <div class="form-group">
-                        <label for="name">IMEI:</label>
-                        <input class='form-control' type="text" id="input_imei" name="imei" maxlength='100' required>
-                    </div>
-                    </div>
-                      
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn_close" data-bs-dismiss="modal">Закрыть без сохранения</button>
-                <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
-            </div>
-            </form>
-        </div>   
+    <!-- ==============================Trigger for "Enter New SKU" Modal================== -->
+    <div class="col-3 border rounded p-3">
+    <button type="button" class="btn btn-sm btn-outline-dark btn_modal_sku ">
+        Внести новое SKU
+    </button>
     </div>
-</div>
-    <!-- =================================End of Modal Body======================================== -->
+    <!-- ============================End of Trigger for "Enter New SKU" Modal========================= -->
+
+                <!-- ==========================="Enter New SKU" Modal Body================================= -->
+                <div class="enterSKUModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Введите новое SKU</h5>
+                                <!-- <button type="button" class="btn_close"></button> -->
+                            </div>
+
+                
+                            <div class="modal-body">
+                                <form action="{% url 'enter_new_sku' identifier.id %}" method="POST">
+                                    {% csrf_token %}
+                
+                                    <div class="form-row">
+                                        <div class="col-3">
+                                            <label for="category">Вид ТМЦ</label>
+                                        </div>
+                                        <div class="col">
+                                            <select name="category" id="category" class='form-control' required>
+                                                {% for category in categories %}
+                                                <option value="{{category.id}}">{{category.name}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="name">Наименование:</label>
+                                        <input class='form-control' type="text" id="name" name="name" maxlength='100' required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="name">EAN:</label>
+                                        <input class='form-control' type="text" id="input_imei" name="EAN" maxlength='100' required>
+                                    </div>
+                              
+                                </div>
+                                      
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary btn_close_sku" data-bs-dismiss="modal">Закрыть без сохранения</button>
+                                <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
+                            </div>
+                            </form>
+                        </div>   
+                    </div>
+                </div>
+                <!-- =================================End of "Enter New SKU" Modal Body======================================== -->
+
+    <!-- ==============================Trigger for "Enter New Item" Modal================== -->
+    <div class="col-3 border rounded p-3">
+        <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
+            Внести новый товар в базу данных
+        </button>
+    </div>
+            <!-- ============================End of Trigger for "Enter New Item" Modal========================= -->
+        
+                <!-- ==========================="Enter New Item" Modal Body================================= -->
+        <div class="enterDeliveryModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Введите новое наименование</h5>
+                        <!-- <button type="button" class="btn_close"></button> -->
+                    </div>
+                    <div class="modal-body">
+                        <form action="{% url 'enter_new_product' identifier.id %}" method="POST">
+                            {% csrf_token %}
+                        
+                            <div class="form-group">
+                                <label for="name">EAN:</label>
+                                <input class='form-control' type="text" id="input_imei" name="EAN" maxlength='100' required>
+                            </div>
+                            <div class="form-group">
+                                <label for="name">IMEI:</label>
+                                <input class='form-control' type="text" id="input_imei" name="imei" maxlength='100' required>
+                            </div>
+                            </div>
+                              
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn_close" data-bs-dismiss="modal">Закрыть без сохранения</button>
+                        <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
+                    </div>
+                    </form>
+                </div>   
+            </div>
+        </div>
+            <!-- =================================End of "Enter New Item" Modal Body======================================== -->
+
 </div>     
+
+
+
 
 <div class="row m-2 pb-2">
     <div class="col-12 border rounded p-3">
@@ -239,9 +282,15 @@
 <script>
     console.log('Script works');
 
-    const btn_modal =document.querySelector('.btn_modal');
+    
+  
     const enterDeliveryModal =document.querySelector('.enterDeliveryModal');
+    const enterSKUModal =document.querySelector('.enterSKUModal');
     const btn_close =document.querySelector('.btn_close');
+    const btn_close_sku =document.querySelector('.btn_close_sku');
+    const btn_modal =document.querySelector('.btn_modal');
+    const btn_modal_sku =document.querySelector('.btn_modal_sku');
+
     const imeis = document.querySelectorAll("#imei");
     const quantities = document.querySelectorAll("#quantity");
     const sub_totals = document.querySelectorAll("#sub_total");
@@ -253,7 +302,7 @@
     const supplier = document.querySelector('#supplier');
     const check_imei = document.querySelector('#check_imei');
    
-   
+    // ===============================================
     btn_modal.addEventListener('click', openModal)
     btn_close.addEventListener('click', closeModal)
 
@@ -264,6 +313,20 @@
     function closeModal() {
         enterDeliveryModal.classList.remove('openModal')
     }
+    //===================================================
+
+    btn_modal_sku.addEventListener('click', openModal_sku)
+    btn_close_sku.addEventListener('click', closeModal_sku)
+
+    function openModal_sku (){
+        enterSKUModal.classList.add('openModal')
+    }
+
+    function closeModal_sku() {
+        enterSKUModal.classList.remove('openModal')
+    }
+    //====================================================
+
 
 //saving "Supplier select option" from switching to default when updating the page
 //===========================================================================
