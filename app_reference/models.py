@@ -81,6 +81,7 @@ class Product (models.Model):
     for_mp_sale = models.BooleanField(default=False) #items for marketplaces
     ozon_id = models.CharField(max_length=50, unique=True, null=True)
     EAN = models.CharField(max_length=50, null=True)
+    image_file = models.FileField(upload_to='uploads', null=True)
     #status = models.BooleanField(default=False)  # "True" for sent to T2 (for sim_cards)
     
 
