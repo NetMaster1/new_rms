@@ -234,5 +234,6 @@ urlpatterns = [
     #==================================================================
     path ('sku_new', views.sku_new, name='sku_new'),
     path ('sku_new_create', views.sku_new_create, name='sku_new_create'),
-    path ('sku_imei_link/<int:sku>', views.sku_imei_link, name='sku_imei_link'),
+    path ('sku_imei_link/<int:sku_id>/<int:identifier_id>', views.sku_imei_link, name='sku_imei_link'),
+    path ('sku_product_register_create/<int:sku_id>/<int:identifier_id>', views.sku_product_register_create, name='sku_product_register_create'),
 ]

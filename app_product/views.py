@@ -3397,34 +3397,82 @@ def sku_new_create(request):
                 messages.error(request,
                     "EAN не может содержать больше 13 цифр"
                 )
+                return redirect ('sku_new')
             if SKU.objects.filter(ean=ean).exists():
-                messages.error(request,
-                    "SKU с данным EAN уже есть в БД."
-                )
-                return redirect("sku_new")
+                identifier=Identifier.objects.create()
+                sku=SKU.objects.get(ean=ean)
+                return redirect('sku_imei_link', sku.id, identifier.id)
             else:
+                identifier=Identifier.objects.create()
                 sku = SKU.objects.create(name=name, ean=ean, category=category)
                 # context = {
                 #     "sku": sku,
                 # }
                 #return render(request, "documents/sku_imei_link.html", context)
-                return redirect('sku_imei_link', sku.id)
+                return redirect('sku_imei_link', sku.id, identifier.id)
         else:
             return redirect("log")
     return redirect("login")
 
-def sku_imei_link(request, sku):
+def sku_imei_link(request, sku_id, identifier_id):
     if request.user.is_authenticated:
-        sku=SKU.objects.get(id=sku)
+        identifier = Identifier.objects.get(id=identifier_id)
+        sku=SKU.objects.get(id=sku_id)
         if request.method == "POST":
+            
             pass
+
+
         else:
-            context = {
-                        "sku": sku,
-                    }
-            return render(request, "documents/sku_imei_link.html", context)
+            
+            if Register.objects.filter(identifier=identifier).exists():
+                registers = Register.objects.filter(identifier=identifier).order_by("-created")
+                numbers = registers.count()
+                for register, i in zip(registers, range(numbers)):
+                    register.number = i + 1
+                    register.save()
+                registers=Register.objects.filter(identifier=identifier)
+                context = {
+                            "sku": sku,
+                            "identifier": identifier,
+                            "registers": registers,
+                        }
+                return render(request, "documents/sku_imei_link.html", context)
+            else:
+                context = {
+                            "sku": sku,
+                            "identifier": identifier,
+                        }
+                return render(request, "documents/sku_imei_link.html", context)
     else:
         return redirect("login")
+    
+def sku_product_register_create(request, sku_id, identifier_id):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            sku=SKU.objects.get(id=sku_id)
+            identifier = Identifier.objects.get(id=identifier_id)
+            print('=============================')
+            print(identifier.id)
+            imei = request.POST["imei"]
+            if Product.objects.filter(imei=imei).exists():
+                messages.error(request,"Наименование с данным IMEI уже существует в БД.")
+                return redirect ('sku_imei_link', sku.id, identifier.id )
+            if Register.objects.filter(identifier=identifier, imei=imei).exists():
+                messages.error(request, "Вы уже ввели данное наименование.")
+                return redirect ('sku_imei_link', sku.id, identifier.id )
+            else:
+                if '/' in imei:
+                    imei=imei.replace('/', '_')
+                register = Register.objects.create(
+                    identifier=identifier, 
+                    sku=sku, 
+                    imei=imei,
+                    )
+                return redirect("sku_imei_link", sku.id, identifier.id)
+    else:
+        return redirect("login")
+
 # =====================================================================================
 def identifier_transfer(request):
     identifier = Identifier.objects.create()

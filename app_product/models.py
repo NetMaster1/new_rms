@@ -96,7 +96,7 @@ class Register(models.Model):
     # client_phone = models.ForeignKey(Customer, on_delete=models.DO_NOTHING, null=True)
     new = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
-    ean = models.ForeignKey(SKU, null=True, blank=True, on_delete=models.DO_NOTHING)
+    sku = models.ForeignKey(SKU, null=True, blank=True, on_delete=models.DO_NOTHING)
 
     def __int__(self):
         return self.id

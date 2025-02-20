@@ -27,7 +27,8 @@
 
 <div class="row m-2">
     <div class="col-6 border rounded p-3">
-        <form action="{#}" method="POST" id="check_button">
+       
+        <form action="{%url 'sku_product_register_create' sku.id identifier.id%}" method="POST" id="check_button">
         {% csrf_token %}
         <div class="row m-1">
         <div class="col-6">
@@ -51,21 +52,7 @@
         <form action="{# }" method="POST" id='save_button'>
             {% csrf_token %}
 
-            {%  for group in request.user.groups.all %}
-            {% if group.name == 'admin' %}
-            <div class="form-row">
-                <div class="col-2">
-                    <label for="date">Дата</label>
-                </div>
-                <div class="col">
-                    <input type="datetime-local" class='form-control' id="dateTime" name="dateTime"><br>
-                </div>
-            </div>
-            {% endif %}
-            {% endfor %}
 
-
-        
             <!-- <div class="form-row">
                 <div class="col-3">
                     <label for="category"><h5>Вид ТМЦ</h5></label>
@@ -87,11 +74,9 @@
             <div class='form-inline'>
                 <div class="row m-1">
                     <div class="col-1"><label for="number"><h5>#</h5></label></div>
-                    <div class="col-2"><label for="imei"><h5>IMEI</h5></label></div>
+                    <div class="col-2"><label for="imei"><h5>EAN</h5></label></div>
                     <div class="col-2"><label for="name"><h5>Наименование</h5></label></div>
-                    <div class="col-1"><label for="quantity"><h5>Кол-во</h5></label></div>
-                    <div class="col-2"><label for="price"><h5>Цена</h5></label></div>
-                    <div class="col-2"><label for="sub_total"><h5>Сумма</h5></label></div>
+                    <div class="col-1"><label for="quantity"><h5>IMEI</h5></label></div>
                 </div>
             </div>
 
@@ -102,22 +87,19 @@
             <input type="text" class='form-control' id="number" name="number" value='{{register.number}}' readonly>
         </div>
         <div class="col-2">
-            <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}'readonly >
+            <input type="text" class='form-control' id="ean" name="ean" value='{{register.sku.ean}}'readonly >
         </div>
         <div class="col-2">
-            <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}'readonly >
+            <input type="text" class='form-control' id="name" name="name" value='{{register.sku.name}}'readonly >
         </div>
+        <div class="col-2">
+            <input type="text" class='form-control' id="imei" name="imei" value='{{register.imei}}'readonly >
+        </div>
+     
+    
+     
         <div class="col-1">
-            <input type="number" class='form-control' id="quantity" name="quantity" value='{{register.quantity}}' required>
-        </div>
-        <div class="col-2">
-            <input type="number" class='form-control' id="price" name="price" maxlength='50' value='{{register.price}}' required>
-        </div>
-        <div class="col-2">
-            <input type="number" class='form-control' id="sub_total" name="sub_total" maxlength='50' value='{{register.sub_total}}'>
-        </div>
-        <div class="col-1">
-            <a href="{% url 'delete_line_delivery' register.product.imei identifier.id %}">
+            <a href="{% url 'delete_line_delivery' register.imei identifier.id %}">
                 <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
             </a>
         </div>
