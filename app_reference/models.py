@@ -50,6 +50,7 @@ class Shop (models.Model):
 
 class ProductCategory (models.Model):
     name = models.CharField(max_length=250)
+    complex = models.BooleanField(default=True)#mark for complex categories (ean + imei)
     bonus_percent=models.DecimalField(max_digits=3, decimal_places=2)#regurlar bonus percent
     bonus_percent_1=models.DecimalField(max_digits=3, decimal_places=2, null=True)#bonus percent if plan completed more than 100%
 

@@ -22,13 +22,8 @@ urlpatterns = [
     # ==================Delivery========================
     path ('delivery_auto', views.delivery_auto, name='delivery_auto'),
     path ('identifier_delivery', views.identifier_delivery, name='identifier_delivery'),
-    path ('identifier_delivery_smartphones', views.identifier_delivery_smartphones, name='identifier_delivery_smartphones'),
-
-
-
+   
     path ('check_delivery/<int:identifier_id>', views.check_delivery, name='check_delivery'),
-    path ('check_delivery_ean/<int:identifier_id>', views.check_delivery_ean, name='check_delivery_ean'),
-
     path ('check_delivery_unposted/<int:document_id>', views.check_delivery_unposted, name='check_delivery_unposted'),
     path ('delivery/<int:identifier_id>', views.delivery, name='delivery'),
     path ('delivery_smartphones/<int:identifier_id>', views.delivery_smartphones, name='delivery_smartphones'),

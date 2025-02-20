@@ -123,6 +123,15 @@
                                         <input class='form-control' type="text" id="enter_imei" name="imei" maxlength='100'
                                             required>
                                     </div>
+                                    {% for group in request.user.groups.all %}
+                                    {% if group.name == 'admin' %}
+                                    <div class="form-group">
+                                        <label for="name">EAN:</label>
+                                        <input class='form-control' type="text" id="enter_ean" name="ean" maxlength='30'
+                                            required>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
                             </div>
 
                             <div class="modal-footer">
@@ -310,6 +319,8 @@
 
     function closeModal() {
         enterDeliveryModal.classList.remove('openModal')
+        //gets rid of old string in input fields
+        window.location.reload()
     }
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')

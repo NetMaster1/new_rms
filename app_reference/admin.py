@@ -14,7 +14,8 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ('imei', 'category', 'name')
 
 class ProductCategoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'bonus_percent')
+    list_display = ('id', 'name', 'bonus_percent', 'complex')
+    list_editable = ('complex',)
 
 class ServicesAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'retail_price', 'bonus_percent')

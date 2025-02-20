@@ -2722,10 +2722,6 @@ def identifier_delivery(request):
     identifier = Identifier.objects.create()
     return redirect("delivery", identifier.id)
 
-def identifier_delivery_smartphones(request):
-    identifier = Identifier.objects.create()
-    return redirect("delivery_smartphones", identifier.id)
-
 def check_delivery(request, identifier_id):
     suppliers = Supplier.objects.all()
     # shops = Shop.objects.all()
@@ -2754,36 +2750,6 @@ def check_delivery(request, identifier_id):
             )
             return redirect("delivery", identifier.id)
 
-def check_delivery_ean(request, identifier_id):
-    suppliers = Supplier.objects.all()
-    # shops = Shop.objects.all()
-    categories = ProductCategory.objects.all()
-    identifier = Identifier.objects.get(id=identifier_id)
-    registers = Register.objects.filter(identifier=identifier)
-    # if 'imei' in request.GET:
-    if request.method == "POST":
-        ean = request.POST["ean"]
-        # if '/' in imei:
-        #     imei=imei.replace('/', '_')
-        if Product.objects.filter(ean=ean).exists():
-            product=Product.objects.filter(ean=ean)
-
-            if Register.objects.filter(identifier=identifier, product=product).exists():
-                messages.error(request, "Вы уже ввели данное наименование.")
-                return redirect("delivery_smartphones", identifier.id)
-            else:
-                register = Register.objects.create(
-                    identifier=identifier, 
-                    product=product
-                )
-                return redirect("delivery_smartphones", identifier.id)
-            
-
-            #return redirect("ean_list", identifier.id)
-        else:
-            messages.error(request, "Такого EAN не существует. Сначала введите его.")
-            return redirect("delivery_smartphones", identifier.id)
-
 def check_delivery_unposted(request, document_id):
     document = Document.objects.get(id=document_id)
     registers = Register.objects.filter(document=document)
@@ -2811,7 +2777,8 @@ def check_delivery_unposted(request, document_id):
 
 def delivery(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
-    categories = ProductCategory.objects.all()
+    categories = ProductCategory.objects.exclude()
+    categories = ProductCategory.objects.filter(complex=False).order_by('name')
     suppliers = Supplier.objects.all()
     shop=Shop.objects.get(name='ООС')
     #shops = Shop.objects.all()
@@ -2867,8 +2834,10 @@ def delete_line_unposted_delivery(request, document_id, imei):
 def enter_new_product(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     if request.method == "POST":
-        ean = request.POST["EAN"]
         imei = request.POST["imei"]
+        name = request.POST["name"]
+        category = request.POST["category"]
+        category=ProductCategory.objects.get(id=category)
         if '/' in imei:
             imei=imei.replace('/', '_')
         #category = request.POST["category"]
@@ -2880,12 +2849,22 @@ def enter_new_product(request, identifier_id):
             )
             return redirect("delivery", identifier.id)
         else:
-            sku=SKU.objects.get(ean=ean)
-            category=sku.category
-            category=ProductCategory.objects.get(id=category)
-            name=str(sku.name)
+            if SKU.objects.filter(ean=imei).exists():
+                pass
+                #sku=SKU.objects.get(ean=imei)
+            else:
+                sku=SKU.objects.create(
+                    ean=imei,
+                    name=name,
+                    category=category,
+                    )
+                product=Product.objects.create(
+                    imei=imei,
+                    ean=imei,
+                    name=name,
+                    category=category,
 
-            product = Product.objects.create(name=name, ean=ean, imei=imei, category=category)
+                )
             return redirect("delivery", identifier.id)
     else:
         return redirect("delivery", identifier.id)
@@ -3355,7 +3334,7 @@ def unpost_delivery(request, document_id):
 #=======================================================================
 def sku_new(request):
     if request.user.is_authenticated:
-        categories=ProductCategory.objects.all()
+        categories = ProductCategory.objects.filter(complex=True).order_by('-name')
         context = {
             "categories": categories,
         }
@@ -4415,18 +4394,20 @@ def enter_new_product_recognition(request, identifier_id):
     if request.method == "POST":
         name = request.POST["name"]
         imei = request.POST["imei"]
+        ean=request.POST.get('ean', False)
         if '/' in imei:
             imei=imei.replace('/', '_')
         category = request.POST["category"]
         category = ProductCategory.objects.get(id=category)
         if Product.objects.filter(imei=imei).exists():
-            messages.error(
-                request,
-                "Наименование в базу данных не введено, так как IMEI не является уникальным",
-            )
+            messages.error(request,"Наименование в базу данных не введено, так как IMEI не является уникальным",)
             return redirect("recognition", identifier.id)
+        if not ean:
+            ean=imei
+        if SKU.objects.filter(ean=ean).exists():
+            sku=SKU.objects.get(ean=imei)
         else:
-            product = Product.objects.create(name=name, imei=imei, category=category)
+            product = Product.objects.create(name=name, imei=imei, ean=imei, category=category)
             return redirect("recognition", identifier.id)
     else:
         return redirect("recognition", identifier.id)
