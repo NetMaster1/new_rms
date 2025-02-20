@@ -368,6 +368,14 @@ def clear_recognition(request, identifier_id):
         register.delete()
     return redirect("recognition", identifier.id)
 
+def clear_sku_imei_link(request, sku_id, identifier_id):
+    sku=SKU.objects.get(id=sku_id)
+    identifier=Identifier.objects.get(id=identifier_id)
+    registers = Register.objects.filter(identifier=identifier)
+    for register in registers:
+        register.delete()
+    return redirect("sku_imei_link", sku.id, identifier.id)
+
 def delete_unposted_document(request, document_id):
     document = Document.objects.get(id=document_id)
     users=Group.objects.get(name="sales").user_set.all()
@@ -3344,34 +3352,6 @@ def unpost_delivery(request, document_id):
         auth.logout(request)
         return redirect("login")
 
-def enter_new_sku (request, identifier_id):
-    identifier = Identifier.objects.get(id=identifier_id)
-    categories=ProductCategory.objects.all()
-    if request.method == "POST":
-        name = request.POST["name"]
-        ean = request.POST["EAN"]
-        if '/' in ean:
-            imei=imei.replace('/', '_')
-        category = request.POST["category"]
-        category = ProductCategory.objects.get(id=category)
-        ean_length=len(ean)
-        if ean_length>13:
-            messages.error(
-                request,
-                "EAN не может содержать больше 13 цифр",
-            )
-        if SKU.objects.filter(ean=ean).exists():
-            messages.error(
-                request,
-                "SKU с данным EAN уже есть в БД.",
-            )
-            return redirect("delivery", identifier.id)
-        else:
-            sku = SKU.objects.create(name=name, ean=ean, category=category)
-            return redirect("delivery", identifier.id)
-    else:
-
-        return redirect("delivery", identifier.id)
 #=======================================================================
 def sku_new(request):
     if request.user.is_authenticated:
@@ -3405,10 +3385,6 @@ def sku_new_create(request):
             else:
                 identifier=Identifier.objects.create()
                 sku = SKU.objects.create(name=name, ean=ean, category=category)
-                # context = {
-                #     "sku": sku,
-                # }
-                #return render(request, "documents/sku_imei_link.html", context)
                 return redirect('sku_imei_link', sku.id, identifier.id)
         else:
             return redirect("log")
@@ -3419,12 +3395,22 @@ def sku_imei_link(request, sku_id, identifier_id):
         identifier = Identifier.objects.get(id=identifier_id)
         sku=SKU.objects.get(id=sku_id)
         if request.method == "POST":
-            
-            pass
-
-
+            if Register.objects.filter(identifier=identifier).exists():
+                category=ProductCategory.objects.get(name=sku.category)
+                imeis = request.POST.getlist("imei", None)
+                names = request.POST.getlist("name", None)
+                eans = request.POST.getlist("ean", None)
+                n = len(imeis)
+                for i in range(n):
+                    product = Product.objects.create(imei=imeis[i], name=names[i], ean=eans[i], category=category)
+                registers=Register.objects.filter(identifier=identifier)
+                for register in registers:
+                    register.delete()
+                return redirect ('log')
+            else:
+                messages.error(request, "Вы не ввели ни одного наименования.")
+                return redirect("sku_imei_link", sku.id, identifier.id)
         else:
-            
             if Register.objects.filter(identifier=identifier).exists():
                 registers = Register.objects.filter(identifier=identifier).order_by("-created")
                 numbers = registers.count()
@@ -3472,6 +3458,13 @@ def sku_product_register_create(request, sku_id, identifier_id):
                 return redirect("sku_imei_link", sku.id, identifier.id)
     else:
         return redirect("login")
+    
+def delete_line_sku_imei_register(request, sku_id, imei, identifier_id ):
+    sku=SKU.objects.get(id=sku_id)
+    identifier=Identifier.objects.get(id=identifier_id)
+    item = Register.objects.get(imei=imei, identifier=identifier)
+    item.delete()
+    return redirect("sku_imei_link", sku.id, identifier.id)
 
 # =====================================================================================
 def identifier_transfer(request):

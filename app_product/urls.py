@@ -41,7 +41,7 @@ urlpatterns = [
     path ('change_delivery_posted/<int:document_id>', views.change_delivery_posted, name='change_delivery_posted'),
     path ('enter_new_product_from_unposted/<int:document_id>', views.enter_new_product_from_unposted, name='enter_new_product_from_unposted'),
     path ('unpost_delivery/<int:document_id>', views.unpost_delivery, name='unpost_delivery'),
-    path ('enter_new_sku/<int:identifier_id>', views.enter_new_sku, name='enter_new_sku'),
+    # path ('enter_new_sku/<int:identifier_id>', views.enter_new_sku, name='enter_new_sku'),
    
     # ======================Recognition=========================
     path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),
@@ -236,4 +236,6 @@ urlpatterns = [
     path ('sku_new_create', views.sku_new_create, name='sku_new_create'),
     path ('sku_imei_link/<int:sku_id>/<int:identifier_id>', views.sku_imei_link, name='sku_imei_link'),
     path ('sku_product_register_create/<int:sku_id>/<int:identifier_id>', views.sku_product_register_create, name='sku_product_register_create'),
+    path ('delete_line_sku_imei_register/<sku_id>/<imei>/<int:identifier_id>', views.delete_line_sku_imei_register, name='delete_line_sku_imei_register'),
+    path ('clear_sku_imei_link/<sku_id>/<int:identifier_id>', views.clear_sku_imei_link, name='clear_sku_imei_link'),
 ]
