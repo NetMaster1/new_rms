@@ -4417,9 +4417,18 @@ def enter_new_product_recognition(request, identifier_id):
         if not ean:
             ean=imei
         if SKU.objects.filter(ean=ean).exists():
-            sku=SKU.objects.get(ean=imei)
+            sku=SKU.objects.get(ean=ean)
         else:
-            product = Product.objects.create(name=name, imei=imei, ean=imei, category=category)
+            sku=SKU.objects.create(
+                category=category,
+                ean=ean,
+                name=name
+            )
+            product = Product.objects.create(
+                name=name, 
+                imei=imei, 
+                ean=ean, 
+                category=category)
             return redirect("recognition", identifier.id)
     else:
         return redirect("recognition", identifier.id)
