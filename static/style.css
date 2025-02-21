@@ -267,7 +267,7 @@ footer {
 
 
 /* ===================== Delivery Page Modal for Entering New Product========================= */
-.enterDeliveryModal {
+.enterDeliveryModal{
     display: none;
 }
 
@@ -278,7 +278,6 @@ footer {
     right: 0mm; */
 }
 /* ====================End of Delivery Page Modal for Entering New Product ======================= */
-
 
 /* ===================== Delivery Page Modal for Entering New SKU========================= */
 .enterSKUModal {
@@ -292,8 +291,6 @@ footer {
     right: 0mm; */
 }
 /* ====================End of Delivery Page Modal for Entering New Product ======================= */
-
-
 
 
 /* ===================== Change Payment Type Modal========================= */
