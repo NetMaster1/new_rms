@@ -174,6 +174,7 @@ class RemainderHistory(models.Model):
     inventory_doc = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name="inventory" ,null=True, blank=True)
     rho_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
+    ean = models.CharField(max_length=50, null=True, blank=True)
     supplier = models.ForeignKey(Supplier, null=True, blank=True, on_delete=models.DO_NOTHING)
     product_id = models.ForeignKey(Product, blank=True, on_delete=models.DO_NOTHING, null=True)
     name = models.CharField(max_length=250)

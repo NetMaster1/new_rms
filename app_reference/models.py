@@ -87,14 +87,14 @@ class SKU (models.Model):#Stock Keeping Unit
 
 class Product (models.Model):
     created = models.DateTimeField(auto_now=True)
-    emumerator = models.IntegerField(null=True)
+    emumerator = models.IntegerField(null=True, blank=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING)
     name = models.CharField(max_length=160)
     imei = models.CharField(max_length=50, unique=True)
     ean = models.CharField(max_length=50, null=True, blank=True)
     for_mp_sale = models.BooleanField(default=False) #items for marketplaces
-    ozon_id = models.CharField(max_length=50, unique=True, null=True)
-    image_file = models.FileField(upload_to='uploads', null=True)
+    ozon_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    image_file = models.FileField(upload_to='uploads', null=True, blank=True)
     #status = models.BooleanField(default=False)  # "True" for sent to T2 (for sim_cards)
 
     class Meta:
