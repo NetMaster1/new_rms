@@ -75,15 +75,15 @@ class DocumentType (models.Model):
 
 class SKU (models.Model):#Stock Keeping Unit 
     created = models.DateTimeField(auto_now=True)
-    emumerator = models.IntegerField(null=True)
+    emumerator = models.IntegerField(null=True, blank=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True, blank=True)
     name = models.CharField(max_length=160)
-    ozon_id = models.CharField(max_length=50, unique=True, null=True)
+    ozon_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
     ean = models.CharField(max_length=30, null=True)
-    image_file_1 = models.FileField(upload_to='uploads', null=True)
-    image_file_2 = models.FileField(upload_to='uploads', null=True)
-    image_file_3 = models.FileField(upload_to='uploads', null=True)
-    video_file = models.FileField(upload_to='uploads', null=True)
+    image_file_1 = models.FileField(upload_to='uploads', null=True, blank=True)
+    image_file_2 = models.FileField(upload_to='uploads', null=True, blank=True)
+    image_file_3 = models.FileField(upload_to='uploads', null=True, blank=True)
+    video_file = models.FileField(upload_to='uploads', null=True, blank=True)
 
 class Product (models.Model):
     created = models.DateTimeField(auto_now=True)

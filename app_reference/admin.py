@@ -44,7 +44,7 @@ class YearAdmin(admin.ModelAdmin):
 
 class SKUAdmin(admin.ModelAdmin):
     list_display = ('id','name', 'ean', 'ozon_id', 'image_file_1', 'image_file_2', 'image_file_3', 'video_file',)
-    search_fields = ('imei', 'name',)
+    search_fields = ('ean', 'name',)
     list_editable = ('image_file_1', 'image_file_2', 'image_file_3', 'video_file',)
 
 admin.site.register(Shop, ShopAdmin)

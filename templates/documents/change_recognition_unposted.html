@@ -57,66 +57,7 @@
                     </form>
                 </div>
             </div>
-                <!-- ==============================Modal Trigger================== -->
-                <div class="col-6 border rounded p-3">
-                    <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
-                        Внести новое наименование в базу данных
-                    </button>
-                </div>
-    <!-- ============================End of Modal Trigger========================= -->
-
-    <!-- ===========================Modal Body================================= -->
-        <div class="enterDeliveryModal">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Введите новое наименование</h5>
-                        <!-- <button type="button" class="btn_close"></button> -->
-                    </div>
-                    <div class="modal-body">
-                        <form action="{% url 'enter_new_product_from_unposted' document.id%}" method="POST">
-                            {% csrf_token %}
-
-                            <div class="form-row">
-                                <div class="col-3">
-                                    <label for="category">Вид ТМЦ</label>
-                                </div>
-                                <div class="col">
-                                    <select name="category" id="category" class='form-control' required>
-                                        <!-- <option selected="false" disabled="disabled">Выберите категорию товара</option> -->
-                                        <option value="">Выберите операцию-основание</option>
-                                        {% for category in categories %}
-                                        <option value="{{category.id}}">{{category.name}}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="name">Наименование:</label>
-                                <input class='form-control' type="text" id="name" name="name" maxlength='100'
-                                    required>
-                            </div>
-                            <div class="form-group">
-                                <label for="name">IMEI:</label>
-                                <input class='form-control' type="text" id="input_imei" name="imei"
-                                    maxlength='100' required>
-                            </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn_close"
-                            data-bs-dismiss="modal">Закрыть без
-                            сохранения</button>
-                        <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
-                    </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    <!-- =================================End of Modal Body======================================== -->
-
-
-
+    
                 <div class="row m-2 pb-2">
                     <div class="col-12 border rounded p-3">
 
