@@ -96,7 +96,8 @@
                     Справочники
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <li><a class="dropdown-item" href="{% url 'products' %}">Номенклатура</a></li>
+                    <li><a class="dropdown-item" href="{% url 'products' %}">Номенклатура (IMEI)</a></li>
+                    <li><a class="dropdown-item" href="{% url 'eans' %}">SKU (EAN)</a></li>
                     <li><a class="dropdown-item" href="{% url 'clients' %}">Клиенты</a></li>
                     <li><a class="dropdown-item" href="#">Персонал</a></li>
                 </ul>
@@ -130,7 +131,7 @@
                     <li><a class="dropdown-item" href="{% url 'delivery_auto' %}" >Автоматический ввод поступления ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'transfer_auto' %}" >Автоматический ввод перемещения ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'revaluation_auto' %}" >Автоматический ввод переоценки ТМЦ</a></li>
-                    <li><a class="dropdown-item" href="{% url 'identifier_delivery' %}" >Поступление ТМЦ (кроме смартфонров, телефонов)</a></li>
+                    <li><a class="dropdown-item" href="{% url 'identifier_delivery' %}" >Поступление ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'identifier_recognition' %}">Оприходование ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'identifier_transfer' %}">Перемещение ТМЦ</a></li>
                     <li><a class="dropdown-item" href="{% url 'shop_choice_signing_off' %}">Списание ТМЦ</a></li>
