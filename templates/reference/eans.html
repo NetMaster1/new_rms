@@ -20,12 +20,12 @@
 <!-- ===================End of Alert Messages Module================ -->
 
 <div class="log border rounded m-auto mt-1">
-    <div class="font_heading">Номенклатура</div> 
+    <div class="font_heading">SKU (EAN) </div> 
 </div>
        
 
 <div class="log border rounded m-auto mt-1">
-    <form action="{% url 'product_list' %}" method="POST">
+    <form action="{% url 'eans_list' %}" method="POST">
         {% csrf_token %}
 
         <div class="row form-group m-auto">
@@ -42,7 +42,7 @@
             </div> -->
         
             <div class="col-3">
-                <input type="text" class='form-control' name="imei" placeholder="IMEI">
+                <input type="text" class='form-control' name="ean" placeholder="EAN">
             </div>
         </div>
 
@@ -59,7 +59,7 @@
                         class="btn btn-sm btn-block btn-outline-dark">
                 </a>
             </div>
-           
+            
     </form>
 </div>
 </div>

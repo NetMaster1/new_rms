@@ -38,20 +38,20 @@
                         <select name="category" id="category" class='form-control'>
                             <!-- <option selected="true" disabled="disabled">Выберите категорию</option> -->
                             <option value="{{product.category.id}}">{{product.category.name}}</option>
-                            {% for category in categories %}
+                            <!-- {% for category in categories %}
                             <option value="{{category.id}}">{{category.name}}</option>
-                            {% endfor %}
+                            {% endfor %} -->
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="name">Наименование:</label>
-                    <input class='form-control' type="text" id="name" name="name" value='{{product.name}}'>
+                    <input class='form-control' type="text" id="name" name="name" value='{{product.name}}' readonly>
                 </div>
             
                 <div class="form-group">
                     <label for="name">IMEI:</label>
-                    <input class='form-control' type="text" id="imei" name="imei" value='{{product.imei}}' readonly>
+                    <input class='form-control' type="text" id="imei" name="imei" value='{{product.imei}}'>
                 </div>
             
                 </div>

@@ -11,5 +11,9 @@ urlpatterns = [
     path ('product_card/<int:id>', views.product_card, name='product_card'),
     path ('clients', views.clients, name='clients'),
     path ('eans', views.eans, name='eans'),
+    path ('eans_list', views.eans_list, name='eans_list'),
+    path ('eans_card/<int:sku_id>', views.ean_card, name='ean_card'),
+    path ('update_sku/<int:sku_id>', views.update_sku, name='update_sku'),
+    path ('delete_sku/<int:sku_id>', views.delete_sku, name='delete_sku'),
 
 ]

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.shortcuts import render
-from . models import Product, ProductCategory
+from . models import Product, ProductCategory, SKU
 from app_product.models import RemainderHistory, AvPrice
 from app_clients.models import Customer
 from django.contrib import messages
@@ -22,7 +22,7 @@ def product_list (request):
     products=Product.objects.all()
     categories=ProductCategory.objects.all()
     if request.method == "POST":
-        category = request.POST["category"]
+        #category = request.POST["category"]
         imei = request.POST["imei"]
         imei=imei.replace(" ","")#getting rid of spaces.
         if imei:
@@ -32,27 +32,27 @@ def product_list (request):
             except:
                 messages.error(request, "Наименование с данным IMEI отсутствует в базе данных")
                 return redirect ('products')
-        else:
-            if category:
+        # else:
+        #     if category:
            
-                category=ProductCategory.objects.get(id=category)
-                queryset_list=Product.objects.filter(category=category)
-                numbers = queryset_list.count()
-                for item, i in zip(queryset_list, range(numbers)):
-                    item.enumerator = i + 1
-                    item.save()
+        #         category=ProductCategory.objects.get(id=category)
+        #         queryset_list=Product.objects.filter(category=category)
+        #         numbers = queryset_list.count()
+        #         for item, i in zip(queryset_list, range(numbers)):
+        #             item.enumerator = i + 1
+        #             item.save()
 
-                #============paginator module=================
-                paginator = Paginator(queryset_list, 50)
-                page = request.GET.get('page')
-                paged_queryset_list = paginator.get_page(page)
-                #=============end of paginator module===============
-                context = {
-                    'queryset_list':  paged_queryset_list,
-                    'categories': categories,
-                    'products': products, 
-                }
-                return render (request, 'reference/products.html', context )
+        #         #============paginator module=================
+        #         paginator = Paginator(queryset_list, 50)
+        #         page = request.GET.get('page')
+        #         paged_queryset_list = paginator.get_page(page)
+        #         #=============end of paginator module===============
+        #         context = {
+        #             'queryset_list':  paged_queryset_list,
+        #             'categories': categories,
+        #             'products': products, 
+        #         }
+        #         return render (request, 'reference/products.html', context )
     context={
         "products": products,
         'categories': categories
@@ -63,22 +63,25 @@ def update_product (request, id):
     if request.method == "POST":
         product=Product.objects.get(id=id)
         name = request.POST["name"]
-        imei = request.POST["imei"]
+        new_imei = request.POST["imei"]
         category = request.POST["category"]
         category=ProductCategory.objects.get(id=category)
+        imei=product.imei
         product.name=name
         product.category=category
-        #product.imei=imei
+        product.imei=new_imei
         product.save()
-        if RemainderHistory.objects.filter(imei=product.imei).exists():
-            remainders=RemainderHistory.objects.filter(imei=product.imei)
+        if RemainderHistory.objects.filter(imei=imei).exists():
+            remainders=RemainderHistory.objects.filter(imei=imei)
             for item in remainders:
                 item.category=category
                 item.name=name
+                item.imei=new_imei
                 item.save()
-        if AvPrice.objects.filter(imei=product.imei).exists():
-            item=AvPrice.objects.get(imei=product.imei)
+        if AvPrice.objects.filter(imei=imei).exists():
+            item=AvPrice.objects.get(imei=imei)
             item.name=name
+            item.imei=new_imei
             item.save()
 
     return redirect ('products')
@@ -111,4 +114,82 @@ def clients (request):
     return render (request, 'reference/clients.html', context)
 
 def eans (request):
+    # categories=ProductCategory.objects.all()
+    # context ={
+    #     'categories': categories
+    # }
+    #return render (request, 'reference/eans.html', context )
+    return render (request, 'reference/eans.html')
+
+def eans_list(request):
+    skus=SKU.objects.all()
+    categories=ProductCategory.objects.all()
+    if request.method == "POST":
+        #category = request.POST["category"]
+        ean = request.POST["ean"]
+        ean=ean.replace(" ","")#getting rid of spaces.
+        if ean:
+            try:
+                sku=SKU.objects.get(ean=ean)
+                return redirect ('ean_card', sku.id )
+            except:
+                messages.error(request, "SKU с данным EAN отсутствуеут в БД")
+                return redirect ('eans')
+        else:
+            pass
+            # if category:
+            #     category=ProductCategory.objects.get(id=category)
+            #     queryset_list=Product.objects.filter(category=category)
+            #     numbers = queryset_list.count()
+            #     for item, i in zip(queryset_list, range(numbers)):
+            #         item.enumerator = i + 1
+            #         item.save()
+
+            #     #============paginator module=================
+            #     paginator = Paginator(queryset_list, 50)
+            #     page = request.GET.get('page')
+            #     paged_queryset_list = paginator.get_page(page)
+            #     #=============end of paginator module===============
+            #     context = {
+            #         'queryset_list':  paged_queryset_list,
+            #         'categories': categories,
+            #         'products': products, 
+            #     }
+            #     return render (request, 'reference/products.html', context )
+   
+def ean_card(request, sku_id):
+    categories=ProductCategory.objects.all()
+    sku=SKU.objects.get(id=sku_id)
+    context = {
+        'categories': categories,
+        'sku': sku
+    }
+    return render(request, 'reference/ean_card.html', context)
+
+def update_sku (request, sku_id):
+    if request.method == "POST":
+        sku=SKU.objects.get(id=sku_id)
+        name = request.POST["name"]
+        ean = request.POST["ean"]
+        category = request.POST["category"]
+        category=ProductCategory.objects.get(id=category)
+        sku.name=name
+        sku.category=category
+        sku.save()
+        if Product.objects.filter(ean=ean).exists():
+            products=Product.objects.filter(ean=ean)
+            for product in products:
+                product.category=category
+                #product.ean=ean
+                product.save()
+        if RemainderHistory.objects.filter(ean=ean).exists():
+            remainders=RemainderHistory.objects.filter(ean=ean)
+            for item in remainders:
+                item.category=category
+                item.name=name
+                item.save()
+    return redirect ('eans')
+
+def delete_sku (request, sku_id):
     pass
+    return redirect ('log')
