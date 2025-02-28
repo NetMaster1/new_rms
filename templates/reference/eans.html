@@ -25,24 +25,13 @@
        
 
 <div class="log border rounded m-auto mt-1">
-    <form action="{% url 'eans_list' %}" method="POST">
+    <form action="{% url 'sku_check' %}" method="POST">
         {% csrf_token %}
 
         <div class="row form-group m-auto">
-            <!-- <div class="col-3">
-                <select name="category" class='form-control' id='category'> -->
-                    <!-- <option selected="true" disabled="disabled">Выберите категорию</option> -->
-                    <!-- <option value="{{product.category.id}}">{{product.category}}</option> -->
-                    <!-- <option value='#'>Выберите категорию</option> -->
-                    <!-- <option value>Выберите категорию</option> -->
-                    <!-- {% for category in categories %}
-                    <option value="{{category.id}}">{{category.name}}</option>
-                    {% endfor %}
-                </select>
-            </div> -->
-        
+       
             <div class="col-3">
-                <input type="text" class='form-control' name="ean" placeholder="EAN">
+                <input type="text" class='form-control' name="ean" placeholder="Введите EAN">
             </div>
         </div>
 

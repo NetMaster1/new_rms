@@ -36,7 +36,7 @@ urlpatterns = [
     path ('change_delivery_posted/<int:document_id>', views.change_delivery_posted, name='change_delivery_posted'),
     path ('enter_new_product_from_unposted/<int:document_id>', views.enter_new_product_from_unposted, name='enter_new_product_from_unposted'),
     path ('unpost_delivery/<int:document_id>', views.unpost_delivery, name='unpost_delivery'),
-    # path ('enter_new_sku/<int:identifier_id>', views.enter_new_sku, name='enter_new_sku'),
+    path ('fill_in_new_delivery/<int:sku_id>/<int:identifier_id>', views.fill_in_new_delivery, name='fill_in_new_delivery'),
    
     # ======================Recognition=========================
     path ('identifier_recognition', views.identifier_recognition, name='identifier_recognition'),
@@ -228,6 +228,7 @@ urlpatterns = [
 
     #==================================================================
     path ('sku_new', views.sku_new, name='sku_new'),
+    path ('sku_check', views.sku_check, name='sku_check'),
     path ('sku_new_create', views.sku_new_create, name='sku_new_create'),
     path ('sku_imei_link/<int:sku_id>/<int:identifier_id>', views.sku_imei_link, name='sku_imei_link'),
     path ('sku_product_register_create/<int:sku_id>/<int:identifier_id>', views.sku_product_register_create, name='sku_product_register_create'),

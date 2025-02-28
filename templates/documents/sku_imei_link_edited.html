@@ -29,17 +29,17 @@
 <div class="row m-2">
     <div class="col-6 border rounded p-3">
        
-    <form action="{%url 'sku_product_register_create' sku.id identifier.id%}" method="POST" id="check_button">
-            {% csrf_token %}
-            <div class="row m-1">
-            <div class="col-6">
-                <input type="text" class='form-control' id="check_imei" name="imei" maxlength='50' required placeholder="Введите IMEI" autofocus>
-            </div>
-        
-            <div class="col-6">
-                <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark ">
-            </div> 
-            </div>
+        <form action="{%url 'sku_product_register_create' sku.id identifier.id%}" method="POST" id="check_button">
+        {% csrf_token %}
+        <div class="row m-1">
+        <div class="col-6">
+            <input type="text" class='form-control' id="check_imei" name="imei" maxlength='50' required placeholder="Введите IMEI" autofocus>
+        </div>
+    
+        <div class="col-6">
+            <input type="submit" value="Внести наименование в документ" class="btn btn-sm btn-outline-dark ">
+        </div> 
+        </div>
     </form>
     </div>  
 </div>     
@@ -47,7 +47,7 @@
 <div class="row m-2 pb-2">
     <div class="col-12 border rounded p-3">
 
-    <form method="POST" id='save_button'>
+    <form action="{% url 'sku_imei_link' sku.id identifier.id %}" method="POST" id='save_button'>
             {% csrf_token %}
 
             <div class='form-inline'>
@@ -75,6 +75,8 @@
             <input type="text" class='form-control' id="imei" name="imei" value='{{register.imei}}'readonly >
         </div>
      
+    
+     
         <div class="col-1">
             <a href="{% url 'delete_line_sku_imei_register' sku.id register.imei identifier.id %}">
                 <input type="button" value="Удалить" class="btn btn-sm btn-block btn-outline-dark delete_line_storage">
@@ -82,28 +84,22 @@
         </div>
     </div>
     {% endfor %}
-
-    <div class="row m-auto mb-1 mt-3">
-        <div class="col-3">
-            <label for="date">Документ 'Поступление ТМЦ'#</label>
-        </div>
-        <div class="col-2">
-            <input type="text" class='form-control' id="document_number" name="document_number" >
-        </div>
-    </div>
         
 
         <div class="row m-auto mt-3 ">
-            <div class="col-5">
-                <input type="submit" value="Создать наименования c занесением в документ 'Поступление ТМЦ'" class="btn btn-sm btn-block btn-outline-dark" formaction="{%url 'fill_in_new_delivery' sku.id identifier.id%}"> 
-            </div>
-            <div class="col-5">
-                <input type="submit" value="Создать наименования без занесения в документ 'Поступление ТМЦ'" class="btn btn-sm btn-block btn-outline-dark" formaction="{% url 'sku_imei_link' sku.id identifier.id %}">
-            </div>
+
+            <div class="col-2">
+                <a href="{% url 'fill_in_new_delivery' sku.id identifier.id %}">
+                    <input type="button" value="Внести наименования в документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                </a>
         </div>
+
+            <div class="col-2">
+                <input type="submit" value="Создать наименования" class="btn btn-sm btn-block btn-outline-dark">
+            </div>
            
     </form>
-    <div class="row m-auto mt-3 ">   
+            
             <div class="col-2">
                     <a href="{% url 'clear_sku_imei_link' sku.id identifier.id %}">
                         <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storage">
@@ -115,8 +111,7 @@
                 </a>
             </div>
 
-    </div>
-
+        </div>
     </div>
     </div>
 </div>
