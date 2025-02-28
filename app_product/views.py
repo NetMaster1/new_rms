@@ -2597,7 +2597,7 @@ def delivery_auto(request):
                     name=row.Title,
                     imei=imei, 
                     category=category,
-                    EAN=imei      
+                    ean=imei      
                 )
             # checking docs before remainder_history
             if RemainderHistory.objects.filter(imei=imei, shop=shop, created__lt=document.created).exists():
@@ -2740,13 +2740,17 @@ def check_delivery(request, identifier_id):
             imei=imei.replace('/', '_')
         if Product.objects.filter(imei=imei).exists():
             product = Product.objects.get(imei=imei)
+            # name=product.name
+            # imei=product.imei
             if Register.objects.filter(identifier=identifier, product=product).exists():
                 messages.error(request, "Вы уже ввели данное наименование.")
                 return redirect("delivery", identifier.id)
             else:
                 register = Register.objects.create(
                     identifier=identifier, 
-                    product=product
+                    product=product,
+                    # name=name,
+                    # imei=imei,
                 )
                 return redirect("delivery", identifier.id)
         else:
@@ -2801,6 +2805,45 @@ def delivery(request, identifier_id):
     }
     return render(request, "documents/delivery.html", context)
 
+def fill_in_new_delivery(request, sku_id, identifier_id):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            sku=SKU.objects.get(id=sku_id)
+            identifier=Identifier.objects.get(id=identifier_id)
+            if Register.objects.filter(identifier=identifier).exists():
+                category=ProductCategory.objects.get(name=sku.category)
+                imeis = request.POST.getlist("imei", None)
+                names = request.POST.getlist("name", None)
+                eans = request.POST.getlist("ean", None)
+                document_number=request.POST.get('document_number', False)
+                if not document_number:
+                    messages.error(
+                    request, "Введите обязательный атрибут: номер документа 'Поступление ТМЦ'."
+                    )
+                    return redirect("sku_imei_link", sku.id, identifier.id)
+                if not Document.objects.filter(id=int(document_number)).exists():
+                    messages.error(
+                    request, "Документа 'Поступление ТМЦ' с таким номером не существует."
+                    )
+                    return redirect("sku_imei_link", sku.id, identifier.id)
+                document=Document.objects.get(id=document_number)
+                n = len(imeis)
+                for i in range(n):
+                    product = Product.objects.create(imei=imeis[i], name=names[i], ean=eans[i], category=category)
+                    register=Register.objects.get(imei=imeis[i], identifier=identifier)
+                    register.document=document
+                    register.identifier=None
+                    register.product=product
+                    register.save()
+                identifier.delete()
+            return redirect ('log')
+            
+    auth.logout(request)
+    return redirect ('login')
+
+
+    return redirect ('enter_document_number', sku.id, identifier.id)
+    
 def delivery_smartphones(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     categories = ProductCategory.objects.all()
@@ -2944,11 +2987,11 @@ def delivery_input(request, identifier_id):
                     post_check = True
             except KeyError:
                 post_check = False
-            if not imeis:
-                messages.error(request, "Вы не ввели ни одного наименования.")
-                return redirect("delivery", identifier.id)
             # posting delivery document
             if post_check == True:
+                if not imeis:
+                    messages.error(request, "Вы не ввели ни одного наименования.")
+                    return redirect("delivery", identifier.id)
                 document = Document.objects.create(
                     title=doc_type, 
                     shop_receiver=shop,
@@ -3349,12 +3392,35 @@ def sku_new(request):
         return render(request, "documents/sku_new.html", context)
     else:
         return redirect("login")
-    
+
+def sku_check(request):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            ean = request.POST["EAN"]
+            if '/' in ean:
+                ean=ean.replace('/', '_')
+            ean_length=len(ean)
+            if ean_length>13:
+                messages.error(request,
+                    "EAN не может содержать больше 13 цифр"
+                )
+                return redirect ('sku_new')
+            if SKU.objects.filter(ean=ean).exists():
+                identifier=Identifier.objects.create()
+                sku=SKU.objects.get(ean=ean)
+                return redirect('sku_imei_link', sku.id, identifier.id)
+            else:
+                messages.error(request, "Такого EAN не существует в БД. Сначала введите его")
+                return redirect("sku_new")
+        else:
+            return redirect("log")
+    return redirect("login")
+
 def sku_new_create(request):
     if request.user.is_authenticated:
         if request.method == "POST":
             name = request.POST["name"]
-            ean = request.POST["EAN"]
+            ean = request.POST["ean"]
             if '/' in ean:
                 ean=ean.replace('/', '_')
             category = request.POST["category"]
@@ -3366,9 +3432,10 @@ def sku_new_create(request):
                 )
                 return redirect ('sku_new')
             if SKU.objects.filter(ean=ean).exists():
-                identifier=Identifier.objects.create()
-                sku=SKU.objects.get(ean=ean)
-                return redirect('sku_imei_link', sku.id, identifier.id)
+                messages.error(request,
+                    "Данный EAN не уникальный"
+                )
+                return redirect ('sku_new')
             else:
                 identifier=Identifier.objects.create()
                 sku = SKU.objects.create(name=name, ean=ean, category=category)
@@ -3444,7 +3511,8 @@ def sku_product_register_create(request, sku_id, identifier_id):
                     )
                 return redirect("sku_imei_link", sku.id, identifier.id)
     else:
-        return redirect("login")
+        auth.logout(request)
+        return redirect ('login')
     
 def delete_line_sku_imei_register(request, sku_id, imei, identifier_id ):
     sku=SKU.objects.get(id=sku_id)

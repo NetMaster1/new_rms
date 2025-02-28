@@ -28,76 +28,101 @@
             <!-- ===================End of Alert Messages Module================ -->
 
 
-            <div class="row m-2 pb-2">
-                <div class="col-12 border rounded ">
-
-                    <form action="{% url 'sku_new_create'  %}" method="POST" class="teko_form">
+        <div class="row m-2 pb-2">
+            <div class="col-6">
+                <div class="row m-2 pb-2">
+                    <form action="{% url 'sku_check'  %}" method="POST">
                         {% csrf_token %}
-                        
-                        
-                        <div class="form-row">
-                            <div class="col-3">
-                                <label for="category">Вид ТМЦ</label>
-                            </div>
-                            <div class="col">
-                                <select name="category" id="category" class='form-control' required>
-                                    {% for category in categories %}
-                                    <option value="{{category.id}}">{{category.name}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-
-
                         <div class="form-row m-2">
-                            <div class="col-3">
-                                <label for="sum">
-                                    <h5>Название</h5>
-                                </label>
-                            </div>
-                            <div class="col">
-                                <input type="text" class='form-control' id="name" name="name" required>
-                            </div>
+                            <input type="text" class='form-control check_ean' id="EAN" name="EAN" required placeholder="Введите EAN (13 цифр)">
                         </div>
-                   
-                       
-                        <div class="form-row m-2">
-                            <div class="col-3">
-                                <label for="sum">
-                                    <h5>EAN</h5>
-                                </label>
-                            </div>
-                            <div class="col">
-                                <input type="text" class='form-control' id="EAN" name="EAN" required>
-                            </div>
-                        </div>
-
-                <div class="row m-2 p-2">
-                            <div class="col-1">
-                                <input type="submit" value="Создать" class="btn btn-sm btn-block btn-outline-dark pay_button">
-                            </div>
-                    </form>
-
-                    
-
-                    {%for group in request.user.groups.all %}
-                    {% if group.name == 'admin'%}
-                    <div class="col-2">
-                        <a href="{% url 'log' %}">
-                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
-                        </a>
-                    </div>
-                    {% else %}
-                    <div class="col-2">
-                        <a href="{% url 'sale_interface' %}">
-                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
-                        </a>
-                    </div>
-                    {% endif %}
-                    {% endfor %}
                 </div>
 
+                <div class="row m-2 p-2">
+                        <div class="col-5">
+                            <input type="submit" value="Создать товары с данным EAN" class="btn btn-sm btn-block btn-outline-dark pay_button">
+                        </div>
+                        <div class="col-5"> 
+                            {%for group in request.user.groups.all %}
+                            {% if group.name == 'admin'%}
+                            <div class="col-2">
+                                <a href="{% url 'log' %}">
+                                    <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                                </a>
+                            </div>
+                            {% else %}
+                            <div class="col-2">
+                                <a href="{% url 'sale_interface' %}">
+                                    <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                                </a>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    
+                </div>
+                </form>
+                    
+                
             </div>
+
+    
+            <!-- ==============================Modal Trigger================== -->
+            <div class="col-6 border rounded p-3">
+                <button type="button" class="btn btn-sm btn-outline-dark btn_modal ">
+                Внести новый SKU в БД
+                </button>
+            </div>
+            <!-- ============================End of Modal Trigger========================= -->
+            
+            <!-- ===========================Modal Body================================= -->
+            <div class="enterDeliveryModal">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Введите новый SKU</h5>
+                            <!-- <button type="button" class="btn_close"></button> -->
+                        </div>
+                        <div class="modal-body">
+                            <form action="{% url 'sku_new_create' %}" method="POST">
+                                {% csrf_token %}
+            
+                                    <div class="form-row">
+                                        <div class="col-3">
+                                            <label for="category">Вид ТМЦ</label>
+                                        </div>
+                                        <div class="col">
+                                            <select name="category" id="category" class='form-control' required>
+                                                {% for category in categories %}
+                                                <option value="{{category.id}}">{{category.name}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                <div class="form-group">
+                                    <label for="name">Наименование:</label>
+                                    <input class='form-control' type="text" id="name" name="name" maxlength='100' required>
+                                </div>
+                            
+                                <div class="form-group">
+                                    <label for="name">EAN:</label>
+                                    <input class='form-control' type="text" id="input_ean" name="ean" maxlength='30' required>
+                                </div>
+                                </div>
+                                
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary btn_close" data-bs-dismiss="modal">Закрыть без сохранения</button>
+                            <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
+                        </div>
+                        </form>
+                    </div>   
+                </div>
+            </div>
+            <!-- =================================End of Modal Body======================================== -->
+
+        </div>
+
+
         </div>
 
     </div>
@@ -105,15 +130,29 @@
 </div>
 
 <script>
-    const teko_form = document.querySelector('.teko_form')
-    const pay_button = document.querySelector('.pay_button')
+    const enterDeliveryModal =document.querySelector('.enterDeliveryModal');
+    const btn_close =document.querySelector('.btn_close');
+    const btn_modal =document.querySelector('.btn_modal');
+    const check_ean =document.querySelector('.check_ean');
 
-    teko_form.addEventListener('submit', blockButton)
-    function blockButton() {
-        console.log('clicked');
-        pay_button.disabled = true;
-    }
 
+        // ===============================================
+        btn_modal.addEventListener('click', openModal)
+        btn_close.addEventListener('click', closeModal)
+
+        function openModal (){
+            enterDeliveryModal.classList.add('openModal')
+        }
+
+        function closeModal() {
+            enterDeliveryModal.classList.remove('openModal')
+            //gets rid of old string in input fields
+            window.location.reload()
+        }
+        //===================================================
+ 
+
+        check_ean.select();
 </script>
    
 
