@@ -76,8 +76,10 @@ def update_product (request, id):
             for item in remainders:
                 item.category=category
                 item.name=name
+                item.save()
                 item.imei=new_imei
                 item.save()
+                
         if AvPrice.objects.filter(imei=imei).exists():
             item=AvPrice.objects.get(imei=imei)
             item.name=name
