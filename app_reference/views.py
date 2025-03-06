@@ -114,7 +114,7 @@ def clients (request):
         'clients': clients
     }
     return render (request, 'reference/clients.html', context)
-
+#===================================================================================
 def eans (request):
     # categories=ProductCategory.objects.all()
     # context ={
@@ -158,7 +158,8 @@ def eans_list(request):
             #         'products': products, 
             #     }
             #     return render (request, 'reference/products.html', context )
-   
+
+
 def ean_card(request, sku_id):
     categories=ProductCategory.objects.all()
     sku=SKU.objects.get(id=sku_id)
