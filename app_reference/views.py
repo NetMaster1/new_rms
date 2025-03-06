@@ -179,9 +179,16 @@ def update_sku (request, sku_id):
         sku.name=name
         sku.category=category
         sku.save()
+        #there is a lot of products with the same ean but differen imeis
         if Product.objects.filter(ean=ean).exists():
             products=Product.objects.filter(ean=ean)
             for product in products:
+                #changing name in av_price model
+                if product.name != name:
+                    if AvPrice.objects.filter(imei=product.imei).exists():
+                        item=AvPrice.objects.get(imei=product.imei)
+                        item.name=name
+                        item.save()
                 product.category=category
                 product.name=name
                 product.save()

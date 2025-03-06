@@ -45,7 +45,8 @@ class Document(models.Model):
 
 class AvPrice(models.Model):
     updated = models.DateTimeField(auto_now=True)
-    imei = models.CharField(max_length=250)
+    imei = models.CharField(max_length=50, null =True, blank=True)
+    # ean = models.CharField(max_length=50, null=True, blank=True)
     name = models.CharField(max_length=250, null=True)
     current_remainder = models.IntegerField(default=0)
     av_price = models.IntegerField(null=True)
