@@ -2586,10 +2586,18 @@ def delivery_auto(request):
         for i in range(cycle):
             n += 1
             row = df1.iloc[i]#reads each row of the df1 one by one
+            ean=row.Ean
+            if SKU.objects.filter(ean=ean).exists:
+                pass
+            else:
+                sku=SKU.objects.create(
+                    category=category,
+                    name=row.Title,
+                    ean=ean
+                )
             imei=row.Imei
             if '/' in str(imei):
-                imei=imei.replace('/', '_')
-           
+                imei=imei.replace('/', '_')           
             if Product.objects.filter(imei=imei).exists():
                 product=Product.objects.get(imei=imei)
             else:
@@ -2597,8 +2605,9 @@ def delivery_auto(request):
                     name=row.Title,
                     imei=imei, 
                     category=category,
-                    ean=imei      
+                    ean=ean  
                 )
+            
             # checking docs before remainder_history
             if RemainderHistory.objects.filter(imei=imei, shop=shop, created__lt=document.created).exists():
                 rho_latest_before = RemainderHistory.objects.filter(imei=imei, shop=shop, created__lt=document.created).latest('created')
@@ -2615,7 +2624,7 @@ def delivery_auto(request):
                 category=product.category,
                 supplier=supplier,
                 product_id=product,
-                #imei=row.Imei,
+                ean=product.ean,
                 imei=product.imei,
                 #name=row.Title,
                 name=product.name,
@@ -9776,7 +9785,6 @@ def change_ozon_qnty(request):
 
     else:
         return redirect("log")
-
 
 def ozon_product_archive(request):
     if request.user.is_authenticated:
