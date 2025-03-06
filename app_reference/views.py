@@ -183,7 +183,7 @@ def update_sku (request, sku_id):
             products=Product.objects.filter(ean=ean)
             for product in products:
                 product.category=category
-                #product.ean=ean
+                product.name=name
                 product.save()
         if RemainderHistory.objects.filter(ean=ean).exists():
             remainders=RemainderHistory.objects.filter(ean=ean)
