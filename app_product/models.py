@@ -35,21 +35,12 @@ class Document(models.Model):
     def __int__(self):
         return self.id
     
-
     # def __str__(self):
     #    return self.title.name
 
     # class Meta:
     #     ordering = ('created',)  # sorting by date
     #     verbose_name = self.title
-
-# class IntegratedDailySaleDoc(models.Model):
-#     created = models.DateField(auto_now_add=True, null=True)
-#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-#     shop = models.ForeignKey(Shop, null=True, on_delete=models.DO_NOTHING)
-
-#     def __int__(self):
-#         return self.id
 
 
 class AvPrice(models.Model):
@@ -119,32 +110,6 @@ class InventoryList(models.Model):
 
     def __int__(self):
         return self.id
-
-
-# class Revaluation(models.Model):
-#     created = models.DateTimeField(default=timezone.now, null=True)
-#     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING)
-#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-#     identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
-#     # category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
-#     name = models.CharField(max_length=250)
-#     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-#     imei = models.CharField(max_length=250)
-#     price_current = models.IntegerField(default=0)
-#     price_new = models.IntegerField(default=0)
-#     # quantity = models.IntegerField(default=0)
-#     # sub_total = models.IntegerField(default=0)
-
-#     class Meta:
-#         # ordering = ('created',)  # sorting by date
-#         verbose_name = "revaluation"
-#         verbose_name_plural = "revaluations"
-
-#     # def sub_total(self):
-#     #     return self.price * self.quantity
-
-#     def __int__(self):
-#         return self.id
 
 class CashOff(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING)

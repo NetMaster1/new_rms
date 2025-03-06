@@ -2587,7 +2587,7 @@ def delivery_auto(request):
             n += 1
             row = df1.iloc[i]#reads each row of the df1 one by one
             ean=row.Ean
-            if SKU.objects.filter(ean=ean).exists:
+            if SKU.objects.filter(ean=ean).exists():
                 pass
             else:
                 sku=SKU.objects.create(
