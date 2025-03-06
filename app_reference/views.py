@@ -123,12 +123,12 @@ def eans (request):
     #return render (request, 'reference/eans.html', context )
     return render (request, 'reference/eans.html')
 
-def eans_list(request):
-    skus=SKU.objects.all()
+def ean_search(request):
+    #skus=SKU.objects.all()
     categories=ProductCategory.objects.all()
     if request.method == "POST":
         #category = request.POST["category"]
-        ean = request.POST["ean"]
+        ean = request.POST["EAN"]
         ean=ean.replace(" ","")#getting rid of spaces.
         if ean:
             try:
