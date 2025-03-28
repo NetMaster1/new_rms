@@ -2588,7 +2588,7 @@ def delivery_auto(request):
             row = df1.iloc[i]#reads each row of the df1 one by one
             ean=row.Ean
             if SKU.objects.filter(ean=ean).exists():
-                pass
+                sku=SKU.objects.get(ean=ean)
             else:
                 sku=SKU.objects.create(
                     category=category,
@@ -2602,7 +2602,7 @@ def delivery_auto(request):
                 product=Product.objects.get(imei=imei)
             else:
                 product = Product.objects.create(
-                    name=row.Title,
+                    name=sku.name,
                     imei=imei, 
                     category=category,
                     ean=ean  
