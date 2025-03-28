@@ -2600,6 +2600,9 @@ def delivery_auto(request):
                 imei=imei.replace('/', '_')           
             if Product.objects.filter(imei=imei).exists():
                 product=Product.objects.get(imei=imei)
+                if product.ean is None:
+                    product.ean=ean
+                    product.save()
             else:
                 product = Product.objects.create(
                     name=sku.name,
