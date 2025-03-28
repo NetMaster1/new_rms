@@ -73,6 +73,8 @@ class DocumentType (models.Model):
     def __str__(self):
         return self.name
 
+#I've chosen not to create av_price field in SKU table
+#instead I've creted it in Av_price table. Since av_price table is linked to Product (imei)
 class SKU (models.Model):#Stock Keeping Unit 
     created = models.DateTimeField(auto_now=True)
     emumerator = models.IntegerField(null=True, blank=True)
