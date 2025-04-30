@@ -2634,6 +2634,7 @@ def delivery_auto(request):
                 pre_remainder=pre_remainder,
                 incoming_quantity=row.Quantity,
                 outgoing_quantity=0,
+                #current_remainder=pre_remainder + int(row.Quantity),
                 current_remainder=pre_remainder + int(row.Quantity),
                 wholesale_price=int(row.Price),
                 sub_total=int(row.Price) * int(row.Quantity),

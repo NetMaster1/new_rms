@@ -62,29 +62,34 @@ def product_list (request):
 def update_product (request, id):
     if request.method == "POST":
         product=Product.objects.get(id=id)
-        name = request.POST["name"]
-        new_imei = request.POST["imei"]
-        category = request.POST["category"]
-        category=ProductCategory.objects.get(id=category)
-        imei=product.imei
-        product.name=name
-        product.category=category
-        product.imei=new_imei
-        product.save()
-        if RemainderHistory.objects.filter(imei=imei).exists():
-            remainders=RemainderHistory.objects.filter(imei=imei)
-            for item in remainders:
-                item.category=category
-                item.name=name
+        #name = request.POST["name"]
+        #new_imei = request.POST["imei"]
+        #category = request.POST["category"]
+        ean = request.POST["ean"]
+        if SKU.objects.filter(ean=ean).exists():
+            sku=SKU.objects.get(ean=ean)
+            #category=ProductCategory.objects.get(id=category)
+            imei=product.imei
+            product.name=sku.name
+            #product.category=sku.category
+            #product.imei=new_imei
+            product.ean=ean
+            product.save()
+            if RemainderHistory.objects.filter(imei=imei).exists():
+                remainders=RemainderHistory.objects.filter(imei=imei)
+                for item in remainders:
+                    #item.category=category
+                    item.name=sku.name
+                    item.ean=ean
+                    item.save()
+                    
+            if AvPrice.objects.filter(imei=imei).exists():
+                item=AvPrice.objects.get(imei=imei)
+                item.name=sku.name
                 item.save()
-                item.imei=new_imei
-                item.save()
-                
-        if AvPrice.objects.filter(imei=imei).exists():
-            item=AvPrice.objects.get(imei=imei)
-            item.name=name
-            item.imei=new_imei
-            item.save()
+        else:
+            messages.error(request, "Данный SKU/EAN отсутствует в БД")
+            return redirect ('product_card', product.id)
 
     return redirect ('products')
 
@@ -158,7 +163,6 @@ def ean_search(request):
             #         'products': products, 
             #     }
             #     return render (request, 'reference/products.html', context )
-
 
 def ean_card(request, sku_id):
     categories=ProductCategory.objects.all()

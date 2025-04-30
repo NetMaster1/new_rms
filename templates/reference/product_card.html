@@ -35,7 +35,7 @@
                         <label for="category">Вид ТМЦ</label>
                     </div>
                     <div class="col">
-                        <select name="category" id="category" class='form-control'>
+                        <select name="category" id="category" class='form-control' readonly>
                             <!-- <option selected="true" disabled="disabled">Выберите категорию</option> -->
                             <option value="{{product.category.id}}">{{product.category.name}}</option>
                             <!-- {% for category in categories %}
@@ -48,10 +48,15 @@
                     <label for="name">Наименование:</label>
                     <input class='form-control' type="text" id="name" name="name" value='{{product.name}}' readonly>
                 </div>
+
+                <div class="form-group">
+                    <label for="name">EAN:</label>
+                    <input class='form-control' type="text" id="ean" name="ean" value='{{product.ean}}' required>
+                </div>
             
                 <div class="form-group">
                     <label for="name">IMEI:</label>
-                    <input class='form-control' type="text" id="imei" name="imei" value='{{product.imei}}'>
+                    <input class='form-control' type="text" id="imei" name="imei" value='{{product.imei}}' readonly>
                 </div>
             
                 </div>
