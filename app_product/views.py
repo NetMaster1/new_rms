@@ -1,6 +1,6 @@
 from turtle import pd
 from django.db.models.fields import BLANK_CHOICE_DASH, NullBooleanField
-from django.http import request
+from django.http import request, Http404
 from app_product.admin import RemainderHistoryAdmin
 from app_clients.models import Customer
 from app_personnel.models import BonusAccount
@@ -12,6 +12,7 @@ from .models import (
     Document,
     # IntegratedDailySaleDoc,
     RemainderHistory,
+    RemainderCurrent,
     InventoryList,
     Register,
     Identifier,
@@ -805,7 +806,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
 
             n = len(names)
             for i in range(n):
-                if RemainderHistory.objects.filter(imei=imeis[i], shop=shop,created__lt=dateTime).exists():
+                if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                     rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
                     if rho_latest_before.current_remainder < int(quantities[i]):
                         string=f'Документ не проведен. Товар с IMEI {imeis[i]} отсутствует на балансе фирмы.'
@@ -880,7 +881,28 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                         )
                         obj.save()
                         remainder = obj.current_remainder
-
+                #====================================================================================
+                #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                #in order to reduce time interal required to take a remainder report.
+                #If the report is taken from RemainderHistory table, it searches all rhos, 
+                #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
+                    rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rco.current_remainder=rho_latest.current_remainder
+                    #rco.retail_price=rho_latest.retail_price
+                    rco.save()
+                else:
+                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rco=RemainderCurrent.objects.create(
+                        shop=shop,
+                        imei=imeis[i],
+                        name=names[i],
+                        retail_price=prices[i],
+                        current_remainder=rho_latest.current_remainder
+                    )
+                #=================================================================================
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
                 sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
@@ -1078,6 +1100,7 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                     - int(quantities[i]),
                     sub_total=int(int(quantities[i]) * int(prices[i])),
                 )
+                
                 document_sum+=int(quantities[i]) *  int (prices[i])
                 #calculating av_price for the remainder
                 av_price_obj.current_remainder -= int(quantities[i])
@@ -1104,6 +1127,29 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                         )
                         obj.save()
                         remainder = obj.current_remainder
+                #====================================================================================
+                #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                #in order to reduce time interal required to take a remainder report.
+                #If the report is taken from RemainderHistory table, it searches all rhos, 
+                #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
+                    rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rco.current_remainder=rho_latest.current_remainder
+                    #rco.retail_price=rho_latest.retail_price
+                    rco.save()
+                else:
+                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rco=RemainderCurrent.objects.create(
+                        shop=shop,
+                        imei=imeis[i],
+                        name=names[i],
+                        retail_price=prices[i],
+                        current_remainder=rho_latest.current_remainder
+                    )
+                #=================================================================================
+
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
                 sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
@@ -1278,8 +1324,8 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                     outgoing_quantity=quantities[i],
                     current_remainder=rho_latest_before.current_remainder
                     - int(quantities[i]),
-                    sub_total=int(int(quantities[i]) * int(prices[i])),
                 )
+               
                 document_sum+=int(quantities[i]) *  int (prices[i])
                 #calculating av_price for the remainder
                 if AvPrice.objects.filter(imei=imeis[i]).exists():
@@ -1320,6 +1366,30 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                         )
                         obj.save()
                         remainder = obj.current_remainder
+
+                #====================================================================================
+                #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                #in order to reduce time interal required to take a remainder report.
+                #If the report is taken from RemainderHistory table, it searches all rhos, 
+                #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
+                    rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rco.current_remainder=rho_latest.current_remainder
+                    #rco.retail_price=rho_latest.retail_price
+                    rco.save()
+                else:
+                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rco=RemainderCurrent.objects.create(
+                        shop=shop,
+                        imei=imeis[i],
+                        name=names[i],
+                        retail_price=prices[i],
+                        current_remainder=rho_latest.current_remainder
+                    )
+                #=================================================================================sub_total=int(int(quantities[i]) * int(prices[i])),
+
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
                 sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
@@ -1522,6 +1592,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                     - int(quantities[i]),
                     sub_total=int(int(quantities[i]) * int(prices[i])),
                 )
+                
                 document_sum+=int(quantities[i]) *  int (prices[i])
                 #calculating av_price for the remainder
                 av_price_obj.current_remainder -= int(quantities[i])
@@ -1549,6 +1620,29 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                         )
                         obj.save()
                         remainder = obj.current_remainder
+
+                #====================================================================================
+                #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                #in order to reduce time interal required to take a remainder report.
+                #If the report is taken from RemainderHistory table, it searches all rhos, 
+                #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
+                    rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rco.current_remainder=rho_latest.current_remainder
+                    #rco.retail_price=rho_latest.retail_price
+                    rco.save()
+                else:
+                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rco=RemainderCurrent.objects.create(
+                        shop=shop,
+                        imei=imeis[i],
+                        name=names[i],
+                        retail_price=prices[i],
+                        current_remainder=rho_latest.current_remainder
+                    )
+                #=================================================================================
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
                 sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
@@ -1796,6 +1890,7 @@ def change_sale_unposted (request, document_id):
                         - int(quantities[i]),
                         sub_total=int(int(quantities[i]) * int(prices[i])),
                     )
+
                     document_sum+=rho.sub_total
                     #checking rhos after
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__gt=rho.created).exists():
@@ -1810,6 +1905,28 @@ def change_sale_unposted (request, document_id):
                             )
                             obj.save()
                             remainder = obj.current_remainder
+                    
+                    #in order to reduce time interal required to take a remainder report.
+                    #If the report is taken from RemainderHistory table, it searches all rhos, 
+                    #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                    #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                    if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
+                        rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                        rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                        rco.current_remainder=rho_latest.current_remainder
+                        #rco.retail_price=rho_latest.retail_price
+                        rco.save()
+                    else:
+                        rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                        rco=RemainderCurrent.objects.create(
+                            shop=shop,
+                            imei=imeis[i],
+                            name=names[i],
+                            retail_price=prices[i],
+                            current_remainder=rho_latest.current_remainder
+                        )
+                #=================================================================================
+
                     # editing cashback awarded to client's account
                     #client=Customer.objects.get(phone=client_phones[i])
                     if client.f_name != "default":
@@ -1934,43 +2051,43 @@ def change_sale_unposted (request, document_id):
         auth.logout(request)
         return redirect("login")
 
-def change_sale_posted(request, document_id):
-    if request.user.is_authenticated:
-        document = Document.objects.get(id=document_id)
-        if Cash.objects.filter(document=document).exists():
-            cash=Cash.objects.get(document=document)
-        else:
-            cash=None
-        if Card.objects.filter(document=document).exists():
-            card=Card.objects.get(document=document)
-        else:
-            card=None
-        if Credit.objects.filter(document=document).exists():
-            credit=Credit.objects.get(document=document)
-        else:
-            credit=None
-        creator = document.user
-        rhos = RemainderHistory.objects.filter(document=document)
-        shops = Shop.objects.all()
-        shop = document.shop_sender
+# def change_sale_posted(request, document_id):
+#     if request.user.is_authenticated:
+#         document = Document.objects.get(id=document_id)
+#         if Cash.objects.filter(document=document).exists():
+#             cash=Cash.objects.get(document=document)
+#         else:
+#             cash=None
+#         if Card.objects.filter(document=document).exists():
+#             card=Card.objects.get(document=document)
+#         else:
+#             card=None
+#         if Credit.objects.filter(document=document).exists():
+#             credit=Credit.objects.get(document=document)
+#         else:
+#             credit=None
+#         creator = document.user
+#         rhos = RemainderHistory.objects.filter(document=document)
+#         shops = Shop.objects.all()
+#         shop = document.shop_sender
     
-        numbers = rhos.count()
-        for rho, i in zip(rhos, range(numbers)):
-            rho.number = i + 1
-            rho.save()
-        document_datetime=document.created
-        document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
-        context = {
-            "rhos": rhos,
-            "document": document,
-            "shops": shops,
-            "shop_current": shop,
-            "cash": cash,
-            "card": card,
-            "credit": credit,
-            "document_datetime": document_datetime,
-        }
-        return render(request, "documents/change_sale_posted.html", context)
+#         numbers = rhos.count()
+#         for rho, i in zip(rhos, range(numbers)):
+#             rho.number = i + 1
+#             rho.save()
+#         document_datetime=document.created
+#         document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
+#         context = {
+#             "rhos": rhos,
+#             "document": document,
+#             "shops": shops,
+#             "shop_current": shop,
+#             "cash": cash,
+#             "card": card,
+#             "credit": credit,
+#             "document_datetime": document_datetime,
+#         }
+#         return render(request, "documents/change_sale_posted.html", context)
 
 def change_payment_type(request, document_id):
     if request.user.is_authenticated:
@@ -2137,6 +2254,31 @@ def unpost_sale (request, document_id):
                     )
                     obj.save()
                     remainder = obj.current_remainder
+            #====================================================================================
+            #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+            #in order to reduce time interal required to take a remainder report.
+            #If the report is taken from RemainderHistory table, it searches all rhos, 
+            #and when RemainderCurrent table is used for the report, time requied for this report is much less
+            #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+            if RemainderCurrent.objects.filter(imei=rho.imei, shop=rho.shop).exists():
+                rco=RemainderCurrent.objects.get(imei=rho.imei, shop=rho.shop)
+                rho_latest=RemainderHistory.objects.get(imei=rho.imei, shop=rho.shop).latest('created')
+                rco.current_remainder=rho_latest.current_remainder
+                #rco.retail_price=rho_latest.retail_price
+                rco.save()
+            else:
+                rho_latest=RemainderHistory.objects.get(imei=rho.imei, shop=rho.shop).latest('created')
+                rco=RemainderCurrent.objects.create(
+                    shop=rho.shop,
+                    imei=rho.imei,
+                    name=rho.name,
+                    retail_price=rho.retail_price,
+                    current_remainder=rho_latest.current_remainder
+                )
+            #=================================================================================
+            
+
+
             product=Product.objects.get(imei=rho.imei)
             #correcting av_price model
             av_price_obj=AvPrice.objects.get(imei=rho.imei)
@@ -2678,6 +2820,28 @@ def delivery_auto(request):
                 mp_quantity=pre_remainder
             else:
                 mp_quantity=rho.current_remainder
+            #====================================================================================
+            #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+            #in order to reduce time interal required to take a remainder report.
+            #If the report is taken from RemainderHistory table, it searches all rhos, 
+            #and when RemainderCurrent table is used for the report, time requied for this report is much less
+            #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+            if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop).latest('created')
+                rco.current_remainder=rho_latest.current_remainder
+                #rco.retail_price=rho_latest.retail_price
+                rco.save()
+            else:
+                rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop).latest('created')
+                rco=RemainderCurrent.objects.create(
+                    shop=shop,
+                    imei=imei,
+                    name=product.name,
+                    current_remainder=rho_latest.current_remainder
+                )
+            #=================================================================================
+
             #Сначала мы создаём новую позицию на площадке озон в функции (def ozon_product_create), которая содержит API метод
             #response=requests.post('https://api-seller.ozon.ru/v3/product/import', json=task, headers=headers)
             #мы не можем сразу ввести количество на маркетплейсе Ozon, так как ему требуется время для модерации
@@ -3090,6 +3254,28 @@ def delivery_input(request, identifier_id):
                             )
                             obj.save()
                             remainder = obj.current_remainder
+
+                     #====================================================================================
+                    #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                    #in order to reduce time interal required to take a remainder report.
+                    #If the report is taken from RemainderHistory table, it searches all rhos, 
+                    #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                    #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                        rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                        rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                        rco.current_remainder=rho_latest.current_remainder
+                        #rco.retail_price=rho_latest.retail_price
+                        rco.save()
+                    else:
+                        rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                        rco=RemainderCurrent.objects.create(
+                            shop=shop,
+                            imei=imeis[i],
+                            name=names[i],
+                            current_remainder=rho_latest.current_remainder
+                        )
+                    #=================================================================================
                 document.sum = document_sum
                 document.save()
                 registers = Register.objects.filter(identifier=identifier)
@@ -3134,30 +3320,30 @@ def delivery_input(request, identifier_id):
         auth.logout(request)
         return redirect("login")
 
-def change_delivery_posted(request, document_id):
-    if request.user.is_authenticated:
-        document = Document.objects.get(id=document_id)
-        supplier = document.supplier
-        shop=document.shop_receiver
-        dateTime=document.created
-        dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
-        rhos = RemainderHistory.objects.filter(document=document).order_by("-name")
-        numbers = rhos.count()
-        for rho, i in zip(rhos, range(numbers)):
-            rho.number = i + 1
-            rho.save()
-        rhos = RemainderHistory.objects.filter(document=document).order_by("-name")
+# def change_delivery_posted(request, document_id):
+#     if request.user.is_authenticated:
+#         document = Document.objects.get(id=document_id)
+#         supplier = document.supplier
+#         shop=document.shop_receiver
+#         dateTime=document.created
+#         dateTime=dateTime.strftime('%Y-%m-%dT%H:%M')
+#         rhos = RemainderHistory.objects.filter(document=document).order_by("-name")
+#         numbers = rhos.count()
+#         for rho, i in zip(rhos, range(numbers)):
+#             rho.number = i + 1
+#             rho.save()
+#         rhos = RemainderHistory.objects.filter(document=document).order_by("-name")
 
-        context = {
-            "document": document,
-            "shop": shop,
-            "supplier": supplier,
-            "dateTime": dateTime,
-            'rhos': rhos
-        }
-        return render(request, "documents/change_delivery_posted.html", context)
-    else:
-        return redirect ('login')
+#         context = {
+#             "document": document,
+#             "shop": shop,
+#             "supplier": supplier,
+#             "dateTime": dateTime,
+#             'rhos': rhos
+#         }
+#         return render(request, "documents/change_delivery_posted.html", context)
+#     else:
+#         return redirect ('login')
 
 def change_delivery_unposted(request, document_id):
     group=Group.objects.get(name="admin").user_set.all()
@@ -3302,6 +3488,29 @@ def change_delivery_unposted(request, document_id):
                                 )
                                 obj.save()
                                 remainder = obj.current_remainder
+                         #====================================================================================
+                        #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                        #in order to reduce time interal required to take a remainder report.
+                        #If the report is taken from RemainderHistory table, it searches all rhos, 
+                        #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                        #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                            rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                            rco.current_remainder=rho_latest.current_remainder
+                            #rco.retail_price=rho_latest.retail_price
+                            rco.save()
+                        else:
+                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                            rco=RemainderCurrent.objects.create(
+                                shop=shop,
+                                imei=imeis[i],
+                                name=names[i],
+                                current_remainder=rho_latest.current_remainder
+                            )
+                        #=================================================================================
+
+
                     document.sum = document_sum
                     document.save()
                     registers = Register.objects.filter(document=document)
@@ -3372,6 +3581,29 @@ def unpost_delivery(request, document_id):
                     )
                     obj.save()
                     remainder = obj.current_remainder
+
+            #====================================================================================
+            #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+            #in order to reduce time interal required to take a remainder report.
+            #If the report is taken from RemainderHistory table, it searches all rhos, 
+            #and when RemainderCurrent table is used for the report, time requied for this report is much less
+            #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+            if RemainderCurrent.objects.filter(imei=rho.imei, shop=rho.shop).exists():
+                rco=RemainderCurrent.objects.get(imei=rho.imei, shop=rho.shop)
+                rho_latest=RemainderHistory.objects.get(imei=rho.imei, shop=rho.shop).latest('created')
+                rco.current_remainder=rho_latest.current_remainder
+                #rco.retail_price=rho_latest.retail_price
+                rco.save()
+            else:
+                rho_latest=RemainderHistory.objects.get(imei=rho.imei, shop=rho.shop).latest('created')
+                rco=RemainderCurrent.objects.create(
+                    shop=rho.shop,
+                    imei=rho.imei,
+                    name=product.name,
+                    current_remainder=rho_latest.current_remainder
+                )
+            #=================================================================================
+
             register=Register.objects.create(
                 document=document,
                 product=product,
@@ -3868,11 +4100,37 @@ def transfer_input(request, identifier_id):
                                 )
                                 obj.save()
                                 remainder = obj.current_remainder
-
+                        
                             #remainder for updating ozon marketplace quantity    
                             mp_quantity=remainder
                         else:
                             mp_quantity=rho.current_remainder
+                        #====================================================================================
+                        #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                        #in order to reduce time interal required to take a remainder report.
+                        #If the report is taken from RemainderHistory table, it searches all rhos, 
+                        #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                        #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
+                            rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
+                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_sender).latest('created')
+                            rco.current_remainder=rho_latest.current_remainder
+                            #rco.retail_price=rho_latest.retail_price
+                            rco.save()
+                        else:
+                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_sender).latest('created')
+                            rco=RemainderCurrent.objects.create(
+                                shop=shop_sender,
+                                imei=imeis[i],
+                                name=product.name,
+                                current_remainder=rho_latest.current_remainder
+                            )
+                        #=================================================================================
+
+
+
+
+
                         #updating quantity at ozon marketplace
                         if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon and shop_receiver != ozon_shop:
                             headers = {
@@ -3937,6 +4195,28 @@ def transfer_input(request, identifier_id):
                                 )
                                 obj.save()
                                 remainder = obj.current_remainder
+
+                        #====================================================================================
+                        #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                        #in order to reduce time interal required to take a remainder report.
+                        #If the report is taken from RemainderHistory table, it searches all rhos, 
+                        #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                        #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
+                            rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_receiver)
+                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_receiver).latest('created')
+                            rco.current_remainder=rho_latest.current_remainder
+                            #rco.retail_price=rho_latest.retail_price
+                            rco.save()
+                        else:
+                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_receiver).latest('created')
+                            rco=RemainderCurrent.objects.create(
+                                shop=shop_receiver,
+                                imei=imeis[i],
+                                name=product.name,
+                                current_remainder=rho_latest.current_remainder
+                            )
+                        #=================================================================================
                     document.sum = document_sum
                     document.save()
                     for register in registers:
@@ -3982,28 +4262,28 @@ def transfer_input(request, identifier_id):
         auth.logout(request)
         return redirect("login")
 
-def change_transfer_posted(request, document_id):
-    users=Group.objects.get(name="sales").user_set.all()
-    document = Document.objects.get(id=document_id)
-    shop_sender=document.shop_sender
-    shop_receiver=document.shop_receiver
-    rhos=RemainderHistory.objects.filter(document=document).exclude(shop=shop_receiver).order_by('created')
-    #dateTimee=document.created
-    document_datetime=document.created
-    document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
-    numbers = rhos.count()
-    for rho, i in zip(rhos, range(numbers)):
-        rho.number = i + 1
-        rho.save()
+# def change_transfer_posted(request, document_id):
+#     users=Group.objects.get(name="sales").user_set.all()
+#     document = Document.objects.get(id=document_id)
+#     shop_sender=document.shop_sender
+#     shop_receiver=document.shop_receiver
+#     rhos=RemainderHistory.objects.filter(document=document).exclude(shop=shop_receiver).order_by('created')
+#     #dateTimee=document.created
+#     document_datetime=document.created
+#     document_datetime=document_datetime.strftime('%Y-%m-%dT%H:%M')
+#     numbers = rhos.count()
+#     for rho, i in zip(rhos, range(numbers)):
+#         rho.number = i + 1
+#         rho.save()
  
-    context = {
-        'rhos': rhos,
-        'dateTime': document_datetime,
-        "document": document,
-        'shop_receiver': shop_receiver,
-        'shop_sender': shop_sender,
-    }
-    return render(request, "documents/change_transfer_posted.html", context)
+#     context = {
+#         'rhos': rhos,
+#         'dateTime': document_datetime,
+#         "document": document,
+#         'shop_receiver': shop_receiver,
+#         'shop_sender': shop_sender,
+#     }
+#     return render(request, "documents/change_transfer_posted.html", context)
 
 def change_transfer_unposted(request, document_id):
     if request.user.is_authenticated:
@@ -4131,6 +4411,29 @@ def change_transfer_unposted(request, document_id):
                             mp_quantity=remainder
                         else:
                             mp_quantity=rho.current_remainder
+
+
+                        #====================================================================================
+                        #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                        #in order to reduce time interal required to take a remainder report.
+                        #If the report is taken from RemainderHistory table, it searches all rhos, 
+                        #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                        #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
+                            rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
+                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_sender).latest('created')
+                            rco.current_remainder=rho_latest.current_remainder
+                            #rco.retail_price=rho_latest.retail_price
+                            rco.save()
+                        else:
+                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_sender).latest('created')
+                            rco=RemainderCurrent.objects.create(
+                                shop=shop_sender,
+                                imei=imeis[i],
+                                name=product.name,
+                                current_remainder=rho_latest.current_remainder
+                            )
+                        #=================================================================================
                         #updating quantity at ozon marketplace
                         if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon and shop_receiver != ozon_shop:
                             headers = {
@@ -4199,6 +4502,27 @@ def change_transfer_unposted(request, document_id):
                                 )
                                 obj.save()
                                 remainder =obj.current_remainder
+                        #====================================================================================
+                        #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                        #in order to reduce time interal required to take a remainder report.
+                        #If the report is taken from RemainderHistory table, it searches all rhos, 
+                        #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                        #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
+                            rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_receiver)
+                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_receiver).latest('created')
+                            rco.current_remainder=rho_latest.current_remainder
+                            #rco.retail_price=rho_latest.retail_price
+                            rco.save()
+                        else:
+                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_receiver).latest('created')
+                            rco=RemainderCurrent.objects.create(
+                                shop=shop_receiver,
+                                imei=imeis[i],
+                                name=product.name,
+                                current_remainder=rho_latest.current_remainder
+                            )
+                        #=================================================================================
                     document.sum = document_sum
                     document.save()
                     registers = Register.objects.filter(document=document)
@@ -4261,6 +4585,28 @@ def unpost_transfer(request, document_id):
                 )
                 obj.save()
                 remainder = obj.current_remainder
+
+        #====================================================================================
+        #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+        #in order to reduce time interal required to take a remainder report.
+        #If the report is taken from RemainderHistory table, it searches all rhos, 
+        #and when RemainderCurrent table is used for the report, time requied for this report is much less
+        #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+        if RemainderCurrent.objects.filter(imei=rho.imei, shop=rho.shop).exists():
+            rco=RemainderCurrent.objects.get(imei=rho.imei, shop=rho.shop)
+            rho_latest=RemainderHistory.objects.get(imei=rho.imei, shop=rho.shop).latest('created')
+            rco.current_remainder=rho_latest.current_remainder
+            #rco.retail_price=rho_latest.retail_price
+            rco.save()
+        else:
+            rho_latest=RemainderHistory.objects.get(imei=rho.imei, shop=rho.shop).latest('created')
+            rco=RemainderCurrent.objects.create(
+                shop=rho.shop,
+                imei=rho.imei,
+                name=product.name,
+                current_remainder=rho_latest.current_remainder
+            )
+        #=================================================================================
         if rho.status==True:
             product=Product.objects.get(imei=rho.imei)
             register=Register.objects.create(
@@ -4392,6 +4738,27 @@ def transfer_auto (request):
                         )
                         obj.save()
                         remainder = obj.current_remainder
+                #====================================================================================
+                #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                #in order to reduce time interal required to take a remainder report.
+                #If the report is taken from RemainderHistory table, it searches all rhos, 
+                #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                if RemainderCurrent.objects.filter(imei=imei, shop=shop_sender).exists():
+                    rco=RemainderCurrent.objects.get(imei=imei, shop=shop_sender)
+                    rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop_sender).latest('created')
+                    rco.current_remainder=rho_latest.current_remainder
+                    #rco.retail_price=rho_latest.retail_price
+                    rco.save()
+                else:
+                    rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop_sender).latest('created')
+                    rco=RemainderCurrent.objects.create(
+                        shop=shop_sender,
+                        imei=imei,
+                        name=product.name,
+                        current_remainder=rho_latest.current_remainder
+                    )
+                #=================================================================================
                 #checking docs before for shop_receiver
                 #additional check in case quantities in excel file are 0
                 if RemainderHistory.objects.filter(imei=imei, shop=shop_receiver, created__lt=document.created).exists():
@@ -4430,6 +4797,27 @@ def transfer_auto (request):
                         )
                         obj.save()
                         remainder = obj.current_remainder
+                #====================================================================================
+                #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                #in order to reduce time interal required to take a remainder report.
+                #If the report is taken from RemainderHistory table, it searches all rhos, 
+                #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                if RemainderCurrent.objects.filter(imei=imei, shop=shop_receiver).exists():
+                    rco=RemainderCurrent.objects.get(imei=imei, shop=shop_receiver)
+                    rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop_receiver).latest('created')
+                    rco.current_remainder=rho_latest.current_remainder
+                    #rco.retail_price=rho_latest.retail_price
+                    rco.save()
+                else:
+                    rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop_receiver).latest('created')
+                    rco=RemainderCurrent.objects.create(
+                        shop=shop_receiver,
+                        imei=imei,
+                        name=product.name,
+                        current_remainder=rho_latest.current_remainder
+                    )
+                #=================================================================================
             document.sum = document_sum
             document.save()
             return redirect('log')

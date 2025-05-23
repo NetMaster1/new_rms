@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import Document, RemainderHistory, Register, Identifier, AvPrice, InventoryList
+from . models import Document, RemainderHistory, RemainderCurrent, Register, Identifier, AvPrice, InventoryList
 
 # class RevaluationAdmin(admin.ModelAdmin):
 #     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop')
@@ -26,11 +26,12 @@ class RemainderHistoryAdmin(admin.ModelAdmin):
     #     else:
     #         return ('imei',)
 
+class RemainderCurrentAdmin(admin.ModelAdmin):
+    list_display = ('updated', 'name', 'imei', 'current_remainder', 'av_price')  
+    list_filter = ('imei',)
+  
 class AvPriceAdmin(admin.ModelAdmin):
-    list_display = ('updated', 'name', 'imei', 'current_remainder', 'av_price', 'sum')  
-    list_filter = ('name',)
-    list_editable= ('current_remainder', 'av_price', 'sum', )
-    search_fields = ('imei',)
+    list_display = ('updated', 'name', 'imei', 'current_remainder')  
 
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'time_seconds', 'title' , 'user', 'sum', 'client', 'base_doc', 'posted')
@@ -63,7 +64,7 @@ class InventoryListAdmin(admin.ModelAdmin):
 #admin.site.register(Returning, ReturningAdmin)
 #admin.site.register(Revaluation, RevaluationAdmin)
 admin.site.register(RemainderHistory, RemainderHistoryAdmin)
-#admin.site.register(RemainderCurrent, RemainderCurrentAdmin)
+admin.site.register(RemainderCurrent, RemainderCurrentAdmin)
 admin.site.register(Document, DocumentAdmin)
 admin.site.register(Register, RegisterAdmin)
 admin.site.register(Identifier, IdentifierAdmin)

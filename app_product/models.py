@@ -42,7 +42,6 @@ class Document(models.Model):
     #     ordering = ('created',)  # sorting by date
     #     verbose_name = self.title
 
-
 class AvPrice(models.Model):
     updated = models.DateTimeField(auto_now=True)
     imei = models.CharField(max_length=50, null =True, blank=True)
@@ -177,11 +176,12 @@ class RemainderHistory(models.Model):
 class RemainderCurrent(models.Model):
     updated = models.DateTimeField(auto_now=True)
     shop = models.ForeignKey(Shop, on_delete=models.DO_NOTHING)
-    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True)
+    category = models.ForeignKey(ProductCategory, on_delete=models.DO_NOTHING, null=True, blank=True)
     imei = models.CharField(max_length=250)
     name = models.CharField(max_length=250, null=True)
     current_remainder = models.IntegerField(default=0)
-    retail_price = models.IntegerField(default=0, null=True)
+    av_price = models.IntegerField(default=0, null=True, blank=True)
+    retail_price = models.IntegerField(default=0, null=True, blank=True)
 
     class Meta:
         ordering = ('category', 'name',)  # sorting by date

@@ -53,7 +53,8 @@ INSTALLED_APPS = [
     'app_fiscal',
     'dbbackup', #django dbbackup
     'app_kpi',
-    'mathfilters', 
+    'mathfilters',
+    'app_service',
   
 ]
 
