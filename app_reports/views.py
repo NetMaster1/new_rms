@@ -1349,6 +1349,51 @@ def remainder_report(request):
         auth.logout(request)
         return redirect("login")
 
+
+def remainder_report_ver_1(request):
+    if request.user.is_authenticated:
+        users = Group.objects.get(name="sales").user_set.all()
+        group = Group.objects.get(name="admin").user_set.all()
+        categories = ProductCategory.objects.all()
+        shops = Shop.objects.all()
+        if request.method == "POST":
+            category = request.POST["category"]
+            category = ProductCategory.objects.get(id=category)
+            if request.user in group:
+                shop = request.POST["shop"]
+                shop = Shop.objects.get(id=shop)
+            else:
+                session_shop = request.session["session_shop"]
+                shop = Shop.objects.get(id=session_shop)
+
+            return redirect("remainder_report_output_ver_1", shop.id, category.id)
+        else:
+            context = {
+                "shops": shops,
+                "categories": categories,
+            }
+            return render(request, "reports/remainder_report_ver_1.html", context)
+
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+def remainder_report_output_ver_1(request, shop_id, category_id):
+    if request.user.is_authenticated:
+        shop = Shop.objects.get(id=shop_id)
+        category = ProductCategory.objects.get(id=category_id)
+        current_remainders=RemainderCurrent.objects.filter(category=category, shop=shop)
+        context = {
+         
+            "shop": shop, 
+            "category": category,
+            "current_remainders": current_remainders,
+            }
+        return render(request, "reports/remainder_report_output_ver_1.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 def remainder_report_excel(request, shop_id, category_id, date):
     users = Group.objects.get(name="sales").user_set.all()
     if request.user.is_authenticated:
