@@ -1383,8 +1383,10 @@ def remainder_report_output_ver_1(request, shop_id, category_id):
         shop = Shop.objects.get(id=shop_id)
         category = ProductCategory.objects.get(id=category_id)
         current_remainders=RemainderCurrent.objects.filter(category=category, shop=shop)
+        for item in current_remainders:
+            print(item.name)
         context = {
-         
+        
             "shop": shop, 
             "category": category,
             "current_remainders": current_remainders,

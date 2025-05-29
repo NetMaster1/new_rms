@@ -80,7 +80,7 @@
         {% csrf_token %}
 
   
-    {% for item in currrent_remainders %}
+    {% for item in current_remainders %}
         <div class="row m-auto" id="row_highlight">
                 {% for group in request.user.groups.all %}
                 {% if group.name == 'admin' %}
