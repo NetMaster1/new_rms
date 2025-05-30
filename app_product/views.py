@@ -890,6 +890,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
                     rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                     if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
+                        rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                         rco.current_remainder=rho_latest.current_remainder
                         rco.retail_price=rho_latest.retail_price
                         rco.save()
