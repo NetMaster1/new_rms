@@ -887,8 +887,8 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 #If the report is taken from RemainderHistory table, it searches all rhos, 
                 #and when RemainderCurrent table is used for the report, time requied for this report is much less
                 #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
-                if RemainderHistory.objects.get(imei=imeis[i], shop=shop).exists():
-                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
+                    rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                     if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
                         rco.current_remainder=rho_latest.current_remainder
                         rco.retail_price=rho_latest.retail_price
@@ -1135,7 +1135,7 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                 #and when RemainderCurrent table is used for the report, time requied for this report is much less
                 #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                 if RemainderHistory.objects.filter (imei=imeis[i], shop=shop).exists():
-                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                     if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
                         rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                         rco.current_remainder=rho_latest.current_remainder
@@ -1375,7 +1375,7 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                 #and when RemainderCurrent table is used for the report, time requied for this report is much less
                 #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                 if RemainderHistory.objects.filter (imei=imeis[i], shop=shop).exists():
-                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                     if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
                         rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                         rco.current_remainder=rho_latest.current_remainder
@@ -1629,7 +1629,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                 #and when RemainderCurrent table is used for the report, time requied for this report is much less
                 #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                 if RemainderHistory.objects.filter (imei=imeis[i], shop=shop).exists():
-                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                     if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
                         rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                         rco.current_remainder=rho_latest.current_remainder
@@ -1916,7 +1916,7 @@ def change_sale_unposted (request, document_id):
                     #and when RemainderCurrent table is used for the report, time requied for this report is much less
                     #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                     if RemainderHistory.objects.filter (imei=imeis[i], shop=shop).exists():
-                        rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                        rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                         if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
                             rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                             rco.current_remainder=rho_latest.current_remainder
@@ -2294,7 +2294,7 @@ def unpost_sale (request, document_id):
             #and when RemainderCurrent table is used for the report, time requied for this report is much less
             #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
             if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
-                rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop).latest('created')
+                rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
                 if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
                     rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
                     rco.current_remainder=rho_latest.current_remainder
@@ -4126,7 +4126,7 @@ def transfer_input(request, identifier_id):
                         #and when RemainderCurrent table is used for the report, time requied for this report is much less
                         #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender).exists():
-                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_sender).latest('created')
+                            rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender).latest('created')
                             if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
                                 rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
                                 rco.current_remainder=rho_latest.current_remainder
@@ -4214,7 +4214,7 @@ def transfer_input(request, identifier_id):
                         #and when RemainderCurrent table is used for the report, time requied for this report is much less
                         #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
-                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_receiver).latest('created')
+                            rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_receiver).latest('created')
                             if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
                                 rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_receiver)
                                 rco.current_remainder=rho_latest.current_remainder
@@ -4432,7 +4432,7 @@ def change_transfer_unposted(request, document_id):
                         #and when RemainderCurrent table is used for the report, time requied for this report is much less
                         #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender).exists():
-                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_sender).latest('created')
+                            rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_sender).latest('created')
                             if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
                                 rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
                                 rco.current_remainder=rho_latest.current_remainder
@@ -4522,7 +4522,7 @@ def change_transfer_unposted(request, document_id):
                         #and when RemainderCurrent table is used for the report, time requied for this report is much less
                         #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
-                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop_receiver).latest('created')
+                            rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop_receiver).latest('created')
                             if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
                                 rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_receiver)
                                 rco.current_remainder=rho_latest.current_remainder
@@ -4619,7 +4619,7 @@ def unpost_transfer(request, document_id):
         #and when RemainderCurrent table is used for the report, time requied for this report is much less
         #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
         if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
-            rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop).latest('created')
+            rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
             if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
                 rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
                 rco.current_remainder=rho_latest.current_remainder
@@ -4764,7 +4764,7 @@ def transfer_auto (request):
                 #and when RemainderCurrent table is used for the report, time requied for this report is much less
                 #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                 if RemainderHistory.objects.filter(imei=imei, shop=shop_sender).exists():
-                    rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop_sender).latest('created')
+                    rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop_sender).latest('created')
                     if RemainderCurrent.objects.filter(imei=imei, shop=shop_sender).exists():
                         rco=RemainderCurrent.objects.get(imei=imei, shop=shop_sender)
                         rco.current_remainder=rho_latest.current_remainder
@@ -4823,7 +4823,7 @@ def transfer_auto (request):
                 #and when RemainderCurrent table is used for the report, time requied for this report is much less
                 #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                 if RemainderHistory.objects.filter(imei=imei, shop=shop_receiver).exists():
-                    rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop_receiver).latest('created')
+                    rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop_receiver).latest('created')
                     if RemainderCurrent.objects.filter(imei=imei, shop=shop_receiver).exists():
                         rco=RemainderCurrent.objects.get(imei=imei, shop=shop_receiver)
                         rco.current_remainder=rho_latest.current_remainder
@@ -5134,7 +5134,7 @@ def recognition_input(request, identifier_id):
                     #and when RemainderCurrent table is used for the report, time requied for this report is much less
                     #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
-                        rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                        rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                         if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                             rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                             rco.current_remainder=rho_latest.current_remainder
@@ -5342,7 +5342,7 @@ def change_recognition_unposted(request, document_id):
                         #and when RemainderCurrent table is used for the report, time requied for this report is much less
                         #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
-                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                            rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                             if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                                 rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                                 rco.current_remainder=rho_latest.current_remainder
@@ -5452,7 +5452,7 @@ def unpost_recognition(request, document_id):
             #and when RemainderCurrent table is used for the report, time requied for this report is much less
             #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
             if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
-                rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop).latest('created')
+                rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
                 if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
                     rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
                     rco.current_remainder=rho_latest.current_remainder
@@ -5916,7 +5916,7 @@ def signing_off_input(request, identifier_id):
                     #and when RemainderCurrent table is used for the report, time requied for this report is much less
                     #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
-                        rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                        rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                         if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                             rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                             rco.current_remainder=rho_latest.current_remainder
@@ -6166,7 +6166,7 @@ def change_signing_off_unposted (request, document_id):
                     #and when RemainderCurrent table is used for the report, time requied for this report is much less
                     #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
-                        rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                        rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                         if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                             rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                             rco.current_remainder=rho_latest.current_remainder
@@ -6273,7 +6273,7 @@ def unpost_signing_off (request, document_id):
         #and when RemainderCurrent table is used for the report, time requied for this report is much less
         #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
         if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
-            rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop).latest('created')
+            rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
             if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
                 rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
                 rco.current_remainder=rho_latest.current_remainder
@@ -6558,7 +6558,7 @@ def return_input(request, identifier_id):
                     #and when RemainderCurrent table is used for the report, time requied for this report is much less
                     #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
-                        rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                        rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                         if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                             rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                             rco.current_remainder=rho_latest.current_remainder
@@ -6803,7 +6803,7 @@ def change_return_unposted(request, document_id):
                 #and when RemainderCurrent table is used for the report, time requied for this report is much less
                 #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                 if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
-                    rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                    rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                     if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                         rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                         rco.current_remainder=rho_latest.current_remainder
@@ -6954,7 +6954,7 @@ def unpost_return(request, document_id):
         #and when RemainderCurrent table is used for the report, time requied for this report is much less
         #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
         if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
-            rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop).latest('created')
+            rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
             if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
                 rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
                 rco.current_remainder=rho_latest.current_remainder
