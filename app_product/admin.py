@@ -5,12 +5,12 @@ from . models import Document, RemainderHistory, RemainderCurrent, Register, Ide
 #     list_display = ('id', 'created', 'document', 'name', 'imei', 'shop')
 
 class RemainderHistoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'time_seconds', 'document', 'rho_type', 'status', 'shop', 'category', 'name', 'imei', 'ean', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'wholesale_price', 'supplier', 'av_price', 'retail_price', 'user', 'inventory_doc', 'for_mp_sale', 'mp_RRP', ) 
+    list_display = ('id', 'time_seconds', 'document', 'rho_type', 'status', 'shop', 'category', 'name', 'imei', 'ean', 'pre_remainder', 'incoming_quantity', 'outgoing_quantity', 'current_remainder', 'retail_price', 'sub_total', 'wholesale_price', 'supplier', 'av_price', 'user', 'inventory_doc', 'for_mp_sale', 'mp_RRP', ) 
     list_filter = ('shop', 'rho_type', 'category', 'supplier',)
     ordering = ('-created',)
     list_per_page=50
     list_select_related = True
-    list_editable = ('av_price', 'category', 'name', 'ean', 'supplier')
+    list_editable = ('av_price', 'category', 'name', 'ean', 'sub_total','supplier')
     search_fields = ('imei',)
 
     #I don't know how it works, but this functions created a separate column based on column 'created', but with more precise time '19 Feb 2022 15:54:00' instead of  'Feb. 21, 2022, 3:11 p.m.' I deleted 'created' from display_list. Somehow it may influence to filtering, but so far I have not noticed anything.
