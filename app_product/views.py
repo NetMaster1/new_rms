@@ -1326,6 +1326,7 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                     outgoing_quantity=quantities[i],
                     current_remainder=rho_latest_before.current_remainder
                     - int(quantities[i]),
+                    sub_total=int(int(quantities[i]) * int(prices[i])),
                 )
                
                 document_sum+=int(quantities[i]) *  int (prices[i])
@@ -5091,6 +5092,7 @@ def recognition_input(request, identifier_id):
                         document=document,
                         created=dateTime,
                         rho_type=doc_type,
+                        user=request.user,
                         shop=shop,
                         category=product.category,
                         ean=product.ean,
@@ -5300,6 +5302,7 @@ def change_recognition_unposted(request, document_id):
                             document=document,
                             created=dateTime,
                             rho_type=doc_type,
+                            user=request.user,
                             shop=shop,
                             category=product.category,
                             ean=product.ean,
