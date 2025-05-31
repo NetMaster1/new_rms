@@ -4611,7 +4611,7 @@ def unpost_transfer(request, document_id):
                 product=product
             )
         imei=rho.imei
-        shop=rho.sho
+        shop=rho.shop
         rho.delete()
         #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
         #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
