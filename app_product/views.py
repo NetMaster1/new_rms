@@ -3144,7 +3144,7 @@ def delivery_input(request, identifier_id):
             prices = request.POST.getlist("price", None)
             sub_totals = request.POST.getlist("sub_total", None)
             #==============Time Module=========================================
-            imeis=sorted(imeis, key=None, reverse=True)
+            #imeis=sorted(imeis, key=None, reverse=True)
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
                 # converting dateTime in str format (2021-07-08T01:05) to django format ()
