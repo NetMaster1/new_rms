@@ -2990,46 +2990,7 @@ def delivery(request, identifier_id):
         "registers": registers,
     }
     return render(request, "documents/delivery.html", context)
-
-def fill_in_new_delivery(request, sku_id, identifier_id):
-    if request.user.is_authenticated:
-        if request.method == "POST":
-            sku=SKU.objects.get(id=sku_id)
-            identifier=Identifier.objects.get(id=identifier_id)
-            if Register.objects.filter(identifier=identifier).exists():
-                category=ProductCategory.objects.get(name=sku.category)
-                imeis = request.POST.getlist("imei", None)
-                names = request.POST.getlist("name", None)
-                eans = request.POST.getlist("ean", None)
-                document_number=request.POST.get('document_number', False)
-                if not document_number:
-                    messages.error(
-                    request, "Введите обязательный атрибут: номер документа 'Поступление ТМЦ'."
-                    )
-                    return redirect("sku_imei_link", sku.id, identifier.id)
-                if not Document.objects.filter(id=int(document_number)).exists():
-                    messages.error(
-                    request, "Документа 'Поступление ТМЦ' с таким номером не существует."
-                    )
-                    return redirect("sku_imei_link", sku.id, identifier.id)
-                document=Document.objects.get(id=document_number)
-                n = len(imeis)
-                for i in range(n):
-                    product = Product.objects.create(imei=imeis[i], name=names[i], ean=eans[i], category=category)
-                    register=Register.objects.get(imei=imeis[i], identifier=identifier)
-                    register.document=document
-                    register.identifier=None
-                    register.product=product
-                    register.save()
-                identifier.delete()
-            return redirect ('log')
-            
-    auth.logout(request)
-    return redirect ('login')
-
-
-    return redirect ('enter_document_number', sku.id, identifier.id)
-    
+   
 def delivery_smartphones(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
     categories = ProductCategory.objects.all()
@@ -3710,7 +3671,8 @@ def sku_new_create(request):
             return redirect("log")
     return redirect("login")
 
-#opens HTML page with a list of imeis under the given sku
+#at get request opens an HTML page with a list of imeis
+#at post request creates products without entering them in delivery document
 def sku_imei_link(request, sku_id, identifier_id):
     if request.user.is_authenticated:
         identifier = Identifier.objects.get(id=identifier_id)
@@ -3764,7 +3726,45 @@ def sku_imei_link(request, sku_id, identifier_id):
                 return render(request, "documents/sku_imei_link.html", context)
     else:
         return redirect("login")
-    
+
+#enters a list of imeis under given sku in the delivery document with the id given
+def fill_in_new_delivery(request, sku_id, identifier_id):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            sku=SKU.objects.get(id=sku_id)
+            identifier=Identifier.objects.get(id=identifier_id)
+            if Register.objects.filter(identifier=identifier).exists():
+                category=ProductCategory.objects.get(name=sku.category)
+                imeis = request.POST.getlist("imei", None)
+                names = request.POST.getlist("name", None)
+                eans = request.POST.getlist("ean", None)
+                document_number=request.POST.get('document_number', False)
+                if not document_number:
+                    messages.error(
+                    request, "Введите обязательный атрибут: номер документа 'Поступление ТМЦ'."
+                    )
+                    return redirect("sku_imei_link", sku.id, identifier.id)
+                if not Document.objects.filter(id=int(document_number)).exists():
+                    messages.error(
+                    request, "Документа 'Поступление ТМЦ' с таким номером не существует."
+                    )
+                    return redirect("sku_imei_link", sku.id, identifier.id)
+                document=Document.objects.get(id=document_number)
+                n = len(imeis)
+                for i in range(n):
+                    product = Product.objects.create(imei=imeis[i], name=names[i], ean=eans[i], category=category)
+                    register=Register.objects.get(imei=imeis[i], identifier=identifier)
+                    register.document=document
+                    register.identifier=None
+                    register.product=product
+                    register.save()
+                identifier.delete()
+            return redirect ('log')
+            
+    auth.logout(request)
+    return redirect ('login')
+
+#creates a list of imeis with the given sku  
 def sku_product_register_create(request, sku_id, identifier_id):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -3791,7 +3791,7 @@ def sku_product_register_create(request, sku_id, identifier_id):
     else:
         auth.logout(request)
         return redirect ('login')
-    
+
 def delete_line_sku_imei_register(request, sku_id, imei, identifier_id ):
     sku=SKU.objects.get(id=sku_id)
     identifier=Identifier.objects.get(id=identifier_id)
