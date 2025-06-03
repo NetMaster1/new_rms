@@ -3144,6 +3144,7 @@ def delivery_input(request, identifier_id):
             prices = request.POST.getlist("price", None)
             sub_totals = request.POST.getlist("sub_total", None)
             #==============Time Module=========================================
+            imeis=sorted(imeis, key=None, reverse=True)
             dateTime=request.POST.get('dateTime', False)
             if dateTime:
                 # converting dateTime in str format (2021-07-08T01:05) to django format ()
@@ -3270,7 +3271,7 @@ def delivery_input(request, identifier_id):
                     #and when RemainderCurrent table is used for the report, time requied for this report is much less
                     #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                     if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
-                        rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                        rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                         if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                             rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                             rco.current_remainder=rho_latest.current_remainder
@@ -3506,7 +3507,7 @@ def change_delivery_unposted(request, document_id):
                         #and when RemainderCurrent table is used for the report, time requied for this report is much less
                         #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
-                            rho_latest=RemainderHistory.objects.get(imei=imeis[i], shop=shop).latest('created')
+                            rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
                             if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                                 rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                                 rco.current_remainder=rho_latest.current_remainder
