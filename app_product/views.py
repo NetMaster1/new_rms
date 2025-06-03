@@ -3714,8 +3714,8 @@ def sku_imei_link(request, sku_id, identifier_id):
         doc_type=DocumentType.objects.get(name='Поступление ТМЦ')
         #date = datetime.date.today()
         #todays_pages = Page.objects.filter(date_created__gte = datetime.date.now().replace(hour=0,minute=0,second=0))
-        if Document.objects.filter(title=doc_type, posted=False, created__date=datetime.date.today()).exists():
-            document=Document.objects.filter(title=doc_type, posted=False, created__date=datetime.date.today()).latest('created')
+        if Document.objects.filter(title=doc_type, posted=False, created__date=datetime.date.today(), user=request.user).exists():
+            document=Document.objects.filter(title=doc_type, posted=False, created__date=datetime.date.today(), user=request.user).latest('created')
             print(document.id)
         else:
             messages.error(request, "Вы не создали документ 'Поступление ТМЦ'. Предварительно создайте пустой документ 'Поступление ТМЦ'.")
