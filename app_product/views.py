@@ -3712,10 +3712,13 @@ def sku_imei_link(request, sku_id, identifier_id):
         identifier = Identifier.objects.get(id=identifier_id)
         sku=SKU.objects.get(id=sku_id)
         doc_type=DocumentType.objects.get(name='Поступление ТМЦ')
-        if Document.objects.filter(title=doc_type, posted=False).exists():
-            document=Document.objects.filter(title=doc_type, posted=False).latest()
+        #date = datetime.date.today()
+        #todays_pages = Page.objects.filter(date_created__gte = datetime.date.now().replace(hour=0,minute=0,second=0))
+        if Document.objects.filter(title=doc_type, posted=False, created__date=datetime.date.today()).exists():
+            document=Document.objects.filter(title=doc_type, posted=False, created__date=datetime.date.today()).latest('created')
+            print(document.id)
         else:
-            messages.error(request, "Вы не создали документ 'Поступление ТМЦ'. Предварительно создайте документ.")
+            messages.error(request, "Вы не создали документ 'Поступление ТМЦ'. Предварительно создайте пустой документ 'Поступление ТМЦ'.")
             return redirect ('log')
         if request.method == "POST":
             if Register.objects.filter(identifier=identifier).exists():
@@ -3752,6 +3755,7 @@ def sku_imei_link(request, sku_id, identifier_id):
                 context = {
                             "sku": sku,
                             "identifier": identifier,
+                            'document': document,
                         }
                 return render(request, "documents/sku_imei_link.html", context)
     else:
