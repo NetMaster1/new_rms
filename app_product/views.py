@@ -3621,7 +3621,7 @@ def unpost_delivery(request, document_id):
             #and when RemainderCurrent table is used for the report, time requied for this report is much less
             #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
             if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
-                rho_latest=RemainderHistory.objects.get(imei=imei, shop=shop).latest('created')
+                rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
                 if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
                     rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
                     rco.current_remainder=rho_latest.current_remainder
@@ -3711,6 +3711,12 @@ def sku_imei_link(request, sku_id, identifier_id):
     if request.user.is_authenticated:
         identifier = Identifier.objects.get(id=identifier_id)
         sku=SKU.objects.get(id=sku_id)
+        doc_type=DocumentType.objects.get(name='Поступление ТМЦ')
+        if Document.objects.filter(title=doc_type, posted=False).exists():
+            document=Document.objects.filter(title=doc_type, posted=False).latest()
+        else:
+            messages.error(request, "Вы не создали документ 'Поступление ТМЦ'. Предварительно создайте документ.")
+            return redirect ('log')
         if request.method == "POST":
             if Register.objects.filter(identifier=identifier).exists():
                 category=ProductCategory.objects.get(name=sku.category)
@@ -3739,6 +3745,7 @@ def sku_imei_link(request, sku_id, identifier_id):
                             "sku": sku,
                             "identifier": identifier,
                             "registers": registers,
+                            "document": document,
                         }
                 return render(request, "documents/sku_imei_link.html", context)
             else:
