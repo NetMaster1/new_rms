@@ -3646,6 +3646,7 @@ def unpost_delivery(request, document_id):
         return redirect("login")
 
 #=======================================================================
+#open HTML page for entering sku number
 def sku_new(request):
     if request.user.is_authenticated:
         categories = ProductCategory.objects.filter(complex=True).order_by('-name')
@@ -3656,6 +3657,7 @@ def sku_new(request):
     else:
         return redirect("login")
 
+#checking if such sku exists. If it exists, a page for entering imeis opens
 def sku_check(request):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -3679,6 +3681,7 @@ def sku_check(request):
             return redirect("log")
     return redirect("login")
 
+#created new sku
 def sku_new_create(request):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -3707,6 +3710,7 @@ def sku_new_create(request):
             return redirect("log")
     return redirect("login")
 
+#opens HTML page with a list of imeis under the given sku
 def sku_imei_link(request, sku_id, identifier_id):
     if request.user.is_authenticated:
         identifier = Identifier.objects.get(id=identifier_id)
