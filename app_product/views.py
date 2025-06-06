@@ -551,6 +551,7 @@ def remainder_input (request):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop,
+                            category=rho_latest.category,
                             imei=rho_latest.imei,
                             name=rho_latest.name,
                             current_remainder=rho_latest.current_remainder,
@@ -699,6 +700,7 @@ def unpost_remainder_input (request, document_id):
                 else:
                     rco=RemainderCurrent.objects.create(
                         shop=shop,
+                        category=rho_latest.category,
                         imei=rho_latest.imei,
                         name=rho_latest.name,
                         current_remainder=rho_latest.current_remainder,
@@ -969,6 +971,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop,
+                            category=rho_latest.category,
                             imei=rho_latest.imei,
                             name=rho_latest.name,
                             current_remainder=rho_latest.current_remainder,
@@ -1230,6 +1233,7 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop,
+                            category=rho_latest.category,
                             imei=rho_latest.imei,
                             name=rho_latest.name,
                             current_remainder=rho_latest.current_remainder,
@@ -1480,6 +1484,7 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop,
+                            category=rho_latest.category,
                             imei=rho_latest.imei,
                             name=rho_latest.name,
                             current_remainder=rho_latest.current_remainder,
@@ -1747,6 +1752,7 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop,
+                            category=rho_latest.category,
                             imei=rho_latest.imei,
                             name=rho_latest.name,
                             current_remainder=rho_latest.current_remainder,
@@ -2043,6 +2049,7 @@ def change_sale_unposted (request, document_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
+                                category=rho_latest.category,
                                 imei=rho_latest.imei,
                                 name=rho_latest.name,
                                 current_remainder=rho_latest.current_remainder,
@@ -2430,6 +2437,7 @@ def unpost_sale (request, document_id):
                 else:
                     rco=RemainderCurrent.objects.create(
                         shop=shop,
+                        category=rho_latest.category,
                         imei=rho_latest.imei,
                         name=rho_latest.name,
                         current_remainder=rho_latest.current_remainder,
@@ -2978,6 +2986,7 @@ def delivery_auto(request):
                 else:
                     rco=RemainderCurrent.objects.create(
                         shop=shop,
+                        category=rho_latest.category,
                         imei=rho_latest.imei,
                         name=rho_latest.name,
                         current_remainder=rho_latest.current_remainder,
@@ -3386,6 +3395,7 @@ def delivery_input(request, identifier_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
+                                category=rho_latest.category,
                                 imei=rho_latest.imei,
                                 name=rho_latest.name,
                                 current_remainder=rho_latest.current_remainder,
@@ -3632,6 +3642,7 @@ def change_delivery_unposted(request, document_id):
                             else:
                                 rco=RemainderCurrent.objects.create(
                                     shop=shop,
+                                    category=rho_latest.category,
                                     imei=rho_latest.imei,
                                     name=rho_latest.name,
                                     current_remainder=rho_latest.current_remainder,
@@ -3754,6 +3765,7 @@ def unpost_delivery(request, document_id):
                 else:
                     rco=RemainderCurrent.objects.create(
                         shop=shop,
+                        category=rho_latest.category,
                         imei=rho_latest.imei,
                         name=rho_latest.name,
                         current_remainder=rho_latest.current_remainder,
@@ -4324,6 +4336,7 @@ def transfer_input(request, identifier_id):
                             else:
                                 rco=RemainderCurrent.objects.create(
                                     shop=shop_sender,
+                                    category=rho_latest.category,
                                     imei=rho_latest.imei,
                                     name=rho_latest.name,
                                     current_remainder=rho_latest.current_remainder,
@@ -4420,6 +4433,7 @@ def transfer_input(request, identifier_id):
                             else:
                                 rco=RemainderCurrent.objects.create(
                                     shop=shop_receiver,
+                                    category=rho_latest.category,
                                     imei=rho_latest.imei,
                                     name=rho_latest.name,
                                     current_remainder=rho_latest.current_remainder,
@@ -4648,6 +4662,7 @@ def change_transfer_unposted(request, document_id):
                             else:
                                 rco=RemainderCurrent.objects.create(
                                     shop=shop_sender,
+                                    category=rho_latest.category,
                                     imei=rho_latest.imei,
                                     name=rho_latest.name,
                                     current_remainder=rho_latest.current_remainder,
@@ -4752,6 +4767,7 @@ def change_transfer_unposted(request, document_id):
                             else:
                                 rco=RemainderCurrent.objects.create(
                                     shop=shop_receiver,
+                                    category=rho_latest.category,
                                     imei=rho.imei,
                                     name=rho.name,
                                     current_remainder=rho_latest.current_remainder,
@@ -4859,6 +4875,7 @@ def unpost_transfer(request, document_id):
             else:
                 rco=RemainderCurrent.objects.create(
                     shop=shop,
+                    category=rho_latest.category,
                     imei=rho_latest.imei,
                     name=rho_latest.name,
                     current_remainder=rho_latest.current_remainder,
@@ -5011,6 +5028,7 @@ def transfer_auto (request):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop_sender,
+                            category=rho_latest.category,
                             imei=rho_latest.imei,
                             name=rho_latest.name,
                             current_remainder=rho_latest.current_remainder,
@@ -5085,6 +5103,7 @@ def transfer_auto (request):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop_receiver,
+                            category=rho_latest.category,
                             imei=rho_latest.imei,
                             name=rho_latest.name,
                             current_remainder=rho_latest.current_remainder,
@@ -5408,6 +5427,7 @@ def recognition_input(request, identifier_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
+                                category=rho_latest.category,
                                 imei=rho_latest.imei,
                                 name=rho_latest.name,
                                 current_remainder=rho_latest.current_remainder,
@@ -5626,6 +5646,7 @@ def change_recognition_unposted(request, document_id):
                             else:
                                 rco=RemainderCurrent.objects.create(
                                     shop=shop,
+                                    category=rho_latest.category,
                                     imei=rho_latest.imei,
                                     name=rho_latest.name,
                                     current_remainder=rho_latest.current_remainder,
@@ -5744,6 +5765,7 @@ def unpost_recognition(request, document_id):
                 else:
                     rco=RemainderCurrent.objects.create(
                         shop=shop,
+                        category=rho_latest.category,
                         imei=rho_latest.imei,
                         name=rho_latest.name,
                         current_remainder=rho_latest.current_remainder,
@@ -6217,6 +6239,7 @@ def signing_off_input(request, identifier_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
+                                category=rho_latest.category,
                                 imei=rho_latest.imei,
                                 name=rho_latest.name,
                                 current_remainder=rho_latest.current_remainder,
@@ -6476,6 +6499,7 @@ def change_signing_off_unposted (request, document_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
+                                category=rho_latest.category,
                                 imei=rho_latest.imei,
                                 name=rho_latest.name,
                                 current_remainder=rho_latest.current_remainder,
@@ -6592,6 +6616,7 @@ def unpost_signing_off (request, document_id):
             else:
                 rco=RemainderCurrent.objects.create(
                     shop=shop,
+                    category=rho_latest.category,
                     imei=rho_latest.imei,
                     name=rho_latest.name,
                     current_remainder=rho_latest.current_remainder,
@@ -6890,6 +6915,7 @@ def return_input(request, identifier_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
+                                category=rho_latest.category,
                                 imei=rho_latest.imei,
                                 name=rho_latest.name,
                                 current_remainder=rho_latest.current_remainder,
@@ -7149,6 +7175,7 @@ def change_return_unposted(request, document_id):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop,
+                            category=rho_latest.category,
                             imei=rho_latest.imei,
                             name=rho_latest.name,
                             current_remainder=rho_latest.current_remainder,
@@ -7309,6 +7336,7 @@ def unpost_return(request, document_id):
             else:
                 rco=RemainderCurrent.objects.create(
                     shop=shop,
+                    category=rho_latest.category,
                     imei=rho_latest.imei,
                     name=rho_latest.name,
                     current_remainder=rho_latest.current_remainder,
