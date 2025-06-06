@@ -533,6 +533,40 @@ def remainder_input (request):
                         )
                         obj.save()
                         pre_remainder = obj.current_remainder
+
+                #====================================================================================
+                #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
+                #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+                #in order to reduce time interal required to take a remainder report.
+                #If the report is taken from RemainderHistory table, it searches all rhos, 
+                #and when RemainderCurrent table is used for the report, time requied for this report is much less
+                #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+                if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
+                    rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
+                    if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                        rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                        rco.current_remainder=rho_latest.current_remainder
+                        rco.retail_price=rho_latest.retail_price
+                        rco.save()
+                    else:
+                        rco=RemainderCurrent.objects.create(
+                            shop=shop,
+                            imei=rho_latest.imei,
+                            name=rho_latest.name,
+                            current_remainder=rho_latest.current_remainder,
+                            retail_price=rho_latest.retail_price
+                        )
+                #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                #passing info to rco
+                else:
+                    if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                        rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                        rco.current_remainder=0
+                        rco.retail_price=0
+                        rco.save()
+                #=======================END OF REMAINDER CURRENT BLOCK=======================================
+                
+
             document.sum = document_sum
             document.save()
             return redirect("log")
@@ -645,7 +679,42 @@ def unpost_remainder_input (request, document_id):
                 av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
             else:
                 av_price_obj.av_price=0
+            imei=rho.imei
             rho.delete()
+
+            #====================================================================================
+            #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
+            #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
+            #in order to reduce time interal required to take a remainder report.
+            #If the report is taken from RemainderHistory table, it searches all rhos, 
+            #and when RemainderCurrent table is used for the report, time requied for this report is much less
+            #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
+            if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
+                rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
+                if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                    rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                    rco.current_remainder=rho_latest.current_remainder
+                    rco.retail_price=rho_latest.retail_price
+                    rco.save()
+                else:
+                    rco=RemainderCurrent.objects.create(
+                        shop=shop,
+                        imei=rho_latest.imei,
+                        name=rho_latest.name,
+                        current_remainder=rho_latest.current_remainder,
+                        retail_price=rho_latest.retail_price
+                    )
+            #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+            #passing info to rco
+            else:
+                if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                    rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                    rco.current_remainder=0
+                    rco.retail_price=0
+                    rco.save()
+                #=======================END OF REMAINDER CURRENT BLOCK=======================================
+
+
         document.delete()
         #document.posted=False
         #document.save()
@@ -881,7 +950,10 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                         )
                         obj.save()
                         remainder = obj.current_remainder
+ 
+ 
                 #====================================================================================
+                #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                 #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                 #in order to reduce time interal required to take a remainder report.
                 #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -889,7 +961,7 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                 #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
                 if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
                     rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
-                    if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                         rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                         rco.current_remainder=rho_latest.current_remainder
                         rco.retail_price=rho_latest.retail_price
@@ -897,14 +969,24 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop,
-                            imei=imeis[i],
-                            name=names[i],
-                            retail_price=prices[i],
-                            current_remainder=rho_latest.current_remainder
+                            imei=rho_latest.imei,
+                            name=rho_latest.name,
+                            current_remainder=rho_latest.current_remainder,
+                            retail_price=rho_latest.retail_price
                         )
-                    #=================================================================================
+                #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                #passing info to rco
+                else:
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                        rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                        rco.current_remainder=0
+                        rco.retail_price=0
+                        rco.save()
+                #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
                 
+
+
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
                 sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
@@ -1129,15 +1211,18 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                         )
                         obj.save()
                         remainder = obj.current_remainder
+               
+               
                 #====================================================================================
+                #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                 #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                 #in order to reduce time interal required to take a remainder report.
                 #If the report is taken from RemainderHistory table, it searches all rhos, 
                 #and when RemainderCurrent table is used for the report, time requied for this report is much less
                 #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
-                if RemainderHistory.objects.filter (imei=imeis[i], shop=shop).exists():
+                if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
                     rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
-                    if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                         rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                         rco.current_remainder=rho_latest.current_remainder
                         rco.retail_price=rho_latest.retail_price
@@ -1145,12 +1230,20 @@ def sale_input_credit(request, identifier_id, client_id, cashback_off):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop,
-                            imei=imeis[i],
-                            name=names[i],
-                            retail_price=prices[i],
-                            current_remainder=rho_latest.current_remainder
+                            imei=rho_latest.imei,
+                            name=rho_latest.name,
+                            current_remainder=rho_latest.current_remainder,
+                            retail_price=rho_latest.retail_price
                         )
-                    #=================================================================================
+                #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                #passing info to rco
+                else:
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                        rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                        rco.current_remainder=0
+                        rco.retail_price=0
+                        rco.save()
+                #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
@@ -1371,14 +1464,15 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                         remainder = obj.current_remainder
 
                 #====================================================================================
+                #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                 #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                 #in order to reduce time interal required to take a remainder report.
                 #If the report is taken from RemainderHistory table, it searches all rhos, 
                 #and when RemainderCurrent table is used for the report, time requied for this report is much less
                 #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
-                if RemainderHistory.objects.filter (imei=imeis[i], shop=shop).exists():
+                if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
                     rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
-                    if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                         rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                         rco.current_remainder=rho_latest.current_remainder
                         rco.retail_price=rho_latest.retail_price
@@ -1386,12 +1480,30 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop,
-                            imei=imeis[i],
-                            name=names[i],
-                            retail_price=prices[i],
-                            current_remainder=rho_latest.current_remainder
+                            imei=rho_latest.imei,
+                            name=rho_latest.name,
+                            current_remainder=rho_latest.current_remainder,
+                            retail_price=rho_latest.retail_price
                         )
-                    #=================================================================================
+                #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                #passing info to rco
+                else:
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                        rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                        rco.current_remainder=0
+                        rco.retail_price=0
+                        rco.save()
+                #=======================END OF REMAINDER CURRENT BLOCK=======================================
+
+
+            
+            #paying with cashback
+            document.sum=document_sum
+            document.sum_minus_cashback = document_sum - cashback_off
+            document.save()
+            sum_to_pay = document.sum_minus_cashback
+           #================Cash Register Module / Sell ===================
+            if shop.cash_register==False:
 
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
@@ -1413,13 +1525,7 @@ def sale_input_card(request, identifier_id, client_id, cashback_off):
                 jsonData.append(json_dict)
                 jsonData.append(json_type)
                 #==================end of dictionnaries to insert to json structure for cash register
-            #paying with cashback
-            document.sum=document_sum
-            document.sum_minus_cashback = document_sum - cashback_off
-            document.save()
-            sum_to_pay = document.sum_minus_cashback
-           #================Cash Register Module / Sell ===================
-            if shop.cash_register==False:
+                
                 sum_to_pay_json=round(float(sum_to_pay), 2)#total sum to pay to be inserted in json structure for cash register
                 #time.sleep(1)
                 auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
@@ -1625,14 +1731,15 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                         remainder = obj.current_remainder
 
                 #====================================================================================
+                #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                 #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                 #in order to reduce time interal required to take a remainder report.
                 #If the report is taken from RemainderHistory table, it searches all rhos, 
                 #and when RemainderCurrent table is used for the report, time requied for this report is much less
                 #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
-                if RemainderHistory.objects.filter (imei=imeis[i], shop=shop).exists():
+                if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
                     rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
-                    if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                         rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                         rco.current_remainder=rho_latest.current_remainder
                         rco.retail_price=rho_latest.retail_price
@@ -1640,14 +1747,28 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop,
-                            imei=imeis[i],
-                            name=names[i],
-                            retail_price=prices[i],
-                            current_remainder=rho_latest.current_remainder
+                            imei=rho_latest.imei,
+                            name=rho_latest.name,
+                            current_remainder=rho_latest.current_remainder,
+                            retail_price=rho_latest.retail_price
                         )
-                    #=================================================================================
-
-
+                #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                #passing info to rco
+                else:
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                        rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                        rco.current_remainder=0
+                        rco.retail_price=0
+                        rco.save()
+                #=======================END OF REMAINDER CURRENT BLOCK=======================================
+               
+            #paying with cashback
+            document.sum=document_sum
+            document.sum_minus_cashback = document_sum - cashback_off
+            document.save()
+            sum_to_pay = document.sum_minus_cashback
+            #================Cash Register Module / Sell ===================
+            if shop.cash_register==False:
                 #===============creating dictionaries to insert in json structure for cash register 
                 retail_price=round(float(rho.retail_price), 2)#converts integer number to float number with two digits after divider
                 sub_total=round(float(rho.sub_total), 2)#converts integer number to float number with two digits after divider  
@@ -1668,14 +1789,8 @@ def sale_input_complex(request, identifier_id, client_id, cashback_off):
                 jsonData.append(json_dict)
                 jsonData.append(json_type)
                 #==================end of dictionnaries to insert to json structure for cash register
-               
-            #paying with cashback
-            document.sum=document_sum
-            document.sum_minus_cashback = document_sum - cashback_off
-            document.save()
-            sum_to_pay = document.sum_minus_cashback
-            #================Cash Register Module / Sell ===================
-            if shop.cash_register==False:
+
+
                 sum_to_pay_json=round(float(sum_to_pay), 2)#total sum to pay to be inserted in json structure for cash register
                 #time.sleep(1)
                 auth=HTTPBasicAuth('NetMaster', 'Ylhio65v39aZifol_01')
@@ -1912,14 +2027,15 @@ def change_sale_unposted (request, document_id):
                             remainder = obj.current_remainder
                     
                     #====================================================================================
+                    #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                     #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                     #in order to reduce time interal required to take a remainder report.
                     #If the report is taken from RemainderHistory table, it searches all rhos, 
                     #and when RemainderCurrent table is used for the report, time requied for this report is much less
                     #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
-                    if RemainderHistory.objects.filter (imei=imeis[i], shop=shop).exists():
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop).exists():
                         rho_latest=RemainderHistory.objects.filter(imei=imeis[i], shop=shop).latest('created')
-                        if RemainderCurrent.objects.filter(imei=rho.imei, shop=shop).exists():
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                             rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                             rco.current_remainder=rho_latest.current_remainder
                             rco.retail_price=rho_latest.retail_price
@@ -1927,12 +2043,20 @@ def change_sale_unposted (request, document_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
-                                imei=imeis[i],
-                                name=names[i],
-                                retail_price=prices[i],
-                                current_remainder=rho_latest.current_remainder
+                                imei=rho_latest.imei,
+                                name=rho_latest.name,
+                                current_remainder=rho_latest.current_remainder,
+                                retail_price=rho_latest.retail_price
                             )
-                        #=================================================================================
+                    #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                    #passing info to rco
+                    else:
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                            rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                            rco.current_remainder=0
+                            rco.retail_price=0
+                            rco.save()
+                    #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
                     # editing cashback awarded to client's account
                     #client=Customer.objects.get(phone=client_phones[i])
@@ -2290,6 +2414,7 @@ def unpost_sale (request, document_id):
             name=rho.name
             rho.delete()
             #====================================================================================
+            #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
             #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
             #in order to reduce time interal required to take a remainder report.
             #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -2304,13 +2429,23 @@ def unpost_sale (request, document_id):
                     rco.save()
                 else:
                     rco=RemainderCurrent.objects.create(
-                        shop=rho.shop,
-                        imei=rho.imei,
-                        name=rho.name,
-                        retail_price=rho.retail_price,
-                        current_remainder=rho_latest.current_remainder
+                        shop=shop,
+                        imei=rho_latest.imei,
+                        name=rho_latest.name,
+                        current_remainder=rho_latest.current_remainder,
+                        retail_price=rho_latest.retail_price
                     )
-                #=================================================================================
+            #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+            #passing info to rco
+            else:
+                if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                    rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                    rco.current_remainder=0
+                    rco.retail_price=0
+                    rco.save()
+            #=======================END OF REMAINDER CURRENT BLOCK=======================================
+
+
         document.posted=False
         if client.f_name != "default":
             client.accum_cashback=client.accum_cashback+document.cashback_off
@@ -2791,7 +2926,7 @@ def delivery_auto(request):
             )
             document_sum += int(rho.sub_total)
           
-    #============Av_price_module====================
+             #============Av_price_module====================
             if AvPrice.objects.filter(imei=imei).exists():
                 av_price_obj = AvPrice.objects.get(imei=product.imei)
                 av_price_obj.current_remainder += int(row.Quantity)
@@ -2834,7 +2969,7 @@ def delivery_auto(request):
             #and when RemainderCurrent table is used for the report, time requied for this report is much less
             #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
             if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
-                rho_latest=RemainderHistory.objects.get(imei=rho.imei, shop=shop).latest('created')
+                rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
                 if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
                     rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
                     rco.current_remainder=rho_latest.current_remainder
@@ -2843,12 +2978,20 @@ def delivery_auto(request):
                 else:
                     rco=RemainderCurrent.objects.create(
                         shop=shop,
-                        imei=rho.imei,
-                        name=rho.name,
+                        imei=rho_latest.imei,
+                        name=rho_latest.name,
                         current_remainder=rho_latest.current_remainder,
                         retail_price=rho_latest.retail_price
                     )
-            #=================================================================================
+            #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+            #passing info to rco
+            else:
+                if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                    rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                    rco.current_remainder=0
+                    rco.retail_price=0
+                    rco.save()
+            #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
             #Сначала мы создаём новую позицию на площадке озон в функции (def ozon_product_create), которая содержит API метод
             #response=requests.post('https://api-seller.ozon.ru/v3/product/import', json=task, headers=headers)
@@ -3226,6 +3369,8 @@ def delivery_input(request, identifier_id):
                             remainder = obj.current_remainder
 
                      #====================================================================================
+
+                    #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                     #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                     #in order to reduce time interal required to take a remainder report.
                     #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -3241,12 +3386,22 @@ def delivery_input(request, identifier_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
-                                imei=imeis[i],
-                                name=names[i],
+                                imei=rho_latest.imei,
+                                name=rho_latest.name,
                                 current_remainder=rho_latest.current_remainder,
                                 retail_price=rho_latest.retail_price
                             )
-                    #=================================================================================
+                    #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                    #passing info to rco
+                    else:
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                            rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                            rco.current_remainder=0
+                            rco.retail_price=0
+                            rco.save()
+                    #=======================END OF REMAINDER CURRENT BLOCK=======================================
+
+
                 document.sum = document_sum
                 document.save()
                 registers = Register.objects.filter(identifier=identifier)
@@ -3461,7 +3616,7 @@ def change_delivery_unposted(request, document_id):
                                 remainder = obj.current_remainder
 
 
-                        #====================================================================================
+                        #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                         #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                         #in order to reduce time interal required to take a remainder report.
                         #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -3474,15 +3629,23 @@ def change_delivery_unposted(request, document_id):
                                 rco.current_remainder=rho_latest.current_remainder
                                 rco.retail_price=rho_latest.retail_price
                                 rco.save()
+                            else:
+                                rco=RemainderCurrent.objects.create(
+                                    shop=shop,
+                                    imei=rho_latest.imei,
+                                    name=rho_latest.name,
+                                    current_remainder=rho_latest.current_remainder,
+                                    retail_price=rho_latest.retail_price
+                                )
+                        #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                        #passing info to rco
                         else:
-                            rco=RemainderCurrent.objects.create(
-                                shop=shop,
-                                imei=imeis[i],
-                                name=names[i],
-                                current_remainder=rho_latest.current_remainder,
-                                retail_price=rho_latest.retail_price
-                            )
-                        #=================================================================================
+                            if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                                rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                                rco.current_remainder=0
+                                rco.retail_price=0
+                                rco.save()
+                        #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
 
                     document.sum = document_sum
@@ -3581,9 +3744,9 @@ def unpost_delivery(request, document_id):
             #If the report is taken from RemainderHistory table, it searches all rhos, 
             #and when RemainderCurrent table is used for the report, time requied for this report is much less
             #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
-            if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+            if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
                 rho_latest=RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
-                if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
+                if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
                     rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
                     rco.current_remainder=rho_latest.current_remainder
                     rco.retail_price=rho_latest.retail_price
@@ -3591,12 +3754,20 @@ def unpost_delivery(request, document_id):
                 else:
                     rco=RemainderCurrent.objects.create(
                         shop=shop,
-                        imei=rho.imei,
-                        name=rho.name,
+                        imei=rho_latest.imei,
+                        name=rho_latest.name,
                         current_remainder=rho_latest.current_remainder,
                         retail_price=rho_latest.retail_price
                     )
-            #=================================================================================
+            #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+            #passing info to rco
+            else:
+                if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                    rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                    rco.current_remainder=0
+                    rco.retail_price=0
+                    rco.save()
+            #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
 
         document.posted=False
@@ -4137,7 +4308,7 @@ def transfer_input(request, identifier_id):
                             mp_quantity=remainder
                         else:
                             mp_quantity=rho.current_remainder
-                        #====================================================================================
+                        #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                         #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                         #in order to reduce time interal required to take a remainder report.
                         #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -4153,12 +4324,20 @@ def transfer_input(request, identifier_id):
                             else:
                                 rco=RemainderCurrent.objects.create(
                                     shop=shop_sender,
-                                    imei=imeis[i],
-                                    name=product.name,
+                                    imei=rho_latest.imei,
+                                    name=rho_latest.name,
                                     current_remainder=rho_latest.current_remainder,
                                     retail_price=rho_latest.retail_price
                                 )
-                            #=================================================================================
+                        #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                        #passing info to rco
+                        else:
+                            if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
+                                rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
+                                rco.current_remainder=0
+                                rco.retail_price=0
+                                rco.save()
+                        #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
                         #updating quantity at ozon marketplace
                         if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon and shop_receiver != ozon_shop:
@@ -4225,7 +4404,7 @@ def transfer_input(request, identifier_id):
                                 obj.save()
                                 remainder = obj.current_remainder
 
-                        #====================================================================================
+                         #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                         #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                         #in order to reduce time interal required to take a remainder report.
                         #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -4241,12 +4420,23 @@ def transfer_input(request, identifier_id):
                             else:
                                 rco=RemainderCurrent.objects.create(
                                     shop=shop_receiver,
-                                    imei=imeis[i],
-                                    name=product.name,
+                                    imei=rho_latest.imei,
+                                    name=rho_latest.name,
                                     current_remainder=rho_latest.current_remainder,
                                     retail_price=rho_latest.retail_price
                                 )
-                            #=================================================================================
+                        #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                        #passing info to rco
+                        else:
+                            if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
+                                rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_receiver)
+                                rco.current_remainder=0
+                                rco.retail_price=0
+                                rco.save()
+                        #========================END OF REMAINDER CURRENT BLOCK=============================================
+
+
+
                     document.sum = document_sum
                     document.save()
                     for register in registers:
@@ -4442,8 +4632,7 @@ def change_transfer_unposted(request, document_id):
                         else:
                             mp_quantity=rho.current_remainder
 
-
-                        #====================================================================================
+                        #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                         #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                         #in order to reduce time interal required to take a remainder report.
                         #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -4459,12 +4648,24 @@ def change_transfer_unposted(request, document_id):
                             else:
                                 rco=RemainderCurrent.objects.create(
                                     shop=shop_sender,
-                                    imei=imeis[i],
-                                    name=product.name,
+                                    imei=rho_latest.imei,
+                                    name=rho_latest.name,
                                     current_remainder=rho_latest.current_remainder,
                                     retail_price=rho_latest.retail_price
                                 )
-                            #=================================================================================
+                        #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                        #passing info to rco
+                        else:
+                            if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_sender).exists():
+                                rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_sender)
+                                rco.current_remainder=0
+                                rco.retail_price=0
+                                rco.save()
+                        #=======================END OF REMAINDER CURRENT BLOCK=======================================
+
+
+
+
                         #updating quantity at ozon marketplace
                         if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon and shop_receiver != ozon_shop:
                             headers = {
@@ -4533,7 +4734,9 @@ def change_transfer_unposted(request, document_id):
                                 )
                                 obj.save()
                                 remainder =obj.current_remainder
-                        #====================================================================================
+
+
+                        #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                         #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                         #in order to reduce time interal required to take a remainder report.
                         #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -4549,12 +4752,22 @@ def change_transfer_unposted(request, document_id):
                             else:
                                 rco=RemainderCurrent.objects.create(
                                     shop=shop_receiver,
-                                    imei=imeis[i],
-                                    name=product.name,
+                                    imei=rho.imei,
+                                    name=rho.name,
                                     current_remainder=rho_latest.current_remainder,
                                     retail_price=rho_latest.retail_price
                                 )
-                            #=================================================================================
+                        #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                        #passing info to rco
+                        else:
+                            if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop_receiver).exists():
+                                rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop_receiver)
+                                rco.current_remainder=0
+                                rco.retail_price=0
+                                rco.save()
+                        #========================END OF REMAINDER CURRENT BLOCK=============================================
+
+
                     document.sum = document_sum
                     document.save()
                     registers = Register.objects.filter(document=document)
@@ -4646,13 +4859,20 @@ def unpost_transfer(request, document_id):
             else:
                 rco=RemainderCurrent.objects.create(
                     shop=shop,
-                    imei=rho.imei,
-                    name=rho.name,
+                    imei=rho_latest.imei,
+                    name=rho_latest.name,
                     current_remainder=rho_latest.current_remainder,
                     retail_price=rho_latest.retail_price
                 )
-            #=================================================================================
-
+        #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+        #passing info to rco
+        else:
+            if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                rco.current_remainder=0
+                rco.retail_price=0
+                rco.save()
+        #===============================END OF REMAINDER CURRENT BLOCK==================================================
 
     document.posted = False
     document.save()
@@ -4775,7 +4995,7 @@ def transfer_auto (request):
                         )
                         obj.save()
                         remainder = obj.current_remainder
-                #====================================================================================
+                #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                 #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                 #in order to reduce time interal required to take a remainder report.
                 #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -4791,12 +5011,24 @@ def transfer_auto (request):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop_sender,
-                            imei=imei,
-                            name=product.name,
+                            imei=rho_latest.imei,
+                            name=rho_latest.name,
                             current_remainder=rho_latest.current_remainder,
                             retail_price=rho_latest.retail_price
                         )
-                    #=================================================================================
+                #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                #passing info to rco
+                else:
+                    if RemainderCurrent.objects.filter(imei=imei, shop=shop_sender).exists():
+                        rco=RemainderCurrent.objects.get(imei=imei, shop=shop_sender)
+                        rco.current_remainder=0
+                        rco.retail_price=0
+                        rco.save()
+                #=======================END OF REMAINDER CURRENT BLOCK=======================================
+                
+                
+                
+                
                 #checking docs before for shop_receiver
                 #additional check in case quantities in excel file are 0
                 if RemainderHistory.objects.filter(imei=imei, shop=shop_receiver, created__lt=document.created).exists():
@@ -4835,6 +5067,9 @@ def transfer_auto (request):
                         )
                         obj.save()
                         remainder = obj.current_remainder
+
+
+               #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                 #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                 #in order to reduce time interal required to take a remainder report.
                 #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -4850,12 +5085,22 @@ def transfer_auto (request):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop_receiver,
-                            imei=imei,
-                            name=product.name,
+                            imei=rho_latest.imei,
+                            name=rho_latest.name,
                             current_remainder=rho_latest.current_remainder,
                             retail_price=rho_latest.retail_price
                         )
-                    #=================================================================================
+                #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                #passing info to rco
+                else:
+                    if RemainderCurrent.objects.filter(imei=imei, shop=shop_receiver).exists():
+                        rco=RemainderCurrent.objects.get(imei=imei, shop=shop_receiver)
+                        rco.current_remainder=0
+                        rco.retail_price=0
+                        rco.save()
+                #=======================END OF REMAINDER CURRENT BLOCK=======================================
+
+
             document.sum = document_sum
             document.save()
             return redirect('log')
@@ -5147,6 +5392,7 @@ def recognition_input(request, identifier_id):
                             obj.save()
                             remainder = obj.current_remainder
                     
+                    #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                     #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                     #in order to reduce time interal required to take a remainder report.
                     #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -5162,12 +5408,20 @@ def recognition_input(request, identifier_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
-                                imei=imeis[i],
-                                name=product.name,
+                                imei=rho_latest.imei,
+                                name=rho_latest.name,
                                 current_remainder=rho_latest.current_remainder,
                                 retail_price=rho_latest.retail_price
                             )
-                    #=================================================================================
+                    #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                    #passing info to rco
+                    else:
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                            rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                            rco.current_remainder=0
+                            rco.retail_price=0
+                            rco.save()
+                    #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
 
                 for register in registers:
@@ -5356,6 +5610,7 @@ def change_recognition_unposted(request, document_id):
                                 obj.save()
                                 remainder = obj.current_remainder
 
+                        #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                         #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                         #in order to reduce time interal required to take a remainder report.
                         #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -5371,12 +5626,20 @@ def change_recognition_unposted(request, document_id):
                             else:
                                 rco=RemainderCurrent.objects.create(
                                     shop=shop,
-                                    imei=imeis[i],
-                                    name=product.name,
+                                    imei=rho_latest.imei,
+                                    name=rho_latest.name,
                                     current_remainder=rho_latest.current_remainder,
                                     retail_price=rho_latest.retail_price
                                 )
-                        #=================================================================================
+                        #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                        #passing info to rco
+                        else:
+                            if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                                rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                                rco.current_remainder=0
+                                rco.retail_price=0
+                                rco.save()
+                        #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
                     document.sum=document_sum
                     registers = Register.objects.filter(document=document)
@@ -5465,7 +5728,7 @@ def unpost_recognition(request, document_id):
             imei=rho.imei
             shop=rho.shop
             rho.delete()
-            #in unposting documents this module is placed after deletion of rho in order not use it as the latest one
+            #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
             #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
             #in order to reduce time interal required to take a remainder report.
             #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -5481,12 +5744,20 @@ def unpost_recognition(request, document_id):
                 else:
                     rco=RemainderCurrent.objects.create(
                         shop=shop,
-                        imei=rho.imei,
-                        name=rho.name,
+                        imei=rho_latest.imei,
+                        name=rho_latest.name,
                         current_remainder=rho_latest.current_remainder,
                         retail_price=rho_latest.retail_price
                     )
-            #=================================================================================
+            #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+            #passing info to rco
+            else:
+                if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                    rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                    rco.current_remainder=0
+                    rco.retail_price=0
+                    rco.save()
+            #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
 
         doc_sum=0
@@ -5862,7 +6133,7 @@ def signing_off_input(request, identifier_id):
                 n = len(names)
                 #checking availability
                 for i in range(n):
-                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop,created__lt=dateTime).exists():
+                    if RemainderHistory.objects.filter(imei=imei, shop=shop,created__lt=dateTime).exists():
                         rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
                         if rho_latest_before.current_remainder < int(quantities[i]):
                             string=f'Документ не проведен. Товар с IMEI {imeis[i]} отсутствует на балансе фирмы.'
@@ -5930,6 +6201,7 @@ def signing_off_input(request, identifier_id):
                             obj.save()
                             remainder = obj.current_remainder
 
+                    #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                     #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                     #in order to reduce time interal required to take a remainder report.
                     #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -5945,12 +6217,20 @@ def signing_off_input(request, identifier_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
-                                imei=imeis[i],
-                                name=product.name,
+                                imei=rho_latest.imei,
+                                name=rho_latest.name,
                                 current_remainder=rho_latest.current_remainder,
                                 retail_price=rho_latest.retail_price
                             )
-                    #=================================================================================
+                    #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                    #passing info to rco
+                    else:
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                            rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                            rco.current_remainder=0
+                            rco.retail_price=0
+                            rco.save()
+                    #=======================END OF REMAINDER CURRENT BLOCK=======================================
                     
 
                 document.sum = document_sum
@@ -6180,6 +6460,7 @@ def change_signing_off_unposted (request, document_id):
                             remainder= obj.current_remainder
 
 
+                    #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                     #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                     #in order to reduce time interal required to take a remainder report.
                     #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -6195,12 +6476,20 @@ def change_signing_off_unposted (request, document_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
-                                imei=imeis[i],
-                                name=product.name,
+                                imei=rho_latest.imei,
+                                name=rho_latest.name,
                                 current_remainder=rho_latest.current_remainder,
                                 retail_price=rho_latest.retail_price
                             )
-                    #=================================================================================
+                    #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                    #passing info to rco
+                    else:
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                            rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                            rco.current_remainder=0
+                            rco.retail_price=0
+                            rco.save()
+                    #=======================END OF REMAINDER CURRENT BLOCK=======================================
                     
                 document.posted = True
                 document.sum=document_sum
@@ -6287,6 +6576,7 @@ def unpost_signing_off (request, document_id):
         imei=rho.imei
         shop=rho.shop
         rho.delete()
+        #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
         #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
         #in order to reduce time interal required to take a remainder report.
         #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -6302,12 +6592,22 @@ def unpost_signing_off (request, document_id):
             else:
                 rco=RemainderCurrent.objects.create(
                     shop=shop,
-                    imei=imei,
-                    name=product.name,
+                    imei=rho_latest.imei,
+                    name=rho_latest.name,
                     current_remainder=rho_latest.current_remainder,
                     retail_price=rho_latest.retail_price
                 )
-        #=================================================================================
+        #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+        #passing info to rco
+        else:
+            if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                rco.current_remainder=0
+                rco.retail_price=0
+                rco.save()
+        #=======================END OF REMAINDER CURRENT BLOCK=======================================
+
+
     document.posted = False
     document.save()
     return redirect("log")
@@ -6572,6 +6872,9 @@ def return_input(request, identifier_id):
                             obj.save()
                             remainder = obj.current_remainder
 
+
+
+                    #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                     #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                     #in order to reduce time interal required to take a remainder report.
                     #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -6587,12 +6890,23 @@ def return_input(request, identifier_id):
                         else:
                             rco=RemainderCurrent.objects.create(
                                 shop=shop,
-                                imei=imeis[i],
-                                name=product.name,
+                                imei=rho_latest.imei,
+                                name=rho_latest.name,
                                 current_remainder=rho_latest.current_remainder,
                                 retail_price=rho_latest.retail_price
                             )
-                    #=================================================================================
+                    #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                    #passing info to rco
+                    else:
+                        if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                            rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                            rco.current_remainder=0
+                            rco.retail_price=0
+                            rco.save()
+                    #=======================END OF REMAINDER CURRENT BLOCK=======================================
+
+
+
                     document.sum = document_sum
                     document.save()
                     # operations with cash
@@ -6817,6 +7131,9 @@ def change_return_unposted(request, document_id):
                             )
                         obj.save()
                         remainder = obj.current_remainder
+                
+                
+                #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                 #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
                 #in order to reduce time interal required to take a remainder report.
                 #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -6832,12 +7149,20 @@ def change_return_unposted(request, document_id):
                     else:
                         rco=RemainderCurrent.objects.create(
                             shop=shop,
-                            imei=imeis[i],
-                            name=product.name,
+                            imei=rho_latest.imei,
+                            name=rho_latest.name,
                             current_remainder=rho_latest.current_remainder,
                             retail_price=rho_latest.retail_price
                         )
-                #=================================================================================
+                #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+                #passing info to rco
+                else:
+                    if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
+                        rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
+                        rco.current_remainder=0
+                        rco.retail_price=0
+                        rco.save()
+                #=======================END OF REMAINDER CURRENT BLOCK=======================================
                
             document.sum = document_sum
             document.created=dateTime
@@ -6968,6 +7293,7 @@ def unpost_return(request, document_id):
         imei=rho.imei
         shop=rho.shop
         rho.delete()
+        #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
         #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
         #in order to reduce time interal required to take a remainder report.
         #If the report is taken from RemainderHistory table, it searches all rhos, 
@@ -6983,12 +7309,20 @@ def unpost_return(request, document_id):
             else:
                 rco=RemainderCurrent.objects.create(
                     shop=shop,
-                    imei=imei,
-                    name=product.name,
+                    imei=rho_latest.imei,
+                    name=rho_latest.name,
                     current_remainder=rho_latest.current_remainder,
                     retail_price=rho_latest.retail_price
                 )
-        #=================================================================================
+        #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+        #passing info to rco
+        else:
+            if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
+                rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
+                rco.current_remainder=0
+                rco.retail_price=0
+                rco.save()
+        #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
 
     document.posted = False
