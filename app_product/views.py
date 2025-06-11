@@ -6155,7 +6155,7 @@ def signing_off_input(request, identifier_id):
                 n = len(names)
                 #checking availability
                 for i in range(n):
-                    if RemainderHistory.objects.filter(imei=imei, shop=shop,created__lt=dateTime).exists():
+                    if RemainderHistory.objects.filter(imei=imeis[i], shop=shop,created__lt=dateTime).exists():
                         rho_latest_before= RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
                         if rho_latest_before.current_remainder < int(quantities[i]):
                             string=f'Документ не проведен. Товар с IMEI {imeis[i]} отсутствует на балансе фирмы.'
