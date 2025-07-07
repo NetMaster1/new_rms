@@ -175,6 +175,7 @@ def save_in_excel_daily_rep(request):
                 modems=shop_row[10],
                 RT_equipment=shop_row[11],
                 teko_payments=shop_row[12],
+                protective_films=shop_row[13],
                 credit=credit_sum,
                 card=card_sum,
                 cashback=cashback,
