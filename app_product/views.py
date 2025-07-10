@@ -2415,8 +2415,9 @@ def unpost_sale (request, document_id):
             )
             #cashback operations
             if client.f_name != "default":
-                client.accum_cashback-=rho.cash_back_awarded
-                client.save()
+                if rho.cash_back_awarded == True:
+                    client.accum_cashback-=rho.cash_back_awarded
+                    client.save()
             imei=rho.imei
             name=rho.name
             rho.delete()

@@ -198,6 +198,7 @@ def save_in_excel_daily_rep(request):
                 + daily_rep.modems
                 + daily_rep.RT_equipment
                 + daily_rep.teko_payments
+                + daily_rep.protective_films
                 
             )
             daily_rep.final_balance = (
@@ -270,6 +271,8 @@ def save_in_excel_daily_rep(request):
             ws.write(row_num, col_num, query_list.RT_equipment, font_style)
             row_num += 1
             ws.write(row_num, col_num, query_list.teko_payments, font_style)
+            row_num += 1
+            ws.write(row_num, col_num, query_list.protective_films, font_style)
 
             row_num += 1
             ws.write(row_num, col_num, query_list.credit, font_style)
@@ -304,6 +307,7 @@ def save_in_excel_daily_rep(request):
             "Модемы",
             "Оборудование РТ",
             "Платежи",
+            "Пленки",
             "Продажа в кредит",
             "Экваиринг",
             "Кэшбэк",
@@ -1349,7 +1353,6 @@ def remainder_report(request):
     else:
         auth.logout(request)
         return redirect("login")
-
 
 def remainder_report_ver_1(request):
     if request.user.is_authenticated:
@@ -2442,6 +2445,8 @@ def bonus_report(request):
                 ws.write(row_num, col_num, item.modems, font_style)
                 col_num += 1
                 ws.write(row_num, col_num, item.RT_equipment, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.protective_films, font_style)
                 col_num += 1
                 ws.write(row_num, col_num, item.credit, font_style)
                 col_num +=1
