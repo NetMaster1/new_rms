@@ -227,6 +227,7 @@
     const btn_close =document.querySelector('.btn_close');
     const btn_modal =document.querySelector('.btn_modal');
     const imeis = document.querySelectorAll("#imei");
+    const names = document.querySelectorAll("#name");
     const quantities = document.querySelectorAll("#quantity");
     const sub_totals = document.querySelectorAll("#sub_total");
     const prices = document.querySelectorAll("#price");
@@ -301,12 +302,15 @@
     for (let i = 0; i < prices.length; i++) {
         prices[i].addEventListener('change', e => {
             sub_totals[i].value = quantities[i].value * prices[i].value;
+            console.log('ok')
             let arr = []
+            //arr.push(names[i].value)
             arr.push(imeis[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
             sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+            //sessionStorage.setItem(names[i].value, JSON.stringify(arr));
         })
     }
 
@@ -339,8 +343,11 @@
         for (j=0; j<imeis.length; j++){
             for (i = 0; i < sessionStorage.length; i++) {
                 if (JSON.parse(sessionStorage.getItem(imeis[j].value))){
-                    a = JSON.parse(sessionStorage.getItem(imeis[j].value));
+                //if (JSON.parse(sessionStorage.getItem(names[j].value))){
+                   a = JSON.parse(sessionStorage.getItem(imeis[j].value));
+                    //a = JSON.parse(sessionStorage.getItem(names[j].value));
                     if (imeis[j].value == a[0]){
+                    //if (names[j].value == a[0]){
                         quantities[j].value=a[1]
                         prices[j].value=a[2]
                         sub_totals[j].value=a[3]
