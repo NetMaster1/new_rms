@@ -3036,7 +3036,7 @@ def delivery_auto(request):
                 task_3 = {
                     "stocks": [
                         {
-                            "offer_id": str(product.EAN),
+                            "offer_id": str(product.ean),
                             "product_id": str(product.ozon_id),
                             "stock": str(mp_quantity),
                             #warehouse (Гордеевская)
