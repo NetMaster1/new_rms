@@ -4274,6 +4274,13 @@ def transfer_input(request, identifier_id):
                         shop_receiver=shop_receiver,
                     )
                     document_sum = 0
+                    #===================ozon block #1========================
+                    headers = {
+                                "Client-Id": "867100",
+                                "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
+                            }
+                    stock_arr=[]
+                    #======================================================
                     for i in range(n):
                         product=Product.objects.get(imei=imeis[i])
                         if AvPrice.objects.filter(imei=imeis[i]).exists():
@@ -4353,31 +4360,21 @@ def transfer_input(request, identifier_id):
                                 rco.save()
                         #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
-                        #updating quantity at ozon marketplace
+                        #=================ozon block #2=============================================
+                        #creating an array for further update quanitities at ozon
                         if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon and shop_receiver != ozon_shop:
-                            headers = {
-                                "Client-Id": "867100",
-                                "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
-                            }
-                            task = {
-                                "stocks": [
-                                    {
+                            
+                            stock_dict = {
                                         #"offer_id": str(product.id),
-                                        "offer_id": str(product.EAN),
+                                        "offer_id": str(product.ean),
                                         "product_id": str(product.ozon_id),
                                         "stock": str(mp_quantity),
                                         "warehouse_id": 1020001938106000
                                     }
-                                ]
-                            }
-                            response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task, headers=headers)
-                            json=response.json()
-                            status_code=response.status_code
-                            time.sleep(0.5)
-                            #print(status_code)
-                            #print(json)
+                            stock_arr.append(stock_dict)
 
-
+                        #=====================================================
+                            
                         # checking shop_receiver
                         rho = RemainderHistory.objects.create(
                             created=dateTime,
@@ -4450,8 +4447,17 @@ def transfer_input(request, identifier_id):
                                 rco.save()
                         #========================END OF REMAINDER CURRENT BLOCK=============================================
 
-
-
+                    #==================ozon block #3=================================
+                    task = {
+                            "stocks": stock_arr
+                        }
+                    response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task, headers=headers)
+                    json=response.json()
+                    status_code=response.status_code
+                    time.sleep(0.5)
+                    #print(status_code)
+                    #print(json)
+                    #==================================================================
                     document.sum = document_sum
                     document.save()
                     for register in registers:
@@ -4592,6 +4598,13 @@ def change_transfer_unposted(request, document_id):
                     document.created=dateTime
                     document.save()
                     document_sum = 0
+                    #===================ozon block #1========================
+                    headers = {
+                                "Client-Id": "867100",
+                                "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
+                            }
+                    stock_arr=[]
+                    #======================================================
                     for i in range(n):
                         product=Product.objects.get(imei=imeis[i])
                         if AvPrice.objects.filter(imei=imeis[i]).exists():
@@ -4679,32 +4692,31 @@ def change_transfer_unposted(request, document_id):
                                 rco.save()
                         #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
-
-
-
-                        #updating quantity at ozon marketplace
+                        #=======================ozon block #2==================================
+                        #creating an array for further update of quantities at ozon
                         if product.for_mp_sale is True and shop_sender == shop_sender_to_ozon and shop_receiver != ozon_shop:
-                            headers = {
-                                "Client-Id": "867100",
-                                "Api-Key": '6bbf7175-6585-4c35-8314-646f7253bef6'
-                            }
-                            task = {
-                                "stocks": [
-                                    {
+                            
+                            stock_dict = {
                                         #"offer_id": str(product.id),
-                                        "offer_id": str(product.EAN),
+                                        "offer_id": str(product.ean),
                                         "product_id": str(product.ozon_id),
                                         "stock": str(mp_quantity),
                                         "warehouse_id": 1020001938106000
                                     }
-                                ]
-                            }
-                            response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task, headers=headers)
-                            time.sleep(0.5)
-                            json=response.json()
-                            status_code=response.status_code
-                            #print(status_code)
-                            #print(json)
+                            stock_arr.append(stock_dict)
+
+                            # task = {
+                            #     "stocks": [
+                            #         {
+                            #             #"offer_id": str(product.id),
+                            #             "offer_id": str(product.ean),
+                            #             "product_id": str(product.ozon_id),
+                            #             "stock": str(mp_quantity),
+                            #             "warehouse_id": 1020001938106000
+                            #         }
+                            #     ]
+                            # }
+                        #=====================================================
 
                         # creating rho for shop_receiver
                         rho = RemainderHistory.objects.create(
@@ -4784,7 +4796,18 @@ def change_transfer_unposted(request, document_id):
                                 rco.save()
                         #========================END OF REMAINDER CURRENT BLOCK=============================================
 
+                    #=============ozon block #3====================================
+                    task = {
+                            "stocks": stock_arr
+                        }
 
+                    response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task, headers=headers)
+                    # time.sleep(0.5)
+                    json=response.json()
+                    status_code=response.status_code
+                    #print(status_code)
+                    #print(json)
+                    #===================================================================
                     document.sum = document_sum
                     document.save()
                     registers = Register.objects.filter(document=document)
