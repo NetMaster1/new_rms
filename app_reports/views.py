@@ -185,6 +185,7 @@ def save_in_excel_daily_rep(request):
                 cash_move=cash_move_sum,
             )
             daily_rep.net_sales = (
+                #listing categorie must be as they go in the existin DB
                 daily_rep.smartphones
                 + daily_rep.accessories
                 + daily_rep.sim_cards
@@ -197,8 +198,9 @@ def save_in_excel_daily_rep(request):
                 + daily_rep.gadgets
                 + daily_rep.modems
                 + daily_rep.RT_equipment
-                + daily_rep.teko_payments
                 + daily_rep.protective_films
+                + daily_rep.teko_payments
+                
                 
             )
             daily_rep.final_balance = (
@@ -306,8 +308,8 @@ def save_in_excel_daily_rep(request):
             "Гаджеты",
             "Модемы",
             "Оборудование РТ",
+            "Пленки"
             "Платежи",
-            "Пленки",
             "Продажа в кредит",
             "Экваиринг",
             "Кэшбэк",
@@ -2289,7 +2291,8 @@ def bonus_report(request):
                 documents=Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type)
 
             for user in users:
-                #we create a list for each user and add "username" as the first enrty. 
+                #we create a list for each user and add "username" as the first entry
+                #then we collect data for all categories in this array which later creates a row for user in excel file
                 user_row = [user.username]
 
                 #"number of work days" column
@@ -2303,7 +2306,7 @@ def bonus_report(request):
                     #we use 'numpy.unique' function to count unique values
                     list=np.unique(dates)
                 number_of_wd=len(list)
-                #we add number of work days as the second enty in user_row list
+                #we add number of work days as the second entry in user_row list
                 user_row.append(number_of_wd)
 
                 #cashback column
@@ -2368,6 +2371,7 @@ def bonus_report(request):
                     for rho in sim_rhos:
                         if rho.retail_price >= bulk_sim_motivation.sim_price and rho.retail_price <= 1550:
                             n+=1
+                #we create a report in which categories a listed as they go in the DB
                 monthly_bonus = MonthlyBonus.objects.create(
                     report_id=report_id,
                     user_name=user_row[0],
@@ -2384,6 +2388,7 @@ def bonus_report(request):
                     gadgets=user_row[11],
                     modems=user_row[12],
                     RT_equipment=user_row[13],
+                    protective_films=user_row[14],
                     credit=credit_sum * 0.03,
                     bulk_sims= n * bulk_sim_motivation.bonus_per_sim,
                     sub_total=0,

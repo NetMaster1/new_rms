@@ -93,6 +93,7 @@ class MonthlyBonus (models.Model):
     cashback = models.IntegerField(null=True)
     smartphones = models.IntegerField(null=True)
     accessories = models.IntegerField(null=True)
+    protective_films = models.IntegerField(null=True)
     sim_cards = models.IntegerField(null=True)
     phones = models.IntegerField(null=True)
     modems = models.IntegerField(null=True)
