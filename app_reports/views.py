@@ -244,7 +244,7 @@ def save_in_excel_daily_rep(request):
         for shop in shops:
             query_list = daily_rep.get(shop=shop.name)
             # query = query_list.values_list("opening_balance", "smartphones", "accessories", 'sim_cards', 'phones', 'iphone', 
-            #'insuranсе', 'wink', 'services', 'modems', 'RT_equipment', pay_cards', 'credit', 'card', 'salary', 'expenses', 'return_sum', 'cash_move', 'final_balance')
+            #'insuranсе', 'wink', 'services', 'modems', 'RT_equipment', 'protective_films', pay_cards', 'credit', 'card', 'salary', 'expenses', 'return_sum', 'cash_move', 'final_balance')
             row_num = 1
             ws.write(row_num, col_num, query_list.opening_balance, font_style)
             row_num += 1
@@ -272,9 +272,10 @@ def save_in_excel_daily_rep(request):
             row_num += 1
             ws.write(row_num, col_num, query_list.RT_equipment, font_style)
             row_num += 1
-            ws.write(row_num, col_num, query_list.teko_payments, font_style)
-            row_num += 1
             ws.write(row_num, col_num, query_list.protective_films, font_style)
+            row_num += 1
+            ws.write(row_num, col_num, query_list.teko_payments, font_style)
+            
 
             row_num += 1
             ws.write(row_num, col_num, query_list.credit, font_style)
