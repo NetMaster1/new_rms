@@ -8,7 +8,7 @@ class SupplierAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created', 'category', 'name', 'imei', 'for_mp_sale', 'ozon_id', 'ean')
+    list_display = ('id', 'created', 'category', 'image_file', 'name', 'imei', 'for_mp_sale', 'ozon_id', 'ean')
     search_fields = ('imei', 'name',)
     list_select_related = True
     list_editable = ('imei', 'category', 'name', 'image_file')
