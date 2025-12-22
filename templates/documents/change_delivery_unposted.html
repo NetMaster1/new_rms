@@ -261,7 +261,7 @@
                     prices[i].value = item_price
                     sub_totals[i].value = quantities[i].value * prices[i].value;
                     let arr = []
-                    arr.push(imeis[i].value)
+                    arr.push(names[i].value)
                     arr.push(quantities[i].value)
                     arr.push(prices[i].value)
                     arr.push(sub_totals[i].value)
@@ -271,6 +271,21 @@
         })
     }
 
+    //changing inputs & loading changed input to session storage (via changing 'prices')
+    //================================================================================================
+    // for (let i = 0; i < prices.length; i++) {
+    //     prices[i].addEventListener('change', e => {
+    //         sub_totals[i].value = quantities[i].value * prices[i].value;
+    //         let arr = []
+    //         arr.push(names[i].value)
+    //         arr.push(quantities[i].value)
+    //         arr.push(prices[i].value)
+    //         arr.push(sub_totals[i].value)
+    //         //sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+    //         sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
+    //     })
+    // }
+
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')
     //================================================================================================
@@ -278,7 +293,7 @@
         quantities[i].addEventListener('change', e => {
             sub_totals[i].value = quantities[i].value * prices[i].value;
             let arr = []
-            arr.push(imeis[i].value)
+            arr.push(names[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
@@ -286,20 +301,7 @@
         })
     }
 
-    //changing inputs & loading changed input to session storage (via changing 'prices')
-    //================================================================================================
-    for (let i = 0; i < prices.length; i++) {
-        prices[i].addEventListener('change', e => {
-            sub_totals[i].value = quantities[i].value * prices[i].value;
-            let arr = []
-            arr.push(quantities[i].value)
-            arr.push(prices[i].value)
-            arr.push(sub_totals[i].value)
-            arr.push(imeis[i].value)
-            //sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
-            sessionStorage.setItem(names[i].value, JSON.stringify(arr));
-        })
-    }
+   
 
     //changing inputs & loading changed input to session storage (via changing 'sub_totals')
     //================================================================================================
@@ -330,9 +332,9 @@
         for (j = 0; j < imeis.length; j++) {
             for (i = 0; i < sessionStorage.length; i++) {
                 //if (JSON.parse(sessionStorage.getItem(imeis[j].value))) {
-                if (JSON.parse(sessionStorage.getItem(names[j].value))) {
+                if (JSON.parse(sessionStorage.getItem(imeis[j].value))) {
                     //a = JSON.parse(sessionStorage.getItem(imeis[j].value));
-                    a = JSON.parse(sessionStorage.getItem(names[j].value));
+                    a = JSON.parse(sessionStorage.getItem(imeis[j].value));
                     //if (imeis[j].value == a[0]) {
                     for (n=0; n < imeis.length; n++) {
                         if (names[n].value == a[0]) 

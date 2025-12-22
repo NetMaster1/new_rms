@@ -128,7 +128,7 @@
                         <input type="text" class='form-control' id="imei" name="imei" value='{{register.product.imei}}' readonly>
                     </div>
                     <div class="col-2">
-                        <input type="text" class='form-control' id="name" name="name" value='{{register.product.name}}' readonly>
+                        <input type="text" class='form-control' id="product_name" name="name" value='{{register.product.name}}' readonly>
                     </div>
                     <div class="col-1">
                         <input type="text" class='form-control' id="quantity" name="quantity" value={{register.quantity}} required>
@@ -189,12 +189,11 @@
 
 <script>
     console.log('OK')
-
+    const product_names = document.querySelectorAll("#product_name");
     const imeis = document.querySelectorAll("#imei");
+    const prices = document.querySelectorAll("#price");         
     const quantities = document.querySelectorAll("#quantity");
     const sub_totals = document.querySelectorAll("#sub_total");
-    const names = document.querySelectorAll("#name");
-    const prices = document.querySelectorAll("#price");
     const shop_sender = document.querySelector('#shop_sender');
     const shop_receiver = document.querySelector('#shop_receiver');
     const buttons = document.querySelectorAll('.clear_storage');
@@ -224,38 +223,23 @@
     //================================================================================================
     for (let i = 0; i < prices.length; i++) {
         prices[i].addEventListener('change', e => {
-            item_name = names[i].value,
+            product_name = product_names[i].value,
             item_price = prices[i].value
-            for (let i = 0; i < names.length; i++){
-                if (names[i].value === item_name) {
-                    prices[i].value = item_price
-                    sub_totals[i].value = quantities[i].value * prices[i].value;
+            for (let j = 0; j < product_names.length; j++){
+                if (product_names[j].value === product_name) {
+                    prices[j].value = item_price
+                    sub_totals[j].value = quantities[j].value * prices[j].value;
                     let arr = []
-                    arr.push(names[i].value)
-                    arr.push(quantities[i].value)
-                    arr.push(prices[i].value)
-                    arr.push(sub_totals[i].value)
-                    sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));    
+                    arr.push(product_names[j].value)
+                    arr.push(quantities[j].value)
+                    arr.push(prices[j].value)
+                    arr.push(sub_totals[j].value)
+                    sessionStorage.setItem(imeis[j].value, JSON.stringify(arr));    
                 }
                 }
         })
     }
-
-    //changing inputs & loading changed input to session storage (via changing 'quantities')
-    //================================================================================================
-    for (let i = 0; i < quantities.length; i++) {
-        quantities[i].addEventListener('change', e => {
-            sub_totals[i].value = quantities[i].value * prices[i].value;
-            let arr = []
-            arr.push(imeis[i].value)
-            arr.push(quantities[i].value)
-            arr.push(prices[i].value)
-            arr.push(sub_totals[i].value)
-            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
-        })
-    }
-
-    //changing inputs & loading changed input to session storage (via changing 'prices')
+     //changing inputs & loading changed input to session storage (via changing 'prices')
     //================================================================================================
     // for (let i = 0; i < prices.length; i++) {
     //     prices[i].addEventListener('change', e => {
@@ -269,23 +253,20 @@
     //     })
     // }
 
-        //changing inputs & loading changed input to session storage (via changing 'prices')
+
+    //changing inputs & loading changed input to session storage (via changing 'quantities')
     //================================================================================================
-    for (let i = 0; i < prices.length; i++) {
-        prices[i].addEventListener('change', e => {
+    for (let i = 0; i < quantities.length; i++) {
+        quantities[i].addEventListener('change', e => {
             sub_totals[i].value = quantities[i].value * prices[i].value;
             let arr = []
+            arr.push(product_names[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
-            arr.push(imeis[i].value)
-            //sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
-            sessionStorage.setItem(names[i].value, JSON.stringify(arr));
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
         })
     }
-
-
-
 
     //changing inputs & loading changed input to session storage (via changing 'sub_totals')
     //================================================================================================
@@ -293,11 +274,11 @@
         sub_totals[i].addEventListener('change', e => {
             prices[i].value = sub_totals[i].value / quantities[i].value;
             let arr = []
-            arr.push(imeis[i].value)
+            arr.push(product_names[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
-            sessionStorage.setItem(names[i].value, JSON.stringify(arr));
+            sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));
         })
     }
     //saving "Shop_sender select option" from switching to default when updating the page
@@ -319,10 +300,10 @@
     document.addEventListener('DOMContentLoaded', e => {
         for (j = 0; j < imeis.length; j++) {
             for (i = 0; i < sessionStorage.length; i++) {
-                if (JSON.parse(sessionStorage.getItem(names[j].value))) {
-                    a = JSON.parse(sessionStorage.getItem(names[j].value));
+                if (JSON.parse(sessionStorage.getItem(imeis[j].value))) {
+                    a = JSON.parse(sessionStorage.getItem(imeis[j].value));
                     for (n=0; n < imeis.length; n++) {
-                        if (names[n].value == a[0]) 
+                        if (product_names[n].value == a[0]) 
                             {
                                 quantities[n].value = a[1]
                                 prices[n].value = a[2]
