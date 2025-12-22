@@ -250,6 +250,27 @@
     })
     //window.location.reload()
 
+    //changing inputs & loading changed input to session storage for identical names')
+    //================================================================================================
+    for (let i = 0; i < prices.length; i++) {
+        prices[i].addEventListener('change', e => {
+            item_name = names[i].value,
+            item_price = prices[i].value
+            for (let i = 0; i < names.length; i++){
+                if (names[i].value === item_name) {
+                    prices[i].value = item_price
+                    sub_totals[i].value = quantities[i].value * prices[i].value;
+                    let arr = []
+                    arr.push(imeis[i].value)
+                    arr.push(quantities[i].value)
+                    arr.push(prices[i].value)
+                    arr.push(sub_totals[i].value)
+                    sessionStorage.setItem(imeis[i].value, JSON.stringify(arr));    
+                }
+                }
+        })
+    }
+
 
     //changing inputs & loading changed input to session storage (via changing 'quantities')
     //================================================================================================
@@ -271,7 +292,6 @@
         prices[i].addEventListener('change', e => {
             sub_totals[i].value = quantities[i].value * prices[i].value;
             let arr = []
-            arr.push(names[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
@@ -287,7 +307,7 @@
         sub_totals[i].addEventListener('change', e => {
             prices[i].value = sub_totals[i].value / quantities[i].value;
             let arr = []
-            arr.push(imeis[i].value)
+            arr.push(names[i].value)
             arr.push(quantities[i].value)
             arr.push(prices[i].value)
             arr.push(sub_totals[i].value)
