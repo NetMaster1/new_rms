@@ -19,4 +19,7 @@ urlpatterns = [
     path ('sim_sales_MB', views.sim_sales_MB, name='sim_sales_MB'),
     path ('sim_delivery_MB', views.sim_delivery_MB, name='sim_delivery_MB'),
     path ('sim_sign_off_MB', views.sim_sign_off_MB, name='sim_sign_off_MB'),
+    #======================================
+    path ('sale_against_activation_rep', views.sale_against_activation_rep, name='sale_against_activation_rep'),
+    path ('activation_check', views.activation_check, name='activation_check'),
 ]
