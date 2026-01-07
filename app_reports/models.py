@@ -6,7 +6,6 @@ from app_reference.models import ProductCategory, Supplier, Product, Shop
 from datetime import datetime, date
 from django.utils import timezone
 
-
 # Create your models here.
 
 class ProductHistory (models.Model):
@@ -239,5 +238,17 @@ class SalaryReport (models.Model):
     user = models.CharField(max_length=50, null=True)
     sum = models.IntegerField(null=True)
 
+    def __int__(self):
+        return self.id
+    
+class DailyActivation (models.Model):
+    report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    phone = models.CharField(max_length=50, null=True, blank=True)
+    icc = models.CharField(max_length=50, null=True, blank=True)
+    shop = models.CharField(max_length=50, null=True, blank=True)
+    shop_price = models.CharField(max_length=50, null=True, blank=True)
+    report_price = models.CharField(max_length=50, null=True, blank=True)
+    
     def __int__(self):
         return self.id

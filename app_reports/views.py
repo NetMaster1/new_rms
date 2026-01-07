@@ -200,8 +200,6 @@ def save_in_excel_daily_rep(request):
                 + daily_rep.RT_equipment
                 + daily_rep.protective_films
                 + daily_rep.teko_payments
-                
-                
             )
             daily_rep.final_balance = (
                 daily_rep.opening_balance

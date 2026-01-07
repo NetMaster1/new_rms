@@ -3,7 +3,7 @@ from django.forms import NullBooleanField
 from django.shortcuts import render, redirect, get_object_or_404
 from app_product.models import RemainderHistory, Document
 from app_reference.models import Shop, Product, DocumentType, ProductCategory
-from app_reports.models import ReportTempId, Sim_report
+from app_reports.models import ReportTempId, Sim_report, DailyActivation
 from .models import SimReturnRecord, SimRegisterRecord
 from django.contrib import messages
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -15,7 +15,6 @@ import xlwt
 from django.http import HttpResponse, JsonResponse
 #from requests.auth import HTTPBasicAuth
 from django.contrib import messages, auth
-
 
 #Работа с субдилером
 #Перемещаем сим карты на склад субдилера (Перемещение ТМЦ). Склад создан в программе.
@@ -235,11 +234,8 @@ def activation_list (request):
         wb.save(response)
         return response
 #=======================End of Excel Upload Module================================
-
     else:
         return render(request, 'sims/activation_list.html')
-
-
 
 def change_sim_return_posted(request, document_id):
     if request.user.is_authenticated:
@@ -271,9 +267,7 @@ def delete_sim_register_posted (request, document_id):
         srrs=SimRegisterRecord.objects.filter(document=document)
         for i in srrs:
             i.delete()
-        document.delete()
-        
-           
+        document.delete() 
         return redirect("log")
     else:
         auth.logout(request)
@@ -330,7 +324,6 @@ def sim_return_report (request):
     category=ProductCategory.objects.get(name='Сим_карты')
     if request.method == "POST":
         pass
-
     else:
         return render(request, "sims/sim_return_report.html")
 
@@ -339,6 +332,74 @@ def delete_sim_reports (request):
     for i in reports:
         i.delete()
     return redirect ('activation_list')
+
+def sale_against_activation_rep (request):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            category=ProductCategory.objects.get(name="Сим_карты")
+            rho_type=DocumentType.objects.get(name='Продажа ТМЦ')
+            date = request.POST['date']
+            # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+            date = datetime.datetime.strptime(date, "%Y-%m-%d")
+            report_id = ReportTempId.objects.create()
+            file = request.FILES["file_name"]
+            df1 = pandas.read_excel(file)
+            cycle = len(df1)
+            for i in range(cycle):
+                n += 1
+                row = df1.iloc[i]#reads each row of the df1 one by one
+                if RemainderHistory.objects.filter(created__date=date, rho_type=rho_type, category=category, imei=row.ICC, retail_price=row.FIRST_PAY).exists():
+                    pass
+                else:
+                    rho=RemainderHistory.objects.get(created__date=date, rho_type=rho_type, category=category, imei=row.ICC)
+                    item=DailyActivation.objects.create(
+                        report_id=report_id,
+                        icc=row.ICC,
+                        phone=rho.product.name,
+                        shop=rho.shop.name,
+                        report_price=row.FIRST_PAY,
+                        shop_price=rho.retail_price
+                    )
+            sim_daily_rep=DailyActivation.objects.filter(report_id=report_id)
+
+            #==========================Convert to Excel module=========================================
+            response = HttpResponse(content_type="application/ms-excel")
+            response["Content-Disposition"] = (
+                "attachment; filename=DailRep_" + str(date) + ".xls"
+            )
+            # str(datetime.date.today())+'.xls'
+
+            wb = xlwt.Workbook(encoding="utf-8")
+            ws = wb.add_sheet(date)
+
+            # sheet header in the first row
+            row_num = 0
+            font_style = xlwt.XFStyle()
+
+            columns = ['ICC', 'Номер', "Точка", "Цена из отчета", "Цена из Erms"]
+            for col_num in range(len(columns)):
+                ws.write(row_num, col_num + 1, columns[col_num], font_style)
+            # sheet body, remaining rows
+            font_style = xlwt.XFStyle()
+
+            col_num = 1
+            row_num = 1
+            for item in sim_daily_rep:
+                col_num = 1
+                ws.write(row_num, col_num, item.icc, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.phone, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.shop, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.report_price, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.shop_price, font_style)
+                row_num +=1
+
+            wb.save(response)
+            return response
+
 
 def sim_dispatch (request):
     pass
