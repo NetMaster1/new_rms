@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from app_reference.models import ProductCategory, Supplier, Product, Shop
+from app_reference.models import ProductCategory, Supplier, Product, Shop, DocumentType
 
 # import datetime
 from datetime import datetime, date
@@ -244,11 +244,13 @@ class SalaryReport (models.Model):
 class DailyActivation (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
     created = models.DateTimeField(auto_now_add=True)
+    activation_date=models.CharField(max_length=50, null=True, blank=True)
     phone = models.CharField(max_length=50, null=True, blank=True)
     icc = models.CharField(max_length=50, null=True, blank=True)
     shop = models.CharField(max_length=50, null=True, blank=True)
     shop_price = models.CharField(max_length=50, null=True, blank=True)
     report_price = models.CharField(max_length=50, null=True, blank=True)
+    rho_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True, blank=True)
     
     def __int__(self):
         return self.id
