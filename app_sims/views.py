@@ -239,8 +239,6 @@ def activation_list (request):
     else:
         return render(request, 'sims/activation_list.html')
 
-
-
 def change_sim_return_posted(request, document_id):
     if request.user.is_authenticated:
         document=Document.objects.get(id=document_id)
