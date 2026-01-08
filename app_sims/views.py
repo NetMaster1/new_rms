@@ -375,10 +375,19 @@ def sale_against_activation_rep (request):
                             rho_type=sim_card.rho_type.name,
                             tarif_name=row.TRPL_NAME
                         )
-                        sim_daily_rep=DailyActivation.objects.filter(report_id=report_id)
+                        
                     else:
-                        print(f'{row.ICC} отсутствует в базе данных')
-
+                        item=DailyActivation.objects.create(
+                            report_id=report_id,
+                            activation_date=str(row.ACTIVATION_DATE),
+                            icc=row.ICC,
+                            phone=row.MSISDN,
+                            report_price=row.FIRST_PAY,
+                            rho_type="Отсутствует в БД",
+                            tarif_name=row.TRPL_NAME
+                        )
+                        
+            sim_daily_rep=DailyActivation.objects.filter(report_id=report_id)
             #==========================Convert to Excel module=========================================
             response = HttpResponse(content_type="application/ms-excel")
             response["Content-Disposition"] = (
