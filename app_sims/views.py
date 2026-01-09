@@ -362,7 +362,8 @@ def sale_against_activation_rep (request):
                     pass
                 else:
                     if RemainderHistory.objects.filter(imei=row.ICC).exists():
-                        sim_card=RemainderHistory.objects.filter(imei=row.ICC).latest('-created')
+                        #sim_card=RemainderHistory.objects.filter(imei=row.ICC).latest('created')
+                        sim_card=RemainderHistory.objects.filter(imei=row.ICC).first()
                
                         item=DailyActivation.objects.create(
                             report_id=report_id,
@@ -373,9 +374,9 @@ def sale_against_activation_rep (request):
                             report_price=row.FIRST_PAY,
                             shop_price=sim_card.retail_price,
                             rho_type=sim_card.rho_type.name,
-                            tarif_name=row.TRPL_NAME
-                        )
-                        
+                            tarif_name=row.TRPL_NAME,
+                            activation_location=row.POS_ADRESS,
+                        )                        
                     else:
                         item=DailyActivation.objects.create(
                             report_id=report_id,
@@ -384,7 +385,8 @@ def sale_against_activation_rep (request):
                             phone=row.MSISDN,
                             report_price=row.FIRST_PAY,
                             rho_type="Отсутствует в БД",
-                            tarif_name=row.TRPL_NAME
+                            tarif_name=row.TRPL_NAME,
+                            activation_location=row.POS_ADRESS,
                         )
                         
             sim_daily_rep=DailyActivation.objects.filter(report_id=report_id)
@@ -402,15 +404,17 @@ def sale_against_activation_rep (request):
             row_num = 0
             font_style = xlwt.XFStyle()
 
-            columns = ['Дата активации', 'ICC', 'Номер', "Точка", "Цена из отчета", "Цена из Erms", 'Документ', 'Тариф']
+            columns = ['Дата активации', 'ICC', 'Номер', "Точка", "Цена из отчета", "Цена из Erms", 'Документ', 'Тариф', 'Место активации']
             for col_num in range(len(columns)):
-                ws.write(row_num, col_num + 1, columns[col_num], font_style)
+                #ws.write(row_num, col_num + 1, columns[col_num], font_style)
+                ws.write(row_num, col_num, columns[col_num], font_style)
+                col_num += 1
             # sheet body, remaining rows
             font_style = xlwt.XFStyle()
 
             row_num = 1
             for item in sim_daily_rep:
-                col_num = 1
+                col_num = 0
                 ws.write(row_num, col_num, item.activation_date, font_style)
                 col_num +=1
                 ws.write(row_num, col_num, item.icc, font_style)
@@ -426,6 +430,8 @@ def sale_against_activation_rep (request):
                 ws.write(row_num, col_num, item.rho_type, font_style)
                 col_num +=1
                 ws.write(row_num, col_num, item.tarif_name, font_style)
+                col_num +=1
+                ws.write(row_num, col_num, item.activation_location, font_style)
                 row_num +=1
 
             wb.save(response)

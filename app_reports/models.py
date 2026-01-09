@@ -252,6 +252,7 @@ class DailyActivation (models.Model):
     report_price = models.CharField(max_length=50, null=True, blank=True)
     rho_type = models.CharField(max_length=50, null=True, blank=True)
     tarif_name = models.CharField(max_length=50, null=True, blank=True)
+    activation_location = models.CharField(max_length=50, null=True, blank=True)
     
     def __int__(self):
         return self.id
