@@ -364,10 +364,10 @@ def sale_against_activation_rep (request):
                     if RemainderHistory.objects.filter(imei=row.ICC).exists():
                         #sim_card=RemainderHistory.objects.filter(imei=row.ICC).latest('created')
                         sim_card=RemainderHistory.objects.filter(imei=row.ICC).latest('created')
-                        print('====================')
-                        print(sim_card.id)
-                        print(sim_card.rho_type)
-                        print('====================')
+                        # print('====================')
+                        # print(sim_card.id)
+                        # print(sim_card.rho_type)
+                        # print('====================')
                
                         item=DailyActivation.objects.create(
                             report_id=report_id,
