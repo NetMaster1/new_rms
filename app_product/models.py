@@ -157,7 +157,7 @@ class RemainderHistory(models.Model):
     status = models.BooleanField(default=False)  # "False" for Transfer(send) "True" for Transfer(receive)
     cash_back_awarded = models.IntegerField(null=True, blank=True)
     for_mp_sale = models.BooleanField(default=False) #items for marketplaces
-    mp_RRP = models.IntegerField(null=True) #Recommended Retail Price for marketplaces
+    mp_RRP = models.IntegerField(null=True, blank=True) #Recommended Retail Price for marketplaces
 
     class Meta:
         ordering = ('-created',)  # sorting by date

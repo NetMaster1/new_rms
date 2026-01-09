@@ -4374,7 +4374,10 @@ def transfer_input(request, identifier_id):
                             stock_arr.append(stock_dict)
 
                         #=====================================================
-                            
+                        #provides time span between two transfer rhos so that lated I could choose the latest
+                        #otherwise the system created two rhos with the same time (created) & the system later choosed
+                        #not the latest but the first of two with the same time
+                        time.sleep(0.01)  
                         # checking shop_receiver
                         rho = RemainderHistory.objects.create(
                             created=dateTime,
@@ -4454,7 +4457,7 @@ def transfer_input(request, identifier_id):
                     response=requests.post('https://api-seller.ozon.ru/v2/products/stocks', json=task, headers=headers)
                     json=response.json()
                     status_code=response.status_code
-                    time.sleep(0.5)
+                    time.sleep(0.1)
                     #print(status_code)
                     #print(json)
                     #==================================================================
