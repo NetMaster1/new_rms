@@ -32,7 +32,7 @@ class ReportTempId (models.Model):
 
 class ReportTemp (models.Model):
     report_id = models.ForeignKey(ReportTempId, on_delete=models.DO_NOTHING, null=True)
-    name = models.CharField(max_length=80, null=True)
+    name = models.CharField(max_length=160, null=True)
     imei = models.CharField(max_length=50, null=True)
     quantity_in = models.IntegerField(null=True)
     quantity_out = models.IntegerField(null=True)
