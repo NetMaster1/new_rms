@@ -60,6 +60,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 import uuid
 import time
+# from fpdf import FPDF pdf = FPDF()
+from fpdf import FPDF
 
 
 # Create your views here.
@@ -1075,6 +1077,16 @@ def sale_input_cash(request, identifier_id, client_id, cashback_off):
             for register in registers:
                 register.delete()
             identifier.delete()
+
+            #=======================Generating PDF File=====================
+            #python pdf.add_page()
+            pdf=FPDF()
+            pdf.add_page()
+            pdf.set_font('Arial', 'B', 16)
+            pdf.cell(40, 10, 'Hello World')
+            # Сохранение PDF:
+            pdf.output('hello.pdf', 'F')
+            #=============================End of PDF File======================
 
             if request.user in users:
                 return redirect ('sale_interface')
