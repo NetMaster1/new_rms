@@ -9805,7 +9805,7 @@ def print_check(request, document_id):
         pdf.ln(0)
         #pdf.cell(75, 5, f'Точка продаж: {document.shop_sender.address}', ln=1)
         pdf.cell(75, 5, f'Дата и время продажи: {dateTime}', ln=1)
-        pdf.cell(75, 5, f'Сотрудник: {request.user.first_name} {request.user.last_name}', ln=1)
+        pdf.cell(75, 5, f'Сотрудник: {document.user.first_name} {document.user.last_name}', ln=1)
         total=0
         rhos=RemainderHistory.objects.filter(document=document)
         for rho in rhos:
