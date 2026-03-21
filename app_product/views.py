@@ -2800,6 +2800,11 @@ def noCashback(request, identifier_id):
 # ================================Payment Operations=============================================
 def payment(request, identifier_id, client_id, cashback_off):
     if request.user.is_authenticated:
+        tdelta=datetime.timedelta(hours=3)
+        dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+        dateTime=dT_utcnow+tdelta
+        dateTime=str(dateTime)
+        dateTime=dateTime[:16]#обрезаем строку, чтобы убрать секунды
         identifier = Identifier.objects.get(id=identifier_id)
         client = Customer.objects.get(id=client_id)
         registers = Register.objects.filter(identifier=identifier)
@@ -2823,91 +2828,6 @@ def payment(request, identifier_id, client_id, cashback_off):
             'shops': shops,
             'shop': shop,
         }
-
-        #=======================Generating PDF File=====================
-        #python pdf.add_page()
-        pdf= FPDF(orientation="P", unit="mm", format=(53, 100))#format - page size in mm
-        # pdf.set_display_mode(zoom="default", layout="TWO_COLUMN_LEFT")#determines how pages are displayed on the srceen
-        pdf.add_font("Roboto", style="", fname="general/static/webfonts/Roboto.ttf", uni=True)
-        #pdf.add_font("Sans", style="", fname="{% static 'webfonts/Roboto.ttf' %}", uni=True)
-        # pdf.add_font("Sans", style="B", fname="Noto_Sans/NotoSans-Bold.ttf", uni=True)
-        # pdf.add_font("Sans", style="I", fname="Noto_Sans/NotoSans-Italic.ttf", uni=True)
-        # pdf.add_font("Sans", style="BI", fname="Noto_Sans/NotoSans-BoldItalic.ttf", uni=True)
-
-
-        pdf.add_page()
-        #pdf.set_font('Roboto', '', 12, encoding='ISO-8859-1')
-        #pdf.set_font('general/static/webfonts/Roboto.ttf', '', 12)
-        #pdf.set_font('Arial', '', 12)
-        pdf.set_font('Roboto', '', 12)#font, font type(B for bold, I for italic etc), font size
-        pdf.set_y(5)#set cursor 5 mm from the top
-        pdf.set_x(3)#set cursor 5 mm from the left
-        pdf.set_left_margin(3)
-        pdf.set_top_margin(5)
-        #pdf.set_margin(5) #устанавливает одинаковые значения всех полей документа;
-        #pdf.set_left_margin() #устанавливает левое поле;
-        #pdf.set_right_margin() #устанавливает правое поле;
-        #pdf.set_top_margin() #устанавливает верхнее поле;
-        #pdf.set_margins(5, 5, 5) #устанавливает значения левого, верхнего и правого полей;
-        #pdf.set_auto_page_break() #устанавливает значения нижнего поля, при котором будет срабатывать разрыв страницы;
-        company_name ='ИП Винокуров'
-        pdf.cell(50, 5, company_name, ln=1)
-        pdf.cell(50, 5, 'ИНН 52573223435', ln=1)
-        pdf.ln(1)#переход к следующей строке и указание на рзмер разрыва между строками
-        #multi_cell автоматически переносит текст, но не размещает ячейки рядом.
-        #В Python для расположения двух ячеек в одной строке может использоваться следующий подход: 
-        #Сохранить координату Y перед добавлением первой ячейки: ybefore = pdf.get_y().
-        #Добавить первую ячейку с помощью multi_cell.
-        #Установить позицию курсора на тот же уровень, что и первая ячейка: pdf.set_xy(effective_page_width / 2 + pdf.l_margin, ybefore).
-        #Добавить вторую ячейку
-        #для перехода к следующей строке использовать ybefore2=pdf.get_y(), чтобы узнать, где вертиально 
-        #заканчивается первая ячейка в предыдущей строке. Затем использовать эту метку для ввода
-        #очередной строки
-        ybefore=pdf.get_y()
-        pdf.multi_cell(30, 5, 'sjfdkjskjfksjfkjskfjskjfksjfskjfks')
-        ybefore2=pdf.get_y()
-        pdf.set_xy(35, ybefore)
-        pdf.cell(18, 5, 'adfsfsdfs')
-        pdf.ln(2)#переход к следующей строке и указание на рзмер разрыва между строками
-        pdf.set_xy(5, ybefore2)
-        pdf.cell(50, 5, 'СПАСИБО ЗА ПОКУПКУ', 0)# длина ячейки, ширина ячейки, текст, рамка (1-true, 0-false)
-        # Сохранение файла PDF
-        pdf.output('Hello.pdf', 'F')
-
-        try:
-            return FileResponse(open('Hello.pdf', 'rb'), content_type='application/pdf')
-        
-        except FileNotFoundError:
-            raise Http404()
-
-
-
-
-        # # Открытие файла PDF
-        # reader = PdfReader("Hello.pdf")
-        # writer = PdfWriter()
-
-        # # Масштабирование файла PDF
-        # for page in reader.pages:
-        #     page.scale(0.5, 0.5)  # Уменьшение в 2 раза
-        #     writer.add_page(page)
-
-        # with open("scaled.pdf", "wb") as output_file:
-            
-        #     writer.write(output_file)
-
-
-
-        # Открытие PDF
-        # try:
-        #     with open('Hello.pdf', 'r', encoding='ISO-8859-1') as file:
-        #         txt = file.read()
-        #         print(txt)
-        # except FileNotFoundError:
-        #     print ('File does not exist')
-        #=============================End of PDF File======================
-
-
         return render(request, "payment/payment.html", context)
     else:
         return redirect("login")
@@ -9845,6 +9765,72 @@ class DownloadPDF(View):
         response['Content-Disposition'] = content
         return response
 
+
+def print_check(request, document_id):
+    if request.user.is_authenticated:
+        document=Document.objects.get(id=document_id)
+        tdelta=datetime.timedelta(hours=3)
+        dT_utcnow=datetime.datetime.now(tz=pytz.UTC)#Greenwich time aware of timezones
+        dateTime=dT_utcnow+tdelta
+        dateTime=str(dateTime)
+        dateTime=dateTime[:16]#обрезаем строку, чтобы убрать секунды
+        doc_type=DocumentType.objects.get(name='Продажа ТМЦ')
+        shop_chkalovsk=Shop.objects.get(name='Чкаловск')
+        if document.title == doc_type:
+            if document.shop_sender==shop_chkalovsk:
+                company_name='Винокуров С.Н.'
+                ITN="526013223435"
+            else:
+                company_name='ООО Ритейл'
+                ITN="5257173237"
+
+
+        #формирование файла PDF
+        pdf= FPDF(orientation="P", unit="mm", format=(80, 100))#format - page size in mm
+        try:
+            pdf.add_font("Roboto", style="", fname="general/static/webfonts/Roboto.ttf", uni=True)
+        except:
+            pass
+        
+        pdf.add_page()
+        pdf.set_font('Roboto', '', 9)#font, font type(B for bold, I for italic etc), font size
+        pdf.set_x(5)#set cursor 5 mm from the left
+        pdf.set_left_margin(5)
+        pdf.cell(75, 5, 'Товарный чек', ln=1, align='C')
+        pdf.cell(75, 5, company_name, ln=1)
+        pdf.cell(75, 5, f'ИНН {ITN}', ln=1)
+        ybefore=pdf.get_y()
+        # pdf.set_xy(pdf.w / 2 + pdf.l_margin, ybefore)
+        pdf.multi_cell(70, 5, f'Точка продаж: {document.shop_sender.address}', align='L')
+        pdf.ln(0)
+        #pdf.cell(75, 5, f'Точка продаж: {document.shop_sender.address}', ln=1)
+        pdf.cell(75, 5, f'Дата и время продажи: {dateTime}', ln=1)
+        pdf.cell(75, 5, f'Сотрудник: {request.user.first_name} {request.user.last_name}', ln=1)
+        total=0
+        rhos=RemainderHistory.objects.filter(document=document)
+        for rho in rhos:
+            ybefore=pdf.get_y()
+            pdf.multi_cell(40, 5, f'{rho.name}')
+            pdf.ln(0)
+            pdf.multi_cell(70, 5, f'IMEI: {rho.imei}')
+            ybefore2=pdf.get_y()
+            pdf.set_xy(40, ybefore)
+            pdf.cell(40, 5, f'{rho.outgoing_quantity} X {rho.retail_price} = {rho.retail_sum_outgoing()} руб.')
+            pdf.set_xy(5, ybefore2)
+            total+=rho.retail_sum_outgoing()
+            pdf.ln(2)
+            pdf.cell(70, 5, f'Итого: {total} руб.', ln=1)
+            pdf.ln(2)
+            pdf.cell(70, 5, 'СПАСИБО ЗА ПОКУПКУ', align='C' )# длина ячейки, ширина ячейки, текст, рамка (1-true, 0-false)
+            #сохранение файла PDF
+        pdf.output('Hello.pdf', 'F')
+        try:
+            return FileResponse(open('Hello.pdf', 'rb'), content_type='application/pdf')
+        except FileNotFoundError:
+            raise Http404()
+    else:
+        auth.logout(request)
+        return redirect ('login')
 
 def trade_in(request, identifier_id):
     if request.user.is_athenticated:

@@ -128,14 +128,17 @@
             <div class="col-2">
                 <h5>Документ</h5>
             </div>
-            <div class="col-2">
+            <div class="col-1">
                 <h5>Сумма</h5>
             </div>
             <div class="col-2">
-                <h5>Доп. инфо</h5>
+                <h5>Точка</h5>
             </div>
             <div class="col-2">
                 <h5>Автор</h5>
+            </div>
+            <div class="col-1">
+                <h5>Чек</h5>
             </div>
         </div>
     </div>
@@ -147,8 +150,6 @@
 
         {% for document in queryset_list %}
         <div class="row mt-1">
-
-
             <div class="col-1">
                 {% if document.posted == True %}
                 <i class="far fa-check-square"></i>
@@ -280,7 +281,7 @@
             {% endif %}
 
             <!-- ============================Document Sum Column============================================ -->
-            <div class="col-2">
+            <div class="col-1">
                 {{document.sum}} руб.
             </div>
             <!-- =========================Additional Info Column=============================================== -->
@@ -351,6 +352,16 @@
 
             <!-- ===============================Author column===========================================       -->
             <div class="col-2">{{document.user.first_name}} {{document.user.last_name}}</div>
+
+
+            <!-- ===============================Receipt column===========================================       -->
+            <div class="col-1" >      
+                <a href="{% url 'print_check' document.id %}" target="_blank">
+                    <input type="button" value="Чек" class="btn btn-block btn-outline-primary" style="height: 2rem"> 
+                </a>
+            </div>
+
+
         </div>
         {% endfor %}
 

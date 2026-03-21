@@ -182,6 +182,7 @@ urlpatterns = [
     
     #=============================================================================================
     path ('payment/<int:identifier_id>/<int:client_id>/<int:cashback_off>', views.payment, name='payment'),
+    path ('print_check/<int:document_id>', views.print_check, name='print_check'),
     #=============================================================================================
     
     path ('cashback/<int:identifier_id>', views.cashback, name='cashback'),
