@@ -9778,7 +9778,7 @@ def print_check(request, document_id):
         shop_chkalovsk=Shop.objects.get(name='Чкаловск')
         if document.title == doc_type:
             if document.shop_sender==shop_chkalovsk:
-                company_name='Винокуров С.Н.'
+                company_name='ИП Винокуров С.Н.'
                 ITN="526013223435"
             else:
                 company_name='ООО Ритейл'
