@@ -355,11 +355,13 @@
 
 
             <!-- ===============================Receipt column===========================================       -->
+             {% if document.title.name == 'Продажа ТМЦ' %}
             <div class="col-1" >      
                 <a href="{% url 'print_check' document.id %}" target="_blank">
                     <input type="button" value="Чек" class="btn-block btn-outline-primary" style="height: 2rem; width: 5rem; border-radius: 5px;"> 
                 </a>
             </div>
+             {% endif %}
 
 
         </div>
