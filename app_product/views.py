@@ -9786,7 +9786,8 @@ def print_check(request, document_id):
 
 
         #формирование файла PDF
-        pdf= FPDF(orientation="P", unit="mm", format=(80, 100))#format - page size in mm
+        pdf= FPDF(orientation="P", unit="mm", format=(80, 160))#format - page size in mm
+     
         try:
             pdf.add_font("Roboto", style="", fname="general/static/webfonts/Roboto.ttf", uni=True)
         except:
@@ -9819,13 +9820,15 @@ def print_check(request, document_id):
             pdf.set_xy(5, ybefore2)
             total+=rho.retail_sum_outgoing()
             pdf.ln(2)
-            pdf.cell(70, 5, f'Итого: {total} руб.', ln=1)
-            pdf.ln(2)
-            pdf.cell(70, 5, 'СПАСИБО ЗА ПОКУПКУ', align='C' )# длина ячейки, ширина ячейки, текст, рамка (1-true, 0-false)
-            #сохранение файла PDF
-        pdf.output('Hello.pdf', 'F')
+        pdf.cell(70, 5, f'Итого: {total} руб.', ln=1)
+        pdf.ln(2)
+        pdf.cell(70, 5, 'СПАСИБО ЗА ПОКУПКУ', align='C' )# длина ячейки, ширина ячейки, текст, рамка (1-true, 0-false)
+        #сохранение файла PDF
+        #pdf.output('Check.pdf', 'F')
+        pdf.output(f'{dateTime}_{document.shop_sender}.pdf', 'F')
         try:
-            return FileResponse(open('Hello.pdf', 'rb'), content_type='application/pdf')
+            #return FileResponse(open(f'{dateTime}.pdf', 'rb'), content_type='application/pdf')
+            return FileResponse(open(f'{dateTime}_{document.shop_sender}.pdf', 'rb'), content_type='application/pdf')
         except FileNotFoundError:
             raise Http404()
     else:
