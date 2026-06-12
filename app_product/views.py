@@ -1,6 +1,6 @@
 from turtle import pd
 from django.db.models.fields import BLANK_CHOICE_DASH, NullBooleanField
-from django.http import request, Http404, FileResponse
+from django.http import request, Http404, FileResponse, StreamingHttpResponse
 from app_product.admin import RemainderHistoryAdmin
 from app_clients.models import Customer
 from app_personnel.models import BonusAccount

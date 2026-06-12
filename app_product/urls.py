@@ -147,6 +147,8 @@ urlpatterns = [
     #path ('update_retail_price', views.update_retail_price, name='update_retail_price'),
     #path ('check_revaluation/<int:identifier_id>', views.check_revaluation, name='check_revaluation'),
     path ('revaluation/<int:identifier_id>', views.revaluation, name='revaluation'),
+   
+    
 
     #======================================================================================
     path ('open_document/<int:document_id>', views.open_document, name='open_document'),

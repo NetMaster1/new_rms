@@ -1487,8 +1487,7 @@ def remainder_report_output(request, shop_id, category_id, date):
         for product in products:
             imei = product.imei
             if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
-                rho = RemainderHistory.objects.filter(
-                    shop=shop, imei=imei, created__lte=date).latest("created")
+                rho = RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest("created")
                 if rho.current_remainder > 0:
                     array.append(rho)
         arr_length=len(array)
