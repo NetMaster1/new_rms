@@ -48,12 +48,13 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 
 # import xlwings as xw
 # import pro
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 import datetime
 import pytz
 import os
 from django.db.models import Q
-
+import time
+#from django-celery.celery import app
 # Create your views here.
 
 def daily_report(request):
@@ -1474,24 +1475,64 @@ def remainder_report_excel(request, shop_id, category_id, date):
         auth.logout(request)
         return redirect("login")
 
+#@app.task
+# def remainder_report_output(request, shop_id, category_id, date):
+#     #if request.user.is_authenticated:
+#     #messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
+#     date = date
+#     shop = Shop.objects.get(id=shop_id)
+#     category = ProductCategory.objects.get(id=category_id)
+#     # array = []
+    
+#     def generate ():
+#         products = Product.objects.filter(category=category).order_by("name").iterator(chunk_size=10) # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+#         #products = Product.objects.filter(category=category).order_by("name")# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+#         for product in products:
+#             imei = product.imei
+#             if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+#                 rho = RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest("created")
+#                 if rho.current_remainder > 0:
+#                     #array.append(rho)
+#                     yield f'{rho.name}\n'.encode("utf-8")
+                    
+#     request.META['SKIP_GZIP'] = True
+    
+#     #There’s no supported way to force true streaming on runserver; it’s designed to buffer. 
+#     response = StreamingHttpResponse(generate(), content_type="text/plain")
+#     #Отключаем кэширование
+#     #response['Transfer-Encoding'] = 'chunked'
+#     response['ETag'] = None 
+#     response["Cache-Control"] = "no-cache"
+#     response["X-Accel-Buffering"] = "no"#предотвращает буфферизацию на NGINX
+#     response["Content-Encoding"] = "identity"
+#     return response
+
+
 def remainder_report_output(request, shop_id, category_id, date):
     if request.user.is_authenticated:
+        messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
         date = date
         shop = Shop.objects.get(id=shop_id)
         category = ProductCategory.objects.get(id=category_id)
+        imeis =[]
         array = []
-        products = Product.objects.filter(category=category).order_by(
-            "name"
-        )  # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
-        messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
-        for product in products:
-            imei = product.imei
-            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
-                rho = RemainderHistory.objects.filter(
-                    shop=shop, imei=imei, created__lte=date).latest("created")
-                if rho.current_remainder > 0:
-                    array.append(rho)
+        #products = Product.objects.filter(category=category).order_by("name").iterator(chunk_size=10) # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        #products = Product.objects.filter(category=category).order_by("name")# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        # for product in products:
+        #     imei = product.imei
+        rhos=RemainderHistory.objects.filter(shop=shop, category=category, created__lte=date)
+        rhos_qnty=rhos.count()
+        print(f'Number of rhos:  {rhos_qnty}')
+        for rho in rhos:
+            imeis.append(rho.imei)
+            imeis_unique=set(imeis)
+        print(f'Number of unique imeis: {len(imeis_unique)}')
+        for i in imeis_unique:
+            rho=rhos.filter(imei=i).latest("created")
+            if rho.current_remainder > 0:
+                array.append(rho)
         arr_length=len(array)
+        print(f"Lenght of final array: {arr_length}")
         for arr, i in zip(array, range(arr_length)):
             arr.number = i + 1
             arr.save()
@@ -1506,6 +1547,7 @@ def remainder_report_output(request, shop_id, category_id, date):
     else:
         auth.logout(request)
         return redirect("login")
+
 
 def remainder_report_dynamic(request):
     products = Product.objects.all()
