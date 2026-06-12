@@ -1520,7 +1520,7 @@ def remainder_report_output(request, shop_id, category_id, date):
         #products = Product.objects.filter(category=category).order_by("name")# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
         # for product in products:
         #     imei = product.imei
-        rhos=RemainderHistory.objects.filter(shop=shop, category=category, created__lte=date)
+        rhos=RemainderHistory.objects.filter(shop=shop, category=category, created__lte=date).order_by('name')
         rhos_qnty=rhos.count()
         print(f'Number of rhos:  {rhos_qnty}')
         for rho in rhos:
