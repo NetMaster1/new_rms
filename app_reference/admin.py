@@ -12,6 +12,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('imei', 'name',)
     list_select_related = True
     list_editable = ('imei', 'category', 'name', 'image_file')
+    list_filter = ["category"]
 
 class ProductCategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'bonus_percent', 'complex')
