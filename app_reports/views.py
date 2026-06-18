@@ -1517,14 +1517,17 @@ def remainder_report_output(request, shop_id, category_id, date):
         array = []
         #products = Product.objects.filter(category=category).order_by("name").iterator(chunk_size=10) # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
         products = Product.objects.filter(category=category).order_by("name")# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        n=0
         for product in products:
             imei = product.imei
-            rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
-            if rho.current_remainder > 0:
-                n+=1
-                print(f'{n} {rho.name}')
-                array.append(rho)
+            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+                rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
+                if rho.current_remainder > 0:
+                    n+=1
+                    print(f'{n}: {rho}')
+                    array.append(rho)
         arr_length=len(array)
+        print(arr_length)
         for arr, i in zip(array, range(arr_length)):
             arr.number = i + 1
             arr.save()
