@@ -1517,22 +1517,37 @@ def remainder_report_output(request, shop_id, category_id, date):
         imeis =[]
         array = []
         #products = Product.objects.filter(category=category).order_by("name").iterator(chunk_size=10) # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
-        #products = Product.objects.filter(category=category).order_by("name")# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
-        # for product in products:
-        #     imei = product.imei
-        rhos=RemainderHistory.objects.filter(shop=shop, category=category, created__lte=date).order_by('name')
+        products = Product.objects.filter(category=category).order_by("name")# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        for product in products:
+            imei = product.imei
+        rhos=RemainderHistory.objects.filter(shop=shop, category=category, created__lte=date).order_by('imei', '-created')
         rhos_qnty=rhos.count()
+        rhos_latest=rhos.filter('imei').latest()
+        for rho in rhos_latest:
+            print(f'{rho.rho_type} {rho.name} {rho.imei} {rho.created} {rho.current_remainder}')
+            time.sleep(5)
+           
+        # n=0
+        # for rho in rhos:
+        #     n+=1
+        #     print(f'{n} {rho}')
+
         print(f'Number of rhos:  {rhos_qnty}')
+        
         for rho in rhos:
             imeis.append(rho.imei)
             imeis_unique=set(imeis)
         print(f'Number of unique imeis: {len(imeis_unique)}')
+        n=0
         for i in imeis_unique:
             rho=rhos.filter(imei=i).latest("created")
             if rho.current_remainder > 0:
+                n+=1
+                print(f'{n} {rho.name}')
                 array.append(rho)
         arr_length=len(array)
-        print(f"Lenght of final array: {arr_length}")
+        print(f"Length of final array: {arr_length}")
+        #array.sort()
         for arr, i in zip(array, range(arr_length)):
             arr.number = i + 1
             arr.save()
@@ -1548,6 +1563,47 @@ def remainder_report_output(request, shop_id, category_id, date):
         auth.logout(request)
         return redirect("login")
 
+
+# def remainder_report_output(request, shop_id, category_id, date):
+#     if request.user.is_authenticated:
+#         messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
+#         date = date
+#         shop = Shop.objects.get(id=shop_id)
+#         category = ProductCategory.objects.get(id=category_id)
+#         array = []
+#         #products = Product.objects.filter(category=category).order_by("name").iterator(chunk_size=10) # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+#         products = Product.objects.filter(category=category).order_by("name")# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+#         print(f'Qnty of products: {products.count()}')
+#         rhos=RemainderHistory.objects.filter(shop=shop, created__lte=date)
+#         print(f'Qnty of rhos: {rhos.count()}')
+#         n=0
+#         for product in products:
+#             imei = product.imei
+#             try:
+#                 rho=rhos.filter(imei=imei).latest('created')
+#                 if rho.current_remainder > 0:
+#                     array.append(rho)
+#                     n+=1
+#                     print(f'{n}: {rho.shop} {rho.name} {rho.current_remainder} ')
+#             except:
+#                 continue
+#         arr_length=len(array)
+#         print(f"Lenght of final array: {arr_length}")
+#         #array.sort()
+#         for arr, i in zip(array, range(arr_length)):
+#             arr.number = i + 1
+#             arr.save()
+#         context = {
+#             "date": date, 
+#             "shop": shop, 
+#             "array": array, 
+#             #"arr_length": arr_length,
+#             "category": category
+#             }
+#         return render(request, "reports/remainder_report_output.html", context)
+#     else:
+#         auth.logout(request)
+#         return redirect("login")
 
 def remainder_report_dynamic(request):
     products = Product.objects.all()
