@@ -54,5 +54,8 @@ urlpatterns = [
     path ('account_report_60_excel', views.account_report_60_excel, name='account_report_60_excel'),
     path ('account_report_62_excel', views.account_report_62_excel, name='account_report_62_excel'),
     path ('account_report_90_excel', views.account_report_90_excel, name='account_report_90_excel'),
+    
+    path ('celery_debug', views.celery_debug, name='celery_debug'),
+    path ('remainder_report_output_celery_view', views.remainder_report_output_celery_view, name='remainder_report_output_celery_view'),
 
 ]
