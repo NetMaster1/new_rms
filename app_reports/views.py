@@ -54,8 +54,14 @@ import pytz
 import os
 from django.db.models import Q
 import time
+from general.celery import debug_task
+from .tasks import remainder_report_output_celery_task
 #from django-celery.celery import app
 # Create your views here.
+
+def celery_debug (request):
+    debug_task.delay()
+    return render (request, "reports/celery_page.html")
 
 def daily_report(request):
     return render(request, "reports/daily_report.html")
@@ -1475,6 +1481,42 @@ def remainder_report_excel(request, shop_id, category_id, date):
         auth.logout(request)
         return redirect("login")
 
+def remainder_report_output(request, shop_id, category_id, date):
+    if request.user.is_authenticated:
+        messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
+        date = date
+        shop = Shop.objects.get(id=shop_id)
+        category = ProductCategory.objects.get(id=category_id)
+        array = []
+        #products = Product.objects.filter(category=category).order_by("name").iterator(chunk_size=10) # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        products = Product.objects.filter(category=category).order_by("name")# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        n=0
+        for product in products:
+            imei = product.imei
+            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+                rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
+                if rho.current_remainder > 0:
+                    n+=1
+                    print(f'{n}: {rho}')
+                    array.append(rho)
+        arr_length=len(array)
+        print(arr_length)
+        for arr, i in zip(array, range(arr_length)):
+            arr.number = i + 1
+            arr.save()
+        context = {
+            "date": date, 
+            "shop": shop, 
+            "array": array, 
+            #"arr_length": arr_length,
+            "category": category
+            }
+        return render(request, "reports/remainder_report_output.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+
 #@app.task
 # def remainder_report_output(request, shop_id, category_id, date):
 #     #if request.user.is_authenticated:
@@ -1508,37 +1550,13 @@ def remainder_report_excel(request, shop_id, category_id, date):
 #     return response
 
 
-def remainder_report_output(request, shop_id, category_id, date):
+def remainder_report_output_celery_view(request, shop_id, category_id, date):
     if request.user.is_authenticated:
-        messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
-        date = date
-        shop = Shop.objects.get(id=shop_id)
-        category = ProductCategory.objects.get(id=category_id)
-        array = []
-        #products = Product.objects.filter(category=category).order_by("name").iterator(chunk_size=10) # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
-        products = Product.objects.filter(category=category).order_by("name")# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
-        n=0
-        for product in products:
-            imei = product.imei
-            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
-                rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
-                if rho.current_remainder > 0:
-                    n+=1
-                    print(f'{n}: {rho}')
-                    array.append(rho)
-        arr_length=len(array)
-        print(arr_length)
-        for arr, i in zip(array, range(arr_length)):
-            arr.number = i + 1
-            arr.save()
-        context = {
-            "date": date, 
-            "shop": shop, 
-            "array": array, 
-            #"arr_length": arr_length,
-            "category": category
-            }
-        return render(request, "reports/remainder_report_output.html", context)
+        #messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
+        date=date
+        remainder_report_output_celery_task.delay(shop_id, category_id, date)
+
+        return redirect ('log')
     else:
         auth.logout(request)
         return redirect("login")
