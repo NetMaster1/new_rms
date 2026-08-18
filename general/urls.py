@@ -36,4 +36,6 @@ urlpatterns = [
     path('kpi', include ('app_kpi.urls')),
     path('service', include ('app_service.urls')),
     path('api', include ('app_api.urls')),
+    path('api', include ('app_api.urls')),
+    path('vmr', include ('app_vmr.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

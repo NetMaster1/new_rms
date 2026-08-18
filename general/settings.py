@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'app_kpi',
     'mathfilters',
     'app_service',
-    'app_api'
+    'app_api',
+    'app_vmr',
   
 ]
 

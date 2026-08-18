@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<body oncontextmenu="return false">
+
+<div class="hide">
+
+<div class="container">
+    <div class="page_location">
+        <div class="row m-2 pt-2">
+            <div class="col">
+                <h3>Оценка ВМР</h3>
+            </div>
+        </div>
+    <!-- =====================Alert Messages Module=================== -->
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info" role="alert">
+            <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+            {{ message }}
+        </div>
+        {% endfor%}
+        {% endif%}
+    </div>
+    <!-- ===================End of Alert Messages Module================ -->
+
+        <div class="row m-2 pb-2">
+            <div class="col-12 border rounded p-3">
+
+        <form action="{% url 'save_vmr_daily_check_rep' %}" method="POST" id='save_button'>
+                    {% csrf_token %}
+
+            {% for group in request.user.groups.all %}
+            {% if group.name == 'admin' %}
+                <div class="form-row">
+                    <div class="col-3">
+                        <label for="shop">
+                            <h5>Точка</h5>
+                        </label>
+                    </div>
+                <div class="col">
+                    <select name="shop" id="shop" class='form-control' required>
+                        <option value="">Выберите проверяемую точку</option>
+                        {% for shop in shops %}
+                        <option value="{{shop.id}}">{{shop.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="col-3">
+                        <label for="user">
+                            <h5>Сотрудник</h5>
+                        </label>
+                    </div>
+                    <div class="col">
+                        <select name="user" id="user" class='form-control' required>
+                            <option value="">Сотрудник на точке</option>
+                            {% for user in users %}
+                            <option value="{{user.id}}">{{user.last_name}} {{user.first_namecd}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <h5>Предложение MNP</h5>
+                    <select name="mnp_offer" id="mnp_offer" class='form-control' required>
+                        <option value="">Выберите оценку</option>
+                        <option value="True">Да</option>
+                        <option value="False">Нет</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <h5>Предложение дополнительной сим карты</h5>
+                    <select name="sim_offer" id="sim_offer" class='form-control' required>
+                        <option value="">Выберите оценку</option>
+                        <option value="True">Да</option>
+                        <option value="False">Нет</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <h5>Предложение РТК</h5>
+                    <select name="rtc_offer" id="rtc_offer" class='form-control' required>
+                        <option value="">Выберите оценку</option>
+                        <option value="True">Да</option>
+                        <option value="False">Нет</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <h5>Предложение mixx</h5>
+                    <select name="mixx_offer" id="mixx_offfer" class='form-control' required>
+                        <option value="">Выберите оценку</option>
+                        <option value="True">Да</option>
+                        <option value="False">Нет</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <h5>Решение проблемы клиента</h5>
+                    <select name="client_problem_res" id="client_problem_res" class='form-control' required>
+                        <option value="">Выберите оценку</option>
+                        <option value="True">Да</option>
+                        <option value="False">Нет</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <h5>Предложение телефона</h5>
+                    <select name="phone_offer" id="phone_offer" class='form-control' required>
+                        <option value="">Выберите оценку</option>
+                        <option value="True">Да</option>
+                        <option value="False">Нет</option>
+                    </select>
+                </div>
+
+            {% endif %}
+            {% endfor %}
+
+
+
+            <div class="row m-auto mt-3 ">
+                <div class="col-1">
+                    <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
+            </div>
+                        
+        </form>
+
+                <!-- <div class="col-2">
+                    <a href="#">
+                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                    </a>
+                </div> -->
+                <div class="col-2">
+                    <a href="{% url 'log' %}">
+                        <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+
+{% endblock %}
