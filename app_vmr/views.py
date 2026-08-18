@@ -63,3 +63,18 @@ def save_vmr_daily_check_rep(request):
     return redirect("login")
 
 
+def vmr_today_reps(request):
+    group=Group.objects.get(name="admin").user_set.all()
+    if request.user in group:
+        tday=datetime.date.today()
+        print(tday)
+
+        vmr_today_reps=VMR_check.objects.filter(created__date=tday)
+   
+        context = {
+            'vmr_today_reps': vmr_today_reps,
+            }
+        return render(request, "vmr/vmr_today_reps.html", context)
+        return redirect("log")
+    auth.logout(request)
+    return redirect("login")

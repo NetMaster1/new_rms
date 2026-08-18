@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<body oncontextmenu="return false">
+
+<div class="hide">
+
+<div class="container">
+    <div class="page_location">
+        <div class="row m-2 pt-2">
+            <div class="col">
+                <h3>Отчеты за сегодня</h3>
+            </div>
+        </div>
+    <!-- =====================Alert Messages Module=================== -->
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info" role="alert">
+            <!-- <button class="close" data-dismiss="alert">
+                        <small><sup>x</sup></small>
+                    </button> -->
+            {{ message }}
+        </div>
+        {% endfor%}
+        {% endif%}
+    </div>
+    <!-- ===================End of Alert Messages Module================ -->
+
+<div class="row m-2 pb-2">
+
+    <div class="col"><h5>Дата</h5></div>
+    <div class="col"><h5>Точка</h5></div>
+    <div class="col"><h5>Сотрудник</h5></div>
+    <div class="col"><h5>MNP</h5></div>
+    <div class="col"><h5>РТК</h5></div>
+    <div class="col"><h5>Сим</h5></div>
+    <div class="col"><h5>Mixx</h5></div>
+    <div class="col"><h5>Решение</h5></div>
+    <div class="col"><h5>Телефон</h5></div>
+
+</div>
+    {% for rep in vmr_today_reps%}
+        <div class="row m-2 pb-2"> 
+            <div class="col">{{rep.created}}</div>
+            <div class="col">{{rep.shop}}</div>
+            <div class="col">{{rep.user}}</div>
+            <div class="col">{{rep.mnp_offer}}</div>
+            <div class="col">{{rep.sim_offer}}</div>
+            <div class="col">{{rep.mixx_offer}}</div>
+            <div class="col">{{rep.client_problem_res}}</div>
+            <div class="col">{{rep.phone_offer}}</div>
+        </div>
+   {% endfor %}  
+
+
+</div>
+</div>
+</div>
+
+{% endblock %}
