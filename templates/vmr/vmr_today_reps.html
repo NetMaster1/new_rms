@@ -1,61 +1,192 @@
+
 {% extends 'base.html' %}
+
 {% block content %}
+{% load static %}
 
 <body oncontextmenu="return false">
 
 <div class="hide">
-
-<div class="container">
-    <div class="page_location">
-        <div class="row m-2 pt-2">
-            <div class="col">
-                <h3>Отчеты за сегодня</h3>
-            </div>
-        </div>
-    <!-- =====================Alert Messages Module=================== -->
     <div class="container">
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-info" role="alert">
-            <!-- <button class="close" data-dismiss="alert">
-                        <small><sup>x</sup></small>
-                    </button> -->
-            {{ message }}
+        <div class="page_location">
+            <div class="row m-2 pt-2">
+                <div class="col">
+                    <h3>Отчеты за сегодня</h3>
+                </div>
+            </div>
+            <!-- =====================Alert Messages Module=================== -->
+            <div class="container">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">
+                    <!-- <button class="close" data-dismiss="alert">
+                                <small><sup>x</sup></small>
+                            </button> -->
+                    {{ message }}
+                </div>
+                {% endfor%}
+                {% endif%}
+            </div>
+            <!-- ===================End of Alert Messages Module================ -->
+
+            <div class="row m-2 pb-2">
+
+                <div class="col"><h5>Дата</h5></div>
+                <div class="col"><h5>Точка</h5></div>
+                <div class="col"><h5>Сотрудник</h5></div>
+                <div class="col"><h5>MNP</h5></div>
+                <div class="col"><h5>РТК</h5></div>
+                <div class="col"><h5>Сим</h5></div>
+                <div class="col"><h5>Mixx</h5></div>
+                <!-- <div class="col"><h5>Решение</h5></div>
+                <div class="col"><h5>Телефон</h5></div> -->
+
+            </div>
+            {% for rep in vmr_today_reps%}
+            <div class="row m-2 pb-2">      
+                <div class="col" id="report_modal_trigger"><a href="#">{{rep.created}}</a></div>
+                <div class="col">{{rep.shop}}</div>
+                <div class="col">{{rep.user}}</div>
+                <div class="col">{{rep.mnp_offer}}</div>
+                <div class="col">{{rep.sim_offer}}</div>
+                <div class="col">{{rep.rtc_offer}}</div>
+                <div class="col">{{rep.mixx_offer}}</div>
+                <!-- <div class="col">{{rep.client_problem_res}}</div>
+                <div class="col">{{rep.phone_offer}}</div> -->
+            </div>
+
+            <!-- ===========================Modal Body================================= -->
+            <div class="enterReportModal" id="enterReportModal">
+                    <!-- <img src="{% static 'img/cross.jpg' %}" style="width:2rem;height:2rem;" class="modal_close_cross" id="modal_close_cross"> -->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Редактировать отчет #{{ rep.id }}</h5>
+                        
+                        </div>
+                        
+                            <div class="row m-2 pb-2">
+                                <div class="col-3"><h5>Дата</h5></div>
+                                <div class="col-2"><h5>Точка</h5></div>
+                                <div class="col-2"><h5>Сотрудник</h5></div>
+                                <div class="col-1"><h5>MNP</h5></div>
+                                <div class="col-1"><h5>РТК</h5></div>
+                                <div class="col-1"><h5>Сим</h5></div>
+                                <div class="col-1"><h5>Mixx</h5></div>
+                                <!-- <div class="col"><h5>Решение</h5></div>
+                                <div class="col"><h5>Телефон</h5></div> -->
+                            </div>
+                         
+                            <form action="{% url 'edit_vmr_daily_check_rep' %}" method="POST">
+                                {% csrf_token %}
+                                       <input type="number" value="{{rep.id}}" name="id" hidden>
+                                    <div class="row m-2 pb-2">                                           
+                                        <div class="col-3">
+                                            {{rep.created}}
+                                        </div>
+                                        <div class="col-2">
+                                            <select name="shop" id="shop" class='form-control' required>
+                                                <option value="{{rep.shop}}">{{rep.shop}}</option>
+                                                {% for shop in shops %}
+                                                <option value="{{shop.name}}">{{shop.name}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-2">
+                                            <select name="user" id="user" class='form-control' required>
+                                                <option value="{{rep.user.id}}">{{rep.user}}</option>
+                                                {% for user in users %}
+                                                <option value="{{user.id}}">{{user.last_name}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-1">
+                                            <select name="mnp_offer" id="mnp_offer" class='form-control' required>
+                                                <option value="{{rep.mnp_offer}}">{{rep.mnp_offer}}</option>
+                                                <option value="{{True}}">Да</option>
+                                                <option value="{{False}}">Нет</option>
+                                            </select>
+                                        </div>
+                                         <div class="col-1">
+                                            <select name="rtc_offer" id="rtc_offer" class='form-control' required>
+                                                <option value="{{rep.rtc_offer}}">{{rep.rtc_offer}}</option>
+                                                <option value="{{True}}">Да</option>
+                                                <option value="{{False}}">Нет</option>
+                                            </select>
+                                        </div>
+
+
+                                        <div class="col-1">
+                                            <select name="sim_offer" id="sim_offer" class='form-control' required>
+                                                <option value="{{rep.sim_offer}}">{{rep.sim_offer}}</option>
+                                                <option value="{{True}}">Да</option>
+                                                <option value="{{False}}">Нет</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-1">
+                                            <select name="mixx_offer" id="mixx_offer" class='form-control' required>
+                                                <option value="{{rep.mixx_offer}}">{{rep.mixx_offer}}</option>
+                                                <option value="{{True}}">Да</option>
+                                                <option value="{{False}}">Нет</option>
+                                            </select>
+                                        </div>
+
+
+
+                                    </div>     
+                    
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="btn_close">Закрыть без сохранения</button>
+                            <button type="submit" class="btn btn-secondary">Сохранить изменения</button>
+                        </div>
+                        </form>
+                    </div>   
+            
+            </div>
+            <!-- =================================End of Modal Body==================== -->
+            {% endfor %}           
         </div>
-        {% endfor%}
-        {% endif%}
+        
     </div>
-    <!-- ===================End of Alert Messages Module================ -->
-
-<div class="row m-2 pb-2">
-
-    <div class="col"><h5>Дата</h5></div>
-    <div class="col"><h5>Точка</h5></div>
-    <div class="col"><h5>Сотрудник</h5></div>
-    <div class="col"><h5>MNP</h5></div>
-    <div class="col"><h5>РТК</h5></div>
-    <div class="col"><h5>Сим</h5></div>
-    <div class="col"><h5>Mixx</h5></div>
-    <div class="col"><h5>Решение</h5></div>
-    <div class="col"><h5>Телефон</h5></div>
-
-</div>
-    {% for rep in vmr_today_reps%}
-        <div class="row m-2 pb-2"> 
-            <div class="col">{{rep.created}}</div>
-            <div class="col">{{rep.shop}}</div>
-            <div class="col">{{rep.user}}</div>
-            <div class="col">{{rep.mnp_offer}}</div>
-            <div class="col">{{rep.sim_offer}}</div>
-            <div class="col">{{rep.mixx_offer}}</div>
-            <div class="col">{{rep.client_problem_res}}</div>
-            <div class="col">{{rep.phone_offer}}</div>
-        </div>
-   {% endfor %}  
 
 
 </div>
-</div>
-</div>
+
+
+
+<script>
+    console.log('Script works');
+
+    const enterReportModal =document.querySelectorAll('#enterReportModal');
+    const report_modal_trigger =document.querySelectorAll('#report_modal_trigger');
+    const btn_close =document.querySelectorAll('#btn_close');
+
+        for (let i = 0; i < report_modal_trigger.length; i++) 
+            {
+                report_modal_trigger[i].addEventListener('click', () => {enterReportModal[i].classList.add('openModal')})
+            }
+
+
+        for (let i = 0; i < btn_close.length; i++) 
+            {
+                btn_close[i].addEventListener('click', () => {enterReportModal[i].classList.remove('openModal')})
+            }
+
+      
+
+    //===================================================
+
+  
+
+//     save_button.addEventListener('submit', e=> {
+//         sessionStorage.clear();
+//    })
+
+
+
+console.log ('End of the script')
+</script>
+
+
 
 {% endblock %}

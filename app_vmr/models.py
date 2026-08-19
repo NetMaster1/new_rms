@@ -21,12 +21,12 @@ class VMR_check (models.Model):
     created = models.DateTimeField(default=timezone.now, null=True)
     shop = models.CharField(max_length=50, null=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
-    client_problem_res = models.BooleanField(default=False)
+    client_problem_res = models.BooleanField(default=False, null=True, blank=True)
     mnp_offer = models.BooleanField(default=False)
     rtc_offer = models.BooleanField(default=False)
     sim_offer = models.BooleanField(default=False)
     mixx_offer = models.BooleanField(default=False)
-    phone_offer = models.BooleanField(default=False)
+    phone_offer = models.BooleanField(default=False, null=True, blank=True)
 
    
     # class Meta:

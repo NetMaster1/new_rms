@@ -279,6 +279,26 @@ footer {
     right: 0mm; */
 }
 /* ====================End of Delivery Page Modal for Entering New Product ======================= */
+/* ===================== Delivery Page Modal for Entering New Product========================= */
+.enterReportModal{
+    display: none;
+}
+
+.enterReportModal.openModal {
+    display: block;
+    position: absolute;
+    top: 7vh;
+    left: -5vh;
+    width: 110vw;
+    /*width: 80vw;*/
+    height: 45vh;
+ 
+ 
+}
+/* ====================End of Delivery Page Modal for Entering New Product ======================= */
+
+
+
 
 /* ===================== Delivery Page Modal for Entering New SKU========================= */
 .enterSKUModal {
