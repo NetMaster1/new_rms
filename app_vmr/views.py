@@ -40,8 +40,8 @@ def save_vmr_daily_check_rep(request):
             rtc_offer = request.POST["rtc_offer"]
             sim_offer = request.POST["sim_offer"]
             mixx_offer = request.POST["mixx_offer"]
-            phone_offer = request.POST["phone_offer"]
-            client_problem_res = request.POST["client_problem_res"]
+            # phone_offer = request.POST["phone_offer"]
+            # client_problem_res = request.POST["client_problem_res"]
 
             user=User.objects.get(id=user)
             shop=Shop.objects.get(id=shop)
@@ -54,8 +54,8 @@ def save_vmr_daily_check_rep(request):
                 rtc_offer = rtc_offer,
                 sim_offer = sim_offer,
                 mixx_offer = mixx_offer,
-                phone_offer = phone_offer,
-                client_problem_res = client_problem_res,
+                # phone_offer = phone_offer,
+                # client_problem_res = client_problem_res,
             )
 
         return redirect("log")
