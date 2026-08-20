@@ -15,7 +15,8 @@ def open_vmr_check_form(request):
     group=Group.objects.get(name="admin").user_set.all()
     if request.user in group:
         shops=Shop.objects.all()
-        users = User.objects.all().order_by('last_name')
+        shops = Shop.objects.filter(retail=True, active=True).order_by('name')
+        users = User.objects.all().exclude(is_active=False).order_by('last_name')
         context = {
             'shops': shops,
             'users': users,
@@ -98,8 +99,8 @@ def vmr_today_reps(request):
     if request.user in group:
         tday=datetime.date.today()
         print(tday)
-        users=User.objects.all()
-        shops=Shop.objects.all()
+        shops = Shop.objects.filter(retail=True, active=True).order_by('name')
+        users = User.objects.all().exclude(is_active=False).order_by('last_name')
         vmr_today_reps=VMR_check.objects.filter(created__date=tday)
    
         context = {

@@ -41,7 +41,6 @@ def fiscal_day_open (request):
         auth.logout(request)
         return redirect("login")
 
-
 def fiscal_day_close (request):
     if request.user.is_authenticated:
         users_sales=Group.objects.get(name="sales").user_set.all()
