@@ -17,6 +17,7 @@ from app_product.models import (
     Document,
 )
 from app_kpi.models import KPIMonthlyPlan
+from app_vmr.models import VMR_check
 
 
 from .models import (
@@ -2409,6 +2410,7 @@ def bonus_report(request):
             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
             start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
             end_date = request.POST["end_date"]
+             # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
             end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
             end_date = end_date + timedelta(days=1)
 
@@ -2429,8 +2431,9 @@ def bonus_report(request):
                 documents=Document.objects.filter(created__gt=start_date, created__lt=end_date, title=doc_type)
 
             for user in users:
-                #we create a list for each user and add "username" as the first entry
-                #then we collect data for all categories in this array which later creates a row for user in excel file
+                #we create a list for each user and add "username" as the first entry.
+                #Then we collect data for all categories for this user & save it in the array which later 
+                #creates a row for the user in the excel file
                 user_row = [user.username]
 
                 #"number of work days" column
@@ -2443,9 +2446,9 @@ def bonus_report(request):
                     dates.append(date)
                     #we use 'numpy.unique' function to count unique values
                     list=np.unique(dates)
-                number_of_wd=len(list)
+                number_of_work_days=len(list)
                 #we add number of work days as the second entry in user_row list
-                user_row.append(number_of_wd)
+                user_row.append(number_of_work_days)
 
                 #cashback column
                 counter=0
@@ -2502,6 +2505,36 @@ def bonus_report(request):
                         credit_sum+=credit.sum
                 else:
                     credit_sum = 0
+              
+                if VMR_check.objects.filter(created__gt=start_date, created__lt=end_date, user=user).exists():
+                    vmr_checks=VMR_check.objects.filter(created__gt=start_date, created__lt=end_date, user=user)
+                    vmr_audit_sum=0 
+                    print(user)
+                    print(vmr_checks.count())
+                    for item in vmr_checks:
+                        if item.mnp_offer==True:
+                            vmr_audit_sum+=100
+                        else:
+                            vmr_audit_sum+=0
+                        print('mnp:' + str(vmr_audit_sum))
+                        if item.sim_offer==True:
+                            vmr_audit_sum+=100
+                        else:
+                            vmr_audit_sum+=0
+                        print('sim:' + str(vmr_audit_sum))
+                        if item.rtc_offer==True:
+                            vmr_audit_sum+=100
+                        else:
+                            vmr_audit_sum+=0
+                        print('rtc:' + str(vmr_audit_sum))
+                        if item.mixx_offer==True:
+                            vmr_audit_sum+=100
+                        else:
+                            vmr_audit_sum+=0
+                        print('mixx:' + str(vmr_audit_sum))
+                    print("sum" + str(vmr_audit_sum))  
+                else:
+                    vmr_audit_sum=0
 
                 n=0
                 if rhos.filter(category=sims, user=user).exists():
@@ -2512,7 +2545,8 @@ def bonus_report(request):
                 #we create a report in which categories a listed as they go in the DB
                 monthly_bonus = MonthlyBonus.objects.create(
                     report_id=report_id,
-                    user_name=user_row[0],
+                    #user_name=user_row[0],
+                    user_name=user.username,
                     number_of_work_days=user_row[1],
                     cashback=user_row[2],
                     smartphones=user_row[3],
@@ -2529,6 +2563,7 @@ def bonus_report(request):
                     protective_films=user_row[14],
                     credit=credit_sum * 0.03,
                     bulk_sims= n * bulk_sim_motivation.bonus_per_sim,
+                    audit= vmr_audit_sum,
                     sub_total=0,
                 )
 
@@ -2537,6 +2572,7 @@ def bonus_report(request):
             response["Content-Disposition"] = (
                 "attachment; filename=BonusRep_" + str(month) + str(year) + ".xls"
             )
+        
             # str(datetime.date.today())+'.xls'
 
             wb = xlwt.Workbook(encoding="utf-8")
@@ -2551,6 +2587,7 @@ def bonus_report(request):
                 columns.append(category.name)
             columns.append('Кредиты %')
             columns.append('Тяжелые тарифы (100)')
+            columns.append('Аудит')
             for col_num in range(len(columns)):
                 ws.write(row_num, col_num + 1, columns[col_num], font_style)
 
@@ -2594,7 +2631,10 @@ def bonus_report(request):
                 ws.write(row_num, col_num, item.credit, font_style)
                 col_num +=1
                 ws.write(row_num, col_num, item.bulk_sims, font_style)
+                col_num += 1
+                ws.write(row_num, col_num, item.audit, font_style)
                 row_num += 1
+           
             
             # query_set = MonthlyBonus.objects.filter().values()
             # data = pd.DataFrame(query_set)

@@ -16,7 +16,9 @@ def open_vmr_check_form(request):
     if request.user in group:
         shops=Shop.objects.all()
         shops = Shop.objects.filter(retail=True, active=True).order_by('name')
-        users = User.objects.all().exclude(is_active=False).order_by('last_name')
+        #users = User.objects.all().exclude(is_active=False).order_by('last_name')
+        group_sales=Group.objects.get(name='sales')
+        users = User.objects.filter(is_active=True, groups=group_sales ).order_by('username')
         context = {
             'shops': shops,
             'users': users,

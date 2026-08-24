@@ -10,9 +10,9 @@
         <!-- ========================================== -->
         <div class="menu border rounded">
             <div class="row m-auto ">
-            <div class="col-3 m-auto ">
-           <h5>Общая выручка/бонус за текущий месяц</h5>
-            </div>
+                <div class="col-3 m-auto ">
+                    <h5>Общая выручка/бонус за текущий месяц</h5>
+                </div>
             <div class="col-3 m-auto">
                 <h5>{{total_sales}} руб.</h5>
             </div>
@@ -23,26 +23,41 @@
         </div>
 
     <div class="menu border rounded">
-            <div class="row">
-                <div class="col-3 m-auto"><h5>Товарная группа</h5></div>
-                <div class="col-3 m-auto"><h5>Выручка, руб.</h5></div>
-                <div class="col-3 m-auto"><h5>Мой бонус, руб.</h5></div>
-            </div>
+        <div class="row">
+            <div class="col-3 m-auto"><h5>Товарная группа</h5></div>
+            <div class="col-3 m-auto"><h5>Выручка, руб.</h5></div>
+            <div class="col-3 m-auto"><h5>Мой бонус, руб.</h5></div>
+        </div>
         <div class="row">
             <div class="col-3 m-auto">
                 {% for category in categories %}
                 <div class="row m-auto">{{category}}</div>
                 {% endfor %}
             </div>
-        <div class="col-3 m-auto">
+       
+            <div class="col-3 m-auto">
                 {% for item in sales_array %}
                 <div class="row m-auto">{{item}}</div>
                 {% endfor %}
             </div>
+
+
             <div class="col-3 m-auto">
                 {% for item in bonus_array %}
                 <div class="row m-auto">{{item}}</div>
                 {% endfor %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-3 m-auto">
+                <div class="row m-auto">Результат внутреннего аудита</div>
+            </div>
+            <div class="col-3 m-auto">
+                <div class="row m-auto">---</div>
+            </div>
+            <div class="col-3 m-auto">
+                <div class="row m-auto">{{vmr_audit_sum}}</div>
             </div>
         </div>
  

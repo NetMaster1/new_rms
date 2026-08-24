@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.contrib import messages, auth
 from django.contrib.auth import update_session_auth_hash, authenticate
 from app_reference.models import ProductCategory
+from app_vmr.models import VMR_check
 import numpy as np
 import datetime
 from datetime import date, timedelta
@@ -111,6 +112,28 @@ def my_bonus(request):
         month=datetime.datetime.now().month
         year=datetime.datetime.now().year
         rhos=RemainderHistory.objects.filter(rho_type=doc_type, user=request.user, created__year=year, created__month=month)
+        if VMR_check.objects.filter(user=request.user, created__year=year, created__month=month).exists():
+            vmr_audit_list=VMR_check.objects.filter(user=request.user, created__year=year, created__month=month)
+            for item in vmr_audit_list:
+                vmr_audit_sum=0
+                if item.mnp_offer==True:
+                    vmr_audit_sum+=100
+                else:
+                    vmr_audit_sum=+0
+                if item.sim_offer==True:
+                    vmr_audit_sum+=100
+                else:
+                    vmr_audit_sum=+0
+                if item.rtc_offer==True:
+                    vmr_audit_sum+=100
+                else:
+                    vmr_audit_sum=+0
+                if item.mixx_offer==True:
+                    vmr_audit_sum+=100
+                else:
+                    vmr_audit_sum=+0
+        else:
+            vmr_audit_sum=0
         sales_array=[]
         bonus_array=[]
         total_sales=0
@@ -122,7 +145,6 @@ def my_bonus(request):
             cat_rhos=rhos.filter(category=category)
             for cat_rho in cat_rhos:
                 cat_sum+=cat_rho.sub_total
-            for cat_rho in cat_rhos:
                 bonus_sum+=cat_rho.sub_total*category.bonus_percent*cat_rho.shop.sale_k
             sales_array.append(cat_sum)
             bonus_array.append(bonus_sum)
@@ -130,12 +152,14 @@ def my_bonus(request):
             total_sales+=i
         for n in bonus_array:
             total_bonus+=n
+        total_bonus=+vmr_audit_sum
         context ={
             'categories': categories,
             'sales_array': sales_array,
             'bonus_array': bonus_array,
             'total_sales': total_sales,
-            'total_bonus': total_bonus
+            'total_bonus': total_bonus,
+            'vmr_audit_sum': vmr_audit_sum,
         }
         
         return render(request, 'personnel/my_bonus.html',  context)

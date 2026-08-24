@@ -105,6 +105,7 @@ class MonthlyBonus (models.Model):
     services = models.IntegerField(null=True)
     credit = models.IntegerField(null=True)
     bulk_sims = models.IntegerField(null=True)
+    audit = models.IntegerField(null=True)#результаты внутреннего вмр
     sub_total = models.IntegerField(null=True)
     
     def __int__(self):
