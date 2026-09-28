@@ -4621,8 +4621,16 @@ def change_transfer_unposted(request, document_id):
                         if AvPrice.objects.filter(imei=imeis[i]).exists():
                             av_price=AvPrice.objects.get(imei=imeis[i])
                             av_price=av_price.av_price
+                            av_price.save()
                         else:
-                            av_price=0
+                            av_price = AvPrice.objects.create(
+                                imei=imeis[i],
+                                name=names[i],
+                                current_remainder = quantities[i]
+                                av_price=prices[i]
+                                sub_total=int(prices[i])*int(quantities[i])
+                            )
+
                         document_sum += int(prices[i]) * int(quantities[i])
                         # creating new rho
                         rho = RemainderHistory.objects.create(
