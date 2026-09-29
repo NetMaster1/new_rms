@@ -3769,7 +3769,8 @@ def unpost_delivery(request, document_id):
                 if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
                     rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
                     rco.current_remainder=rho_latest.current_remainder
-                    rco.retail_price=rho_latest.retail_price
+                    if rho_latest.retail_price:
+                        rco.retail_price=rho_latest.retail_price
                     rco.save()
                 else:
                     rco=RemainderCurrent.objects.create(
@@ -3780,7 +3781,7 @@ def unpost_delivery(request, document_id):
                         current_remainder=rho_latest.current_remainder,
                         retail_price=rho_latest.retail_price
                     )
-            #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
+            #provides for situation when only one delivery document was created & then deleted. Thus db contains no rho for
             #passing info to rco
             else:
                 if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():

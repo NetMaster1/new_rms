@@ -133,7 +133,7 @@
             {% if group.name == 'admin' %}
             <div class="col-3">
                 <a href="{% url 'unpost_delivery' document.id %}">
-                    <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                    <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark clear_storage" id="submit_button">
                 </a>
             </div>
             {% endif %}
@@ -174,7 +174,8 @@
     const supplier = document.querySelector('#supplier');
     const check_imei = document.querySelector('#check_imei');
     const save_button = document.querySelector('#save_button');
-
+    const submit_button = document.querySelector('#submit_button');
+   
 
 
     btn_modal.addEventListener('click', openModal)
@@ -300,6 +301,13 @@
     save_button.addEventListener('submit', e => {
             sessionStorage.clear();
         })
+
+
+    //disables the button after submitting the form
+    submit_button.addEventListener('click', blockButton)
+    function blockButton() {
+        submit_button.disabled = true;
+    }
 
 
     console.log('End of the script')
