@@ -132,7 +132,7 @@
             {% for group in request.user.groups.all %}
             {% if group.name == 'admin' %}
             <div class="col-3">
-                <a href="{% url 'unpost_delivery' document.id %}">
+                <a href="{% url 'unpost_delivery' document.id %}" id="button_link">
                     <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark clear_storage" id="submit_button">
                 </a>
             </div>
@@ -175,6 +175,7 @@
     const check_imei = document.querySelector('#check_imei');
     const save_button = document.querySelector('#save_button');
     const submit_button = document.querySelector('#submit_button');
+    const button_link = document.querySelector('#button_link');
    
 
 
@@ -303,11 +304,14 @@
         })
 
 
-    //disables the button after submitting the form
-    submit_button.addEventListener('click', blockButton)
-    function blockButton() {
-        submit_button.disabled = true;
+    //disables the link
+    submit_button.addEventListener('click', removeLink)
+
+    function removeLink() {
+        console.log('clicked');
+        button_link.remove()
     }
+
 
 
     console.log('End of the script')
