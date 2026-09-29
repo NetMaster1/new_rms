@@ -43,7 +43,7 @@
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'change_delivery_unposted' document.id %}" method="POST">
+                    <form action="{% url 'change_delivery_unposted' document.id %}" method="POST" id="input_form">
                         {% csrf_token %}
 
                         <div class="form-row">
@@ -154,7 +154,7 @@
 
                         <div class="row m-auto mt-3 ">
                             <div class="col-2">
-                                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage" id="submit_button">
                             </div>
                             <div class="col-2">
                                 <label for="post_check"> С проведением </label>
@@ -206,6 +206,8 @@
     const supplier = document.querySelector('#supplier');
     const shop = document.querySelector('#shop');
     const check_imei = document.querySelector('#check_imei');
+    const submit_button = document.querySelector('#submit_button');
+    const input_form = document.querySelector('#input_form');
 
 
     //returning cursor back to check_imei field
@@ -375,6 +377,16 @@
         sessionStorage.clear();
     };
    
+
+    input_form.addEventListener('submit', blockButton)
+    function blockButton() {
+        submit_button.disabled = true;
+    }
+
+
+
+
+
     console.log('End of the script')
 </script>
 {% endblock %}
