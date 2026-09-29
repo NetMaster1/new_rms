@@ -32,7 +32,8 @@ class RemainderCurrentAdmin(admin.ModelAdmin):
     search_fields = ('imei', )
   
 class AvPriceAdmin(admin.ModelAdmin):
-    list_display = ('updated', 'name', 'imei', 'current_remainder', 'av_price', 'sum')  
+    list_display = ('updated', 'name', 'imei', 'current_remainder', 'av_price', 'sum')
+    list_editable= ('current_remainder', 'av_price', 'sum' )
 
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ('id', 'time_seconds', 'title' , 'user', 'sum', 'client', 'base_doc', 'posted')

@@ -3665,7 +3665,7 @@ def change_delivery_unposted(request, document_id):
                                 rco.retail_price=0
                                 rco.save()
                         #=======================END OF REMAINDER CURRENT BLOCK=======================================
-                        time.sleep(0.1)
+                        # time.sleep(0.1)
 
                     document.sum = document_sum
                     document.save()
