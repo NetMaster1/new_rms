@@ -3753,6 +3753,7 @@ def unpost_delivery(request, document_id):
                 av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
             else:
                 av_price_obj.av_price=0
+                av_price_obj.sum=0
             av_price_obj.save()
             imei=rho.imei
             shop=rho.shop
