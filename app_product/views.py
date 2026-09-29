@@ -3576,10 +3576,10 @@ def change_delivery_unposted(request, document_id):
                                 av_price=int(prices[i]),
                             )
                     #=============End of Av_price Module=================
-                        # checking docs before remainder_history
+                        # checking docs before remainder_history & creating remainder history object (rho)
                         if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                             rho_latest_before = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
-                            # creating remainder_history
+                            # creating remainder_history object
                             rho = RemainderHistory.objects.create(
                                 document=document,
                                 rho_type=document.title,
@@ -3634,10 +3634,9 @@ def change_delivery_unposted(request, document_id):
                                 obj.save()
                                 remainder = obj.current_remainder
 
-
                         #in deletion documents this module is placed after deletion of rho in order not use it as the latest one
                         #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
-                        #in order to reduce time interal required to take a remainder report.
+                        #in order to reduce time interval required to take a remainder report.
                         #If the report is taken from RemainderHistory table, it searches all rhos, 
                         #and when RemainderCurrent table is used for the report, time requied for this report is much less
                         #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
@@ -3666,7 +3665,7 @@ def change_delivery_unposted(request, document_id):
                                 rco.retail_price=0
                                 rco.save()
                         #=======================END OF REMAINDER CURRENT BLOCK=======================================
-
+                        time.sleep(0.1)
 
                     document.sum = document_sum
                     document.save()
@@ -4621,15 +4620,8 @@ def change_transfer_unposted(request, document_id):
                         if AvPrice.objects.filter(imei=imeis[i]).exists():
                             av_price=AvPrice.objects.get(imei=imeis[i])
                             av_price=av_price.av_price
-                            av_price.save()
                         else:
-                            av_price = AvPrice.objects.create(
-                                imei=imeis[i],
-                                name=names[i],
-                                current_remainder = quantities[i]
-                                av_price=prices[i]
-                                sub_total=int(prices[i])*int(quantities[i])
-                            )
+                            av_price = 0
 
                         document_sum += int(prices[i]) * int(quantities[i])
                         # creating new rho
