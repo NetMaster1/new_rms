@@ -163,15 +163,15 @@
                     </form>
 
                     <div class="col-3">
-                        <a href="{% url 'close_unposted_document' document.id %}">
-                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        <a href="{% url 'close_unposted_document' document.id %}" id="close_link">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage" id="close_button">
                         </a>
                     </div>
 
                     <div class="col-3">
-                        <a href="{% url 'delete_unposted_document' document.id %}">
+                        <a href="{% url 'delete_unposted_document' document.id %}" id="delete_link">
                             <input type="button" value="Удалить документ"
-                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage" id="delete_button">
                         </a>
                     </div>
                 </div>
@@ -209,6 +209,11 @@
     const submit_button = document.querySelector('#submit_button');
     const input_form = document.querySelector('#input_form');
 
+    const button_link = document.querySelector('#button_link');
+    const close_link = document.querySelector('#close_link');
+    const delete_link = document.querySelector('#delete_link');
+    const close_button = document.querySelector('#close_button');
+    const delete_button = document.querySelector('#delete_button');
 
     //returning cursor back to check_imei field
         check_imei.select();
@@ -378,15 +383,16 @@
     };
    
 
-    //disables the button after submitting the form
+    //disables buttons & links after submitting the form or clicking the first link
     input_form.addEventListener('submit', blockButton)
+    delete_button.addEventListener('click', blockButton)
+    close_button.addEventListener('click', blockButton)
+
     function blockButton() {
         submit_button.disabled = true;
+        delete_link.remove()
+        close_link.remove()
     }
-
-
-
-
 
     console.log('End of the script')
 </script>
