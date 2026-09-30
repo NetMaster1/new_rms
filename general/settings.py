@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'app_service',
     'app_api',
     'app_vmr',
+    'rangefilter',
   
 ]
 

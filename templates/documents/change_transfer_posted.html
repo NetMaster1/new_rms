@@ -29,7 +29,7 @@
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'change_transfer_posted' document.id %}" method="POST">
+                    <form action="{% url 'change_transfer_posted' document.id %}" method="POST" id="input_form">
                         {% csrf_token %}
 
                         <div class="form-row">
@@ -143,20 +143,20 @@
                     </form>
 
                     <div class="col-2">
-                        <a href="{% url 'unpost_transfer' document.id %}">
-                            <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark">
+                        <a href="{% url 'unpost_transfer' document.id %}" id="submit_link">
+                            <input type="button" value="Сделать непроведенным" class="btn btn-sm btn-block btn-outline-dark" id="submit_button">
                         </a>
                     </div>
             
                     <div class="col-2">
-                        <a href="{% url 'log' %}">
-                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                        <a href="{% url 'log' %}" id="close_link">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark" id="close_button">
                         </a>
                     </div>
 
                     <div class="col-2">
-                        <a href="{% url 'DownloadPDF' document.id %}">
-                            <input type="button" value="Вывести на печать" class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                        <a href="{% url 'DownloadPDF' document.id %}" id="print_link">
+                            <input type="button" value="Вывести на печать" class="btn btn-sm btn-block btn-outline-dark clear_storage" id="print_button">
                         </a>
                     </div>
 
@@ -165,8 +165,8 @@
                 
                 
                     <div class="col-2">
-                        <a href="{% url 'sale_interface' %}">
-                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark">
+                        <a href="{% url 'sale_interface' %}" id="close_link">
+                            <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark" id="close_button" id="close_button">
                         </a>
                     </div>
 
@@ -196,6 +196,13 @@
     const buttons = document.querySelectorAll('.clear_storage');
     //const save_button = document.querySelector('#save_button');
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
+  
+    const submit_button = document.querySelector('#submit_button');
+    const submit_link = document.querySelector('#submit_link');
+    const close_link = document.querySelector('#close_link');
+    const close_button = document.querySelector('#close_button');
+    const print_link = document.querySelector('#print_link');
+    const print_button = document.querySelector('#print_button');
   
     //const val= typeof quantities
  
@@ -310,6 +317,19 @@
     //save_button.addEventListener('submit', e => {
       //  sessionStorage.clear();
     //})
+    //disables extra links
+    submit_button.addEventListener('click', removeLink)
+    close_button.addEventListener('click', removeLink)
+    print_button.addEventListener('click', removeLink)
+
+    function removeLink() {
+        console.log('clicked');
+        submit_link.remove()
+        close_link.remove()
+        print_link.remove()
+    }
+    
+
 
     console.log ('oky')
 </script>

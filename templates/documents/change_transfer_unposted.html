@@ -55,7 +55,7 @@
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'change_transfer_unposted' document.id %}" method="POST">
+                    <form action="{% url 'change_transfer_unposted' document.id %}" method="POST" id="input_form">
                         {% csrf_token %}
 
                         <div class="form-row">
@@ -180,7 +180,7 @@
                         <div class="row m-auto mt-3" style="position:relative">
                             <div class="col-1">
                                 <input type="submit" value="Сохранить"
-                                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                                    class="btn btn-sm btn-block btn-outline-dark clear_storage" id="submit_button">
                             </div>
             {% for group in request.user.groups.all %}
             {% if group.name == 'admin' %}
@@ -191,8 +191,8 @@
                     </form>
 
                             <div class="col-3">
-                                <a href="{% url 'delete_unposted_document' document.id %}">
-                                    <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                                <a href="{% url 'delete_unposted_document' document.id %}" id="delete_link">
+                                    <input type="button" value="Удалить документ" class="btn btn-sm btn-block btn-outline-dark clear_storage" id="delete_button">
                                 </a>
                             </div>
             {% endif %}
@@ -200,9 +200,9 @@
 
                  
                     <div class="col-2">
-                        <a href="{% url 'close_unposted_document' document.id %}">
+                        <a href="{% url 'close_unposted_document' document.id %}" id="close_link">
                             <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark clear_storage button_message">
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage button_message" id="close_button">
                         </a>
 
                         <div class="enterMessageModal">
@@ -240,6 +240,14 @@
     const check_imei_form=document.querySelector('#check_imei_form');
     const button_message = document.querySelector('.button_message');
     const enterMessageModal = document.querySelector('.enterMessageModal');
+
+    const input_form = document.querySelector('#input_form');
+    const submit_button = document.querySelector('#submit_button');
+    const close_link = document.querySelector('#close_link');
+    const delete_link = document.querySelector('#delete_link');
+    const close_button = document.querySelector('#close_button');
+    const delete_button = document.querySelector('#delete_button');
+
     //const status_message = document.querySelector('#status_message');
 
     //=================================================
@@ -449,6 +457,20 @@
     //save_button.addEventListener('submit', e => {
     //  sessionStorage.clear();
     //})
+
+    input_form.addEventListener('submit', blockButton)
+    delete_button.addEventListener('click', blockButton)
+    close_button.addEventListener('click', blockButton)
+
+    function blockButton() {
+        
+        submit_button.disabled = true;
+        delete_link.remove();
+        console.log('links deleted')
+        close_link.remove();
+        console.log('links deleted')
+    }
+
 
 
     console.log('oky')
