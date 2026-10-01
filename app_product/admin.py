@@ -38,11 +38,14 @@ class RemainderHistoryAdmin(admin.ModelAdmin):
 
 class RemainderCurrentAdmin(admin.ModelAdmin):
     list_display = ('updated', 'shop', 'name', 'imei', 'current_remainder', 'retail_price', 'category')  
-    list_filter = ('shop',)
+    list_filter = (("updated", DateRangeFilterBuilder()), 'shop', )
     search_fields = ('imei', )
+    list_editable= ('current_remainder',)
   
 class AvPriceAdmin(admin.ModelAdmin):
     list_display = ('updated', 'name', 'imei', 'current_remainder', 'av_price', 'sum')
+    list_filter = (("updated", DateRangeFilterBuilder()),)
+    search_fields = ( 'name', 'imei',)
     list_editable= ('current_remainder', 'av_price', 'sum' )
 
 class DocumentAdmin(admin.ModelAdmin):
