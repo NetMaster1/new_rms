@@ -222,7 +222,7 @@ def save_in_excel_daily_rep(request):
             )
             daily_rep.save()
          
-#==========================Convert to Excel module=========================================
+        #==========================Convert to Excel module=========================================
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (
             "attachment; filename=DailRep_" + str(date) + ".xls"
@@ -818,6 +818,7 @@ def sale_report_analytic(request):
 
         if shop:
             context = {
+                "current_date": current_date,
                 "sale_report": sale_report,
                 "categories": categories,
                 "shops": shops,
@@ -832,6 +833,7 @@ def sale_report_analytic(request):
             return render(request, "reports/sale_report_analytic.html", context)
         else:
             context = {
+                "current_date": current_date,
                 "sale_report": sale_report,
                 "categories": categories,
                 "shops": shops,
