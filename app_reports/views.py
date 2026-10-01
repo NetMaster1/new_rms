@@ -724,6 +724,9 @@ def sale_report_per_shop(request):
         return render(request, "reports/sale_report_per_shop.html", context)
 
 def sale_report_analytic(request):
+    current_date = date.today()
+    current_date = datetime.datetime.strftime(current_date, "%Y-%m-%d")
+    print(current_date)
     categories = ProductCategory.objects.all()
     products = Product.objects.all()
     shops = Shop.objects.all()
@@ -844,6 +847,7 @@ def sale_report_analytic(request):
             return render(request, "reports/sale_report_analytic.html", context)
     else:
         context = {
+            "current_date": current_date,
             "categories": categories,
             "shops": shops,
             "suppliers": suppliers,
