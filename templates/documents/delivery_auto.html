@@ -26,7 +26,7 @@
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'delivery_auto' %}" method="POST" enctype="multipart/form-data" >
+                    <form action="{% url 'delivery_auto' %}" method="POST" enctype="multipart/form-data"  id="input_form">
                         {% csrf_token %}
 
                      
@@ -105,20 +105,20 @@
                         <div class="row m-auto mt-3 ">
                             <div class="col-2">
                                 <input type="submit" value="Провести"
-                                    class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                                    class="btn btn-sm btn-block btn-outline-dark clear_storage" id="submit_button">
                             </div>
                     </form>
 
                     <div class="col-2">
-                        <a href="#">
+                        <a href="#" id="clear_form_link">
                             <input type="button" value="Очистить форму"
-                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage" id="clear_form_button">
                         </a>
                     </div>
                     <div class="col-2">
-                        <a href="{% url 'log' %}">
+                        <a href="{% url 'log' %}" id="close_link">
                             <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage " id="close_button">
                         </a>
                     </div>
                 </div>
@@ -128,5 +128,47 @@
 
 </div>
 
+
+<script>
+    const input_form = document.querySelector('#input_form');
+    const submit_button = document.querySelector('#submit_button');
+
+    const close_link = document.querySelector('#close_link');
+    const close_button = document.querySelector('#close_button');
+    const clear_form_link = document.querySelector('#clear_form_link');
+    const clear_form_button = document.querySelector('#clear_form_button');
+
+
+    console.log ('script starts')
+
+
+
+ 
+    input_form.addEventListener('submit', blockButton)
+    clear_form_button.addEventListener('click', blockButtonClear)
+    close_button.addEventListener('click', blockButton)
+
+
+    function blockButton() {
+        submit_button.disabled = true;
+        clear_form_link.remove()
+        close_link.remove()
+        console.log('links_blocked')
+    }
+
+    function blockButtonClear() {
+        submit_button.disabled = true;
+        clear_form_link.remove()
+        close_link.remove()
+        location.reload()
+        console.log('links_blocked')
+    }
+
+
+console.log ('script ends')
+
+
+
+</script>
 
 {% endblock %}

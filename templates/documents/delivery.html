@@ -100,7 +100,7 @@
 <div class="row m-2 pb-2">
     <div class="col-12 border rounded p-3">
 
-        <form action="{% url 'delivery_input' identifier.id %}" method="POST" id='save_button'>
+        <form action="{% url 'delivery_input' identifier.id %}" method="POST" id='input_form'>
             {% csrf_token %}
 
             {%  for group in request.user.groups.all %}
@@ -189,7 +189,7 @@
 
         <div class="row m-auto mt-3 ">
             <div class="col-1">
-                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark">
+                <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark" id="submit_button">
             </div>
             <div class="col-2">
             <label for="post_check"> С проведением </label>
@@ -198,13 +198,13 @@
         </form>
             
             <div class="col-2">
-                    <a href="{% url 'clear_delivery' identifier.id %}">
-                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                    <a href="{% url 'clear_delivery' identifier.id %}" id="delete_link">
+                        <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storage" id="delete_button">
                     </a>
             </div>
             <div class="col-2">
-                <a href="{% url 'close_without_save' identifier.id %}">
-                    <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage ">
+                <a href="{% url 'close_without_save' identifier.id %}" id="close_link">
+                    <input type="button" value="Закрыть без сохранения" class="btn btn-sm btn-block btn-outline-dark clear_storage" id="close_button">
                 </a>
             </div>
 
@@ -227,11 +227,18 @@
     const sub_totals = document.querySelectorAll("#sub_total");
     const prices = document.querySelectorAll("#price");
     const buttons = document.querySelectorAll('.clear_storage');
-    const save_button = document.querySelector('#save_button');
     const delete_buttons = document.querySelectorAll('.delete_line_storage');
     const check_button = document.querySelector('#check_button');
     const supplier = document.querySelector('#supplier');
     const check_imei = document.querySelector('#check_imei');
+
+   
+    const input_form = document.querySelector('#input_form');
+    const submit_button = document.querySelector('#submit_button');
+    const close_link = document.querySelector('#close_link');
+    const close_button = document.querySelector('#close_button');
+    const delete_link = document.querySelector('#delete_link');
+    const delete_button = document.querySelector('#delete_button');
    
     // ===============================================
     btn_modal.addEventListener('click', openModal)
@@ -364,9 +371,22 @@
         sessionStorage.clear();
     };
 
-    save_button.addEventListener('submit', e=> {
+    input_form.addEventListener('submit', e=> {
         sessionStorage.clear();
    })
+
+    //disables buttons & links after submitting the form or clicking the first link
+    input_form.addEventListener('submit', blockButton)
+    delete_button.addEventListener('click', blockButton)
+    close_button.addEventListener('click', blockButton)
+
+    function blockButton() {
+        submit_button.disabled = true;
+        delete_link.remove()
+        close_link.remove()
+        console.log('links_blocked')
+    }
+
 
 
 

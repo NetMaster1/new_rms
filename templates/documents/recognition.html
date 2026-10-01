@@ -149,7 +149,7 @@
             <div class="row m-2 pb-2">
                 <div class="col-12 border rounded p-3">
 
-                    <form action="{% url 'recognition_input' identifier.id %}" method="POST" class="recognition_form">
+                    <form action="{% url 'recognition_input' identifier.id %}" method="POST" id="input_form">
                         {% csrf_token %}
 
                     {% for group in request.user.groups.all %}
@@ -241,7 +241,7 @@
 
                 <div class="row m-auto mt-3 ">
                     <div class="col-1">
-                        <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage recognition_button">
+                        <input type="submit" value="Сохранить" class="btn btn-sm btn-block btn-outline-dark clear_storage" id="submit_button">
                     </div>
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}
@@ -258,14 +258,14 @@
                     </form>
 
                     <div class="col-2">
-                        <a href="{% url 'clear_recognition' identifier.id %}">
-                            <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                        <a href="{% url 'clear_recognition' identifier.id %}" id="clear_form_link">
+                            <input type="button" value="Очистить форму" class="btn btn-sm btn-block btn-outline-dark clear_storage" id="clear_form_button">
                         </a>
                     </div>
                     <div class="col-2">
-                        <a href="{% url 'close_without_save' identifier.id %}">
+                        <a href="{% url 'close_without_save' identifier.id %}" id="close_link">
                             <input type="button" value="Закрыть без сохранения"
-                                class="btn btn-sm btn-block btn-outline-dark clear_storage">
+                                class="btn btn-sm btn-block btn-outline-dark clear_storage" id="close_button">
                         </a>
                     </div>
                 </div>
@@ -293,13 +293,14 @@
     const check_imei = document.querySelector('#check_imei');
     //const save_button = document.querySelector('#save_button');
 
-    //block button until recognition form is submtitted
-    const recognition_button = document.querySelector('.recognition_button');
-    const recognition_form = document.querySelector('.recognition_form');
-    recognition_form.addEventListener('submit', blockButton)
-        function blockButton() {
-            recognition_button.disabled = true;
-        }
+    //====================================================================
+    const close_link = document.querySelector('#close_link');
+    const close_button = document.querySelector('#close_button');
+    const clear_form_link = document.querySelector('#clear_form_link');
+    const clear_form_button = document.querySelector('#clear_form_button');
+    const submit_button = document.querySelector('#submit_button');
+    const input_form = document.querySelector('#input_form');
+
 
     //block button until new_product form is submtitted
     const new_product_button = document.querySelector('.new_product_button');
@@ -418,6 +419,21 @@
         choice = shop.value;
         sessionStorage.setItem('shop', choice);
     })
+
+    //disables buttons & links after submitting the form or clicking the first link
+    input_form.addEventListener('submit', blockButton)
+    clear_form_button.addEventListener('click', blockButton)
+    close_button.addEventListener('click', blockButton)
+
+    function blockButton() {
+        submit_button.disabled = true;
+        clear_form_link.remove()
+        close_link.remove()
+        console.log('links_blocked')
+    }
+
+
+
 
     console.log('End of the script')
 </script>

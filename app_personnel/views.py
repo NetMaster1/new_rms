@@ -146,13 +146,14 @@ def my_bonus(request):
             for cat_rho in cat_rhos:
                 cat_sum+=cat_rho.sub_total
                 bonus_sum+=cat_rho.sub_total*category.bonus_percent*cat_rho.shop.sale_k
+                bonus_sum=int(bonus_sum)
             sales_array.append(cat_sum)
             bonus_array.append(bonus_sum)
         for i in sales_array:
             total_sales+=i
         for n in bonus_array:
             total_bonus+=n
-        total_bonus=+vmr_audit_sum
+        total_bonus=vmr_audit_sum+total_bonus
         context ={
             'categories': categories,
             'sales_array': sales_array,
