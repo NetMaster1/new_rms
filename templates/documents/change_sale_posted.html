@@ -169,7 +169,6 @@
                     {% endif %}
                     {% endfor%}
                 
-                    
                     </form>
                         
                     <div class="col-2">
@@ -202,7 +201,6 @@
                                 <div class="modal-body">
                                     <form action="{% url 'change_payment_type' document.id %}" method="POST">
                                         {% csrf_token %}
-                                                
                                     <div class="form-group">
                                         <label for="cash">Наличные:</label>
                                         <input class='form-control' type="number" id="cash" name="cash" maxlength='100'>
@@ -229,7 +227,7 @@
                             </div>
                             </form>
                     </div>
-                    <!-- =================================End of Modal Body======================================== -->
+            <!-- =================================End of Modal Body======================================== -->
             </div>
         
 
