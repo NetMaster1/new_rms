@@ -1,6 +1,18 @@
 from django.contrib import admin
-from . models import AcquiringReport, PayCardReport, ProductHistory, ReportTemp, ReportTempId, DailySaleRep, SaleReport, MonthlyBonus, Sim_report, ClientReport, SalaryReport, ClientHistoryReport
-
+from . models import (
+AcquiringReport, 
+PayCardReport, 
+ProductHistory, 
+ReportTemp, 
+ReportTempId, 
+DailySaleRep, 
+SaleReport, 
+MonthlyBonus, 
+Sim_report, 
+ClientReport, 
+SalaryReport, 
+ClientHistoryReport, 
+RemainderOutputReport,)
 
 class ProductHistoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'document', 'name', 'imei', 'quantity_in', 'quantity_out')
@@ -40,6 +52,9 @@ class ClientHistoryReportAdmin(admin.ModelAdmin):
 
 class SalaryReportAdmin(admin.ModelAdmin):
     list_display = ('id', 'created', 'user', 'sum') 
+
+class RemainderOutputReportAdmin(admin.ModelAdmin):
+    list_display = ('id', 'imei', 'current_remainder', 'retail_price') 
    
 
 
@@ -55,3 +70,4 @@ admin.site.register(Sim_report, Sim_reportAdmin)
 admin.site.register(ClientReport, ClientReportAdmin)
 admin.site.register(ClientHistoryReport, ClientHistoryReportAdmin)
 admin.site.register(SalaryReport, SalaryReportAdmin)
+admin.site.register(RemainderOutputReport, RemainderOutputReportAdmin)

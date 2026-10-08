@@ -15,6 +15,7 @@ from app_product.models import (
     RemainderHistory,
     RemainderCurrent,
     Document,
+    Identifier,
 )
 from app_kpi.models import KPIMonthlyPlan
 from app_vmr.models import VMR_check
@@ -34,6 +35,7 @@ from .models import (
     ExpensesReport,
     SalaryReport,
     EffectivenessReport,
+    RemainderOutputReport,
 )
 from app_clients.models import Customer
 from app_personnel.models import BulkSimMotivation
@@ -1496,25 +1498,43 @@ def remainder_report_output(request, shop_id, category_id, date):
         category = ProductCategory.objects.get(id=category_id)
         array = []
         #products = Product.objects.filter(category=category).order_by("name").iterator(chunk_size=10) # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
-        products = Product.objects.filter(category=category).order_by("name")# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        products = Product.objects.filter(category=category).order_by('name')# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
         n=0
+        report_id=Identifier.objects.create()
         for product in products:
             imei = product.imei
-            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
-                rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
+            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date, current_remainder__gt=0).exists():
+                #rhos=RemainderHistory.objects.filter(imei=imei, shop=shop, created__lte=date,).values_list( 'imei', 'name', 'current_remainder', 'retail_price', 'shop', 'created',)
+                rhos=RemainderHistory.objects.filter(imei=imei, shop=shop, created__lte=date,)
+                for i in rhos:
+                    print (i.imei)
+                rho=rhos.latest('created')
+                print(rho)
                 if rho.current_remainder > 0:
                     n+=1
                     print(f'{n}: {rho}')
-                    array.append(rho)
-        arr_length=len(array)
-        print(arr_length)
-        for arr, i in zip(array, range(arr_length)):
-            arr.number = i + 1
-            arr.save()
+                    report_item=RemainderOutputReport.objects.create (
+                        report_id=report_id,
+                        number=n,
+                        imei=rho.imei,
+                        current_remainder=rho.current_remainder,
+                        retail_price=rho.retail_price,
+
+                    )
+        report=RemainderOutputReport.objects.filter(report_id=report_id.id).order_by("number")
+        #====================saving rhos in array
+        #             array.append(rho)
+
+        # arr_length=len(array)
+        # print(arr_length)
+        # for arr, i in zip(array, range(arr_length)):
+        #     arr.number = i + 1
+        #     arr.save()
         context = {
             "date": date, 
             "shop": shop, 
-            "array": array, 
+            "report": report,
+            #"array": array, 
             #"arr_length": arr_length,
             "category": category
             }

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from app_reference.models import ProductCategory, Supplier, Product, Shop, DocumentType
+from app_product.models import Identifier
 
 # import datetime
 from datetime import datetime, date
@@ -255,5 +256,16 @@ class DailyActivation (models.Model):
     tarif_name = models.CharField(max_length=50, null=True, blank=True)
     activation_location = models.CharField(max_length=50, null=True, blank=True)
     
+    def __int__(self):
+        return self.id
+
+class RemainderOutputReport (models.Model):
+    report_id = models.ForeignKey(Identifier, on_delete=models.DO_NOTHING, null=True)
+    number = models.IntegerField(null=True)
+    name = models.CharField(max_length=50, null=True, blank=True)
+    imei = models.CharField(max_length=50, null=True, blank=True)
+    retail_price = models.IntegerField(null=True)
+    current_remainder = models.IntegerField(null=True)
+  
     def __int__(self):
         return self.id

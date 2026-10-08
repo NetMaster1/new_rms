@@ -86,8 +86,8 @@
     <form action="{% url 'revaluation_document' %}" method="POST">
         {% csrf_token %}
 
-  
-    {% for arr in array %}
+
+    {% for item in report %}
         <div class="row m-auto" id="row_highlight">
                 {% for group in request.user.groups.all %}
                 {% if group.name == 'admin' %}
@@ -97,11 +97,17 @@
                 <input type="shop" id="shop" name="shop" value='{{shop.id}}' hidden>
                 {% endif %}
                 {% endfor %}
-            <div class="col-1">{{arr.number}}</div>
+            <!-- <div class="col-1">{{arr.number}}</div>
             <div class="col-2">{{arr.imei}}</div>
             <div class="col-4">{{arr.name}}</div>
             <div class="col-2">{{arr.current_remainder}}</div>
-            <div class="col-2">{{arr.retail_price}}</div>
+            <div class="col-2">{{arr.retail_price}}</div> -->
+
+            <div class="col-1">{{item.number}}</div>
+            <div class="col-2">{{item.imei}}</div>
+            <div class="col-4">{{item.name}}</div>
+            <div class="col-2">{{item.current_remainder}}</div>
+            <div class="col-2">{{item.retail_price}}</div>
         </div>
     {% endfor %}
 
