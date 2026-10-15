@@ -33,8 +33,10 @@ urlpatterns = [
 
     path ('remainder_report_ver_1', views.remainder_report_ver_1, name='remainder_report_ver_1'),
     path ('remainder_report', views.remainder_report, name='remainder_report'),
+    path ('remainder_report_rco', views.remainder_report_rco, name='remainder_report_rco'),
     path ('remainder_report_output_ver_1/<int:shop_id>/<int:category_id>', views.remainder_report_output_ver_1, name='remainder_report_output_ver_1'),
     path ('remainder_report_output/<int:shop_id>/<int:category_id>/<date>', views.remainder_report_output, name='remainder_report_output'),
+    path ('remainder_report_output_rco/<int:shop_id>/<int:category_id>/<date>', views.remainder_report_output_rco, name='remainder_report_output_rco'),
     path ('remainder_list/<int:shop_id>/<int:category_id>', views.remainder_list, name='remainder_list'),
     path ('remainder_report_dynamic)', views.remainder_report_dynamic, name='remainder_report_dynamic'),
     path ('remainder_report_excel/<int:shop_id>/<int:category_id>/<date>', views.remainder_report_excel, name='remainder_report_excel'),

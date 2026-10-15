@@ -92,7 +92,7 @@
                 {% for group in request.user.groups.all %}
                 {% if group.name == 'admin' %}
                 <div class="col-1">
-                    <input type="checkbox" id="check_box" name="checked" value='{{arr.imei}}'>
+                    <input type="checkbox" id="check_box" name="checked" value='{{item.imei}}'>
                 </div>
                 <input type="shop" id="shop" name="shop" value='{{shop.id}}' hidden>
                 {% endif %}

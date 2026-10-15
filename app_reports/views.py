@@ -1371,6 +1371,36 @@ def remainder_report(request):
         auth.logout(request)
         return redirect("login")
 
+def remainder_report_rco(request):
+    if request.user.is_authenticated:
+        users = Group.objects.get(name="sales").user_set.all()
+        group = Group.objects.get(name="admin").user_set.all()
+        categories = ProductCategory.objects.all()
+        shops = Shop.objects.filter(active=True, subdealer=False)
+        if request.method == "POST":
+            category = request.POST["category"]
+            category = ProductCategory.objects.get(id=category)
+            if request.user in group:
+                shop = request.POST["shop"]
+                shop = Shop.objects.get(id=shop)
+            else:
+                session_shop = request.session["session_shop"]
+                shop = Shop.objects.get(id=session_shop)
+            # ==============Time Module=========================================
+            date = datetime.date.today()
+            tdelta_1 = datetime.timedelta(days=1)
+            date = date + tdelta_1
+            return redirect("remainder_report_output_rco", shop.id, category.id, date)
+        else:
+            context = {
+                "shops": shops,
+                "categories": categories,
+            }
+            return render(request, "reports/remainder_report_rco.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 def remainder_report_ver_1(request):
     if request.user.is_authenticated:
         users = Group.objects.get(name="sales").user_set.all()
@@ -1519,6 +1549,7 @@ def remainder_report_output(request, shop_id, category_id, date):
                         imei=rho.imei,
                         current_remainder=rho.current_remainder,
                         retail_price=rho.retail_price,
+                        name=rho.name
 
                     )
         report=RemainderOutputReport.objects.filter(report_id=report_id.id).order_by("number")
@@ -1543,6 +1574,29 @@ def remainder_report_output(request, shop_id, category_id, date):
         auth.logout(request)
         return redirect("login")
 
+def remainder_report_output_rco(request, shop_id, category_id, date):
+    if request.user.is_authenticated:
+        messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
+        shop = Shop.objects.get(id=shop_id)
+        category = ProductCategory.objects.get(id=category_id)
+        counter=[]
+        n=0
+        report_id=Identifier.objects.create()
+        rcos=RemainderCurrent.objects.filter(shop=shop, category=category).order_by("name")
+        for rco in rcos:
+            n+=1
+            counter.append(n)
+ 
+        context = {
+            "shop" : shop,
+            # "rcos" : rcos,
+            # "counter": counter
+            "zipped_data": zip(counter, rcos)
+            }
+        return render(request, "reports/remainder_report_output_rco.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
 
 #@app.task
 # def remainder_report_output(request, shop_id, category_id, date):

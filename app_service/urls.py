@@ -3,8 +3,7 @@ from . import views
 
 
 urlpatterns = [
-    path ('current_qnt_correct', views.current_qnt_correct, name='current_qnt_correct'),
-    path ('delete_current_qnty_table', views.delete_current_qnty_table, name='delete_current_qnty_table'),
-
+    path ('synchronize_rho_latest_with_rco', views.synchronize_rho_latest_with_rco, name='synchronize_rho_latest_with_rco'),
+    path ('excel_list_rco', views.excel_list_rco, name='excel_list_rco'),
   
 ]

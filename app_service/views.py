@@ -4,19 +4,26 @@ from app_reference.models import Shop, ProductCategory
 from django.contrib import messages
 
 # Create your views here.
-def current_qnt_correct(request):
+def synchronize_rho_latest_with_rco(request):
     if request.user.is_authenticated:
         #category=ProductCategory.objects.get(name="Сим_карты")
         category=ProductCategory.objects.get(name="Смартфоны")
         products=Product.objects.filter(category=category)
         #if request.method == "POST":
         #shop = request.POST["shop"]
-        shops=Shop.objects.filter(retail=True, subdealer=False, active=True)
-        for shop in shops:
+
+        if request.method=="POST":
+            shop = request.POST["shop"]
+            shop=Shop.objects.get(id=shop)
+            category = request.POST["category"]
+            category=ProductCategory.objects.get(id=category)
+            products=Product.objects.filter(category=category)
+            n=0
             for product in products:
                 if RemainderHistory.objects.filter(imei=product.imei, shop=shop).exists():
                     rho_latest = RemainderHistory.objects.filter(imei=product.imei, shop=shop).latest('created')
                     if rho_latest.current_remainder != 0:
+                        n+=1
                         if RemainderCurrent.objects.filter(imei=product.imei, shop=shop).exists():
                             rco=RemainderCurrent.objects.get(imei=product.imei, shop=shop)
                             rco.current_remainder=rho_latest.current_remainder
@@ -31,14 +38,75 @@ def current_qnt_correct(request):
                                 retail_price=rho_latest.retail_price,
                                 category=product.category
                             )
-        messages.success(request, 'RemainderCurrent table changed')   
-        return redirect("log")
-    
-def delete_current_qnty_table(request):
-    if request.user.is_authenticated:
-        items=RemainderCurrent.objects.all()
-        for item in items:
-            item.delete()
+                        print(f'{n} {rco.name} {rco.imei} {rco.current_remainder}')
+                    else:
+                        if RemainderCurrent.objects.filter(imei=product.imei, shop=shop).exists():
+                            rcos=RemainderObjects.filter(imei=product.imei, shop=shop)
+                            for rco in rcos:
+                                rco.delete()
+                                
+            messages.success(request, 'RemainderCurrent table changed')   
+            return redirect("log")
+        else:
+            shops=Shop.objects.filter(subdealer=False, active=True)
+            categories=ProductCategory.objects.all()
 
-        messages.success(request, 'Entries to RemainderCurrent Table successfully deleted')   
-        return redirect("log")
+            context = {
+                "shops": shops, 
+                "categories": categories
+                }
+            return render(request, "service/rho_rco_sync_page.html", context)
+
+    
+def excel_list_rco(request):
+    if request.user.is_authenticated:
+        #category=ProductCategory.objects.get(name="Сим_карты")
+        category=ProductCategory.objects.get(name="Смартфоны")
+        products=Product.objects.filter(category=category)
+        #if request.method == "POST":
+        #shop = request.POST["shop"]
+
+        if request.method=="POST":
+            shop = request.POST["shop"]
+            shop=Shop.objects.get(id=shop)
+            category = request.POST["category"]
+            category=ProductCategory.objects.get(id=category)
+            products=Product.objects.filter(category=category)
+            n=0
+            for product in products:
+                if RemainderHistory.objects.filter(imei=product.imei, shop=shop).exists():
+                    rho_latest = RemainderHistory.objects.filter(imei=product.imei, shop=shop).latest('created')
+                    if rho_latest.current_remainder != 0:
+                        n+=1
+                        if RemainderCurrent.objects.filter(imei=product.imei, shop=shop).exists():
+                            rco=RemainderCurrent.objects.get(imei=product.imei, shop=shop)
+                            rco.current_remainder=rho_latest.current_remainder
+                            rco.retail_price=rho_latest.retail_price
+                            rco.save()
+                        else:
+                            rco=RemainderCurrent.objects.create(
+                                shop=shop,
+                                imei=product.imei,
+                                name=product.name,
+                                current_remainder=rho_latest.current_remainder,
+                                retail_price=rho_latest.retail_price,
+                                category=product.category
+                            )
+                        print(f'{n} {rco.name} {rco.imei} {rco.current_remainder}')
+                    else:
+                        if RemainderCurrent.objects.filter(imei=product.imei, shop=shop).exists():
+                            rcos=RemainderObjects.filter(imei=product.imei, shop=shop)
+                            for rco in rcos:
+                                rco.delete()
+                                
+            messages.success(request, 'RemainderCurrent table changed')   
+            return redirect("log")
+        else:
+            shops=Shop.objects.filter(subdealer=False, active=True)
+            categories=ProductCategory.objects.all()
+
+            context = {
+                "shops": shops, 
+                "categories": categories
+                }
+            return render(request, "service/rho_rco_sync_page.html", context)
