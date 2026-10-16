@@ -45,6 +45,11 @@ def synchronize_rho_latest_with_rco(request):
                             rcos=RemainderObjects.filter(imei=product.imei, shop=shop)
                             for rco in rcos:
                                 rco.delete()
+                else:
+                    if RemainderCurrent.objects.filter(imei=product.imei, shop=shop).exists():
+                        rcos=RemainderObjects.filter(imei=product.imei, shop=shop)
+                        for rco in rcos:
+                            rco.delete()
                                 
             messages.success(request, 'RemainderCurrent table changed')   
             return redirect("log")
