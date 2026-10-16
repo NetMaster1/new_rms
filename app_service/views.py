@@ -73,9 +73,9 @@ def delete_zero_rco (request):
             category = request.POST["category"]
             category=ProductCategory.objects.get(id=category)
             rcos=RemainderCurrent.objects.filter(shop=shop, category=category)
-                for rco in rcos:
-                    if rco.current_remainder == 0:
-                        rco.delete()
+            for rco in rcos:
+                if rco.current_remainder == 0:
+                    rco.delete()
                                       
             messages.success(request, 'Zero rcos deleted')   
             return redirect("log")
