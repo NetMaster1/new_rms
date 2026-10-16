@@ -42,12 +42,12 @@ def synchronize_rho_latest_with_rco(request):
                         print(f'{n} {rco.name} {rco.imei} {rco.current_remainder}')
                     else:
                         if RemainderCurrent.objects.filter(imei=product.imei, shop=shop).exists():
-                            rcos=RemainderObjects.filter(imei=product.imei, shop=shop)
+                            rcos=RemainderCurrent.objects.filter(imei=product.imei, shop=shop)
                             for rco in rcos:
                                 rco.delete()
                 else:
                     if RemainderCurrent.objects.filter(imei=product.imei, shop=shop).exists():
-                        rcos=RemainderObjects.filter(imei=product.imei, shop=shop)
+                        rcos=RemainderCurrent.objects.filter(imei=product.imei, shop=shop)
                         for rco in rcos:
                             rco.delete()
                                 
