@@ -13,11 +13,14 @@ def synchronize_rho_latest_with_rco(request):
             category=ProductCategory.objects.get(id=category)
             products=Product.objects.filter(category=category)
             n=0
+            c=0
             for product in products:
                 if RemainderHistory.objects.filter(imei=product.imei, shop=shop).exists():
                     rho_latest = RemainderHistory.objects.filter(imei=product.imei, shop=shop).latest('created')
+                    n+=1
+                    print(f'{n}. {rho_latest.name} {rho_latest.imei} {rho_latest.current_remainder}')
                     if rho_latest.current_remainder != 0:
-                        n+=1
+                        c+=1
                         if RemainderCurrent.objects.filter(imei=product.imei, shop=shop).exists():
                             rco=RemainderCurrent.objects.get(imei=product.imei, shop=shop)
                             rco.current_remainder=rho_latest.current_remainder
@@ -34,14 +37,15 @@ def synchronize_rho_latest_with_rco(request):
                                 imei=product.imei,
                                 name=product.name,
                                 current_remainder=rho_latest.current_remainder,
-                                category=product.category
                             )
                             if shop.retail==True:
                                 rco.retail_price=rho_latest.retail_price
                             else:
                                 rco.wholesale_price=rho_latest.wholesale_price
                             rco.save()
-                        print(f'{n} {rco.name} {rco.imei} {rco.current_remainder}')
+                        print('-----------------------------')
+                        print(f'{c}. {rco.name} {rco.imei} {rco.current_remainder} {rco.category}')
+                        print('')
                     else:
                         if RemainderCurrent.objects.filter(imei=product.imei, shop=shop).exists():
                             rcos=RemainderCurrent.objects.filter(imei=product.imei, shop=shop)
