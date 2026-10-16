@@ -3438,7 +3438,7 @@ def delivery_input(request, identifier_id):
                                     name=rho_latest.name,
                                     current_remainder=rho_latest.current_remainder,
                                     wholesale_price=rho_latest.wholesale_price,
-                                    retail_price_price=rho_latest.retail_price
+                                    retail_price=rho_latest.retail_price
                                 )
                     #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
                     #passing info to rco
@@ -3693,7 +3693,7 @@ def change_delivery_unposted(request, document_id):
                                         name=rho_latest.name,
                                         current_remainder=rho_latest.current_remainder,
                                         wholesale_price=rho_latest.wholesale_price,
-                                        retail_price_price=rho_latest.retail_price
+                                        retail_price=rho_latest.retail_price
                                     )
                         #provides for situation when only one tranfer document was created & then deleted. Thus db contains no rho for
                         #passing info to rco
