@@ -78,9 +78,15 @@
                 <div class="col-2">
                     <h5>Кол-во, шт.</h5>
                 </div>
+{% if shop.retail is True %}
                 <div class="col-2">
                     <h5>Розничная цена, руб.</h5>
                 </div>
+{% else %}
+                <div class="col-2">
+                    <h5>Оптовая цена, руб.</h5>
+                </div>
+{% endif %}
             </div>
 
     <form action="{% url 'revaluation_document' %}" method="POST">
@@ -107,7 +113,11 @@
             <div class="col-2">{{rco.1.imei}}</div>
             <div class="col-4">{{rco.1.name}}</div>
             <div class="col-2">{{rco.1.current_remainder}}</div>
+        {% if shop.retail is True%}
             <div class="col-2">{{rco.1.retail_price}}</div>
+        {% else %}
+            <div class="col-2">{{rco.1.wholesale_price}}</div>
+        {% endif %}
         </div>
     {% endfor %}
 

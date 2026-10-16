@@ -6,12 +6,6 @@ from django.contrib import messages
 # Create your views here.
 def synchronize_rho_latest_with_rco(request):
     if request.user.is_authenticated:
-        #category=ProductCategory.objects.get(name="Сим_карты")
-        category=ProductCategory.objects.get(name="Смартфоны")
-        products=Product.objects.filter(category=category)
-        #if request.method == "POST":
-        #shop = request.POST["shop"]
-
         if request.method=="POST":
             shop = request.POST["shop"]
             shop=Shop.objects.get(id=shop)
@@ -27,7 +21,10 @@ def synchronize_rho_latest_with_rco(request):
                         if RemainderCurrent.objects.filter(imei=product.imei, shop=shop).exists():
                             rco=RemainderCurrent.objects.get(imei=product.imei, shop=shop)
                             rco.current_remainder=rho_latest.current_remainder
-                            rco.retail_price=rho_latest.retail_price
+                            if shop.retail==True:
+                                rco.retail_price=rho_latest.retail_price
+                            else:
+                                rco.wholesale_price=rho_latest.wholesale_price
                             rco.save()
                         else:
                             rco=RemainderCurrent.objects.create(
@@ -35,9 +32,13 @@ def synchronize_rho_latest_with_rco(request):
                                 imei=product.imei,
                                 name=product.name,
                                 current_remainder=rho_latest.current_remainder,
-                                retail_price=rho_latest.retail_price,
                                 category=product.category
                             )
+                            if shop.retail==True:
+                                rco.retail_price=rho_latest.retail_price
+                            else:
+                                rco.wholesale_price=rho_latest.wholesale_price
+                            rco.save()
                         print(f'{n} {rco.name} {rco.imei} {rco.current_remainder}')
                     else:
                         if RemainderCurrent.objects.filter(imei=product.imei, shop=shop).exists():

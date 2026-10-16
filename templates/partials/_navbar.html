@@ -67,8 +67,8 @@
                     <hr>
                     <li><a class="dropdown-item" href="{% url 'daily_pay_card_rep_general' %}">Отчет по КЭО в Excel</a></li>
                     <li><a class="dropdown-item" href="{% url 'remainder_report' %}" >Отчет по остаткам на на точке на дату (rho)</a></li>
-                    <li><a class="dropdown-item" href="{% url 'remainder_report_rco' %}" >Отчет по остаткам на на точке на дату (rco)</a></li>
-                    <li><a class="dropdown-item" href="{% url 'remainder_report_ver_1' %}" >Текущие остатки</a></li>
+                    <li><a class="dropdown-item" href="{% url 'remainder_report_rco' %}" >Отчет по остаткам на на точке на текущую дату(rco)</a></li>
+                    <li><a class="dropdown-item" href="{% url 'remainder_report_ver_1' %}" >Отчет по остаткам старый (array)</a></li>
                     <li><a class="dropdown-item" href="{% url 'remainder_general_report' %}" >Отчет по остаткам общий по всем точкам</a></li>
                     <li><a class="dropdown-item" href="{% url 'remainder_report_dynamic' %}">Отчет по остаткам динамический</a></li>
                     <li><a class="dropdown-item" href="{% url 'item_report' %}">Отчет по движению ТМЦ</a></li>
@@ -165,8 +165,7 @@
                     <li><a class="dropdown-item" href="{% url 'cash_movement' %}">Перемещение ден.средств</a></li>
                     <li><a class="dropdown-item" href="{% url 'identifier_inventory' %}">Инвентаризация</a></li>
                     <hr>
-                     <li><a class="dropdown-item" href="{% url 'synchronize_rho_latest_with_rco' %}">Обновить текущие остатки</a></li>
-                     <li><a class="dropdown-item" href="{% url 'excel_list_rco' %}">Список для честного знака</a></li>
+                     <li><a class="dropdown-item" href="{% url 'synchronize_rho_latest_with_rco' %}">Синхронизировать rho и rco</a></li>
                     <hr>
                     <li><a class="dropdown-item" href="{% url 'ozon_product_create' %}" >Ввод нового/редактирование продукта на Озон (чехлы/стекла)</a></li>
                     <li><a class="dropdown-item" href="{% url 'getting_ozon_id' %}" >Получение Ozon_id</a></li>

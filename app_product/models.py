@@ -183,6 +183,7 @@ class RemainderCurrent(models.Model):
     current_remainder = models.IntegerField(default=0)
     av_price = models.IntegerField(default=0, null=True, blank=True)
     retail_price = models.IntegerField(default=0, null=True, blank=True)
+    wholesale_price = models.IntegerField(default=0, null=True, blank=True)
 
     class Meta:
         ordering = ('category', 'name',)  # sorting by date

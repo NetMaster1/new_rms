@@ -1337,6 +1337,107 @@ def salary_report(request):
         logout(request)
         return redirect('login')
 # =======================================================
+
+def remainder_report_excel(request, shop_id, category_id, date):
+    users = Group.objects.get(name="sales").user_set.all()
+    if request.user.is_authenticated:
+        date = date
+        shop = Shop.objects.get(id=shop_id)
+        category = ProductCategory.objects.get(id=category_id)
+        products = Product.objects.filter(category=category)
+        report_id = ReportTempId.objects.create()
+        for product in products:
+            imei = product.imei
+            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+                rho = RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest("created")
+                if rho.current_remainder > 0:
+                    if shop.retail == True:
+                        price = rho.retail_price
+                    elif shop.subdealer == True:
+                        price=rho.retail_price
+                    else:
+                        price = rho.wholesale_price
+                    report = ReportTemp.objects.create(
+                        report_id=report_id,
+                        name=rho.name,
+                        imei=rho.imei,
+                        end_remainder=rho.current_remainder,
+                        price=price,
+                    )
+        # report_query=ReportTemp.objects.filter(report_id=report_id)
+        # query = report_query.values("name", "imei", "end_remainder", "price")
+        # data=pd.DataFrame.from_records(query)
+        # data.to_excel(f'RemainderReport_{date}.xlsx', index=False)
+        # data.to_excel('RemainderReport.xlsx', index=False)
+
+        #=======================Uploading to Excel Module===================================
+        response = HttpResponse(content_type="application/ms-excel")
+        response["Content-Disposition"] = (
+            "attachment; filename=Remainder_" + str(datetime.date.today()) + ".xls"
+        )
+
+        wb = xlwt.Workbook(encoding="utf-8")
+        ws = wb.add_sheet("Remainder")
+
+        # sheet header in the first row
+        row_num = 0
+        font_style = xlwt.XFStyle()
+
+        columns = ["Name", "IMEI", "Quantity", "Price"]
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num, columns[col_num], font_style)
+
+        # sheet body, remaining rows
+        font_style = xlwt.XFStyle()
+        report_query = ReportTemp.objects.filter(report_id=report_id)
+        query = report_query.values_list("name", "imei", "end_remainder", "price")
+
+        for row in query:
+            row_num += 1
+            for col_num in range(len(row)):
+                ws.write(row_num, col_num, str(row[col_num]), font_style)
+        wb.save(response)
+        return response
+        #=======================End of Excel Upload Module================================
+
+        for i in report_query:
+            i.delete()
+        report_id.delete()
+        # if request.user in users:
+        #     return redirect ('sale_interface')
+        # else:
+        #     return redirect("log")
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+def remainder_list(request, shop_id, category_id):
+    shop = Shop.objects.get(id=shop_id)
+    category = ProductCategory.objects.get(id=category_id)
+    # remainders=RemainderCurrent.objects.filter(shop=shop, category=category).order_by('name').values_list()
+    # remainders=RemainderCurrent.objects.filter(shop=shop, category=category).order_by('name')
+    remainders = (
+        RemainderCurrent.objects.filter(shop=shop, category=category)
+        .order_by("name")
+        .values()
+    )
+    print("##########################")
+    print(remainders)
+    print("##########################")
+    df = pd.DataFrame(remainders)
+    print(df.shape)  # displays the number of rows & columns
+    print("##########################")
+    print(df)
+    print("##########################")
+    # df.to_excel('data.xlsx')
+    context = {
+        #'remainders':remainders,
+        "df": df.to_html(),
+        "category": category,
+    }
+    return render(request, "reports/remainder_report_output.html", context)
+
+#======================REMAINDER REPORTS: 1:rho; 2:rco; 3:old version via array(working)
 def remainder_report(request):
     if request.user.is_authenticated:
         users = Group.objects.get(name="sales").user_set.all()
@@ -1371,6 +1472,47 @@ def remainder_report(request):
         auth.logout(request)
         return redirect("login")
 
+def remainder_report_output(request, shop_id, category_id, date):
+    if request.user.is_authenticated:
+        messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
+        date = date
+        shop = Shop.objects.get(id=shop_id)
+        category = ProductCategory.objects.get(id=category_id)
+        array = []
+        #products = Product.objects.filter(category=category).order_by("name").iterator(chunk_size=10) # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        products = Product.objects.filter(category=category).order_by('name')# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        n=0
+        report_id=Identifier.objects.create()
+        for product in products:
+            imei = product.imei
+            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+                rho=RemainderHistory.objects.filter(imei=imei, shop=shop, created__lte=date).latest('created')
+                if rho.current_remainder != 0:
+                    n+=1
+                    print(f'{n}: {rho}')
+                    report_item=RemainderOutputReport.objects.create (
+                        report_id=report_id,
+                        number=n,
+                        imei=rho.imei,
+                        current_remainder=rho.current_remainder,
+                        retail_price=rho.retail_price,
+                        name=rho.name
+
+                    )
+        report=RemainderOutputReport.objects.filter(report_id=report_id.id).order_by("number")
+        context = {
+            "date": date, 
+            "shop": shop, 
+            "report": report,
+            #"array": array, 
+            #"arr_length": arr_length,
+            "category": category
+            }
+        return render(request, "reports/remainder_report_output.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
 def remainder_report_rco(request):
     if request.user.is_authenticated:
         users = Group.objects.get(name="sales").user_set.all()
@@ -1388,8 +1530,8 @@ def remainder_report_rco(request):
                 shop = Shop.objects.get(id=session_shop)
             # ==============Time Module=========================================
             date = datetime.date.today()
-            tdelta_1 = datetime.timedelta(days=1)
-            date = date + tdelta_1
+            # tdelta_1 = datetime.timedelta(days=1)
+            # date = date + tdelta_1
             return redirect("remainder_report_output_rco", shop.id, category.id, date)
         else:
             context = {
@@ -1397,179 +1539,6 @@ def remainder_report_rco(request):
                 "categories": categories,
             }
             return render(request, "reports/remainder_report_rco.html", context)
-    else:
-        auth.logout(request)
-        return redirect("login")
-
-def remainder_report_ver_1(request):
-    if request.user.is_authenticated:
-        users = Group.objects.get(name="sales").user_set.all()
-        group = Group.objects.get(name="admin").user_set.all()
-        categories = ProductCategory.objects.all()
-        shops = Shop.objects.all()
-        if request.method == "POST":
-            category = request.POST["category"]
-            category = ProductCategory.objects.get(id=category)
-            if request.user in group:
-                shop = request.POST["shop"]
-                shop = Shop.objects.get(id=shop)
-            else:
-                session_shop = request.session["session_shop"]
-                shop = Shop.objects.get(id=session_shop)
-
-            return redirect("remainder_report_output_ver_1", shop.id, category.id)
-        else:
-            context = {
-                "shops": shops,
-                "categories": categories,
-            }
-            return render(request, "reports/remainder_report_ver_1.html", context)
-
-    else:
-        auth.logout(request)
-        return redirect("login")
-
-def remainder_report_output_ver_1(request, shop_id, category_id):
-    if request.user.is_authenticated:
-        shop = Shop.objects.get(id=shop_id)
-        category = ProductCategory.objects.get(id=category_id)
-        current_remainders=RemainderCurrent.objects.filter(category=category, shop=shop)
-        for item in current_remainders:
-            print(item.name)
-        context = {
-        
-            "shop": shop, 
-            "category": category,
-            "current_remainders": current_remainders,
-            }
-        return render(request, "reports/remainder_report_output_ver_1.html", context)
-    else:
-        auth.logout(request)
-        return redirect("login")
-
-def remainder_report_excel(request, shop_id, category_id, date):
-    users = Group.objects.get(name="sales").user_set.all()
-    if request.user.is_authenticated:
-        date = date
-        shop = Shop.objects.get(id=shop_id)
-        category = ProductCategory.objects.get(id=category_id)
-        products = Product.objects.filter(category=category)
-        report_id = ReportTempId.objects.create()
-        for product in products:
-            imei = product.imei
-            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
-                rho = RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest("created")
-                if rho.current_remainder > 0:
-                    if shop.retail == True:
-                        price = rho.retail_price
-                    elif shop.subdealer == True:
-                        price=rho.retail_price
-                    else:
-                        price = rho.wholesale_price
-                    report = ReportTemp.objects.create(
-                        report_id=report_id,
-                        name=rho.name,
-                        imei=rho.imei,
-                        end_remainder=rho.current_remainder,
-                        price=price,
-                    )
-        # report_query=ReportTemp.objects.filter(report_id=report_id)
-        # query = report_query.values("name", "imei", "end_remainder", "price")
-        # data=pd.DataFrame.from_records(query)
-        # data.to_excel(f'RemainderReport_{date}.xlsx', index=False)
-        # data.to_excel('RemainderReport.xlsx', index=False)
-
-#=======================Uploading to Excel Module===================================
-        response = HttpResponse(content_type="application/ms-excel")
-        response["Content-Disposition"] = (
-            "attachment; filename=Remainder_" + str(datetime.date.today()) + ".xls"
-        )
-
-        wb = xlwt.Workbook(encoding="utf-8")
-        ws = wb.add_sheet("Remainder")
-
-        # sheet header in the first row
-        row_num = 0
-        font_style = xlwt.XFStyle()
-
-        columns = ["Name", "IMEI", "Quantity", "Price"]
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num, columns[col_num], font_style)
-
-        # sheet body, remaining rows
-        font_style = xlwt.XFStyle()
-        report_query = ReportTemp.objects.filter(report_id=report_id)
-        query = report_query.values_list("name", "imei", "end_remainder", "price")
-
-        for row in query:
-            row_num += 1
-            for col_num in range(len(row)):
-                ws.write(row_num, col_num, str(row[col_num]), font_style)
-        wb.save(response)
-        return response
-#=======================End of Excel Upload Module================================
-
-        for i in report_query:
-            i.delete()
-        report_id.delete()
-        # if request.user in users:
-        #     return redirect ('sale_interface')
-        # else:
-        #     return redirect("log")
-    else:
-        auth.logout(request)
-        return redirect("login")
-
-def remainder_report_output(request, shop_id, category_id, date):
-    if request.user.is_authenticated:
-        messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
-        date = date
-        shop = Shop.objects.get(id=shop_id)
-        category = ProductCategory.objects.get(id=category_id)
-        array = []
-        #products = Product.objects.filter(category=category).order_by("name").iterator(chunk_size=10) # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
-        products = Product.objects.filter(category=category).order_by('name')# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
-        n=0
-        report_id=Identifier.objects.create()
-        for product in products:
-            imei = product.imei
-            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date, current_remainder__gt=0).exists():
-                #rhos=RemainderHistory.objects.filter(imei=imei, shop=shop, created__lte=date,).values_list( 'imei', 'name', 'current_remainder', 'retail_price', 'shop', 'created',)
-                rhos=RemainderHistory.objects.filter(imei=imei, shop=shop, created__lte=date,)
-                for i in rhos:
-                    print (i.imei)
-                rho=rhos.latest('created')
-                print(rho)
-                if rho.current_remainder > 0:
-                    n+=1
-                    print(f'{n}: {rho}')
-                    report_item=RemainderOutputReport.objects.create (
-                        report_id=report_id,
-                        number=n,
-                        imei=rho.imei,
-                        current_remainder=rho.current_remainder,
-                        retail_price=rho.retail_price,
-                        name=rho.name
-
-                    )
-        report=RemainderOutputReport.objects.filter(report_id=report_id.id).order_by("number")
-        #====================saving rhos in array
-        #             array.append(rho)
-
-        # arr_length=len(array)
-        # print(arr_length)
-        # for arr, i in zip(array, range(arr_length)):
-        #     arr.number = i + 1
-        #     arr.save()
-        context = {
-            "date": date, 
-            "shop": shop, 
-            "report": report,
-            #"array": array, 
-            #"arr_length": arr_length,
-            "category": category
-            }
-        return render(request, "reports/remainder_report_output.html", context)
     else:
         auth.logout(request)
         return redirect("login")
@@ -1589,6 +1558,7 @@ def remainder_report_output_rco(request, shop_id, category_id, date):
  
         context = {
             "shop" : shop,
+            "date" : date,
             # "rcos" : rcos,
             # "counter": counter
             "zipped_data": zip(counter, rcos)
@@ -1597,6 +1567,256 @@ def remainder_report_output_rco(request, shop_id, category_id, date):
     else:
         auth.logout(request)
         return redirect("login")
+
+def remainder_report_ver_1(request):
+    if request.user.is_authenticated:
+        users = Group.objects.get(name="sales").user_set.all()
+        group = Group.objects.get(name="admin").user_set.all()
+        categories = ProductCategory.objects.all()
+        shops = Shop.objects.all()
+        if request.method == "POST":
+            category = request.POST["category"]
+            category = ProductCategory.objects.get(id=category)
+            if request.user in group:
+                shop = request.POST["shop"]
+                shop = Shop.objects.get(id=shop)
+            else:
+                session_shop = request.session["session_shop"]
+                shop = Shop.objects.get(id=session_shop)
+            # ==============Time Module=========================================
+            date = request.POST.get("date", False)
+            if date:
+                date = datetime.datetime.strptime(date, "%Y-%m-%d")
+            else:
+                date = datetime.date.today()
+            tdelta_1 = datetime.timedelta(days=1)
+            date = date + tdelta_1
+            return redirect("remainder_report_output_ver_1", shop.id, category.id, date)
+        else:
+            context = {
+                "shops": shops,
+                "categories": categories,
+            }
+            return render(request, "reports/remainder_report_ver_1.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+def remainder_report_output_ver_1(request, shop_id, category_id, date):
+    if request.user.is_authenticated:
+        messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
+        date = date
+        shop = Shop.objects.get(id=shop_id)
+        category = ProductCategory.objects.get(id=category_id)
+        array = []
+        #products = Product.objects.filter(category=category).order_by("name").iterator(chunk_size=10) # order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        products = Product.objects.filter(category=category).order_by("name")# order_by name lets us created an array sorted in alphabeticatl order for further processing as a table
+        n=0
+        for product in products:
+            imei = product.imei
+            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+                rho=RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest('created')
+                if rho.current_remainder != 0:
+                    n+=1
+                    print('')
+                    print('=========================')
+                    print(f'{n}: {rho.imei}; {rho.name}; Кол-во: {rho.current_remainder} {rho.created}')
+                    print('=========================')
+                    print('')
+                    array.append(rho)
+        arr_length=len(array)
+        print(arr_length)
+        for arr, i in zip(array, range(arr_length)):
+            arr.number = i + 1
+            arr.save()
+        context = {
+            "date": date, 
+            "shop": shop, 
+            "array": array, 
+            #"arr_length": arr_length,
+            "category": category
+            }
+        return render(request, "reports/remainder_report_output_ver_1.html", context)
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+
+def remainder_report_dynamic(request):
+    products = Product.objects.all()
+    categories = ProductCategory.objects.all()
+    shops = Shop.objects.all()
+    if request.method == "POST":
+        report_id = ReportTempId.objects.create()
+        #date indicates 00.00 (the beginning of the date indicated)
+        date_start = request.POST["date_start"]
+        date_start = datetime.datetime.strptime(date_start, "%Y-%m-%d")
+        date_end = request.POST["date_end"]
+        date_end = datetime.datetime.strptime(date_end, "%Y-%m-%d")
+        date_end = date_end + timedelta(days=1)
+        category = request.POST["category"]
+        shop = request.POST["shop"]
+        shop = Shop.objects.get(id=shop)
+        products = Product.objects.filter(category=category)
+        i=0
+        for product in products:
+            #checking rhos before the period indicated
+            if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date_start).exists():
+                rho_before_latest=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date_start).latest('created')
+                if rho_before_latest.current_remainder > 0:
+                    remainder_start=rho_before_latest.current_remainder
+                else:
+                    remainder_start=0
+            else:
+                remainder_start=0
+            #checking rhos during the period indicated
+            if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__gt=date_start, created__lt=date_end).exists():
+                queryset=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__gt=date_start, created__lt=date_end)
+                q_in = 0
+                q_out = 0
+                for qs in queryset:
+                    q_in += qs.incoming_quantity
+                    q_out += qs.outgoing_quantity
+                remainder_end = remainder_start - q_out + q_in
+            else:
+                remainder_end=remainder_start
+                q_in=0
+                q_out=0
+            if remainder_start == 0 and q_in==0 and q_out==0:
+                pass
+            else: 
+                report = ReportTemp.objects.create(
+                    report_id=report_id,
+                    name=product.name,
+                    imei=product.imei,
+                    quantity_in=q_in,
+                    quantity_out=q_out,
+                    initial_remainder=remainder_start,
+                    end_remainder=remainder_end,
+                )        
+        reports = ReportTemp.objects.filter(report_id=report_id).order_by('name')
+        context = {
+            "reports": reports,
+            "shops": shops,
+            "categories": categories,
+            "date_start": date_start,
+            "date_end": date_end,
+            "shop": shop,
+        }
+        return render(request, "reports/remainder_report_dynamic.html", context)
+    context = {
+        "shops": shops,
+        "categories": categories,
+    }
+    return render(request, "reports/remainder_report_dynamic.html", context)
+
+def item_report(request):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            imei = request.POST["imei"]
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            imei = request.POST["imei"]
+            if '/' in imei:
+                imei=imei.replace('/', '_')
+            imei=imei.replace(" ","")#getting rid of spaces.
+            try:
+                product=Product.objects.get(imei=imei)
+                queryset_list = RemainderHistory.objects.filter(imei=imei).order_by("created")
+                if start_date:
+                    queryset_list = queryset_list.filter(created__gte=start_date).order_by('created')
+                if end_date:
+                    # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
+                    end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+                    # adding time delta to cover docs created after year:month:day:00:00 till the end of the day 23:59
+                    tdelta = datetime.timedelta(days=1)
+                    end_date = end_date + tdelta
+                    queryset_list = queryset_list.filter(created__lte=end_date).order_by('created')
+
+                context = {
+                    "queryset_list": queryset_list,
+                    "product": product,
+                }
+                return render(request, "reports/item_report.html", context)
+            except:
+                messages.error(request, "Наименование с таким IMEI не содержится в базе данных.")
+                return redirect("item_report")
+        else:
+            return render(request, "reports/item_report.html")
+    else:
+        auth.logout(request)
+        return redirect("login")
+
+def remainder_general_report (request):
+    if request.user.is_authenticated:
+        transfer= DocumentType.objects.get(name='Перемещение ТМЦ')
+        users = Group.objects.get(name="sales").user_set.all()
+        group = Group.objects.get(name="admin").user_set.all()
+        categories = ProductCategory.objects.all()
+        shops = Shop.objects.all()
+        if request.method == "POST":
+            if request.user in group:
+                category = request.POST["category"]
+                category = ProductCategory.objects.get(id=category)
+                # ==============Time Module=========================================
+                date = datetime.date.today()
+                tdelta_1 = datetime.timedelta(days=1)
+                date = date + tdelta_1
+
+                rcos=RemainderCurrent.objects.filter(category=category)
+            
+        #==========================Convert to Excel module=========================================
+                response = HttpResponse(content_type="application/ms-excel")
+                response["Content-Disposition"] = (
+                    "attachment; filename=RemainderRep_" + str(date) + ".xls"
+                )
+
+
+                wb = xlwt.Workbook(encoding="utf-8")
+                ws = wb.add_sheet('Period')
+
+                # sheet header in the first row
+                row_num = 0
+                font_style = xlwt.XFStyle()
+                columns = ["Точка", "Модель", 'IMEI', 'Кол-во', 'Опт', 'Розница']
+                for col_num in range(len(columns)):
+                    ws.write(row_num, col_num + 1, columns[col_num], font_style)
+                
+                # sheet body, remaining rows
+                font_style = xlwt.XFStyle()
+
+                row_num = 1
+                for item in rcos:
+                    col_num = 1
+                    ws.write(row_num, col_num, item.shop.name, font_style)
+                    col_num +=1
+                    ws.write(row_num, col_num, item.name, font_style)
+                    col_num +=1
+                    ws.write(row_num, col_num, item.imei, font_style)
+                    col_num +=1
+                    ws.write(row_num, col_num, item.current_remainder, font_style)
+                    col_num +=1
+                    ws.write(row_num, col_num, item.wholesale_price, font_style)
+                    col_num +=1
+                    ws.write(row_num, col_num, item.retail_price, font_style)
+                    row_num +=1
+
+                wb.save(response)
+                return response
+        #================================End of Excel Module========================================
+            else:
+                logout(request)
+                return redirect('login')
+        else:
+            context = {
+                'categories': categories
+            }
+            return render (request, 'reports/remainder_general_report.html', context)
+
+
+    else:
+        logout(request)
+        return redirect('login')
 
 #@app.task
 # def remainder_report_output(request, shop_id, category_id, date):
@@ -1727,223 +1947,6 @@ def remainder_report_output_celery_view(request, shop_id, category_id, date):
 #         auth.logout(request)
 #         return redirect("login")
 
-def remainder_report_dynamic(request):
-    products = Product.objects.all()
-    categories = ProductCategory.objects.all()
-    shops = Shop.objects.all()
-    if request.method == "POST":
-        report_id = ReportTempId.objects.create()
-        #date indicates 00.00 (the beginning of the date indicated)
-        date_start = request.POST["date_start"]
-        date_start = datetime.datetime.strptime(date_start, "%Y-%m-%d")
-        date_end = request.POST["date_end"]
-        date_end = datetime.datetime.strptime(date_end, "%Y-%m-%d")
-        date_end = date_end + timedelta(days=1)
-        category = request.POST["category"]
-        shop = request.POST["shop"]
-        shop = Shop.objects.get(id=shop)
-        products = Product.objects.filter(category=category)
-        i=0
-        for product in products:
-            #checking rhos before the period indicated
-            if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date_start).exists():
-                rho_before_latest=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date_start).latest('created')
-                if rho_before_latest.current_remainder > 0:
-                    remainder_start=rho_before_latest.current_remainder
-                else:
-                    remainder_start=0
-            else:
-                remainder_start=0
-            #checking rhos during the period indicated
-            if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__gt=date_start, created__lt=date_end).exists():
-                queryset=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__gt=date_start, created__lt=date_end)
-                q_in = 0
-                q_out = 0
-                for qs in queryset:
-                    q_in += qs.incoming_quantity
-                    q_out += qs.outgoing_quantity
-                remainder_end = remainder_start - q_out + q_in
-            else:
-                remainder_end=remainder_start
-                q_in=0
-                q_out=0
-            if remainder_start == 0 and q_in==0 and q_out==0:
-                pass
-            else: 
-                report = ReportTemp.objects.create(
-                    report_id=report_id,
-                    name=product.name,
-                    imei=product.imei,
-                    quantity_in=q_in,
-                    quantity_out=q_out,
-                    initial_remainder=remainder_start,
-                    end_remainder=remainder_end,
-                )        
-        reports = ReportTemp.objects.filter(report_id=report_id).order_by('name')
-        context = {
-            "reports": reports,
-            "shops": shops,
-            "categories": categories,
-            "date_start": date_start,
-            "date_end": date_end,
-            "shop": shop,
-        }
-        return render(request, "reports/remainder_report_dynamic.html", context)
-    context = {
-        "shops": shops,
-        "categories": categories,
-    }
-    return render(request, "reports/remainder_report_dynamic.html", context)
-
-def remainder_general_report (request):
-    if request.user.is_authenticated:
-        transfer= DocumentType.objects.get(name='Перемещение ТМЦ')
-        users = Group.objects.get(name="sales").user_set.all()
-        group = Group.objects.get(name="admin").user_set.all()
-        categories = ProductCategory.objects.all()
-        shops = Shop.objects.all()
-        if request.method == "POST":
-            if request.user in group:
-                category = request.POST["category"]
-                category = ProductCategory.objects.get(id=category)
-                # ==============Time Module=========================================
-                date = request.POST["date"]
-                date = datetime.datetime.strptime(date, "%Y-%m-%d")
-                tdelta_1 = datetime.timedelta(days=1)
-                date = date + tdelta_1
-                products=Product.objects.filter(category=category)
-                arr =[]
-                for product in products:
-                    imei=product.imei
-                    if RemainderHistory.objects.filter(imei=imei, created__lte=date).exists():
-                        rho = RemainderHistory.objects.filter(imei=imei, created__lte=date).latest("created")
-                        if rho.rho_type == transfer: #перемещение создает два rho с одинаковым временем и нам нужно их разделить.
-                            document=rho.document
-                            shop_receiver=document.shop_receiver
-                            try:
-                                rho=RemainderHistory.objects.get(document=document, imei = imei, shop=shop_receiver)
-                            except:
-                                string=f'{imei} не уникален в документе #{document} от {document.created}.'
-                                messages.error(request,  string)
-                                return redirect("remainder_general_report")
-                           
-                        if rho.current_remainder > 0:
-                            arr.append(rho)
-        #==========================Convert to Excel module=========================================
-                response = HttpResponse(content_type="application/ms-excel")
-                response["Content-Disposition"] = (
-                    "attachment; filename=RemainderRep_" + str(date) + ".xls"
-                )
-
-                # str(datetime.date.today())+'.xls'
-
-                wb = xlwt.Workbook(encoding="utf-8")
-                ws = wb.add_sheet('Period')
-
-                # sheet header in the first row
-                row_num = 0
-                font_style = xlwt.XFStyle()
-                columns = ["Модель", 'IMEI', 'Кол-во', 'Опт', 'Розница']
-                for col_num in range(len(columns)):
-                    ws.write(row_num, col_num + 1, columns[col_num], font_style)
-                
-                # sheet body, remaining rows
-                font_style = xlwt.XFStyle()
-
-                row_num = 1
-                for item in arr:
-                    col_num = 1
-                    ws.write(row_num, col_num, item.name, font_style)
-                    col_num +=1
-                    ws.write(row_num, col_num, item.imei, font_style)
-                    col_num +=1
-                    ws.write(row_num, col_num, item.current_remainder, font_style)
-                    col_num +=1
-                    ws.write(row_num, col_num, item.wholesale_price, font_style)
-                    col_num +=1
-                    ws.write(row_num, col_num, item.retail_price, font_style)
-                    row_num +=1
-
-                wb.save(response)
-                return response
-        #================================End of Excel Module========================================
-            else:
-                logout(request)
-                return redirect('login')
-        else:
-            context = {
-                'categories': categories
-            }
-            return render (request, 'reports/remainder_general_report.html', context)
-
-
-    else:
-        logout(request)
-        return redirect('login')
-
-def remainder_list(request, shop_id, category_id):
-    shop = Shop.objects.get(id=shop_id)
-    category = ProductCategory.objects.get(id=category_id)
-    # remainders=RemainderCurrent.objects.filter(shop=shop, category=category).order_by('name').values_list()
-    # remainders=RemainderCurrent.objects.filter(shop=shop, category=category).order_by('name')
-    remainders = (
-        RemainderCurrent.objects.filter(shop=shop, category=category)
-        .order_by("name")
-        .values()
-    )
-    print("##########################")
-    print(remainders)
-    print("##########################")
-    df = pd.DataFrame(remainders)
-    print(df.shape)  # displays the number of rows & columns
-    print("##########################")
-    print(df)
-    print("##########################")
-    # df.to_excel('data.xlsx')
-    context = {
-        #'remainders':remainders,
-        "df": df.to_html(),
-        "category": category,
-    }
-    return render(request, "reports/remainder_report_output.html", context)
-
-# ======================================================================
-def item_report(request):
-    if request.user.is_authenticated:
-        if request.method == "POST":
-            imei = request.POST["imei"]
-            start_date = request.POST["start_date"]
-            end_date = request.POST["end_date"]
-            imei = request.POST["imei"]
-            if '/' in imei:
-                imei=imei.replace('/', '_')
-            imei=imei.replace(" ","")#getting rid of spaces.
-            try:
-                product=Product.objects.get(imei=imei)
-                queryset_list = RemainderHistory.objects.filter(imei=imei).order_by("created")
-                if start_date:
-                    queryset_list = queryset_list.filter(created__gte=start_date).order_by('created')
-                if end_date:
-                    # converting HTML date format (2021-07-08T01:05) to django format (2021-07-10 01:05:00)
-                    end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-                    # adding time delta to cover docs created after year:month:day:00:00 till the end of the day 23:59
-                    tdelta = datetime.timedelta(days=1)
-                    end_date = end_date + tdelta
-                    queryset_list = queryset_list.filter(created__lte=end_date).order_by('created')
-
-                context = {
-                    "queryset_list": queryset_list,
-                    "product": product,
-                }
-                return render(request, "reports/item_report.html", context)
-            except:
-                messages.error(request, "Наименование с таким IMEI не содержится в базе данных.")
-                return redirect("item_report")
-        else:
-            return render(request, "reports/item_report.html")
-    else:
-        auth.logout(request)
-        return redirect("login")
 
 # ====================================================================
 def payment_report (request):

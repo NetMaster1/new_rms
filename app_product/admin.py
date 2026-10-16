@@ -37,8 +37,8 @@ class RemainderHistoryAdmin(admin.ModelAdmin):
     #         return ('imei',)
 
 class RemainderCurrentAdmin(admin.ModelAdmin):
-    list_display = ('updated', 'shop', 'name', 'imei', 'current_remainder', 'retail_price', 'category')  
-    list_filter = (("updated", DateRangeFilterBuilder()), 'shop', )
+    list_display = ('updated', 'shop', 'name', 'imei', 'current_remainder', 'retail_price', 'wholesale_price', 'category')  
+    list_filter = (("updated", DateRangeFilterBuilder()), 'shop', 'category' )
     ordering = ('-updated',)
     search_fields = ('imei', )
     list_editable= ('current_remainder',)
