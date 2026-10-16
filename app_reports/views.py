@@ -1550,7 +1550,6 @@ def remainder_report_output_rco(request, shop_id, category_id, date):
         category = ProductCategory.objects.get(id=category_id)
         counter=[]
         n=0
-        report_id=Identifier.objects.create()
         rcos=RemainderCurrent.objects.filter(shop=shop, category=category).order_by("name")
         for rco in rcos:
             n+=1
