@@ -25,7 +25,7 @@
             </div>
 
             <div class="border rounded p-3">
-            <form action="{% url 'remainder_report_rco' %}" method="POST" class='clear_storage_on_submit'>
+            <form action="{% url 'remainder_report_rco' %}" method="POST" class='clear_storage_on_submit' id="report_form">
                 {% csrf_token %}
 
                 <div class="row form-row m-auto">
@@ -61,7 +61,7 @@
                         <input type="reset" value="Сбросить" class="btn btn-block btn-outline-dark clear_storage">
                         </div>
                         <div class="row m-1">
-                        <input type="submit" value="Применить" class="btn btn-block btn-outline-dark">
+                        <input type="submit" value="Применить" class="btn btn-block btn-outline-dark" id="send_button">
                         </div>
                         <div class="row m-1">
                         <a href="{% url 'close_remainder_report' %}"  class="btn btn-block btn-outline-dark">
@@ -82,5 +82,23 @@
 </div>
 </div>
 </div>
+
+<script>
+
+    console.log('script starts')
+
+    const report_form = document.querySelector('#report_form')
+    const send_button = document.querySelector('#send_button')
+
+    report_form.addEventListener('submit', blockButton)
+    function blockButton() {
+        send_button.disabled = true;
+    }
+
+    console.log('script ends')
+</script>
+
+
+
 
 {%endblock%}

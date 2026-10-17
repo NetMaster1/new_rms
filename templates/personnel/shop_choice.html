@@ -12,63 +12,54 @@
 <div class="page_location">
 <div class="shop_choice_form border rounded">
     <div class="col m-3">
-        <form action="#" method='POST'>
+        <form action="#" method='POST' id="choice_form">
             {% csrf_token %}
 
-                <div class="form-row mb-2">
+            <div class="form-row mb-2">
                 <select name="shop" id="shop" class='form-control' required>
                     <option value="">Выберите ТТ, с которой продается ТМЦ</option>
                     {% for shop in shops %}
                     <option value="{{shop.id}}">{{shop.name}}</option>
                     {% endfor %}
                 </select>
-                </div>
-<!--        
+            </div>
+
+            <div class="row m-auto mb-2">
+                <input type="submit" value="Выбрать" class="btn btn-outline-dark btn-block" id="choice_button"> 
+            </div>
+
+            <div class="row m-auto mb-2">
                 {% for group in request.user.groups.all %}
                 {% if group.name == 'admin' %}
-
-                <div class="row mt-3">
-                <label for="dateTIme">Не выбирайте дату, если хотите совершить продажу текущим временем</label>
-                </div>
-
-                <div class="form-row">
-                    <div class="col">
-                        <input type="datetime-local" class='form-control' id="datеTime" name="datеTime"><br>
-                    </div>
-                </div>
+                        <a href="{% url 'log' %}" class="btn btn-block btn-outline-dark">
+                            Закрыть
+                        </a>
+                {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-block btn-outline-dark">
+                            Закрыть
+                        </a>
                 {% endif %}
-                {% endfor%} -->
-
-            <div class="row m-auto mb-2">
-                <input type="submit" value="Выбрать" class="btn btn-outline-dark btn-block"> 
+                {% endfor %}
             </div>
-
-
-            <div class="row m-auto mb-2">
-
-    {% for group in request.user.groups.all %}
-    {% if group.name == 'admin' %}
-            <a href="{% url 'log' %}" class="btn btn-block btn-outline-dark">
-                Закрыть
-            </a>
-    {% else %}
-            <a href="{% url 'login' %}" class="btn btn-block btn-outline-dark">
-                Закрыть
-            </a>
-    {% endif %}
-    {% endfor %}
-
-
-
-            </div>
-        
-
         </form>
+
+
     </div>
 </div>
 </div>
 </div>
 </div>
 
+<script>
+    const choice_form = document.querySelector('#choice_form')
+    const choice_button = document.querySelector('#choice_button')
+
+    choice_form.addEventListener('submit', blockButton)
+    function blockButton() {
+        choice_button.disabled = true;
+    } 
+
+
+</script>
 
 {% endblock %}
