@@ -262,7 +262,7 @@ class DailyActivation (models.Model):
 class RemainderOutputReport (models.Model):
     report_id = models.ForeignKey(Identifier, on_delete=models.DO_NOTHING, null=True)
     number = models.IntegerField(null=True)
-    name = models.CharField(max_length=50, null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
     imei = models.CharField(max_length=50, null=True, blank=True)
     retail_price = models.IntegerField(null=True)
     current_remainder = models.IntegerField(null=True)
