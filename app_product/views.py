@@ -259,10 +259,10 @@ def search(request):
         else:
             messages.error(request, "УУУУУПС. Такое наименование не найдено")
             return redirect("search")
-    context = {
-                "remainders_array_final": rcos,
-            }
-    return render(request, "documents/search_results.html", context)
+        context = {
+                    "remainders_array_final": rcos,
+                }
+        return render(request, "documents/search_results.html", context)
 
     else:
         return render(request, "documents/search.html")
