@@ -241,29 +241,28 @@ def sale_interface (request):
         return redirect ('login')
 
 def search(request):
-    users=Group.objects.get(name="sales").user_set.all()
+    #users=Group.objects.get(name="sales").user_set.all()
     #admins=Group.objects.get(name="admin").user_set.all()
     if request.method == "POST":
         keyword = request.POST["keyword"]
-        if request.user in users:
-            session_shop=request.session['session_shop']
-            #session_shop=request.session.get['session_shop']
-            shop=Shop.objects.get(id=session_shop)
-            if RemainderCurrent.objects.filter(name__icontains=keyword, shop=shop).exists():
-                rcos=RemainderCurrent.objects.filter(name__icontains=keyword, shop=shop)
-            else:
-                messages.error(request, "УУУУУПС. Такое наименование не найдено")
-                return redirect("search")
+        # if request.user in users:
+        #     session_shop=request.session['session_shop']#рабочий метод
+        #     #shop=Shop.objects.get(id=session_shop)
+        #     if RemainderCurrent.objects.filter(name__icontains=keyword, shop=shop).exists():
+        #         rcos=RemainderCurrent.objects.filter(name__icontains=keyword, shop=shop)
+        #     else:
+        #         messages.error(request, "УУУУУПС. Такое наименование не найдено")
+        #         return redirect("search")
+        # else:
+        if RemainderCurrent.objects.filter(name__icontains=keyword).exists():
+            rcos=RemainderCurrent.objects.filter(name__icontains=keyword)   
         else:
-            if RemainderCurrent.objects.filter(name__icontains=keyword).exists():
-                rcos=RemainderCurrent.objects.filter(name__icontains=keyword)   
-            else:
-                messages.error(request, "УУУУУПС. Такое наименование не найдено")
-                return redirect("search")
-        context = {
-                    "remainders_array_final": rcos,
-                }
-        return render(request, "documents/search_results.html", context)
+            messages.error(request, "УУУУУПС. Такое наименование не найдено")
+            return redirect("search")
+    context = {
+                "remainders_array_final": rcos,
+            }
+    return render(request, "documents/search_results.html", context)
 
     else:
         return render(request, "documents/search.html")
