@@ -92,7 +92,7 @@ def delete_zero_rco (request):
                 "categories": categories
                 }
             return render(request, "service/delete_zero_rco_page.html", context)
-    
+
 def excel_list_rco(request):
     if request.user.is_authenticated:
         #category=ProductCategory.objects.get(name="Сим_карты")
