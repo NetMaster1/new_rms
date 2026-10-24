@@ -5164,7 +5164,7 @@ def transfer_auto (request):
                 if RemainderHistory.objects.filter(imei=rho.imei, shop=rho.shop).exists():
                     rho_latest=RemainderHistory.objects.filter(imei=rho.imei, shop=rho.shop).latest('created')
                     if RemainderCurrent.objects.filter(imei=rho.imei, shop=rho.shop).exists():
-                        rco=RemainderCurrent.objects.get(imei=rho.shop, shop=rho.shop)
+                        rco=RemainderCurrent.objects.get(imei=rho.imei, shop=rho.shop)
                         if rho_latest.current_remainder == 0:
                             rco.delete()
                         else:
