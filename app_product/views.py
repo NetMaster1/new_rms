@@ -5363,7 +5363,7 @@ def enter_new_product_recognition(request, identifier_id):
                 imei=imei, 
                 ean=ean, 
                 category=category)
-            return redirect("recognition", identifier.id)
+        return redirect("recognition", identifier.id)
     else:
         return redirect("recognition", identifier.id)
 
