@@ -5348,24 +5348,24 @@ def enter_new_product_recognition(request, identifier_id):
         if Product.objects.filter(imei=imei).exists():
             messages.error(request,"Наименование в базу данных не введено, так как IMEI не является уникальным",)
             return redirect("recognition", identifier.id)
-        if not ean:
-            ean=imei
-        if SKU.objects.filter(ean=ean).exists():
-            sku=SKU.objects.get(ean=ean)
-            ean=sku.ean
         else:
-            sku=SKU.objects.create(
-                category=category,
-                ean=ean,
-                name=name
-            )
+            if not ean:
+                ean=imei
+            if SKU.objects.filter(ean=ean).exists():
+                sku=SKU.objects.get(ean=ean)
+            else:
+                sku=SKU.objects.create(
+                    category=category,
+                    ean=ean,
+                    name=name
+                )
             product = Product.objects.create(
-                name=name, 
+                name=sku.name, 
                 imei=imei, 
-                ean=ean, 
-                category=category
+                ean=sku.ean, 
+                category=sku.category
             )
-        return redirect("recognition", identifier.id)
+            return redirect("recognition", identifier.id)
     else:
         return redirect("recognition", identifier.id)
 
