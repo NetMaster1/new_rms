@@ -5352,6 +5352,7 @@ def enter_new_product_recognition(request, identifier_id):
             ean=imei
         if SKU.objects.filter(ean=ean).exists():
             sku=SKU.objects.get(ean=ean)
+            ean=sku.ean
         else:
             sku=SKU.objects.create(
                 category=category,
@@ -5362,7 +5363,8 @@ def enter_new_product_recognition(request, identifier_id):
                 name=name, 
                 imei=imei, 
                 ean=ean, 
-                category=category)
+                category=category
+            )
         return redirect("recognition", identifier.id)
     else:
         return redirect("recognition", identifier.id)
