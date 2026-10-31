@@ -12,7 +12,6 @@ urlpatterns = [
     path ('close_unposted_document/<int:document_id>', views.close_unposted_document, name='close_unposted_document'),
     path ('close_edited_document/<int:document_id>', views.close_edited_document, name='close_edited_document'),
     path ('close_without_save/<int:identifier_id>', views.close_without_save, name='close_without_save'),
-    path ('close_without_save/<int:identifier_id>', views.close_without_save, name='close_without_save'),
     
     #==================Remainde Input=====================================
     path ('remainder_input', views.remainder_input, name='remainder_input'),
