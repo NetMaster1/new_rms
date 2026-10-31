@@ -3545,7 +3545,7 @@ def change_delivery_unposted(request, document_id):
     if request.user in group:               
         document = Document.objects.get(id=document_id)
         if document.posted == True:
-            messages.error(request, f'Докмент #{document.id} проведен. Вы не можете удалить проведенный документ')
+            messages.error(request, f'Докмент #{document.id} был проведен ранее. Ваши изменения не сохранены ')
             if request.user in group:
                 return redirect ('log')
             else:
@@ -3739,14 +3739,13 @@ def change_delivery_unposted(request, document_id):
                     return redirect("log")
                 # saving uposted document
                 else:
+                    if Register.objects.filter(document=document, deleted=True).exists():
+                        registers = Register.objects.filter(document=document, deleted=True)
+                        for register in registers:
+                            register.delete()
                     for i in range(n):
                         product = Product.objects.get(imei=imeis[i])
-                        if Register.objects.filter(document=document, deleted=True).exists():
-                            registers = Register.objects.filter(document=document, deleted=True)
-                            for register in registers:
-                                register.delete()
-                        
-                        if Register.objects.filter(document=document).exists():
+                        if Register.objects.filter(document=document, product=product).exists():
                             register = Register.objects.get(document=document, product=product) 
                             register.price = prices[i]
                             register.quantity = quantities[i]
