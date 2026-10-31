@@ -307,21 +307,31 @@ def close_edited_document(request, document_id):
             return redirect ('log')
 
 def close_unposted_document(request, document_id):
-    document = Document.objects.get(id=document_id)
-    users=Group.objects.get(name="sales").user_set.all()
-    #getting rid of registers which has been added but not saved yet
-    registers = Register.objects.filter(document=document, new=True)
-    for register in registers:
-        register.delete()
-    #restoring registers which has been deleted but not yet saved
-    registers = Register.objects.filter(document=document, deleted=True)
-    for register in registers:
-        register.deleted = False
-        register.save()
-    if request.user in users:
-        return redirect ('sale_interface')
+    if request.user.is_authenticated:
+        document = Document.objects.get(id=document_id)
+        users=Group.objects.get(name="sales").user_set.all()
+        if document.posted == True:
+            messages.error(request, f'Докмент #{document.id} уже проведен. Текущие изменения не сохранены.')
+            if request.user in users:
+                return redirect ('sale_interface')
+            else:
+                return redirect("log") 
+        #getting rid of registers which has been added but not saved yet
+        registers = Register.objects.filter(document=document, new=True)
+        for register in registers:
+            register.delete()
+        #restoring registers which has been deleted but not yet saved
+        registers = Register.objects.filter(document=document, deleted=True)
+        for register in registers:
+            register.deleted = False
+            register.save()
+        if request.user in users:
+            return redirect ('sale_interface')
+        else:
+            return redirect("log")
     else:
-        return redirect("log")
+        auth.logout(request)
+        return redirect("login")
 
 def clear_transfer(request, identifier_id):
     identifier = Identifier.objects.get(id=identifier_id)
@@ -360,30 +370,41 @@ def clear_sku_imei_link(request, sku_id, identifier_id):
     return redirect("sku_imei_link", sku.id, identifier.id)
 
 def delete_unposted_document(request, document_id):
-    document = Document.objects.get(id=document_id)
-    users=Group.objects.get(name="sales").user_set.all()
-    if Register.objects.filter(document=document).exists():
-        registers = Register.objects.filter(document=document)
-        for register in registers:
-            register.delete()
-    if RemainderHistory.objects.filter(inventory_doc=document).exists():
-        rhos=RemainderHistory.objects.filter(inventory_doc=document)
-        for rho in rhos:
-            #rho.update(inventory_doc = None)
-            rho.inventory_doc = None
-            rho.save()
-    if PaymentRegister.objects.filter(document=document).exists():
-        cash_temp_reg=PaymentRegister.objects.get(document=document)
-        cash_temp_reg.delete()
-    if Document.objects.filter(base_doc=document).exists():
-        docs=Document.objects.filter(base_doc=document)
-        for doc in docs:
-            doc.delete()
-    document.delete()
-    if request.user in users:
-        return redirect ('sale_interface')
+    if request.user.is_authenticated:
+        users=Group.objects.get(name="sales").user_set.all()
+        document = Document.objects.get(id=document_id)
+        if document.posted == True:
+            messages.error(request, f'Докмент #{document.id} проведен. Вы не можете удалить проведенный документ')
+            if request.user in users:
+                return redirect ('sale_interface')
+            else:
+                return redirect("log") 
+        
+        if Register.objects.filter(document=document).exists():
+            registers = Register.objects.filter(document=document)
+            for register in registers:
+                register.delete()
+        if RemainderHistory.objects.filter(inventory_doc=document).exists():
+            rhos=RemainderHistory.objects.filter(inventory_doc=document)
+            for rho in rhos:
+                #rho.update(inventory_doc = None)
+                rho.inventory_doc = None
+                rho.save()
+        if PaymentRegister.objects.filter(document=document).exists():
+            cash_temp_reg=PaymentRegister.objects.get(document=document)
+            cash_temp_reg.delete()
+        if Document.objects.filter(base_doc=document).exists():
+            docs=Document.objects.filter(base_doc=document)
+            for doc in docs:
+                doc.delete()
+        document.delete()
+        if request.user in users:
+            return redirect ('sale_interface')
+        else:
+            return redirect("log")
     else:
-        return redirect("log")
+        auth.logout(request)
+        return redirect("login")
 
 def close_log(request):
     return redirect ('log')
@@ -3523,6 +3544,13 @@ def change_delivery_unposted(request, document_id):
     group=Group.objects.get(name="admin").user_set.all()
     if request.user in group:               
         document = Document.objects.get(id=document_id)
+        if document.posted == True:
+            messages.error(request, f'Докмент #{document.id} проведен. Вы не можете удалить проведенный документ')
+            if request.user in group:
+                return redirect ('log')
+            else:
+                return redirect("sale_interface")
+
         registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("-created")
         suppliers = Supplier.objects.all()
         shops = Shop.objects.all()
@@ -3717,16 +3745,16 @@ def change_delivery_unposted(request, document_id):
                             registers = Register.objects.filter(document=document, deleted=True)
                             for register in registers:
                                 register.delete()
-                        else:
-                            if Register.objects.filter(document=document).exists():
-                                register = Register.objects.get(document=document, product=product) 
-                                register.price = prices[i]
-                                register.quantity = quantities[i]
-                                register.sub_total = sub_totals[i]
-                                register.document = document
-                                register.new = False
-                                register.save()
-                                document_sum += int(register.sub_total)
+                        
+                        if Register.objects.filter(document=document).exists():
+                            register = Register.objects.get(document=document, product=product) 
+                            register.price = prices[i]
+                            register.quantity = quantities[i]
+                            register.sub_total = sub_totals[i]
+                            register.document = document
+                            register.new = False
+                            register.save()
+                            document_sum += int(register.sub_total)
                     document.sum = document_sum
                     document.created=dateTime
                     document.shop_receiver=shop
