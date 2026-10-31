@@ -3847,18 +3847,6 @@ def unpost_delivery(request, document_id):
         auth.logout(request)
         return redirect("login")
 
-def close_delivery_posted(request, document_id):
-    if request.user.is_authenticated:
-        document = Document.objects.get(id=document_id)
-        group=Group.objects.get(name="admin").user_set.all()
-        if request.user in group:
-            return redirect ('log') 
-        else:
-            return redirect ('sale_interface')
-    else:
-        auth.logout(request)
-        return redirect("login")
-
 #=======================================================================
 #open HTML page for entering sku number
 def sku_new(request):
@@ -5060,19 +5048,6 @@ def unpost_transfer(request, document_id):
     else:
         auth.logout(request)
         return redirect("login")
-
-def close_tranfer_posted(request, document_id):
-    if request.user.is_authenticated:
-        document = Document.objects.get(id=document_id)
-        group=Group.objects.get(name="admin").user_set.all()
-        if request.user in group:
-            return redirect ('log') 
-        else:
-            return redirect ('sale_interface')
-    else:
-        auth.logout(request)
-        return redirect("login")
-
 
 def transfer_auto (request):
     group=Group.objects.get(name="admin").user_set.all()
