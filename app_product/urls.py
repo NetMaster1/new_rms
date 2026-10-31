@@ -12,7 +12,8 @@ urlpatterns = [
     path ('close_unposted_document/<int:document_id>', views.close_unposted_document, name='close_unposted_document'),
     path ('close_edited_document/<int:document_id>', views.close_edited_document, name='close_edited_document'),
     path ('close_without_save/<int:identifier_id>', views.close_without_save, name='close_without_save'),
-
+    path ('close_without_save/<int:identifier_id>', views.close_without_save, name='close_without_save'),
+    
     #==================Remainde Input=====================================
     path ('remainder_input', views.remainder_input, name='remainder_input'),
     path ('change_remainder_input_posted/int<document_id>', views.change_remainder_input_posted, name='change_remainder_input_posted'),
@@ -34,6 +35,7 @@ urlpatterns = [
     path ('clear_delivery/<int:identifier_id>', views.clear_delivery, name='clear_delivery'),
     path ('change_delivery_unposted/<int:document_id>', views.change_delivery_unposted, name='change_delivery_unposted'),
     path ('change_delivery_posted/<int:document_id>', views.change_delivery_posted, name='change_delivery_posted'),
+    path ('close_delivery_posted/<int:document_id>', views.close_delivery_posted, name='close_delivery_posted'),
     path ('enter_new_product_from_unposted/<int:document_id>', views.enter_new_product_from_unposted, name='enter_new_product_from_unposted'),
     path ('unpost_delivery/<int:document_id>', views.unpost_delivery, name='unpost_delivery'),
     path ('fill_in_new_delivery/<int:sku_id>/<int:identifier_id>', views.fill_in_new_delivery, name='fill_in_new_delivery'),
