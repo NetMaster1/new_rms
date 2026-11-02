@@ -3609,6 +3609,7 @@ def change_delivery_unposted(request, document_id):
                         if AvPrice.objects.filter(imei=imeis[i]).exists():
                             av_price_obj = AvPrice.objects.get(imei=imeis[i])
                             av_price_obj.current_remainder += int(quantities[i])
+                            av_price_obj.av_price = int(prices[i])
                             av_price_obj.sum += int(quantities[i]) * int(prices[i])
                             if av_price_obj.current_remainder > 0:
                                 av_price_obj.av_price = av_price_obj.sum / av_price_obj.current_remainder
@@ -3683,6 +3684,7 @@ def change_delivery_unposted(request, document_id):
                             sequence_rhos_after = sequence_rhos_after.all().order_by("created")
                             for obj in sequence_rhos_after:
                                 obj.pre_remainder = remainder
+                                obj.av_price=av_price_obj.av_price
                                 obj.current_remainder = (
                                     remainder
                                     + obj.incoming_quantity
