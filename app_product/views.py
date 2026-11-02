@@ -8120,12 +8120,17 @@ def revaluation_input(request, identifier_id):
     if request.method == "POST":
         shop = request.POST["shop"]
         shop=Shop.objects.get(id=shop)
-        if shop.retail == False:
-            messages.success(request, "Вы не можете делать переоценку на оптовом складе.")
-            return redirect("revaluation", identifier.id)
         imeis = request.POST.getlist("imei", None)
         names = request.POST.getlist("name", None)
         prices_new = request.POST.getlist("price_new", None)
+        if shop.retail == False:
+            imei=imeis[0]
+            product=Product.objects.get(imei=imei)
+            category=product.category
+            print(category.name)
+            if category.name != "Сим_карты":
+                messages.success(request, "Вы не можете делать переоценку товара на оптовом складе за исключением сим карт.")
+                return redirect("revaluation", identifier.id)
         #==============Time Module=========================================
         dateTime=request.POST.get('dateTime', False)
         if dateTime:
@@ -8159,6 +8164,7 @@ def revaluation_input(request, identifier_id):
         n = len(names)
         for i in range(n):
             product=Product.objects.get(imei=imeis[i])
+            category=product.category
             #============check quantity module===================================
             if RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).exists():
                 rho_latest = RemainderHistory.objects.filter(imei=imeis[i], shop=shop, created__lt=dateTime).latest('created')
@@ -8195,10 +8201,20 @@ def revaluation_input(request, identifier_id):
                 pre_remainder=pre_remainder,
                 incoming_quantity=0,
                 outgoing_quantity=0,
-                retail_price=prices_new[i],
+                # retail_price=prices_new[i],
                 current_remainder=pre_remainder,
                 sub_total= int(pre_remainder)*int(prices_new[i]),
             )
+            if shop.retail == True:
+                rho.retail_price=prices_new[i]
+            else:
+                rho.wholesale_price=prices_new[i]
+                av_price=AvPrice.objects.get(imei=imeis[i])
+                av_price.av_price=int(rho.sub_total)/int(rho.current_remainder)
+                av_price.sum=rho.sub_total
+                av_price.save()
+                rho.av_price=av_price.av_price
+            rho.save()
             sum+=rho.sub_total
             #=========================START OF REMAINDER CURRENT BLOCK===========================================================
             #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
@@ -8212,6 +8228,7 @@ def revaluation_input(request, identifier_id):
                 if RemainderCurrent.objects.filter(imei=imeis[i], shop=shop).exists():
                     rco=RemainderCurrent.objects.get(imei=imeis[i], shop=shop)
                     rco.retail_price=rho.retail_price
+                    rco.wholesale_price=rho.wholesale_price
                     rco.save()
                 else:
                     rco=RemainderCurrent.objects.create(
@@ -8220,7 +8237,8 @@ def revaluation_input(request, identifier_id):
                         imei=imeis[i],
                         name=names[i],
                         current_remainder=rho.current_remainder,
-                        retail_price=rho.retail_price
+                        retail_price=rho.retail_price,
+                        wholesale_price=rho.wholesale_price
                     )
             #=======================END OF REMAINDER CURRENT BLOCK=======================================
 

@@ -147,9 +147,9 @@ class RemainderHistory(models.Model):
     imei = models.CharField(max_length=250)
     code_mark = models.CharField(max_length=100, null=True, blank=True)#честный знак
     sub_total = models.IntegerField(default=0)  # av_price/reatail_price/?????*current_remainder
-    wholesale_price = models.IntegerField(default=0, null=True)
-    av_price = models.IntegerField(default=0, null=True)
-    retail_price = models.IntegerField(default=0)
+    wholesale_price = models.IntegerField(default=0, null=True, blank=True)
+    av_price = models.IntegerField(default=0, null=True, blank=True)
+    retail_price = models.IntegerField(default=0, null=True, blank=True)
     pre_remainder = models.IntegerField(default=0)
     incoming_quantity = models.IntegerField(null=True)
     outgoing_quantity = models.IntegerField(null=True)
