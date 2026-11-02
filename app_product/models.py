@@ -68,7 +68,7 @@ class Register(models.Model):
     product = models.ForeignKey(Product, null=True, on_delete=models.DO_NOTHING)
     imei=models.CharField(max_length=250, null=True)
     name=models.CharField(max_length=250, null=True)
-    identifier = models.ForeignKey(Identifier, null=True, on_delete=models.DO_NOTHING)
+    identifier = models.ForeignKey(Identifier, null=True, blank=True, on_delete=models.DO_NOTHING)
     document = models.ForeignKey(Document, null=True, on_delete=models.DO_NOTHING)
     doc_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     quantity = models.IntegerField(default=1)

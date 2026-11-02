@@ -1753,7 +1753,7 @@ def item_report(request):
 
 def remainder_general_report (request):
     if request.user.is_authenticated:
-        transfer= DocumentType.objects.get(name='Перемещение ТМЦ')
+        # transfer= DocumentType.objects.get(name='Перемещение ТМЦ')
         users = Group.objects.get(name="sales").user_set.all()
         group = Group.objects.get(name="admin").user_set.all()
         categories = ProductCategory.objects.all()
@@ -1769,7 +1769,7 @@ def remainder_general_report (request):
 
                 rcos=RemainderCurrent.objects.filter(category=category)
             
-        #==========================Convert to Excel module=========================================
+                #==========================Convert to Excel module=========================================
                 response = HttpResponse(content_type="application/ms-excel")
                 response["Content-Disposition"] = (
                     "attachment; filename=RemainderRep_" + str(date) + ".xls"
@@ -1807,7 +1807,7 @@ def remainder_general_report (request):
 
                 wb.save(response)
                 return response
-        #================================End of Excel Module========================================
+                #================================End of Excel Module========================================
             else:
                 logout(request)
                 return redirect('login')

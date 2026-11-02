@@ -272,7 +272,14 @@ def close_search(request):
 
 def close_without_save(request, identifier_id):
     users=Group.objects.get(name='sales').user_set.all()
-    identifier = Identifier.objects.get(id=identifier_id)
+    try:
+        identifier = Identifier.objects.get(id=identifier_id)
+    except:
+        messages.error(request, "Документ не был создан")
+        if request.user in group:
+            return redirect ("sale_interface")
+        else:
+            return redirect('log')
     if Register.objects.filter(identifier=identifier).exists():
         registers = Register.objects.filter(identifier=identifier)
         for register in registers:
@@ -3294,7 +3301,18 @@ def enter_new_product_from_unposted(request, document_id):
 def delivery_input(request, identifier_id):
     group=Group.objects.get(name="admin").user_set.all()
     if request.user in group:
-        identifier = Identifier.objects.get(id=identifier_id)
+        #Если одновременно открыты две одинаковые вкладки с одним identifier,
+        #при сохранении первой identifier будет удалён (и из registers тоже),
+        #таким образом при попытке сохранения второй вкладки, будет выведена обшибка и данные не будут сохранены
+        try:
+            identifier = Identifier.objects.get(id=identifier_id)
+        except:
+            messages.error(request, "Ошибка. Изменения не сохранены. Документ с таким номером уже создан.")
+            if request.user in group:
+                return redirect ('log')
+            else:
+                return redirect("sale_interface")
+        #====================================================================================================
         registers = Register.objects.filter(identifier=identifier).order_by("created")
         doc_type = DocumentType.objects.get(name="Поступление ТМЦ")
         if request.method == "POST":
@@ -3507,6 +3525,14 @@ def delivery_input(request, identifier_id):
                         register.sub_total = int(prices[i]) * int(quantities[i])
                         register.save()
                         document_sum += int(register.sub_total)
+
+                #данный блок на случай, если открыты более одной вкладки с идентичным identifier
+                #будут сохранены данные из вкладки, сохраненной первой.
+                if Register.objects.filter(identifier=identifier).exists():
+                    registers=Register.objects.filter(identifier=identifier)
+                    for register in registers:
+                        register.delete()
+                #====================================================================
                 document.sum = document_sum
                 document.save()
                 identifier.delete()
@@ -3542,7 +3568,7 @@ def change_delivery_posted(request, document_id):
 
 def change_delivery_unposted(request, document_id):
     group=Group.objects.get(name="admin").user_set.all()
-    if request.user in group:               
+    if request.user in group:        
         document = Document.objects.get(id=document_id)
         if document.posted == True:
             messages.error(request, f'Докмент #{document.id} был проведен ранее. Ваши изменения не сохранены ')
@@ -3598,6 +3624,10 @@ def change_delivery_unposted(request, document_id):
                 n = len(names)
                 document_sum = 0
                 if post_check == True:
+                    if document.posted == True:
+                        string=f'Документ #{document.id} уже проведен. Ваши изменения не сохранены.'
+                        messages.error(request,  string)
+                        return redirect("change_delivery_posted", document.id)
                     document.created=dateTime
                     document.shop_receiver=shop
                     document.posted=True
@@ -3741,6 +3771,10 @@ def change_delivery_unposted(request, document_id):
                     return redirect("log")
                 # saving uposted document
                 else:
+                    if document.posted == True:
+                        string=f'Документ #{document.id} уже проведен. Ваши изменения не сохранены.'
+                        messages.error(request,  string)
+                        return redirect("change_delivery_posted", document.id)
                     if Register.objects.filter(document=document, deleted=True).exists():
                         registers = Register.objects.filter(document=document, deleted=True)
                         for register in registers:
@@ -3809,6 +3843,7 @@ def unpost_delivery(request, document_id):
             register=Register.objects.create(
                 document=document,
                 product=product,
+                imei=product.imei,
                 quantity=rho.incoming_quantity,
                 price=rho.wholesale_price,
                 sub_total=rho.sub_total
@@ -4292,6 +4327,18 @@ def transfer_input(request, identifier_id):
         shop_sender_to_ozon = Shop.objects.get(name='ООС')
         ozon_shop = Shop.objects.get(name='Озон')
         numbers = registers.count()
+        #Если одновременно открыты две одинаковые вкладки с одним identifier,
+        #при сохранении первой identifier будет удалён (и из registers тоже),
+        #таким образом при попытке сохранения второй вкладки, будет выведена обшибка и данные не будут сохранены
+        try:
+            identifier = Identifier.objects.get(id=identifier_id)
+        except:
+            messages.error(request, "Ошибка. Изменения не сохранены. Документ с таким номером уже создан.")
+            if request.user in group:
+                return redirect ('log')
+            else:
+                return redirect("sale_interface")
+        #====================================================================
         if request.method == "POST":
             imeis = request.POST.getlist("imei", None)
             names = request.POST.getlist("name", None)
@@ -4603,6 +4650,13 @@ def transfer_input(request, identifier_id):
                     register.new = False
                     register.identifier = None
                     register.save()
+                #данный блок на случай, если открыты более одной вкладки с идентичным identifier
+                #будут сохранены данные из вкладки, сохраненной первой.
+                if Register.objects.filter(identifier=identifier).exists():
+                    registers=Register.objects.filter(identifier=identifier)
+                    for register in registers:
+                        register.delete()
+                #==========================================================================
                 identifier.delete()
                 document.sum = document_sum
                 document.save()
@@ -4703,6 +4757,10 @@ def change_transfer_unposted(request, document_id):
                             messages.error(request,  string)
                             return redirect("change_transfer_unposted", document.id)
                     # posting transfer document
+                    if document.posted == True:
+                        string=f'Документ #{document.id} уже проведен. Вы не можете провести его еще раз.'
+                        messages.error(request,  string)
+                        return redirect("change_transfer_posted", document.id)
                     document.posted = True
                     document.shop_receiver=shop_receiver
                     document.shop_sender=shop_sender
@@ -4951,6 +5009,10 @@ def change_transfer_unposted(request, document_id):
                     return redirect("log")
                 # saving unposted document
                 else:
+                    if document.posted == True:
+                        string=f'Документ #{document.id} уже проведен. Ваши изменения не сохранены.'
+                        messages.error(request,  string)
+                        return redirect("change_transfer_posted", document.id)
                     n = len(names)
                     document_sum = 0
                     for i in range(n):
@@ -5019,6 +5081,7 @@ def unpost_transfer(request, document_id):
                     product=Product.objects.get(imei=rho.imei)
                     register=Register.objects.create(
                         document=document,
+                        imei=rho.imei,
                         price=rho.retail_price,
                         quantity=rho.incoming_quantity,
                         sub_total= rho.incoming_quantity * rho.retail_price,
