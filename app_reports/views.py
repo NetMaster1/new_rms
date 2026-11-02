@@ -1338,32 +1338,34 @@ def salary_report(request):
         return redirect('login')
 # =======================================================
 
-def remainder_report_excel(request, shop_id, category_id, date):
+def remainder_report_excel(request, shop_id, category_id):
     users = Group.objects.get(name="sales").user_set.all()
     if request.user.is_authenticated:
-        date = date
+        # date = date
         shop = Shop.objects.get(id=shop_id)
         category = ProductCategory.objects.get(id=category_id)
-        products = Product.objects.filter(category=category)
-        report_id = ReportTempId.objects.create()
-        for product in products:
-            imei = product.imei
-            if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
-                rho = RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest("created")
-                if rho.current_remainder > 0:
-                    if shop.retail == True:
-                        price = rho.retail_price
-                    elif shop.subdealer == True:
-                        price=rho.retail_price
-                    else:
-                        price = rho.wholesale_price
-                    report = ReportTemp.objects.create(
-                        report_id=report_id,
-                        name=rho.name,
-                        imei=rho.imei,
-                        end_remainder=rho.current_remainder,
-                        price=price,
-                    )
+        rcos=RemainderCurrent.objects.filter(category=category, shop=shop)
+
+        # products = Product.objects.filter(category=category)
+        # report_id = ReportTempId.objects.create()
+        # for product in products:
+        #     imei = product.imei
+        #     if RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).exists():
+        #         rho = RemainderHistory.objects.filter(shop=shop, imei=imei, created__lte=date).latest("created")
+        #         if rho.current_remainder > 0:
+        #             if shop.retail == True:
+        #                 price = rho.retail_price
+        #             elif shop.subdealer == True:
+        #                 price=rho.retail_price
+        #             else:
+        #                 price = rho.wholesale_price
+        #             report = ReportTemp.objects.create(
+        #                 report_id=report_id,
+        #                 name=rho.name,
+        #                 imei=rho.imei,
+        #                 end_remainder=rho.current_remainder,
+        #                 price=price,
+        #             )
         # report_query=ReportTemp.objects.filter(report_id=report_id)
         # query = report_query.values("name", "imei", "end_remainder", "price")
         # data=pd.DataFrame.from_records(query)
@@ -1389,8 +1391,11 @@ def remainder_report_excel(request, shop_id, category_id, date):
 
         # sheet body, remaining rows
         font_style = xlwt.XFStyle()
-        report_query = ReportTemp.objects.filter(report_id=report_id)
-        query = report_query.values_list("name", "imei", "end_remainder", "price")
+        # report_query = ReportTemp.objects.filter(report_id=report_id)
+        if shop.retail == True:
+            query = rcos.values_list("name", "imei", "current_remainder", "retail_price")
+        else:
+            query = rcos.values_list("name", "imei", "current_remainder", "wholesale_price")
 
         for row in query:
             row_num += 1
@@ -1557,7 +1562,8 @@ def remainder_report_output_rco(request, shop_id, category_id, date):
  
         context = {
             "shop" : shop,
-            "date" : date,
+            # "date" : date,
+            "category": category,
             # "rcos" : rcos,
             # "counter": counter
             "zipped_data": zip(counter, rcos)
@@ -1639,7 +1645,6 @@ def remainder_report_output_ver_1(request, shop_id, category_id, date):
     else:
         auth.logout(request)
         return redirect("login")
-
 
 def remainder_report_dynamic(request):
     products = Product.objects.all()

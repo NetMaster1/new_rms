@@ -164,14 +164,14 @@ def sale_interface (request):
         session_shop=request.session['session_shop']
         shop=Shop.objects.get(id=session_shop)
         # idsd=IntegratedDailySaleDoc.objects.get(created=date, shop=shop)
-# #======================Making a List of sales per day==================================
+    #======================Making a List of sales per day==================================
         doc_type=DocumentType.objects.get(name="Продажа ТМЦ")
         rhos = RemainderHistory.objects.filter(created__date=date, rho_type=doc_type, shop=shop).order_by("-category").order_by('name')
         sales_sum=0
         for rho in rhos:
             sales_sum+=rho.sub_total
          
-#==============Making a list of docs per pay=====================================================
+    #==============Making a list of docs per pay=====================================================
         #queryset_list = Document.objects.filter(user=request.user, created__date=date, posted=True)
         queryset_list = Document.objects.filter(created__date=date, posted=True)
         queryset_list=queryset_list.filter( Q(shop_sender=shop) | Q(shop_receiver=shop)).order_by("-created")
@@ -179,7 +179,7 @@ def sale_interface (request):
         for doc in queryset_list:
             cashback+=doc.cashback_off
 
-#==================Calculating Cash Remainder==========================================
+    #==================Calculating Cash Remainder==========================================
         if Cash.objects.filter(shop=shop, created__lt=date).exists():
             cho_before=Cash.objects.filter(shop=shop, created__lt=date).latest("created")
             cash_remainder_start=cho_before.current_remainder
@@ -190,7 +190,7 @@ def sale_interface (request):
             current_cash_remainder=cho_current.current_remainder
         else:
             current_cash_remainder=0
-#============================Calculating Pay_Cards_Remainders per day======================= 
+    #============================Calculating Pay_Cards_Remainders per day======================= 
         product=Product.objects.get(imei='11111')    
         if RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date).exists():
             rho_before=RemainderHistory.objects.filter(shop=shop, imei=product.imei, created__lt=date).latest("created")
@@ -202,19 +202,19 @@ def sale_interface (request):
             pay_card_remainder_current=rho_current.current_remainder
         else:
             pay_card_remainder_current=0
-#=====================Calculating Incoming Cash per day=============================
+    #=====================Calculating Incoming Cash per day=============================
         cash_sum=0
         if Cash.objects.filter(shop=shop, created__date=date).exists():
             chos=Cash.objects.filter(shop=shop, created__date=date)
             for i in chos:
                 cash_sum+=i.cash_in
-#===========================Calculaing Incoming Card Payments per day=====================
+    #===========================Calculaing Incoming Card Payments per day=====================
         card_sum=0
         if Card.objects.filter(shop=shop, created__date=date).exists():
             cards=Card.objects.filter(shop=shop, created__date=date)
             for i in cards:
                 card_sum+=i.sum
-#====================Calculating Incoming Credit Payments per day=====================
+    #====================Calculating Incoming Credit Payments per day=====================
         credit_sum=0
         if Credit.objects.filter(shop=shop, created__date=date).exists():
             credits=Credit.objects.filter(shop=shop, created__date=date)
@@ -255,7 +255,7 @@ def search(request):
         #         return redirect("search")
         # else:
         if RemainderCurrent.objects.filter(name__icontains=keyword).exists():
-            rcos=RemainderCurrent.objects.filter(name__icontains=keyword)   
+            rcos=RemainderCurrent.objects.filter(name__icontains=keyword).order_by('shop')
         else:
             messages.error(request, "УУУУУПС. Такое наименование не найдено")
             return redirect("search")
