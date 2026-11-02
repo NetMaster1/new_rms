@@ -73,7 +73,7 @@ class Register(models.Model):
     doc_type = models.ForeignKey(DocumentType, on_delete=models.DO_NOTHING, null=True)
     quantity = models.IntegerField(default=1)
     real_quantity = models.IntegerField(null=True)#used for inventory
-    price = models.IntegerField(default=0)
+    price = models.IntegerField(default=0, null=True, blank=True)
     reevaluation_price = models.IntegerField(default=0)#used to reevaluate an item in the process of inventory
     current_price = models.IntegerField(null=True)#used for showing avprice in transfer document
     av_price=models.ForeignKey(AvPrice, null=True, on_delete=models.DO_NOTHING)

@@ -89,7 +89,7 @@
 {% endif %}
             </div>
 
-    <form action="{% url 'revaluation_document' %}" method="POST">
+    <form action="{% url 'revaluation_document' %}" method="POST" id="revaluation_form">
         {% csrf_token %}
 
 
@@ -97,10 +97,12 @@
         <div class="row m-auto" id="row_highlight">
                 {% for group in request.user.groups.all %}
                 {% if group.name == 'admin' %}
+                <input type="text" name="category" hidden value='{{category.id}}'>
+
                 <div class="col-1">
                     <input type="checkbox" id="check_box" name="checked" value='{{rco.1.imei}}'>
                 </div>
-                <input type="shop" id="shop" name="shop" value='{{shop.id}}' hidden>
+                <input type="text" id="shop" name="shop" value='{{shop.id}}' hidden>
                 {% endif %}
                 {% endfor %}
             <!-- <div class="col-1">{{arr.number}}</div>
@@ -124,7 +126,7 @@
         {% for group in request.user.groups.all %}
         {% if group.name == 'admin' %}
         <div class="row m-1">
-            <input type="submit" value="Создать документ Переоценка" class="btn btn-block btn-outline-dark">
+            <input type="submit" value="Создать документ Переоценка" class="btn btn-block btn-outline-dark" id="revaluation_button">
         </div>
         {% endif %}
         {% endfor %}
@@ -136,24 +138,33 @@
 </div>
 
 <script>
-      console.log('Script works');
+    console.log('Script works');
 
-        
-        const row_highlights =document.querySelectorAll('#row_highlight');
-        //const rows = document.querySelector('.row');
-        const check_boxes = document.querySelectorAll('#check_box');
-        
-        for (let i = 0; i < check_boxes.length; i++) {
-            check_boxes[i].addEventListener('change', e => {
-                //row_highlights[i].className='highlight';
-                if(check_boxes[i].checked==true){
-                    row_highlights[i].style.backgroundColor='aquamarine';
-                }
-                else {
-                    row_highlights[i].style.backgroundColor = null;
-                }
-            })
+    
+    const revaluation_form =document.querySelector('#revaluation_form');
+    const revaluation_button =document.querySelector('#revaluation_button');
+
+    const row_highlights =document.querySelectorAll('#row_highlight');
+    //const rows = document.querySelector('.row');
+    const check_boxes = document.querySelectorAll('#check_box');
+    
+    for (let i = 0; i < check_boxes.length; i++) {
+        check_boxes[i].addEventListener('change', e => {
+            //row_highlights[i].className='highlight';
+            if(check_boxes[i].checked==true){
+                row_highlights[i].style.backgroundColor='aquamarine';
             }
+            else {
+                row_highlights[i].style.backgroundColor = null;
+            }
+        })
+        }
+
+    revaluation_form.addEventListener('submit', blockButton)
+    function blockButton() {
+        submit_button.disabled = true;
+    }
+
 
      
 console.log('Script ends')

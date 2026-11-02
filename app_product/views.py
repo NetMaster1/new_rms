@@ -8074,9 +8074,14 @@ def revaluation_document (request):
     if request.method == "POST":
         items = request.POST.getlist("checked", None)
         shop=request.POST ['shop']
+        category=request.POST ['category']
         shop=Shop.objects.get(id=shop)
+        category=ProductCategory.objects.get(id=category)
         print(shop)
         n = len(items)
+        if n == 0:
+            messages.success(request, "Вы не ввели ни одного наименования.")
+            return redirect("remainder_report_output_rco", shop.id, category.id)
         print (items)
         for i in range(n): 
             print(i)
@@ -8205,15 +8210,15 @@ def revaluation_input(request, identifier_id):
                 current_remainder=pre_remainder,
                 sub_total= int(pre_remainder)*int(prices_new[i]),
             )
+            av_price=AvPrice.objects.get(imei=imeis[i])
             if shop.retail == True:
                 rho.retail_price=prices_new[i]
             else:
                 rho.wholesale_price=prices_new[i]
-                av_price=AvPrice.objects.get(imei=imeis[i])
                 av_price.av_price=int(rho.sub_total)/int(rho.current_remainder)
                 av_price.sum=rho.sub_total
                 av_price.save()
-                rho.av_price=av_price.av_price
+            rho.av_price=av_price.av_price
             rho.save()
             sum+=rho.sub_total
             #=========================START OF REMAINDER CURRENT BLOCK===========================================================
@@ -8321,6 +8326,7 @@ def clear_revaluation(request, identifier_id):
 def unpost_revaluation (request, document_id):
     if request.user.is_authenticated:
         document = Document.objects.get(id=document_id)
+        shop=document.shop_receiver
         rhos = RemainderHistory.objects.filter(document=document)
         for rho in rhos:
             product=Product.objects.get(imei=rho.imei)
@@ -8328,13 +8334,27 @@ def unpost_revaluation (request, document_id):
                 document=document,
                 product=product,
                 quantity=rho.current_remainder,
-                price=rho.retail_price,
+                imei=rho.imei,
+                #price=rho.retail_price,
                 sub_total=rho.sub_total
             )
+            if shop.retail == True:
+                register.price=rho.retail_price
+            else:
+                register.price=rho.wholesale_price
+                #changing av_price
+                av_price=AvPrice.objects.get(imei=rho.imei)
+                if RemainderHistory.objects.filter(imei=rho.imei, shop=shop, created__lt=rho.created).exists():
+                    rho_latest = RemainderHistory.objects.filter(imei=rho.imei, shop=shop, created__lt=rho.created).latest('created')
+                    if rho_latest.current_remainder > 0:
+                        av_price.av_price=rho_latest.av_price
+                        av_price.save()
             name=rho.name
+            dateTime=rho.created
             imei=rho.imei
             shop=rho.shop
             rho.delete()
+            register.save()
 
             #=========================START OF REMAINDER CURRENT BLOCK===========================================================
             #I created RemainderCurrent table which kind of duplicates RemainderHistory Table
@@ -8344,12 +8364,15 @@ def unpost_revaluation (request, document_id):
             #since the number of table rows in RemainderCureent table is much less than in RemainderHistory table
             #each time an rho is created a corresponding rco is updated. Is rho.current_remainder == 0, rco is deleted
             #in order to shorten the rco table
-            if RemainderHistory.objects.filter(imei=imei, shop=shop).exists():
-                rho_latest = RemainderHistory.objects.filter(imei=imei, shop=shop).latest('created')
+            if RemainderHistory.objects.filter(imei=imei, shop=shop, created__lt=rho.created).exists():
+                rho_latest = RemainderHistory.objects.filter(imei=imei, shop=shop, created__lt=rho.created).latest('created')
                 if rho_latest.current_remainder > 0:
                     if RemainderCurrent.objects.filter(imei=imei, shop=shop).exists():
                         rco=RemainderCurrent.objects.get(imei=imei, shop=shop)
-                        rco.retail_price=rho_latest.retail_price
+                        if shop.retail == True:
+                            rco.retail_price=rho_latest.retail_price
+                        else:
+                            rco.wholesale_price=rho_latest.wholesale_price
                         rco.save()
                     else:
                         rco=RemainderCurrent.objects.create(
@@ -8358,8 +8381,10 @@ def unpost_revaluation (request, document_id):
                             imei=imei,
                             name=name,
                             current_remainder=rho_latest.current_remainder,
-                            retail_price=rho_latest.retail_price
+                            retail_price=rho.retail_price,
+                            wholesale_price=rho.wholesale_price
                         )
+                    
             #=======================END OF REMAINDER CURRENT BLOCK=======================================
 
 
@@ -8382,24 +8407,30 @@ def change_revaluation_unposted (request, document_id):
     users=Group.objects.get(name="sales").user_set.all()
     document = Document.objects.get(id=document_id)
     registers = Register.objects.filter(document=document).exclude(deleted=True).order_by("-created")
+    numbers = registers.count()
+    for register, i in zip(registers, range(numbers)):
+        register.number = i + 1
+        register.save()
+
     doc_type = DocumentType.objects.get(name="Переоценка ТМЦ")
     shop=document.shop_receiver
     shops=Shop.objects.filter(retail=True, active=True)
     if request.method == "POST":
         shop = request.POST["shop"]
         shop=Shop.objects.get(id=shop)
-         if shop.retail == False:
+        
+        imeis = request.POST.getlist("imei", None)
+        names = request.POST.getlist("name", None)
+        quantities = request.POST.getlist("quantity", None)
+        prices_new = request.POST.getlist("price", None)
+        sub_totals = request.POST.getlist("sub_total", None)
+        if shop.retail == False:
             imei=imeis[0]
             product=Product.objects.get(imei=imei)
             category=product.category
             if category.name != "Сим_карты":
                 messages.success(request, "Вы не можете делать переоценку товара на оптовом складе за исключением сим карт.")
                 return redirect("change_revaluation_unposted", document.id)
-        imeis = request.POST.getlist("imei", None)
-        names = request.POST.getlist("name", None)
-        quantities = request.POST.getlist("quantity", None)
-        prices = request.POST.getlist("price", None)
-        sub_totals = request.POST.getlist("sub_total", None)
         #==============Time Module=========================================
         dateTime=request.POST.get('dateTime', False)
         if dateTime:
@@ -8465,17 +8496,17 @@ def change_revaluation_unposted (request, document_id):
                     outgoing_quantity=0,
                     # retail_price=prices[i],
                     current_remainder=pre_remainder,
-                    sub_total= int(pre_remainder)*int(prices[i]),
+                    sub_total= int(pre_remainder)*int(prices_new[i]),
                 )
+                av_price=AvPrice.objects.get(imei=imeis[i])
                 if shop.retail == True:
                     rho.retail_price=prices_new[i]
                 else:
-                    rho.wholesale_price=prices_new[i]
-                    av_price=AvPrice.objects.get(imei=imeis[i])
+                    rho.wholesale_price=prices_new[i] 
                     av_price.av_price=int(rho.sub_total)/int(rho.current_remainder)
                     av_price.sum=rho.sub_total
                     av_price.save()
-                    rho.av_price=av_price.av_price
+                rho.av_price=av_price.av_price
                 rho.save()
                 sum+=rho.sub_total
                 #=========================START OF REMAINDER CURRENT BLOCK===========================================================
@@ -8516,7 +8547,7 @@ def change_revaluation_unposted (request, document_id):
                 product = Product.objects.get(imei=imeis[i])
                 register = Register.objects.get(document=document, product=product)
                 if register.deleted != True:
-                    register.price = prices[i]
+                    register.price = prices_new[i]
                     register.quantity = quantities[i]
                     register.sub_total = sub_totals[i]
                     register.document = document

@@ -1533,11 +1533,8 @@ def remainder_report_rco(request):
             else:
                 session_shop = request.session["session_shop"]
                 shop = Shop.objects.get(id=session_shop)
-            # ==============Time Module=========================================
-            date = datetime.date.today()
-            # tdelta_1 = datetime.timedelta(days=1)
-            # date = date + tdelta_1
-            return redirect("remainder_report_output_rco", shop.id, category.id, date)
+            #date = datetime.date.today()
+            return redirect("remainder_report_output_rco", shop.id, category.id)
         else:
             context = {
                 "shops": shops,
@@ -1548,7 +1545,7 @@ def remainder_report_rco(request):
         auth.logout(request)
         return redirect("login")
 
-def remainder_report_output_rco(request, shop_id, category_id, date):
+def remainder_report_output_rco(request, shop_id, category_id):
     if request.user.is_authenticated:
         messages.success(request, 'Для содания документа "Переоценка ТМЦ" выделите необходимые позиции и нажмите кнопку в конце страницы')
         shop = Shop.objects.get(id=shop_id)
