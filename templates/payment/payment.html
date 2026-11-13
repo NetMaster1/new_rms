@@ -67,7 +67,7 @@
                     <hr>
             <div class="modal-body">
 
-                <form action="{% url 'sale_input_cash' identifier.id client.id cashback_off %}" method="POST" class="sale_form">
+                <form action="{% url 'sale_input_cash' identifier.id client.id cashback_off %}" method="POST" id="sale_form_cash">
                     {% csrf_token %}
 
                     {% for group in request.user.groups.all %}
@@ -138,7 +138,7 @@
                         <div class="col-3" style="text-align:right">
                         <button type="button" class="btn btn-secondary btn_close_cash"
                             data-bs-dismiss="modal">Закрыть</button>
-                        <button type="submit" class="btn btn-secondary pay_button">Оплатить</button>
+                        <button type="submit" class="btn btn-secondary" id="sale_button_cash">Оплатить</button>
                         </div>
                     </div>
                 </form>
@@ -188,7 +188,7 @@
                 <hr>
         <div class="modal-body">
 
-            <form action="{% url 'sale_input_credit' identifier.id client.id cashback_off %}" method="POST">
+            <form action="{% url 'sale_input_credit' identifier.id client.id cashback_off %}" method="POST" id="sale_form_credit">
                 {% csrf_token %}
 
                 {% for group in request.user.groups.all %}
@@ -274,7 +274,7 @@
                     <div class="col-3" style="text-align:right">
                         <button type="button" class="btn btn-secondary btn_close_credit"
                             data-bs-dismiss="modal">Закрыть</button>
-                        <button type="submit" class="btn btn-secondary">Оплатить</button>
+                        <button type="submit" class="btn btn-secondary pay_button" id="sale_button_credit">Оплатить</button>
                     </div>
                 </div>
             </form>
@@ -282,7 +282,6 @@
     </div>
 
 </div>
-
 <!-- ========================End of Modal Body For Paying Credit====================================== -->
 
 <!-- =====================Trigger of paying Card Modal======================= -->
@@ -324,7 +323,7 @@
             </div>
        <hr>
             <div class="modal-body">
-                <form action="{% url 'sale_input_card' identifier.id client.id cashback_off %}" method="POST">
+                <form action="{% url 'sale_input_card' identifier.id client.id cashback_off %}" method="POST" id="sale_form_card" >
                     {% csrf_token %}
                     {% for group in request.user.groups.all %}
                     {% if group.name == 'admin' %}
@@ -405,7 +404,7 @@
                         <div class="col-3" style="text-align:right">
                         <button type="button" class="btn btn-secondary btn_close_card"
                             data-bs-dismiss="modal">Закрыть</button>
-                        <button type="submit" class="btn btn-secondary">Оплатить</button>
+                        <button type="submit" class="btn btn-secondary" id="sale_button_card">Оплатить</button>
                     </div>
                     </div>
                 </form>
@@ -416,7 +415,7 @@
 
 <!-- =====================Trigger of paying Complex Modal======================= -->
 <div class="row m-auto mt-2">
-    <input type="button" value="Сложная оплата" class="btn btn-sm btn-outline-dark btn_modal_complex ">
+    <input type="button" value="Сложная оплата" class="btn btn-sm btn-outline-dark btn_modal_complex">
 </div>
 
 <!-- ============================Modal Body For Paying Complex====================================== -->
@@ -454,7 +453,7 @@
             </div>
             <hr>
             <div class="modal-body">
-                <form action="{% url 'sale_input_complex' identifier.id client.id cashback_off %}" method="POST">
+                <form action="{% url 'sale_input_complex' identifier.id client.id cashback_off %}" method="POST" id="sale_form_complex">
                     {% csrf_token %}
                 {% for group in request.user.groups.all %}
                 {% if group.name == 'admin' %}
@@ -552,7 +551,7 @@
                         <div class="col-3" style="text-align:right">
                         <button type="button" class="btn btn-secondary btn_close_complex"
                             data-bs-dismiss="modal">Закрыть</button>
-                        <button type="submit" class="btn btn-secondary">Оплатить</button>
+                        <button type="submit" class="btn btn-secondary pay_button" id="sale_button_complex">Оплатить</button>
                         </div>
                     </div>
                 </form>
@@ -578,6 +577,7 @@
 <script>
     console.log("JS starting")
 
+  
     const btn_modal_cash = document.querySelector('.btn_modal_cash')
     const enterModalCash = document.querySelector('.enterModalCash')
     const btn_close_cash = document.querySelector('.btn_close_cash')
@@ -642,14 +642,46 @@
         cashback_off_modal.classList.remove('openModal')
     }
 //======================Disabling a Button after sending a form============================
-    const sale_form = document.querySelector('.sale_form')
-    const pay_button = document.querySelector('.pay_button')
+    const sale_form_cash = document.querySelector('#sale_form_cash')
+    const sale_form_credit = document.querySelector('#sale_form_credit')
+    const sale_form_card = document.querySelector('#sale_form_card')
+    const sale_form_complex = document.querySelector('#sale_form_complex')
+    const sale_button_cash = document.querySelector('#sale_button_cash')
+    const sale_button_credit = document.querySelector('#sale_button_credit')
+    const sale_button_card = document.querySelector('#sale_button_card')
+    const sale_button_complex = document.querySelector('#sale_button_complex')
 
-    sale_form.addEventListener('submit', blockButton)
-    function blockButton() {
-        console.log('clicked');
-        pay_button.disabled = true;
-    }
+    
+  
+
+    sale_form_cash.addEventListener('submit', blockButtonCash)
+        function blockButtonCash() {
+            console.log('clicked');
+            sale_button_cash.disabled = true;
+            btn_close_cash.disabled = true;
+        }
+
+    sale_form_credit.addEventListener('submit', blockButtonCredit)
+        function blockButtonCredit() {
+            console.log('clicked');
+            sale_button_credit.disabled = true;
+            btn_close_credit.disabled = true;
+        }
+
+    sale_form_card.addEventListener('submit', blockButtonCard)
+        function blockButtonCard() {
+            console.log('clicked');
+            sale_button_card.disabled = true;
+            btn_close_card.disabled = true;
+        }
+
+    sale_form_complex.addEventListener('submit', blockButtonComplex)
+        function blockButtonComplex() {
+            console.log('clicked');
+            sale_button_complex.disabled = true;
+            btn_close_complex.disabled = true;
+        }
+    
 //===================================================================
 console.log("Js finishing")
 </script>

@@ -199,7 +199,7 @@
                                 </div>
 
                                 <div class="modal-body">
-                                    <form action="{% url 'change_payment_type' document.id %}" method="POST">
+                                    <form action="{% url 'change_payment_type' document.id %}" method="POST" id="change_payment_form">
                                         {% csrf_token %}
                                     <div class="form-group">
                                         <label for="cash">Наличные:</label>
@@ -218,10 +218,10 @@
                                 
                                 <div class="row m-auto mt-2">
                                     <div class="col-4">
-                                        <button type="submit" class="btn btn-sm btn-block btn-outline-dark">Сохранить изменения</button>
+                                        <button type="submit" class="btn btn-sm btn-block btn-outline-dark" id="change_payment_button">Сохранить изменения</button>
                                     </div>
                                     <div class="col-4">
-                                        <button type="button" class="btn btn-sm btn-block btn-outline-dark btn_close" data-bs-dismiss="modal">Закрыть без сохранения</button>
+                                        <button type="button" class="btn btn-sm btn-block btn-outline-dark btn_close" data-bs-dismiss="modal" id="btn_close_payment">Закрыть без сохранения</button>
                                     </div>
                                 </div>
                             </div>
@@ -257,7 +257,16 @@
         enterChangePaymentTypeModal.classList.remove('openModal')
     }
 
+    const change_payment_form = document.querySelector('#change_payment_form')
+    const change_payment_button = document.querySelector('#change_payment_button')
+    const btn_close_payment = document.querySelector('#btn_close_payment')
 
+    change_payment_form.addEventListener('submit', blockButtonCash)
+        function blockButtonCash() {
+            console.log('clicked');
+            change_payment_button.disabled = true;
+            btn_close_payment.disabled = true;
+        }
 
     console.log('Script ends...')
 </script>
